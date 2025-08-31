@@ -63,12 +63,14 @@ export default function AdminConsole() {
   // Bot control mutations
   const startBotMutation = useMutation({
     mutationFn: async (botId: string) => {
-      return apiRequest(`/api/admin/bot-instances/${botId}/start`, {
+      const response = await fetch(`/api/admin/bot-instances/${botId}/start`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
       });
+      if (!response.ok) throw new Error("Failed to start bot");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/bot-instances"] });
@@ -81,12 +83,14 @@ export default function AdminConsole() {
 
   const stopBotMutation = useMutation({
     mutationFn: async (botId: string) => {
-      return apiRequest(`/api/admin/bot-instances/${botId}/stop`, {
+      const response = await fetch(`/api/admin/bot-instances/${botId}/stop`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
       });
+      if (!response.ok) throw new Error("Failed to stop bot");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/bot-instances"] });
@@ -99,12 +103,17 @@ export default function AdminConsole() {
 
   const deleteBotMutation = useMutation({
     mutationFn: async (botId: string) => {
-      return apiRequest(`/api/admin/bot-instances/${botId}`, {
+      const response = await fetch(`/api/admin/bot-instances/${botId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
       });
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || "Failed to delete bot");
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/bot-instances"] });
@@ -149,7 +158,10 @@ export default function AdminConsole() {
         </div>
         <Button 
           variant="outline" 
-          onClick={logout}
+          onClick={() => {
+            logout();
+            window.location.href = '/';
+          }}
           className="flex items-center gap-2"
           data-testid="button-logout-admin"
         >

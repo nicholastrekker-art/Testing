@@ -89,15 +89,68 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.name.endsWith('.json')) {
-        setSelectedFile(file);
-      } else {
+      // Check file type
+      if (!file.name.endsWith('.json')) {
         toast({ 
           title: "Invalid file type", 
           description: "Please select a valid JSON file",
           variant: "destructive" 
         });
+        return;
       }
+
+      // Check file size (minimum 10 bytes, maximum 5MB)
+      if (file.size < 10) {
+        toast({ 
+          title: "File too small", 
+          description: "The credentials file appears to be empty or invalid",
+          variant: "destructive" 
+        });
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ 
+          title: "File too large", 
+          description: "Credentials file must be smaller than 5MB",
+          variant: "destructive" 
+        });
+        return;
+      }
+
+      // Validate JSON content
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
+          const parsed = JSON.parse(content);
+          
+          // Check if it looks like a valid credentials file
+          if (typeof parsed !== 'object' || !parsed || Array.isArray(parsed)) {
+            throw new Error('Invalid credentials format');
+          }
+
+          // Check for essential fields (basic validation)
+          if (Object.keys(parsed).length === 0) {
+            throw new Error('Credentials file is empty');
+          }
+
+          setSelectedFile(file);
+          toast({ 
+            title: "File validated", 
+            description: "Credentials file looks valid",
+            variant: "default" 
+          });
+        } catch (error) {
+          toast({ 
+            title: "Invalid JSON file", 
+            description: "The file contains invalid JSON or is not a proper credentials file",
+            variant: "destructive" 
+          });
+          setSelectedFile(null);
+        }
+      };
+      reader.readAsText(file);
     }
   };
 

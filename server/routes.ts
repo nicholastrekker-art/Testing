@@ -196,13 +196,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let credentials = null;
       
       if (req.file) {
+        // Check file size (minimum 10 bytes, maximum 5MB)
+        if (req.file.size < 10) {
+          return res.status(400).json({ 
+            message: "Credentials file is too small or empty. Please upload a valid credentials file." 
+          });
+        }
+
+        if (req.file.size > 5 * 1024 * 1024) {
+          return res.status(400).json({ 
+            message: "Credentials file is too large. Maximum size is 5MB." 
+          });
+        }
+
         try {
-          credentials = JSON.parse(req.file.buffer.toString());
+          const fileContent = req.file.buffer.toString();
+          if (!fileContent.trim()) {
+            return res.status(400).json({ 
+              message: "Credentials file is empty. Please upload a valid credentials file." 
+            });
+          }
+
+          credentials = JSON.parse(fileContent);
           
           // Validate that it's a proper WhatsApp credentials file
-          if (!credentials || typeof credentials !== 'object') {
+          if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
             return res.status(400).json({ 
               message: "Invalid credentials file format. Please upload a valid WhatsApp session file." 
+            });
+          }
+
+          // Check for empty object
+          if (Object.keys(credentials).length === 0) {
+            return res.status(400).json({ 
+              message: "Credentials file is empty. Please upload a valid credentials file with session data." 
             });
           }
         } catch (error) {
@@ -234,6 +261,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Initialize bot instance
       try {
         await botManager.createBot(bot.id, bot);
+        
+        // Set a timeout to delete the bot if it doesn't connect within 5 minutes
+        setTimeout(async () => {
+          try {
+            const currentBot = await storage.getBotInstance(bot.id);
+            if (currentBot && (currentBot.status === 'loading' || currentBot.status === 'error')) {
+              console.log(`Auto-deleting bot ${bot.id} due to connection timeout`);
+              await botManager.destroyBot(bot.id);
+              await storage.deleteBotInstance(bot.id);
+              await storage.createActivity({
+                botInstanceId: bot.id,
+                type: 'auto_cleanup',
+                description: `Bot "${bot.name}" was automatically deleted due to connection failure`
+              });
+              broadcast({ type: 'BOT_DELETED', data: { botId: bot.id } });
+            }
+          } catch (cleanupError) {
+            console.error(`Failed to auto-cleanup bot ${bot.id}:`, cleanupError);
+          }
+        }, 5 * 60 * 1000); // 5 minutes
       } catch (botError) {
         // If bot creation fails, clean up the database entry
         await storage.deleteBotInstance(bot.id);
