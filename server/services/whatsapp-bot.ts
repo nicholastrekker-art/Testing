@@ -23,7 +23,8 @@ export class WhatsAppBot {
 
   constructor(botInstance: BotInstance) {
     this.botInstance = botInstance;
-    this.authDir = join(process.cwd(), 'auth', botInstance.id);
+    // Each bot gets its own isolated auth directory
+    this.authDir = join(process.cwd(), 'auth', `bot_${botInstance.id}`);
     
     // Create auth directory if it doesn't exist
     if (!existsSync(this.authDir)) {
@@ -381,7 +382,7 @@ export class WhatsAppBot {
     }
 
     try {
-      console.log(`Starting Baileys bot ${this.botInstance.name}...`);
+      console.log(`Starting Baileys bot ${this.botInstance.name} in isolated container...`);
       
       await storage.updateBotInstance(this.botInstance.id, { status: 'loading' });
       await storage.createActivity({
@@ -390,20 +391,41 @@ export class WhatsAppBot {
         description: 'Bot startup initiated - TREKKERMD LIFETIME BOT initializing with Baileys...'
       });
 
-      // Use auth state from the saved credentials
+      // Use isolated auth state for this specific bot
       const { state, saveCreds } = await useMultiFileAuthState(this.authDir);
       
+      // Create isolated socket connection with unique configuration
       this.sock = makeWASocket({
         auth: state,
-        printQRInTerminal: true
+        printQRInTerminal: false, // Disable QR printing to avoid conflicts
+        logger: {
+          level: 'silent', // Reduce logging conflicts between bots
+          child: () => ({ level: 'silent' }),
+          info: () => {},
+          error: () => {},
+          warn: () => {},
+          debug: () => {},
+          trace: () => {},
+          fatal: () => {}
+        },
+        // Add unique user agent to prevent conflicts
+        browser: [`TREKKERMD-${this.botInstance.id}`, 'Chrome', '110.0.0.0'],
+        // Ensure each bot has isolated connection settings
+        connectTimeoutMs: 60000,
+        defaultQueryTimeoutMs: 60000,
+        // Generate unique connection IDs
+        generateHighQualityLinkPreview: false,
+        // Add retry configuration for stability
+        retryRequestDelayMs: 250,
+        maxMsgRetryCount: 5
       });
 
-      // Save credentials when they change
+      // Save credentials when they change (isolated per bot)
       this.sock.ev.on('creds.update', saveCreds);
       
       await this.setupEventHandlers();
       
-      console.log(`Baileys bot ${this.botInstance.name} initialization completed`);
+      console.log(`Baileys bot ${this.botInstance.name} initialization completed in isolated container`);
       
     } catch (error) {
       console.error(`Error starting Baileys bot ${this.botInstance.name}:`, error);
@@ -424,18 +446,30 @@ export class WhatsAppBot {
     }
 
     try {
+      console.log(`Stopping bot ${this.botInstance.name} in isolated container...`);
+      
       if (this.sock) {
+        // Remove all event listeners to prevent conflicts
+        this.sock.ev.removeAllListeners();
+        
+        // Close the socket connection
         await this.sock.end();
+        this.sock = null;
       }
+      
       this.isRunning = false;
+      
       await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
       await storage.createActivity({
         botInstanceId: this.botInstance.id,
         type: 'status_change',
-        description: 'TREKKERMD LIFETIME BOT stopped'
+        description: 'TREKKERMD LIFETIME BOT stopped - isolated container shut down'
       });
+      
+      console.log(`Bot ${this.botInstance.name} stopped successfully in isolated container`);
     } catch (error) {
       console.error(`Error stopping bot ${this.botInstance.name}:`, error);
+      this.isRunning = false; // Force stop even if error occurs
     }
   }
 

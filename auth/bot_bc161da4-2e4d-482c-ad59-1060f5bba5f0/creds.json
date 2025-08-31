@@ -1,0 +1,91 @@
+{
+  "me": {
+    "id": "254704897825:33@s.whatsapp.net",
+    "lid": "7198767878239:33@lid",
+    "name": "trekker inc"
+  },
+  "account": {
+    "details": "CPHdzd0GEPGK08UGGAEgACgA",
+    "deviceSignature": "nBKheeR3J6lBAHMkG1ZnQLicbDBa+rQN/gocnhED16BBEmy8W+5TrR6AIAdEnkMDI6Qh1vZKQ6aCaNvB6VWOjQ==",
+    "accountSignature": "ahDQBgRBGv0h2AaPU8F1NGSrrMoX9TRXHrNT97Vmm56wAIi0eUx25lU+Kiz7I/uTGevSTzBNoUmDExMuLQAeAA==",
+    "accountSignatureKey": "ls6b6QWWT43iLgA9xYWEQOdXNKXdnxXIF2wH0aXWvgk="
+  },
+  "noiseKey": {
+    "public": {
+      "data": "vJvZfWwUajOU7XecdRQWMrELyGraWkyjtym7CQCPQAU=",
+      "type": "Buffer"
+    },
+    "private": {
+      "data": "GK8+KnEyyFswASRUV0x3gPki2LAp8XfUdo0lKA1iLUg=",
+      "type": "Buffer"
+    }
+  },
+  "platform": "smba",
+  "registered": true,
+  "pairingCode": "V3J2S12D",
+  "routingInfo": {
+    "data": "CAIIDQ==",
+    "type": "Buffer"
+  },
+  "advSecretKey": "5D+VTgMhdwuZ/RddEl6nYoiSrDbT4mFcKhi7cEnQIhk=",
+  "lastPropHash": "3R9Z39",
+  "nextPreKeyId": 31,
+  "signedPreKey": {
+    "keyId": 1,
+    "keyPair": {
+      "public": {
+        "data": "CqBnXrpotbPedGahWG2okKewYCKp1haYAiZgEaJUvXI=",
+        "type": "Buffer"
+      },
+      "private": {
+        "data": "yEx42XXGWFq+Hsqhg2uDhlGTd7LSX5bHv+vfL0NmQlg=",
+        "type": "Buffer"
+      }
+    },
+    "signature": {
+      "data": "FGtb3eAn9fDul8xCKWGJhWQ2M2EeRiDhJt1VAz5oWpFYaaH+wL57prJDL34oH0lNgMtIVcf9AabuirPhgx5ygA==",
+      "type": "Buffer"
+    }
+  },
+  "registrationId": 180,
+  "accountSettings": {
+    "unarchiveChats": false
+  },
+  "myAppStateKeyId": "AAAAAJ9M",
+  "signalIdentities": [
+    {
+      "identifier": {
+        "name": "254704897825:33@s.whatsapp.net",
+        "deviceId": 0
+      },
+      "identifierKey": {
+        "data": "BZbOm+kFlk+N4i4APcWFhEDnVzSl3Z8VyBdsB9Gl1r4J",
+        "type": "Buffer"
+      }
+    }
+  ],
+  "signedIdentityKey": {
+    "public": {
+      "data": "sia/oWdzn6NUm1r4iRmIsw3c/kpbuV4axt3vY9VfhzY=",
+      "type": "Buffer"
+    },
+    "private": {
+      "data": "uKQxcP3yVT6wR8GzFIOnru5F/BFZqG2NCn87LMKU93I=",
+      "type": "Buffer"
+    }
+  },
+  "accountSyncCounter": 0,
+  "firstUnuploadedPreKeyId": 31,
+  "pairingEphemeralKeyPair": {
+    "public": {
+      "data": "tz1XBPTy5zi7A1TAGamtWjq2YS6pko7cUxmWi/JaJQo=",
+      "type": "Buffer"
+    },
+    "private": {
+      "data": "0HEt1u0QYmDPbi4xf0RUjWyaSYMMZX8r0vwIkwliQWU=",
+      "type": "Buffer"
+    }
+  },
+  "lastAccountSyncTimestamp": 1756677505,
+  "processedHistoryMessages": []
+}

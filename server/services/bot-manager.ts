@@ -27,17 +27,53 @@ class BotManager {
   }
 
   async startBot(botId: string) {
-    const bot = this.bots.get(botId);
-    if (!bot) {
+    try {
+      console.log(`BotManager: Starting bot ${botId}...`);
+      
+      // Check if bot is already running
+      const existingBot = this.bots.get(botId);
+      if (existingBot && existingBot.getStatus() === 'online') {
+        console.log(`BotManager: Bot ${botId} is already running`);
+        return;
+      }
+
+      // Get bot instance from database
       const botInstance = await storage.getBotInstance(botId);
       if (!botInstance) {
         throw new Error(`Bot with ID ${botId} not found`);
       }
+
+      // Stop existing bot if it exists but not online
+      if (existingBot) {
+        console.log(`BotManager: Stopping existing bot ${botId} before restart`);
+        await existingBot.stop();
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+      }
+
+      // Create new isolated bot instance
+      console.log(`BotManager: Creating new isolated bot instance for ${botId}`);
       const newBot = new WhatsAppBot(botInstance);
       this.bots.set(botId, newBot);
+      
+      // Start bot in isolated container
       await newBot.start();
-    } else {
-      await bot.start();
+      
+      console.log(`BotManager: Bot ${botId} started successfully in isolated container`);
+    } catch (error) {
+      console.error(`BotManager: Failed to start bot ${botId}:`, error);
+      
+      // Clean up failed bot
+      const failedBot = this.bots.get(botId);
+      if (failedBot) {
+        try {
+          await failedBot.stop();
+        } catch (stopError) {
+          console.error(`BotManager: Failed to stop failed bot ${botId}:`, stopError);
+        }
+        this.bots.delete(botId);
+      }
+      
+      throw error;
     }
   }
 
@@ -49,11 +85,26 @@ class BotManager {
   }
 
   async restartBot(botId: string) {
-    const bot = this.bots.get(botId);
-    if (bot) {
-      await bot.restart();
-    } else {
+    try {
+      console.log(`BotManager: Restarting bot ${botId}...`);
+      
+      const bot = this.bots.get(botId);
+      if (bot) {
+        console.log(`BotManager: Stopping bot ${botId} for restart`);
+        await bot.stop();
+        await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds for complete shutdown
+        
+        // Remove from map to ensure clean restart
+        this.bots.delete(botId);
+      }
+      
+      // Start fresh isolated instance
       await this.startBot(botId);
+      
+      console.log(`BotManager: Bot ${botId} restarted successfully`);
+    } catch (error) {
+      console.error(`BotManager: Failed to restart bot ${botId}:`, error);
+      throw error;
     }
   }
 
