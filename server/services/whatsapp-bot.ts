@@ -51,6 +51,8 @@ export class WhatsAppBot {
     this.sock.ev.on('connection.update', async (update: Partial<ConnectionState>) => {
       const { connection, lastDisconnect, qr } = update;
       
+      console.log(`Bot ${this.botInstance.name}: Connection update -`, { connection, qr: !!qr });
+      
       if (qr) {
         console.log(`Bot ${this.botInstance.name}: QR Code generated`);
         await storage.updateBotInstance(this.botInstance.id, { status: 'qr_code' });
@@ -93,15 +95,23 @@ export class WhatsAppBot {
           description: '🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot connected and ready!'
         });
 
-        // Send welcome message 
+        // Send welcome message to the bot owner
         try {
           const welcomeMessage = `🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot "${this.botInstance.name}" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀`;
           
-          console.log('TREKKERMD LIFETIME BOT READY:', welcomeMessage);
+          // Get the bot's own number and send welcome message
+          const me = this.sock.user?.id;
+          if (me) {
+            await this.sock.sendMessage(me, { text: welcomeMessage });
+            console.log(`TREKKERMD LIFETIME BOT: Welcome message sent to ${me}`);
+          } else {
+            console.log('TREKKERMD LIFETIME BOT READY:', welcomeMessage);
+          }
         } catch (error) {
           console.log('Welcome message setup complete');
         }
       } else if (connection === 'connecting') {
+        console.log(`Bot ${this.botInstance.name}: Connecting to WhatsApp...`);
         await storage.updateBotInstance(this.botInstance.id, { status: 'loading' });
         await storage.createActivity({
           botInstanceId: this.botInstance.id,
@@ -109,9 +119,65 @@ export class WhatsAppBot {
           description: 'Bot connecting to WhatsApp...'
         });
       }
+      
+      // Force update to online if we detect the bot is actually connected
+      if (this.sock?.user?.id && !this.isRunning) {
+        console.log(`Bot ${this.botInstance.name}: Detected connected state, updating to online`);
+        this.isRunning = true;
+        
+        await storage.updateBotInstance(this.botInstance.id, { 
+          status: 'online',
+          lastActivity: new Date()
+        });
+        
+        await storage.createActivity({
+          botInstanceId: this.botInstance.id,
+          type: 'status_change',
+          description: '🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot connected and ready!'
+        });
+
+        // Send welcome message
+        try {
+          const welcomeMessage = `🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot "${this.botInstance.name}" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀`;
+          
+          const me = this.sock.user.id;
+          await this.sock.sendMessage(me, { text: welcomeMessage });
+          console.log(`TREKKERMD LIFETIME BOT: Welcome message sent to ${me}`);
+        } catch (error) {
+          console.log('Welcome message setup complete');
+        }
+      }
     });
 
     this.sock.ev.on('messages.upsert', async (m: { messages: WAMessage[], type: string }) => {
+      // Check if bot should be marked as online when first message is received
+      if (!this.isRunning && this.sock?.user?.id) {
+        console.log(`Bot ${this.botInstance.name}: First message received, marking as online`);
+        this.isRunning = true;
+        
+        await storage.updateBotInstance(this.botInstance.id, { 
+          status: 'online',
+          lastActivity: new Date()
+        });
+        
+        await storage.createActivity({
+          botInstanceId: this.botInstance.id,
+          type: 'status_change',
+          description: '🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot is now fully active!'
+        });
+
+        // Send welcome message
+        try {
+          const welcomeMessage = `🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot "${this.botInstance.name}" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀`;
+          
+          const me = this.sock.user.id;
+          await this.sock.sendMessage(me, { text: welcomeMessage });
+          console.log(`TREKKERMD LIFETIME BOT: Welcome message sent to ${me}`);
+        } catch (error) {
+          console.log('Welcome message ready');
+        }
+      }
+      
       if (m.type === 'notify') {
         for (const message of m.messages) {
           await this.handleMessage(message);
