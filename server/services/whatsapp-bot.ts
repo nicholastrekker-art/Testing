@@ -29,9 +29,36 @@ export class WhatsAppBot {
   }
 
   private setupEventHandlers() {
-    this.client.on('qr', (qr) => {
+    this.client.on('qr', async (qr) => {
       console.log(`QR Code for bot ${this.botInstance.name}:`, qr);
-      // In a real implementation, you'd save this QR code to display in the UI
+      await storage.updateBotInstance(this.botInstance.id, { status: 'qr_code' });
+      await storage.createActivity({
+        botInstanceId: this.botInstance.id,
+        type: 'qr_code',
+        description: 'QR Code generated - Scan to connect WhatsApp',
+        metadata: { qr }
+      });
+    });
+
+    this.client.on('authenticated', async () => {
+      console.log(`Bot ${this.botInstance.name} authenticated successfully!`);
+      await storage.updateBotInstance(this.botInstance.id, { status: 'authenticated' });
+      await storage.createActivity({
+        botInstanceId: this.botInstance.id,
+        type: 'authenticated',
+        description: 'WhatsApp authenticated successfully'
+      });
+    });
+
+    this.client.on('auth_failure', async (message) => {
+      console.log(`Bot ${this.botInstance.name} authentication failed:`, message);
+      await storage.updateBotInstance(this.botInstance.id, { status: 'auth_failed' });
+      await storage.createActivity({
+        botInstanceId: this.botInstance.id,
+        type: 'error',
+        description: `Authentication failed: ${message}`
+      });
+      this.isRunning = false;
     });
 
     this.client.on('ready', async () => {
@@ -59,12 +86,22 @@ export class WhatsAppBot {
 
     this.client.on('disconnected', async (reason) => {
       console.log(`Bot ${this.botInstance.name} disconnected:`, reason);
+      this.isRunning = false;
       await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
       
       await storage.createActivity({
         botInstanceId: this.botInstance.id,
         type: 'status_change',
         description: `Bot disconnected: ${reason}`,
+      });
+    });
+
+    this.client.on('loading_screen', async (percent, message) => {
+      console.log(`Bot ${this.botInstance.name} loading:`, percent, message);
+      await storage.createActivity({
+        botInstanceId: this.botInstance.id,
+        type: 'loading',
+        description: `Loading WhatsApp: ${percent}% - ${message}`
       });
     });
 
@@ -193,15 +230,33 @@ export class WhatsAppBot {
 
   async start() {
     if (this.isRunning) {
+      console.log(`Bot ${this.botInstance.name} is already running`);
       return;
     }
 
     try {
+      console.log(`Starting bot ${this.botInstance.name}...`);
       this.isRunning = true;
+      
+      await storage.updateBotInstance(this.botInstance.id, { status: 'loading' });
+      await storage.createActivity({
+        botInstanceId: this.botInstance.id,
+        type: 'status_change',
+        description: 'Bot startup initiated - TREKKERMD LIFETIME BOT initializing...'
+      });
+      
       await this.client.initialize();
+      console.log(`Bot ${this.botInstance.name} initialization completed`);
+      
     } catch (error) {
+      console.error(`Error starting bot ${this.botInstance.name}:`, error);
       this.isRunning = false;
       await storage.updateBotInstance(this.botInstance.id, { status: 'error' });
+      await storage.createActivity({
+        botInstanceId: this.botInstance.id,
+        type: 'error',
+        description: `Bot startup failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
       throw error;
     }
   }

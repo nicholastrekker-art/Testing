@@ -176,12 +176,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bot control endpoints
   app.post("/api/bot-instances/:id/start", async (req, res) => {
     try {
+      const bot = await storage.getBotInstance(req.params.id);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot instance not found" });
+      }
+
+      console.log(`Starting bot ${bot.name} (${bot.id})...`);
       await botManager.startBot(req.params.id);
-      const bot = await storage.updateBotInstance(req.params.id, { status: 'loading' });
-      broadcast({ type: 'BOT_STATUS_CHANGED', data: bot });
-      res.json({ success: true });
+      
+      const updatedBot = await storage.updateBotInstance(req.params.id, { status: 'loading' });
+      broadcast({ type: 'BOT_STATUS_CHANGED', data: updatedBot });
+      
+      res.json({ 
+        success: true, 
+        message: `Bot ${bot.name} startup initiated - TREKKERMD LIFETIME BOT initializing...` 
+      });
     } catch (error) {
-      res.status(500).json({ message: "Failed to start bot" });
+      console.error('Bot start error:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to start bot";
+      
+      // Update bot status to error
+      try {
+        const bot = await storage.updateBotInstance(req.params.id, { status: 'error' });
+        broadcast({ type: 'BOT_STATUS_CHANGED', data: bot });
+      } catch (updateError) {
+        console.error('Failed to update bot status:', updateError);
+      }
+      
+      res.status(500).json({ message: errorMessage });
     }
   });
 
