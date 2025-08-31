@@ -16,13 +16,13 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Unzip the archive
-        run: unzip -o Trekker-session-panel-main.zip
+        run: unzip -o BotDataBase.zip
 
       - name: Move contents to root (excluding .github) and remove folder
         run: |
           shopt -s dotglob extglob  # include hidden files & extended globbing
-          mv Trekker-session-panel-main/!(.github) .
-          rm -rf Trekker-session-panel-main
+          mv BotDataBase/!(.github) .
+          rm -rf BotDataBase
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
