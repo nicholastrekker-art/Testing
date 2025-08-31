@@ -15,13 +15,27 @@ export class WhatsAppBot {
     const clientOptions: any = {
       puppeteer: {
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        executablePath: '/nix/store/qa9cnw4v5xkxyip6mb9kxqfq1z4x2dx1-chromium-138.0.7204.100/bin/chromium',
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--no-zygote',
+          '--single-process',
+          '--disable-gpu',
+          '--disable-background-timer-throttling',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-renderer-backgrounding'
+        ]
       }
     };
 
-    // If credentials are provided, use them to restore session
+    // If credentials are provided, use them to restore session (Baileys format)
     if (botInstance.credentials) {
       clientOptions.session = botInstance.credentials;
+      console.log(`Bot ${this.botInstance.name}: Using provided Baileys session credentials`);
     }
     
     this.client = new Client(clientOptions);
