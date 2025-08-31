@@ -1,17 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Link } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
+import { useAuth } from "@/hooks/use-auth";
+import AddBotModal from "@/components/add-bot-modal";
 
 export default function Dashboard() {
+  const { isAdmin } = useAuth();
+  const [showAddBotModal, setShowAddBotModal] = useState(false);
 
   // Fetch dashboard stats
   const { data: stats = {}, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/dashboard/stats"],
   });
 
-  // Note: Bot management has been moved to Admin Console only
+  // Fetch bot instances for guest users
+  const { data: botInstances = [], isLoading: botsLoading } = useQuery({
+    queryKey: ["/api/bot-instances"],
+  });
 
   // Fetch recent activities
   const { data: activities = [], isLoading: activitiesLoading } = useQuery({
@@ -53,9 +61,9 @@ export default function Dashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-muted-foreground text-sm">Total Bots</p>
+                  <p className="text-muted-foreground text-sm">{isAdmin ? 'Total Bots' : 'Your Bots'}</p>
                   <p className="text-2xl font-bold text-foreground" data-testid="stat-total-bots">
-                    {statsLoading ? "..." : (stats as any)?.totalBots || 0}
+                    {statsLoading || botsLoading ? "..." : isAdmin ? (stats as any)?.totalBots || 0 : (botInstances as any[]).length}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
@@ -63,8 +71,17 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="mt-4 flex items-center space-x-2">
-                <span className="text-green-400 text-sm">+{(stats as any)?.activeBots || 0}</span>
-                <span className="text-muted-foreground text-sm">instances</span>
+                {isAdmin ? (
+                  <>
+                    <span className="text-green-400 text-sm">+{(stats as any)?.activeBots || 0}</span>
+                    <span className="text-muted-foreground text-sm">instances</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-green-400 text-sm">{Math.max(0, 10 - (botInstances as any[]).length)}</span>
+                    <span className="text-muted-foreground text-sm">slots remaining</span>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -73,9 +90,9 @@ export default function Dashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-muted-foreground text-sm">Active Bots</p>
+                  <p className="text-muted-foreground text-sm">{isAdmin ? 'Active Bots' : 'Online Bots'}</p>
                   <p className="text-2xl font-bold text-foreground" data-testid="stat-active-bots">
-                    {statsLoading ? "..." : (stats as any)?.activeBots || 0}
+                    {statsLoading || botsLoading ? "..." : isAdmin ? (stats as any)?.activeBots || 0 : (botInstances as any[]).filter((bot: any) => bot.status === 'online').length}
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
@@ -83,10 +100,21 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="mt-4 flex items-center space-x-2">
-                <span className="text-green-400 text-sm">
-                  {(stats as any)?.totalBots ? Math.round(((stats as any).activeBots / (stats as any).totalBots) * 100) : 0}%
-                </span>
-                <span className="text-muted-foreground text-sm">uptime</span>
+                {isAdmin ? (
+                  <>
+                    <span className="text-green-400 text-sm">
+                      {(stats as any)?.totalBots ? Math.round(((stats as any).activeBots / (stats as any).totalBots) * 100) : 0}%
+                    </span>
+                    <span className="text-muted-foreground text-sm">uptime</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-green-400 text-sm">
+                      {(botInstances as any[]).length > 0 ? Math.round(((botInstances as any[]).filter((bot: any) => bot.status === 'online').length / (botInstances as any[]).length) * 100) : 0}%
+                    </span>
+                    <span className="text-muted-foreground text-sm">online rate</span>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -137,104 +165,215 @@ export default function Dashboard() {
           <CardContent className="p-6">
             <div className="text-center">
               <h3 className="text-xl font-semibold text-foreground mb-2">Welcome to WhatsApp Bot Manager</h3>
-              <p className="text-muted-foreground mb-4">Bot management is now handled through the Admin Console for enhanced security and control.</p>
-              <p className="text-sm text-muted-foreground">Administrators can manage all bot instances, view system activities, and control bot operations from the dedicated Admin Console.</p>
+              {isAdmin ? (
+                <>
+                  <p className="text-muted-foreground mb-4">You have full administrative access to manage all bot instances, view system activities, and control bot operations.</p>
+                  <p className="text-sm text-muted-foreground">Access the Admin Console for detailed management features and system monitoring.</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-muted-foreground mb-4">Create and manage your WhatsApp bot instances with our easy-to-use interface.</p>
+                  <p className="text-sm text-muted-foreground">Upload your credentials file to get started. You can create up to 10 bot instances.</p>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
 
         {/* Management Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Command Management */}
-          <Card className="bg-card border-border">
-            <CardHeader className="border-b border-border">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold text-foreground">Command Management</CardTitle>
-                <button className="bg-primary text-primary-foreground px-3 py-1 rounded-md text-sm hover:bg-primary/90 transition-colors" data-testid="button-add-command">
-                  Add Command
-                </button>
-              </div>
-              <p className="text-muted-foreground text-sm mt-1">Manage bot commands with prefix (.)</p>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                {commandsLoading ? (
-                  <div className="text-center py-4">
-                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                  </div>
-                ) : (commands as any[]).length === 0 ? (
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">No commands configured yet</p>
-                  </div>
-                ) : (
-                  (commands as any[]).slice(0, 5).map((command: any) => (
-                    <div key={command.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-md" data-testid={`command-${command.name}`}>
-                      <div className="flex items-center space-x-3">
-                        <code className="bg-primary/10 text-primary px-2 py-1 rounded text-sm">.{command.name}</code>
-                        <span className="text-sm text-foreground">{command.description}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className={`text-xs px-2 py-1 rounded ${command.isActive ? 'text-green-400 bg-green-500/10' : 'text-red-400 bg-red-500/10'}`}>
-                          {command.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                        <button className="text-muted-foreground hover:text-foreground" data-testid={`button-edit-command-${command.name}`}>
-                          <i className="fas fa-edit"></i>
-                        </button>
-                      </div>
+          {isAdmin ? (
+            // Admin sees command management
+            <Card className="bg-card border-border">
+              <CardHeader className="border-b border-border">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-semibold text-foreground">Command Management</CardTitle>
+                  <button className="bg-primary text-primary-foreground px-3 py-1 rounded-md text-sm hover:bg-primary/90 transition-colors" data-testid="button-add-command">
+                    Add Command
+                  </button>
+                </div>
+                <p className="text-muted-foreground text-sm mt-1">Manage bot commands with prefix (.)</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-3">
+                  {commandsLoading ? (
+                    <div className="text-center py-4">
+                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                     </div>
-                  ))
-                )}
-                
-                {(commands as any[]).length > 5 && (
-                  <div className="text-center pt-3">
-                    <Link href="/commands">
-                      <a className="text-primary hover:text-primary/80 text-sm font-medium" data-testid="link-view-all-commands">
-                        View All {(commands as any[]).length} Commands
-                      </a>
-                    </Link>
+                  ) : (commands as any[]).length === 0 ? (
+                    <div className="text-center py-4">
+                      <p className="text-muted-foreground">No commands configured yet</p>
+                    </div>
+                  ) : (
+                    (commands as any[]).slice(0, 5).map((command: any) => (
+                      <div key={command.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-md" data-testid={`command-${command.name}`}>
+                        <div className="flex items-center space-x-3">
+                          <code className="bg-primary/10 text-primary px-2 py-1 rounded text-sm">.{command.name}</code>
+                          <span className="text-sm text-foreground">{command.description}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-xs px-2 py-1 rounded ${command.isActive ? 'text-green-400 bg-green-500/10' : 'text-red-400 bg-red-500/10'}`}>
+                            {command.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                          <button className="text-muted-foreground hover:text-foreground" data-testid={`button-edit-command-${command.name}`}>
+                            <i className="fas fa-edit"></i>
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  
+                  {(commands as any[]).length > 5 && (
+                    <div className="text-center pt-3">
+                      <Link href="/commands">
+                        <a className="text-primary hover:text-primary/80 text-sm font-medium" data-testid="link-view-all-commands">
+                          View All {(commands as any[]).length} Commands
+                        </a>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            // Guests see upload credentials section
+            <Card className="bg-card border-border">
+              <CardHeader className="border-b border-border">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-semibold text-foreground">Add New Bot</CardTitle>
+                  <Button 
+                    onClick={() => setShowAddBotModal(true)}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    disabled={(botInstances as any[]).length >= 10}
+                    data-testid="button-add-new-bot"
+                  >
+                    <i className="fas fa-plus mr-2"></i>
+                    Add Bot {(botInstances as any[]).length >= 10 ? '(Limit Reached)' : ''}
+                  </Button>
+                </div>
+                <p className="text-muted-foreground text-sm mt-1">Upload WhatsApp credentials to create a new bot instance</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <i className="fas fa-upload text-primary text-2xl"></i>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Upload Bot Credentials</h3>
+                  <p className="text-muted-foreground mb-6">Add your WhatsApp bot credentials to get started with automation</p>
+                  <Button 
+                    onClick={() => setShowAddBotModal(true)}
+                    variant="outline"
+                    className="w-full max-w-xs"
+                    disabled={(botInstances as any[]).length >= 10}
+                    data-testid="button-upload-credentials"
+                  >
+                    <i className="fas fa-file-upload mr-2"></i>
+                    {(botInstances as any[]).length >= 10 ? 'Bot Limit Reached' : 'Upload creds.json'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Recent Activity */}
-          <Card className="bg-card border-border">
-            <CardHeader className="border-b border-border">
-              <CardTitle className="text-lg font-semibold text-foreground">Recent Activity</CardTitle>
-              <p className="text-muted-foreground text-sm mt-1">Live activity across all bot instances</p>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {activitiesLoading ? (
-                  <div className="text-center py-4">
-                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                  </div>
-                ) : (activities as any[]).length === 0 ? (
-                  <div className="text-center py-4">
-                    <p className="text-muted-foreground">No recent activity</p>
-                  </div>
-                ) : (
-                  (activities as any[]).slice(0, 5).map((activity: any) => (
-                    <div key={activity.id} className="flex items-start space-x-3" data-testid={`activity-${activity.id}`}>
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${getActivityIconBg(activity.type)}`}>
-                        <i className={`${getActivityIcon(activity.type)} text-sm`}></i>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-foreground">
-                          <span className="font-medium">{getBotName(activity.botInstanceId)}</span> {activity.description}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{formatTimeAgo(activity.createdAt)}</p>
-                      </div>
+          {/* Bot Instances for Guests, Recent Activity for Admins */}
+          {isAdmin ? (
+            <Card className="bg-card border-border">
+              <CardHeader className="border-b border-border">
+                <CardTitle className="text-lg font-semibold text-foreground">Recent Activity</CardTitle>
+                <p className="text-muted-foreground text-sm mt-1">Live activity across all bot instances</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {activitiesLoading ? (
+                    <div className="text-center py-4">
+                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                     </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  ) : (activities as any[]).length === 0 ? (
+                    <div className="text-center py-4">
+                      <p className="text-muted-foreground">No recent activity</p>
+                    </div>
+                  ) : (
+                    (activities as any[]).slice(0, 5).map((activity: any) => (
+                      <div key={activity.id} className="flex items-start space-x-3" data-testid={`activity-${activity.id}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${getActivityIconBg(activity.type)}`}>
+                          <i className={`${getActivityIcon(activity.type)} text-sm`}></i>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-foreground">
+                            <span className="font-medium">{getBotName(activity.botInstanceId)}</span> {activity.description}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{formatTimeAgo(activity.createdAt)}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            // Guests see bot instances list
+            <Card className="bg-card border-border">
+              <CardHeader className="border-b border-border">
+                <CardTitle className="text-lg font-semibold text-foreground">Your Bot Instances</CardTitle>
+                <p className="text-muted-foreground text-sm mt-1">View and monitor your installed bot instances</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {botsLoading ? (
+                    <div className="text-center py-4">
+                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                    </div>
+                  ) : (botInstances as any[]).length === 0 ? (
+                    <div className="text-center py-4">
+                      <p className="text-muted-foreground">No bot instances yet</p>
+                      <p className="text-xs text-muted-foreground mt-1">Upload credentials to create your first bot</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {(botInstances as any[]).slice(0, 5).map((bot: any) => (
+                        <div key={bot.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-md" data-testid={`bot-instance-${bot.id}`}>
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                              <i className="fas fa-robot text-primary"></i>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-foreground">{bot.name}</p>
+                              <p className="text-xs text-muted-foreground">{bot.phoneNumber || 'No phone number'}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              bot.status === 'online' ? 'text-green-400 bg-green-500/10' :
+                              bot.status === 'offline' ? 'text-gray-400 bg-gray-500/10' :
+                              bot.status === 'loading' ? 'text-blue-400 bg-blue-500/10' :
+                              bot.status === 'qr_code' ? 'text-yellow-400 bg-yellow-500/10' :
+                              'text-red-400 bg-red-500/10'
+                            }`}>
+                              {bot.status.replace('_', ' ').toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {(botInstances as any[]).length > 5 && (
+                        <div className="text-center pt-3">
+                          <Link href="/bot-instances">
+                            <a className="text-primary hover:text-primary/80 text-sm font-medium" data-testid="link-view-all-bots">
+                              View All {(botInstances as any[]).length} Bots
+                            </a>
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
+      <AddBotModal open={showAddBotModal} onClose={() => setShowAddBotModal(false)} />
     </div>
   );
 }

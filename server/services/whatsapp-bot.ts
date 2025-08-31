@@ -20,6 +20,8 @@ export class WhatsAppBot {
   private botInstance: BotInstance;
   private isRunning: boolean = false;
   private authDir: string;
+  private reconnectAttempts: number = 0;
+  private heartbeatInterval?: NodeJS.Timeout;
 
   constructor(botInstance: BotInstance) {
     this.botInstance = botInstance;
@@ -48,6 +50,20 @@ export class WhatsAppBot {
     } catch (error) {
       console.error(`Bot ${this.botInstance.name}: Error saving credentials:`, error);
     }
+  }
+
+  private createLogger() {
+    const loggerInstance = {
+      level: 'silent',
+      child: () => loggerInstance,
+      trace: () => {},
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+      fatal: () => {}
+    };
+    return loggerInstance;
   }
 
   private async setupEventHandlers() {
@@ -80,12 +96,29 @@ export class WhatsAppBot {
         });
         
         if (shouldReconnect) {
-          // Auto-reconnect
-          setTimeout(() => this.start(), 5000);
+          // Auto-reconnect with exponential backoff to prevent crash loops
+          const reconnectDelay = Math.min(5000 * (this.reconnectAttempts || 1), 30000);
+          this.reconnectAttempts = (this.reconnectAttempts || 0) + 1;
+          
+          console.log(`Bot ${this.botInstance.name}: Attempting reconnect #${this.reconnectAttempts} in ${reconnectDelay}ms`);
+          
+          setTimeout(async () => {
+            try {
+              await this.start();
+            } catch (error) {
+              console.error(`Bot ${this.botInstance.name}: Reconnect attempt failed:`, error);
+              await storage.createActivity({
+                botInstanceId: this.botInstance.id,
+                type: 'error',
+                description: `Reconnect attempt #${this.reconnectAttempts} failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+              });
+            }
+          }, reconnectDelay);
         }
       } else if (connection === 'open') {
         console.log(`Bot ${this.botInstance.name} is ready! 🎉 WELCOME TO TREKKERMD LIFETIME BOT`);
         this.isRunning = true;
+        this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
         
         await storage.updateBotInstance(this.botInstance.id, { 
           status: 'online',
@@ -398,43 +431,7 @@ export class WhatsAppBot {
       this.sock = makeWASocket({
         auth: state,
         printQRInTerminal: false, // Disable QR printing to avoid conflicts
-        logger: {
-          level: 'silent',
-          child: () => ({
-            level: 'silent',
-            child: () => ({
-              level: 'silent',
-              child: () => ({
-                level: 'silent',
-                child: () => ({ level: 'silent', child: () => ({ level: 'silent', trace: () => {}, debug: () => {}, info: () => {}, warn: () => {}, error: () => {}, fatal: () => {} }), trace: () => {}, debug: () => {}, info: () => {}, warn: () => {}, error: () => {}, fatal: () => {} }),
-                trace: () => {},
-                debug: () => {},
-                info: () => {},
-                warn: () => {},
-                error: () => {},
-                fatal: () => {}
-              }),
-              trace: () => {},
-              debug: () => {},
-              info: () => {},
-              warn: () => {},
-              error: () => {},
-              fatal: () => {}
-            }),
-            trace: () => {},
-            debug: () => {},
-            info: () => {},
-            warn: () => {},
-            error: () => {},
-            fatal: () => {}
-          }),
-          trace: () => {},
-          debug: () => {},
-          info: () => {},
-          warn: () => {},
-          error: () => {},
-          fatal: () => {}
-        },
+        logger: this.createLogger(),
         // Add unique user agent to prevent conflicts
         browser: [`TREKKERMD-${this.botInstance.id}`, 'Chrome', '110.0.0.0'],
         // Ensure each bot has isolated connection settings
@@ -451,19 +448,63 @@ export class WhatsAppBot {
       this.sock.ev.on('creds.update', saveCreds);
       
       await this.setupEventHandlers();
+      this.startHeartbeat(); // Start heartbeat monitoring
       
       console.log(`Baileys bot ${this.botInstance.name} initialization completed in isolated container`);
       
     } catch (error) {
       console.error(`Error starting Baileys bot ${this.botInstance.name}:`, error);
       this.isRunning = false;
-      await storage.updateBotInstance(this.botInstance.id, { status: 'error' });
+      this.stopHeartbeat();
+      await this.safeUpdateBotStatus('error');
+      await this.safeCreateActivity('error', `Bot startup failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Don't throw error to prevent app crash - just log it
+      console.error(`Bot ${this.botInstance.name} failed to start but app continues running`);
+    }
+  }
+
+  private startHeartbeat() {
+    // Clear any existing heartbeat
+    this.stopHeartbeat();
+    
+    // Set up heartbeat to monitor bot health
+    this.heartbeatInterval = setInterval(async () => {
+      try {
+        if (this.isRunning && this.sock?.user?.id) {
+          await this.safeUpdateBotStatus('online', { lastActivity: new Date() });
+        }
+      } catch (error) {
+        console.error(`Bot ${this.botInstance.name}: Heartbeat error:`, error);
+      }
+    }, 30000); // Update every 30 seconds
+  }
+
+  private stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = undefined;
+    }
+  }
+
+  private async safeUpdateBotStatus(status: string, updates: any = {}) {
+    try {
+      await storage.updateBotInstance(this.botInstance.id, { status, ...updates });
+    } catch (error) {
+      console.error(`Bot ${this.botInstance.name}: Failed to update status:`, error);
+    }
+  }
+
+  private async safeCreateActivity(type: string, description: string, metadata: any = {}) {
+    try {
       await storage.createActivity({
         botInstanceId: this.botInstance.id,
-        type: 'error',
-        description: `Bot startup failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        type,
+        description,
+        metadata
       });
-      throw error;
+    } catch (error) {
+      console.error(`Bot ${this.botInstance.name}: Failed to create activity:`, error);
     }
   }
 
@@ -471,6 +512,8 @@ export class WhatsAppBot {
     if (!this.isRunning) {
       return;
     }
+    
+    this.stopHeartbeat();
 
     try {
       console.log(`Stopping bot ${this.botInstance.name} in isolated container...`);
@@ -486,12 +529,8 @@ export class WhatsAppBot {
       
       this.isRunning = false;
       
-      await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
-      await storage.createActivity({
-        botInstanceId: this.botInstance.id,
-        type: 'status_change',
-        description: 'TREKKERMD LIFETIME BOT stopped - isolated container shut down'
-      });
+      await this.safeUpdateBotStatus('offline');
+      await this.safeCreateActivity('status_change', 'TREKKERMD LIFETIME BOT stopped - isolated container shut down');
       
       console.log(`Bot ${this.botInstance.name} stopped successfully in isolated container`);
     } catch (error) {

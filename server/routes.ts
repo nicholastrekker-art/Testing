@@ -243,6 +243,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Check for duplicate bot name and bot count limit
+      const existingBots = await storage.getAllBotInstances();
+      
+      // Check bot count limit (max 10 bots for regular users)
+      if (existingBots.length >= 10) {
+        return res.status(400).json({ 
+          message: `Maximum bot limit reached (10 bots). Please delete existing bots before adding new ones.` 
+        });
+      }
+      
+      const duplicateName = existingBots.find(bot => 
+        bot.name.toLowerCase().trim() === req.body.name.toLowerCase().trim()
+      );
+      
+      if (duplicateName) {
+        return res.status(400).json({ 
+          message: `Bot name "${req.body.name.trim()}" is already in use. Please choose a different name.` 
+        });
+      }
+
+      // Check for duplicate credentials if provided
+      if (credentials) {
+        const duplicateCredentials = existingBots.find(bot => {
+          if (!bot.credentials) return false;
+          // Compare essential credential fields to detect duplicates
+          return JSON.stringify(bot.credentials) === JSON.stringify(credentials);
+        });
+        
+        if (duplicateCredentials) {
+          return res.status(400).json({ 
+            message: `These credentials are already in use by bot "${duplicateCredentials.name}". Each bot must have unique credentials.` 
+          });
+        }
+      }
+
       const botData = {
         ...req.body,
         credentials,
