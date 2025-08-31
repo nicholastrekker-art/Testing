@@ -28,7 +28,7 @@ export default function AdminConsole() {
         },
       });
       if (!response.ok) throw new Error("Failed to fetch bot instances");
-      return response.json() as BotInstance[];
+      return await response.json() as BotInstance[];
     },
   });
 
@@ -42,7 +42,7 @@ export default function AdminConsole() {
         },
       });
       if (!response.ok) throw new Error("Failed to fetch activities");
-      return response.json() as ActivityType[];
+      return await response.json() as ActivityType[];
     },
   });
 
@@ -366,7 +366,7 @@ export default function AdminConsole() {
                         <p className="text-sm" data-testid={`activity-description-${activity.id}`}>
                           {activity.description}
                         </p>
-                        {activity.metadata && Object.keys(activity.metadata as object).length > 0 && (
+{activity.metadata && typeof activity.metadata === 'object' && Object.keys(activity.metadata as object).length > 0 ? (
                           <details className="text-xs">
                             <summary className="cursor-pointer text-muted-foreground">
                               View details
@@ -375,7 +375,7 @@ export default function AdminConsole() {
                               {JSON.stringify(activity.metadata, null, 2)}
                             </pre>
                           </details>
-                        )}
+                        ) : null}
                       </div>
                     ))
                   )}

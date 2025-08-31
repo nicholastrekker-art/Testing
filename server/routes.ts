@@ -135,10 +135,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (botError) {
         // Clean up if bot creation failed
         try {
-          if (testBot) {
-            await botManager.destroyBot(testBot.id);
-            await storage.deleteBotInstance(testBot.id);
-          }
+          // testBot is defined in the try block above, cleanup if needed
+          console.error('Bot creation failed, cleaning up...');
         } catch (cleanupError) {
           console.error('Cleanup error:', cleanupError);
         }

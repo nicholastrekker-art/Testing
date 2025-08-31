@@ -404,7 +404,16 @@ export class WhatsAppBot {
             level: 'silent',
             child: () => ({
               level: 'silent',
-              child: () => ({ level: 'silent' }),
+              child: () => ({
+                level: 'silent',
+                child: () => ({ level: 'silent', child: () => ({ level: 'silent', trace: () => {}, debug: () => {}, info: () => {}, warn: () => {}, error: () => {}, fatal: () => {} }), trace: () => {}, debug: () => {}, info: () => {}, warn: () => {}, error: () => {}, fatal: () => {} }),
+                trace: () => {},
+                debug: () => {},
+                info: () => {},
+                warn: () => {},
+                error: () => {},
+                fatal: () => {}
+              }),
               trace: () => {},
               debug: () => {},
               info: () => {},
