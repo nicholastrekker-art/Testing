@@ -1,6 +1,7 @@
 import { commandRegistry, type CommandContext } from './command-registry.js';
 import moment from 'moment-timezone';
 import os from 'os';
+import axios from 'axios';
 
 // Utility functions from the original commands
 const toFancyUppercaseFont = (text: string) => {
@@ -320,6 +321,369 @@ commandRegistry.register({
 
     await respond(statusInfo);
   }
+});
+
+// Register fun commands
+commandRegistry.register({
+  name: 'advice',
+  aliases: ['wisdom', 'wise'],
+  description: 'Get some wise advice',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { respond } = context;
+    try {
+      const response = await axios.get('https://api.adviceslip.com/advice');
+      const advice = response.data.slip.advice;
+      await respond(`💡 *Here's some advice:*\n\n"${advice}"\n\n✨ Hope that helps!`);
+    } catch (error) {
+      await respond('❌ Sorry, I couldn\'t fetch any advice right now. Try again later!');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'fact',
+  aliases: ['funfact'],
+  description: 'Get an interesting random fact',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { respond } = context;
+    try {
+      const response = await axios.get('https://nekos.life/api/v2/fact');
+      const fact = response.data.fact;
+      await respond(`🧠 *Random Fact:*\n\n${fact}\n\n🌟 Powered by TREKKERMD LIFETIME BOT`);
+    } catch (error) {
+      await respond('❌ Sorry, I couldn\'t fetch a fact right now. Try again later!');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'quotes',
+  aliases: ['quote', 'inspiration'],
+  description: 'Get an inspiring quote',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { respond } = context;
+    try {
+      const response = await axios.get('https://favqs.com/api/qotd');
+      const quote = response.data.quote;
+      await respond(`📜 *Daily Quote:*\n\n"${quote.body}"\n\n*- ${quote.author}*\n\n✨ Powered by TREKKERMD LIFETIME BOT`);
+    } catch (error) {
+      await respond('❌ Sorry, I couldn\'t fetch a quote right now. Try again later!');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'trivia',
+  aliases: ['quiz', 'question'],
+  description: 'Get a trivia question to test your knowledge',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { respond } = context;
+    try {
+      const response = await axios.get('https://opentdb.com/api.php?amount=1&type=multiple');
+      const trivia = response.data.results[0];
+      const question = trivia.question;
+      const correctAnswer = trivia.correct_answer;
+      const answers = [...trivia.incorrect_answers, correctAnswer].sort();
+      
+      const answerChoices = answers.map((answer, index) => `${index + 1}. ${answer}`).join('\n');
+      
+      await respond(`🤔 *Trivia Question:*\n\n${question}\n\n${answerChoices}\n\n⏰ I'll reveal the answer in 10 seconds...`);
+      
+      setTimeout(async () => {
+        await respond(`✅ *Correct Answer:* ${correctAnswer}\n\nDid you get it right? Try another trivia!`);
+      }, 10000);
+    } catch (error) {
+      await respond('❌ Sorry, I couldn\'t fetch a trivia question right now. Try again later!');
+    }
+  }
+});
+
+// Register download commands
+commandRegistry.register({
+  name: 'play',
+  aliases: ['song', 'audio', 'mp3'],
+  description: 'Download audio from YouTube',
+  category: 'DOWNLOAD',
+  handler: async (context: CommandContext) => {
+    const { respond, args } = context;
+    
+    if (!args.length) {
+      return await respond('❌ Please provide a song name or YouTube URL.\n\n*Example:* .play Ed Sheeran Perfect');
+    }
+    
+    const query = args.join(' ');
+    await respond(`🔍 Searching for: *${query}*\nPlease wait...`);
+    
+    try {
+      // This is a placeholder - in real implementation you'd integrate with YouTube API
+      await respond(`🎵 *Audio Download*\n\n📝 *Title:* ${query}\n🎧 *Format:* MP3\n⬇️ *Status:* Processing...\n\n⚠️ *Note:* Audio download functionality requires YouTube API integration.`);
+    } catch (error) {
+      await respond('❌ Sorry, audio download is currently unavailable. Please try again later.');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'video',
+  aliases: ['mp4', 'ytdl'],
+  description: 'Download video from YouTube',
+  category: 'DOWNLOAD',
+  handler: async (context: CommandContext) => {
+    const { respond, args } = context;
+    
+    if (!args.length) {
+      return await respond('❌ Please provide a video name or YouTube URL.\n\n*Example:* .video Funny cats compilation');
+    }
+    
+    const query = args.join(' ');
+    await respond(`🔍 Searching for: *${query}*\nPlease wait...`);
+    
+    try {
+      // This is a placeholder - in real implementation you'd integrate with YouTube API
+      await respond(`🎬 *Video Download*\n\n📝 *Title:* ${query}\n📱 *Format:* MP4\n⬇️ *Status:* Processing...\n\n⚠️ *Note:* Video download functionality requires YouTube API integration.`);
+    } catch (error) {
+      await respond('❌ Sorry, video download is currently unavailable. Please try again later.');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'instagram',
+  aliases: ['ig', 'igdl', 'insta'],
+  description: 'Download Instagram video',
+  category: 'DOWNLOAD',
+  handler: async (context: CommandContext) => {
+    const { respond, args } = context;
+    
+    if (!args.length) {
+      return await respond('❌ Please provide an Instagram video URL.\n\n*Example:* .instagram https://www.instagram.com/p/...');
+    }
+    
+    const url = args[0];
+    if (!url.includes('instagram.com')) {
+      return await respond('❌ Please provide a valid Instagram URL.');
+    }
+    
+    await respond(`📸 *Instagram Download*\n\n🔗 *URL:* Processing...\n⬇️ *Status:* Fetching media...\n\n⚠️ *Note:* Instagram download functionality requires API integration.`);
+  }
+});
+
+commandRegistry.register({
+  name: 'facebook',
+  aliases: ['fb', 'fbdl'],
+  description: 'Download Facebook video',
+  category: 'DOWNLOAD',
+  handler: async (context: CommandContext) => {
+    const { respond, args } = context;
+    
+    if (!args.length) {
+      return await respond('❌ Please provide a Facebook video URL.\n\n*Example:* .facebook https://www.facebook.com/...');
+    }
+    
+    const url = args[0];
+    if (!url.includes('facebook.com')) {
+      return await respond('❌ Please provide a valid Facebook URL.');
+    }
+    
+    await respond(`📘 *Facebook Download*\n\n🔗 *URL:* Processing...\n⬇️ *Status:* Fetching media...\n\n⚠️ *Note:* Facebook download functionality requires API integration.`);
+  }
+});
+
+commandRegistry.register({
+  name: 'tiktok',
+  aliases: ['tikdl', 'tiktokdl'],
+  description: 'Download TikTok video',
+  category: 'DOWNLOAD',
+  handler: async (context: CommandContext) => {
+    const { respond, args } = context;
+    
+    if (!args.length) {
+      return await respond('❌ Please provide a TikTok video URL.\n\n*Example:* .tiktok https://tiktok.com/@user/video/...');
+    }
+    
+    const url = args[0];
+    if (!url.includes('tiktok.com')) {
+      return await respond('❌ Please provide a valid TikTok URL.');
+    }
+    
+    await respond(`🎵 *TikTok Download*\n\n🔗 *URL:* Processing...\n⬇️ *Status:* Fetching media...\n\n⚠️ *Note:* TikTok download functionality requires API integration.`);
+  }
+});
+
+// Register general commands
+commandRegistry.register({
+  name: 'participants',
+  aliases: ['members', 'groupmembers'],
+  description: 'List group members (Group only)',
+  category: 'GENERAL',
+  handler: async (context: CommandContext) => {
+    const { respond } = context;
+    await respond('👥 *Group Members*\n\n⚠️ This command works only in group chats.\n\n📋 It will show all group participants when used in a group.');
+  }
+});
+
+// Register system commands
+commandRegistry.register({
+  name: 'uptime',
+  aliases: ['runtime', 'running'],
+  description: 'Check bot uptime',
+  category: 'SYSTEM',
+  handler: async (context: CommandContext) => {
+    const { respond } = context;
+    const uptime = formatUptime(process.uptime());
+    await respond(`⏰ *Bot Uptime:* ${uptime}\n\n✅ TREKKERMD LIFETIME BOT is running smoothly!`);
+  }
+});
+
+commandRegistry.register({
+  name: 'fetch',
+  aliases: ['get', 'download'],
+  description: 'Fetch content from URL',
+  category: 'SYSTEM',
+  handler: async (context: CommandContext) => {
+    const { respond, args } = context;
+    
+    if (!args.length) {
+      return await respond('❌ Please provide a URL.\n\n*Example:* .fetch https://example.com');
+    }
+    
+    const url = args[0];
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return await respond('❌ URL must start with http:// or https://');
+    }
+    
+    await respond(`🔍 *Fetching URL:* ${url}\n\n⚠️ *Note:* Fetch functionality requires additional security implementation.`);
+  }
+});
+
+// Register animation commands
+commandRegistry.register({
+  name: 'happy',
+  aliases: ['smile', 'joy'],
+  description: 'Send happy emoji animation',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { respond } = context;
+    const happyEmojis = ['😃', '😄', '😁', '😊', '😎', '🥳', '😸', '😹', '🌞', '🌈'];
+    const randomEmoji = happyEmojis[Math.floor(Math.random() * happyEmojis.length)];
+    await respond(`${randomEmoji} *Feeling Happy!* ${randomEmoji}\n\n✨ Spread the joy and happiness! ✨`);
+  }
+});
+
+commandRegistry.register({
+  name: 'sad',
+  aliases: ['cry', 'heartbroken'],
+  description: 'Send sad emoji animation',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { respond } = context;
+    const sadEmojis = ['😢', '😭', '💔', '😞', '😔', '🥺', '😿'];
+    const randomEmoji = sadEmojis[Math.floor(Math.random() * sadEmojis.length)];
+    await respond(`${randomEmoji} *Feeling Sad* ${randomEmoji}\n\n💙 Hope you feel better soon! 💙`);
+  }
+});
+
+commandRegistry.register({
+  name: 'angry',
+  aliases: ['mad', 'rage'],
+  description: 'Send angry emoji animation',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { respond } = context;
+    const angryEmojis = ['😡', '😠', '🤬', '😤', '😾'];
+    const randomEmoji = angryEmojis[Math.floor(Math.random() * angryEmojis.length)];
+    await respond(`${randomEmoji} *Feeling Angry!* ${randomEmoji}\n\n🌪️ Take a deep breath and calm down! 🌪️`);
+  }
+});
+
+commandRegistry.register({
+  name: 'love',
+  aliases: ['heart', 'hrt'],
+  description: 'Send love emoji animation',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { respond } = context;
+    const loveEmojis = ['💖', '💗', '💕', '❤️', '💛', '💚', '💙', '💜', '🖤', '🤍', '♥️'];
+    const randomEmoji = loveEmojis[Math.floor(Math.random() * loveEmojis.length)];
+    await respond(`${randomEmoji} *Sending Love!* ${randomEmoji}\n\n💝 Love and peace to everyone! 💝`);
+  }
+});
+
+commandRegistry.register({
+  name: 'truth',
+  aliases: ['truthgame'],
+  description: 'Get a truth question',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { respond } = context;
+    const truthQuestions = [
+      'What\'s the most embarrassing thing you\'ve ever done?',
+      'What\'s your biggest fear?',
+      'What\'s the last lie you told?',
+      'What\'s your biggest secret?',
+      'Who was your first crush?',
+      'What\'s something you\'ve never told anyone?',
+      'What\'s your worst habit?',
+      'What\'s the most childish thing you still do?'
+    ];
+    const randomTruth = truthQuestions[Math.floor(Math.random() * truthQuestions.length)];
+    await respond(`🎯 *Truth Question:*\n\n${randomTruth}\n\n💭 Answer honestly!`);
+  }
+});
+
+commandRegistry.register({
+  name: 'dare',
+  aliases: ['daregame'],
+  description: 'Get a dare challenge',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { respond } = context;
+    const dareQuestions = [
+      'Send a funny selfie to the group',
+      'Do 10 push-ups',
+      'Sing your favorite song',
+      'Dance for 30 seconds',
+      'Tell a joke',
+      'Share an embarrassing story',
+      'Do your best animal impression',
+      'Call a random contact and say something funny'
+    ];
+    const randomDare = dareQuestions[Math.floor(Math.random() * dareQuestions.length)];
+    await respond(`🎯 *Dare Challenge:*\n\n${randomDare}\n\n💪 Are you brave enough?`);
+  }
+});
+
+// Add all the other categories as placeholders for now
+const categoryCommands = {
+  'ANIME': ['anime', 'manga', 'waifu'],
+  'LOGO': ['logo', 'textlogo', 'banner'],
+  'STICKER': ['sticker', 'stick', 's'],
+  'CONVERT': ['convert', 'toimg', 'tovideo'],
+  'GROUP': ['promote', 'demote', 'kick', 'add', 'tagall'],
+  'ADMIN': ['antilink', 'welcome', 'goodbye', 'mute'],
+  'AI': ['gpt', 'ai', 'chatgpt', 'bard'],
+  'TOOLS': ['qr', 'weather', 'translate', 'calculator'],
+  'SEARCH': ['google', 'image', 'lyrics', 'news'],
+  'GAME': ['tictactoe', 'guess', 'riddle', 'math']
+};
+
+// Register placeholder commands for all categories
+Object.entries(categoryCommands).forEach(([category, commands]) => {
+  commands.forEach(cmd => {
+    commandRegistry.register({
+      name: cmd,
+      description: `${cmd} command (coming soon)`,
+      category: category,
+      handler: async (context: CommandContext) => {
+        const { respond } = context;
+        await respond(`🔧 *${cmd.toUpperCase()} Command*\n\n⚠️ This feature is coming soon!\n\n📝 *Category:* ${category}\n🚀 Stay tuned for updates!`);
+      }
+    });
+  });
 });
 
 export { commandRegistry };
