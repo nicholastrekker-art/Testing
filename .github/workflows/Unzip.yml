@@ -18,11 +18,14 @@ jobs:
       - name: Unzip the archive
         run: unzip -o BotDataBase.zip
 
-      - name: Move contents to root (excluding .github) and remove folder
+      - name: Move contents to root (excluding .git and .github)
         run: |
           shopt -s dotglob extglob  # include hidden files & extended globbing
-          mv BotDataBase/!(.github) .
-          rm -rf BotDataBase
+          EXTRACTED_DIR=$(find . -mindepth 1 -maxdepth 1 -type d ! -name ".git" ! -name ".github" | head -n 1)
+          echo "Detected extracted folder: $EXTRACTED_DIR"
+          mv "$EXTRACTED_DIR"/!(.git|.github) .
+          rm -rf "$EXTRACTED_DIR"
+
       - name: Configure Git
         run: |
           git config user.name "github-actions[bot]"
@@ -31,5 +34,5 @@ jobs:
       - name: Commit and push unzipped content
         run: |
           git add .
-          git commit -m "Unzipped and moved contents of BWM-XMD-QUANTUM-main.zip to root (excluding .github)"
+          git commit -m "Unzipped and moved contents of archive to root (excluding .git and .github)" || echo "No changes to commit"
           git push
