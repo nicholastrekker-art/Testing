@@ -399,13 +399,22 @@ export class WhatsAppBot {
         auth: state,
         printQRInTerminal: false, // Disable QR printing to avoid conflicts
         logger: {
-          level: 'silent', // Reduce logging conflicts between bots
-          child: () => ({ level: 'silent' }),
-          info: () => {},
-          error: () => {},
-          warn: () => {},
-          debug: () => {},
+          level: 'silent',
+          child: () => ({
+            level: 'silent',
+            child: () => ({ level: 'silent' }),
+            trace: () => {},
+            debug: () => {},
+            info: () => {},
+            warn: () => {},
+            error: () => {},
+            fatal: () => {}
+          }),
           trace: () => {},
+          debug: () => {},
+          info: () => {},
+          warn: () => {},
+          error: () => {},
           fatal: () => {}
         },
         // Add unique user agent to prevent conflicts
