@@ -40,6 +40,7 @@ export interface IStorage {
   
   // Activity methods
   getActivities(botInstanceId?: string, limit?: number): Promise<Activity[]>;
+  getAllActivities(limit?: number): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
   
   // Group methods
@@ -54,6 +55,15 @@ export interface IStorage {
     activeBots: number;
     messagesCount: number;
     commandsCount: number;
+  }>;
+  
+  getSystemStats(): Promise<{
+    totalBots: number;
+    onlineBots: number;
+    offlineBots: number;
+    totalMessages: number;
+    totalCommands: number;
+    recentActivities: number;
   }>;
 }
 
@@ -217,6 +227,37 @@ export class DatabaseStorage implements IStorage {
       activeBots: activeBotsResult.count || 0,
       messagesCount: messagesResult.sum || 0,
       commandsCount: commandsResult.sum || 0,
+    };
+  }
+
+  async getAllActivities(limit = 100): Promise<Activity[]> {
+    return await db.select().from(activities)
+      .orderBy(desc(activities.createdAt))
+      .limit(limit);
+  }
+
+  async getSystemStats(): Promise<{
+    totalBots: number;
+    onlineBots: number;
+    offlineBots: number;
+    totalMessages: number;
+    totalCommands: number;
+    recentActivities: number;
+  }> {
+    const [totalBotsResult] = await db.select({ count: sql<number>`count(*)` }).from(botInstances);
+    const [onlineBotsResult] = await db.select({ count: sql<number>`count(*)` }).from(botInstances).where(eq(botInstances.status, "online"));
+    const [offlineBotsResult] = await db.select({ count: sql<number>`count(*)` }).from(botInstances).where(eq(botInstances.status, "offline"));
+    const [messagesResult] = await db.select({ sum: sql<number>`sum(${botInstances.messagesCount})` }).from(botInstances);
+    const [commandsResult] = await db.select({ sum: sql<number>`sum(${botInstances.commandsCount})` }).from(botInstances);
+    const [activitiesResult] = await db.select({ count: sql<number>`count(*)` }).from(activities);
+    
+    return {
+      totalBots: totalBotsResult.count || 0,
+      onlineBots: onlineBotsResult.count || 0,
+      offlineBots: offlineBotsResult.count || 0,
+      totalMessages: messagesResult.sum || 0,
+      totalCommands: commandsResult.sum || 0,
+      recentActivities: activitiesResult.count || 0,
     };
   }
 }

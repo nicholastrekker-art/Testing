@@ -16,6 +16,10 @@ const navigationItems = [
   { href: "/settings", label: "Settings", icon: "fas fa-cog" },
 ];
 
+const adminNavigationItems = [
+  { href: "/admin", label: "Admin Console", icon: "fas fa-shield-alt" },
+];
+
 export default function Sidebar() {
   const [location] = useLocation();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -53,6 +57,34 @@ export default function Sidebar() {
             </a>
           </Link>
         ))}
+        
+        {/* Admin-only navigation */}
+        {isAdmin && (
+          <>
+            <div className="border-t border-border my-4"></div>
+            <div className="px-3 py-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Administration
+              </p>
+            </div>
+            {adminNavigationItems.map((item) => (
+              <Link key={item.href} href={item.href}>
+                <a
+                  className={cn(
+                    "flex items-center space-x-3 px-3 py-2 rounded-md transition-colors",
+                    location === item.href
+                      ? "bg-red-500/10 text-red-600 border border-red-500/20"
+                      : "hover:bg-red-500/5 text-muted-foreground hover:text-red-600"
+                  )}
+                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                >
+                  <i className={`${item.icon} w-5`}></i>
+                  <span>{item.label}</span>
+                </a>
+              </Link>
+            ))}
+          </>
+        )}
       </nav>
       
       {/* Validate Credentials Button (always available) */}

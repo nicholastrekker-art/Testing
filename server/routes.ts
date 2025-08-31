@@ -408,5 +408,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin-only routes
+  app.get("/api/admin/bot-instances", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const botInstances = await storage.getAllBotInstances();
+      res.json(botInstances);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch bot instances" });
+    }
+  });
+
+  app.get("/api/admin/activities", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 100;
+      const activities = await storage.getAllActivities(limit);
+      res.json(activities);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch activities" });
+    }
+  });
+
+  app.get("/api/admin/stats", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const stats = await storage.getSystemStats();
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  app.post("/api/admin/bot-instances/:id/start", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const botId = req.params.id;
+      const botInstance = await storage.getBotInstance(botId);
+      
+      if (!botInstance) {
+        return res.status(404).json({ message: "Bot instance not found" });
+      }
+
+      await botManager.startBot(botId);
+      broadcast({ type: 'BOT_STATUS_CHANGED', data: { botId, status: 'loading' } });
+      
+      res.json({ success: true, message: "Bot start initiated" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to start bot" });
+    }
+  });
+
+  app.post("/api/admin/bot-instances/:id/stop", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const botId = req.params.id;
+      const botInstance = await storage.getBotInstance(botId);
+      
+      if (!botInstance) {
+        return res.status(404).json({ message: "Bot instance not found" });
+      }
+
+      await botManager.stopBot(botId);
+      broadcast({ type: 'BOT_STATUS_CHANGED', data: { botId, status: 'offline' } });
+      
+      res.json({ success: true, message: "Bot stopped successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to stop bot" });
+    }
+  });
+
+  app.delete("/api/admin/bot-instances/:id", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const botId = req.params.id;
+      const botInstance = await storage.getBotInstance(botId);
+      
+      if (!botInstance) {
+        return res.status(404).json({ message: "Bot instance not found" });
+      }
+
+      // Stop the bot first
+      await botManager.destroyBot(botId);
+      
+      // Delete from database
+      await storage.deleteBotInstance(botId);
+      
+      broadcast({ type: 'BOT_DELETED', data: { botId } });
+      
+      res.json({ success: true, message: "Bot deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete bot" });
+    }
+  });
+
   return httpServer;
 }

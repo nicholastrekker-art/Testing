@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Dashboard from "@/pages/dashboard";
 import BotInstances from "@/pages/bot-instances";
 import Commands from "@/pages/commands";
+import AdminConsole from "@/pages/admin-console";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/sidebar";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -19,6 +20,7 @@ function Router() {
           <Route path="/" component={Dashboard} />
           <Route path="/bot-instances" component={BotInstances} />
           <Route path="/commands" component={Commands} />
+          <Route path="/admin" component={AdminConsole} />
           <Route component={NotFound} />
         </Switch>
       </main>
