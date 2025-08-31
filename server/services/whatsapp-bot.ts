@@ -1,133 +1,134 @@
-import { Client, Message } from 'whatsapp-web.js';
+import makeWASocket, { 
+  DisconnectReason, 
+  ConnectionState, 
+  useMultiFileAuthState,
+  WAMessage,
+  BaileysEventMap,
+  proto
+} from '@whiskeysockets/baileys';
+import { Boom } from '@hapi/boom';
 import { storage } from '../storage';
 import { generateChatGPTResponse } from './openai';
 import type { BotInstance } from '@shared/schema';
+import { join } from 'path';
+import { writeFileSync, mkdirSync, existsSync } from 'fs';
 
 export class WhatsAppBot {
-  private client: Client;
+  private sock: any;
   private botInstance: BotInstance;
   private isRunning: boolean = false;
+  private authDir: string;
 
   constructor(botInstance: BotInstance) {
     this.botInstance = botInstance;
+    this.authDir = join(process.cwd(), 'auth', botInstance.id);
     
-    // Initialize client with credentials if available
-    const clientOptions: any = {
-      puppeteer: {
-        headless: true,
-        executablePath: '/nix/store/qa9cnw4v5xkxyip6mb9kxqfq1z4x2dx1-chromium-138.0.7204.100/bin/chromium',
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-accelerated-2d-canvas',
-          '--no-first-run',
-          '--no-zygote',
-          '--single-process',
-          '--disable-gpu',
-          '--disable-background-timer-throttling',
-          '--disable-backgrounding-occluded-windows',
-          '--disable-renderer-backgrounding'
-        ]
-      }
-    };
-
-    // If credentials are provided, use them to restore session (Baileys format)
-    if (botInstance.credentials) {
-      clientOptions.session = botInstance.credentials;
-      console.log(`Bot ${this.botInstance.name}: Using provided Baileys session credentials`);
+    // Create auth directory if it doesn't exist
+    if (!existsSync(this.authDir)) {
+      mkdirSync(this.authDir, { recursive: true });
     }
-    
-    this.client = new Client(clientOptions);
-    this.setupEventHandlers();
+
+    // If credentials are provided, save them to the auth directory
+    if (botInstance.credentials) {
+      this.saveCredentialsToAuthDir(botInstance.credentials);
+    }
   }
 
-  private setupEventHandlers() {
-    this.client.on('qr', async (qr) => {
-      console.log(`QR Code for bot ${this.botInstance.name}:`, qr);
-      await storage.updateBotInstance(this.botInstance.id, { status: 'qr_code' });
-      await storage.createActivity({
-        botInstanceId: this.botInstance.id,
-        type: 'qr_code',
-        description: 'QR Code generated - Scan to connect WhatsApp',
-        metadata: { qr }
-      });
-    });
-
-    this.client.on('authenticated', async () => {
-      console.log(`Bot ${this.botInstance.name} authenticated successfully!`);
-      await storage.updateBotInstance(this.botInstance.id, { status: 'authenticated' });
-      await storage.createActivity({
-        botInstanceId: this.botInstance.id,
-        type: 'authenticated',
-        description: 'WhatsApp authenticated successfully'
-      });
-    });
-
-    this.client.on('auth_failure', async (message) => {
-      console.log(`Bot ${this.botInstance.name} authentication failed:`, message);
-      await storage.updateBotInstance(this.botInstance.id, { status: 'auth_failed' });
-      await storage.createActivity({
-        botInstanceId: this.botInstance.id,
-        type: 'error',
-        description: `Authentication failed: ${message}`
-      });
-      this.isRunning = false;
-    });
-
-    this.client.on('ready', async () => {
-      console.log(`Bot ${this.botInstance.name} is ready!`);
-      await storage.updateBotInstance(this.botInstance.id, { 
-        status: 'online',
-        lastActivity: new Date()
-      });
+  private saveCredentialsToAuthDir(credentials: any) {
+    try {
+      console.log(`Bot ${this.botInstance.name}: Saving Baileys session credentials`);
       
-      await storage.createActivity({
-        botInstanceId: this.botInstance.id,
-        type: 'status_change',
-        description: 'Bot connected and ready - WELCOME TO TREKKERMD LIFETIME BOT',
-      });
+      // Save the main creds.json file
+      writeFileSync(join(this.authDir, 'creds.json'), JSON.stringify(credentials, null, 2));
       
-      // Send welcome message to owner/admin
-      try {
-        const welcomeMessage = `🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot "${this.botInstance.name}" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀`;
+      console.log(`Bot ${this.botInstance.name}: Baileys credentials saved successfully`);
+    } catch (error) {
+      console.error(`Bot ${this.botInstance.name}: Error saving credentials:`, error);
+    }
+  }
+
+  private async setupEventHandlers() {
+    this.sock.ev.on('connection.update', async (update: Partial<ConnectionState>) => {
+      const { connection, lastDisconnect, qr } = update;
+      
+      if (qr) {
+        console.log(`Bot ${this.botInstance.name}: QR Code generated`);
+        await storage.updateBotInstance(this.botInstance.id, { status: 'qr_code' });
+        await storage.createActivity({
+          botInstanceId: this.botInstance.id,
+          type: 'qr_code',
+          description: 'QR Code generated - Scan to connect WhatsApp',
+          metadata: { qr }
+        });
+      }
+      
+      if (connection === 'close') {
+        const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
+        console.log(`Bot ${this.botInstance.name}: Connection closed due to`, lastDisconnect?.error, ', reconnecting:', shouldReconnect);
         
-        console.log('TREKKERMD LIFETIME BOT READY:', welcomeMessage);
-      } catch (error) {
-        console.log('Welcome message setup complete');
+        this.isRunning = false;
+        await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
+        await storage.createActivity({
+          botInstanceId: this.botInstance.id,
+          type: 'status_change',
+          description: 'Bot disconnected'
+        });
+        
+        if (shouldReconnect) {
+          // Auto-reconnect
+          setTimeout(() => this.start(), 5000);
+        }
+      } else if (connection === 'open') {
+        console.log(`Bot ${this.botInstance.name} is ready! 🎉 WELCOME TO TREKKERMD LIFETIME BOT`);
+        this.isRunning = true;
+        
+        await storage.updateBotInstance(this.botInstance.id, { 
+          status: 'online',
+          lastActivity: new Date()
+        });
+        
+        await storage.createActivity({
+          botInstanceId: this.botInstance.id,
+          type: 'status_change',
+          description: '🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot connected and ready!'
+        });
+
+        // Send welcome message 
+        try {
+          const welcomeMessage = `🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot "${this.botInstance.name}" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀`;
+          
+          console.log('TREKKERMD LIFETIME BOT READY:', welcomeMessage);
+        } catch (error) {
+          console.log('Welcome message setup complete');
+        }
+      } else if (connection === 'connecting') {
+        await storage.updateBotInstance(this.botInstance.id, { status: 'loading' });
+        await storage.createActivity({
+          botInstanceId: this.botInstance.id,
+          type: 'status_change',
+          description: 'Bot connecting to WhatsApp...'
+        });
       }
     });
 
-    this.client.on('disconnected', async (reason) => {
-      console.log(`Bot ${this.botInstance.name} disconnected:`, reason);
-      this.isRunning = false;
-      await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
-      
-      await storage.createActivity({
-        botInstanceId: this.botInstance.id,
-        type: 'status_change',
-        description: `Bot disconnected: ${reason}`,
-      });
-    });
-
-    this.client.on('loading_screen', async (percent, message) => {
-      console.log(`Bot ${this.botInstance.name} loading:`, percent, message);
-      await storage.createActivity({
-        botInstanceId: this.botInstance.id,
-        type: 'loading',
-        description: `Loading WhatsApp: ${percent}% - ${message}`
-      });
-    });
-
-    this.client.on('message', async (message) => {
-      await this.handleMessage(message);
+    this.sock.ev.on('messages.upsert', async (m: { messages: WAMessage[], type: string }) => {
+      if (m.type === 'notify') {
+        for (const message of m.messages) {
+          await this.handleMessage(message);
+        }
+      }
     });
   }
 
-  private async handleMessage(message: Message) {
+  private async handleMessage(message: WAMessage) {
     try {
-      const messageBody = message.body.trim();
+      if (!message.message) return;
       
+      const messageText = message.message.conversation || 
+                         message.message.extendedTextMessage?.text || '';
+      
+      if (!messageText) return;
+
       // Update message count
       await storage.updateBotInstance(this.botInstance.id, {
         messagesCount: (this.botInstance.messagesCount || 0) + 1,
@@ -135,8 +136,8 @@ export class WhatsAppBot {
       });
 
       // Handle commands (prefix: .)
-      if (messageBody.startsWith('.')) {
-        await this.handleCommand(message, messageBody);
+      if (messageText.startsWith('.')) {
+        await this.handleCommand(message, messageText);
         return;
       }
 
@@ -145,7 +146,7 @@ export class WhatsAppBot {
 
       // ChatGPT integration for non-command messages
       if (this.botInstance.chatgptEnabled) {
-        await this.handleChatGPTResponse(message);
+        await this.handleChatGPTResponse(message, messageText);
       }
 
     } catch (error) {
@@ -158,7 +159,7 @@ export class WhatsAppBot {
     }
   }
 
-  private async handleCommand(message: Message, commandText: string) {
+  private async handleCommand(message: WAMessage, commandText: string) {
     const commandName = commandText.substring(1).split(' ')[0];
     const commands = await storage.getCommands(this.botInstance.id);
     const globalCommands = await storage.getCommands(); // Global commands
@@ -174,7 +175,7 @@ export class WhatsAppBot {
         botInstanceId: this.botInstance.id,
         type: 'command',
         description: `Executed command: .${commandName}`,
-        metadata: { command: commandName, user: message.from }
+        metadata: { command: commandName, user: message.key.remoteJid }
       });
 
       let response = command.response || `Command .${commandName} executed successfully.`;
@@ -184,25 +185,24 @@ export class WhatsAppBot {
         response = await generateChatGPTResponse(fullMessage, `User executed command: ${commandName}`);
       }
 
-      if (response) {
-        await message.reply(response);
+      if (response && message.key.remoteJid) {
+        await this.sock.sendMessage(message.key.remoteJid, { text: response });
       }
     }
   }
 
-  private async handleAutoFeatures(message: Message) {
-    // Auto-like status updates
-    if (this.botInstance.autoLike && message.hasMedia) {
-      // In a real implementation, you'd check if it's a status and like it
-      console.log(`Auto-liking status from ${message.from}`);
-    }
-
+  private async handleAutoFeatures(message: WAMessage) {
     // Auto-react to messages
-    if (this.botInstance.autoReact) {
+    if (this.botInstance.autoReact && message.key.remoteJid) {
       const reactions = ['👍', '❤️', '😊', '🔥', '👏'];
       const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
       try {
-        await message.react(randomReaction);
+        await this.sock.sendMessage(message.key.remoteJid, {
+          react: {
+            text: randomReaction,
+            key: message.key
+          }
+        });
       } catch (error) {
         console.log('Could not react to message:', error);
       }
@@ -210,31 +210,33 @@ export class WhatsAppBot {
 
     // Typing indicators
     if (this.botInstance.typingMode === 'typing' || this.botInstance.typingMode === 'both') {
-      const chat = await message.getChat();
-      await chat.sendStateTyping();
+      if (message.key.remoteJid) {
+        await this.sock.sendPresenceUpdate('composing', message.key.remoteJid);
+      }
     }
 
     if (this.botInstance.typingMode === 'recording' || this.botInstance.typingMode === 'both') {
-      const chat = await message.getChat();
-      await chat.sendStateRecording();
+      if (message.key.remoteJid) {
+        await this.sock.sendPresenceUpdate('recording', message.key.remoteJid);
+      }
     }
   }
 
-  private async handleChatGPTResponse(message: Message) {
+  private async handleChatGPTResponse(message: WAMessage, messageText: string) {
     try {
       const response = await generateChatGPTResponse(
-        message.body,
-        `Bot: ${this.botInstance.name}, User: ${message.from}`
+        messageText,
+        `Bot: ${this.botInstance.name}, User: ${message.key.remoteJid}`
       );
       
-      if (response) {
-        await message.reply(response);
+      if (response && message.key.remoteJid) {
+        await this.sock.sendMessage(message.key.remoteJid, { text: response });
         
         await storage.createActivity({
           botInstanceId: this.botInstance.id,
           type: 'chatgpt_response',
           description: 'Generated ChatGPT response',
-          metadata: { message: message.body.substring(0, 100) }
+          metadata: { message: messageText.substring(0, 100) }
         });
       }
     } catch (error) {
@@ -249,21 +251,32 @@ export class WhatsAppBot {
     }
 
     try {
-      console.log(`Starting bot ${this.botInstance.name}...`);
-      this.isRunning = true;
+      console.log(`Starting Baileys bot ${this.botInstance.name}...`);
       
       await storage.updateBotInstance(this.botInstance.id, { status: 'loading' });
       await storage.createActivity({
         botInstanceId: this.botInstance.id,
         type: 'status_change',
-        description: 'Bot startup initiated - TREKKERMD LIFETIME BOT initializing...'
+        description: 'Bot startup initiated - TREKKERMD LIFETIME BOT initializing with Baileys...'
       });
+
+      // Use auth state from the saved credentials
+      const { state, saveCreds } = await useMultiFileAuthState(this.authDir);
       
-      await this.client.initialize();
-      console.log(`Bot ${this.botInstance.name} initialization completed`);
+      this.sock = makeWASocket({
+        auth: state,
+        printQRInTerminal: true
+      });
+
+      // Save credentials when they change
+      this.sock.ev.on('creds.update', saveCreds);
+      
+      await this.setupEventHandlers();
+      
+      console.log(`Baileys bot ${this.botInstance.name} initialization completed`);
       
     } catch (error) {
-      console.error(`Error starting bot ${this.botInstance.name}:`, error);
+      console.error(`Error starting Baileys bot ${this.botInstance.name}:`, error);
       this.isRunning = false;
       await storage.updateBotInstance(this.botInstance.id, { status: 'error' });
       await storage.createActivity({
@@ -281,9 +294,16 @@ export class WhatsAppBot {
     }
 
     try {
-      await this.client.destroy();
+      if (this.sock) {
+        await this.sock.end();
+      }
       this.isRunning = false;
       await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
+      await storage.createActivity({
+        botInstanceId: this.botInstance.id,
+        type: 'status_change',
+        description: 'TREKKERMD LIFETIME BOT stopped'
+      });
     } catch (error) {
       console.error(`Error stopping bot ${this.botInstance.name}:`, error);
     }
