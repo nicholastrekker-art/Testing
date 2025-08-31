@@ -1,0 +1,732 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bot Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    popover: {
+                        DEFAULT: "var(--popover)",
+                        foreground: "var(--popover-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                },
+                fontFamily: {
+                    sans: ["Inter", "system-ui", "sans-serif"],
+                }
+            },
+        }
+    };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --background: hsl(224 71% 4%);
+            --foreground: hsl(213 31% 91%);
+            --card: hsl(224 71% 4%);
+            --card-foreground: hsl(213 31% 91%);
+            --popover: hsl(224 71% 4%);
+            --popover-foreground: hsl(213 31% 91%);
+            --primary: hsl(217 91% 60%);
+            --primary-foreground: hsl(222 84% 5%);
+            --secondary: hsl(215 25% 27%);
+            --secondary-foreground: hsl(210 40% 98%);
+            --muted: hsl(215 28% 17%);
+            --muted-foreground: hsl(217 10% 64%);
+            --accent: hsl(217 91% 60%);
+            --accent-foreground: hsl(222 84% 5%);
+            --destructive: hsl(0 63% 31%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(215 28% 17%);
+            --input: hsl(215 28% 17%);
+            --ring: hsl(217 91% 60%);
+            --radius: 0.5rem;
+        }
+        
+        .status-online { @apply bg-green-500/20 text-green-400 border-green-500/30; }
+        .status-offline { @apply bg-red-500/20 text-red-400 border-red-500/30; }
+        .status-error { @apply bg-yellow-500/20 text-yellow-400 border-yellow-500/30; }
+        .status-loading { @apply bg-blue-500/20 text-blue-400 border-blue-500/30; }
+        
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground font-sans">
+    <!-- @COMPONENT: MainLayout -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- @COMPONENT: Sidebar -->
+        <aside class="w-64 bg-card border-r border-border flex flex-col">
+            <div class="p-6 border-b border-border">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fab fa-whatsapp text-primary-foreground text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-semibold text-foreground">Bot Manager</h1>
+                        <p class="text-sm text-muted-foreground">WhatsApp Automation</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md bg-primary/10 text-primary border border-primary/20">
+                    <i class="fas fa-tachometer-alt w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                    <i class="fas fa-robot w-5"></i>
+                    <span>Bot Instances</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                    <i class="fas fa-terminal w-5"></i>
+                    <span>Commands</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                    <i class="fas fa-brain w-5"></i>
+                    <span>ChatGPT Integration</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                    <i class="fas fa-users w-5"></i>
+                    <span>Group Management</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                    <i class="fas fa-cog w-5"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            
+            <div class="p-4 border-t border-border">
+                <div class="flex items-center space-x-3 px-3 py-2">
+                    <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-primary-foreground text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-foreground" data-bind="user.name">Admin User</p>
+                        <p class="text-xs text-muted-foreground">Administrator</p>
+                    </div>
+                    <button class="text-muted-foreground hover:text-foreground">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+        <!-- @END_COMPONENT: Sidebar -->
+        
+        <!-- @COMPONENT: MainContent -->
+        <main class="flex-1 overflow-auto">
+            <!-- Header -->
+            <header class="bg-card border-b border-border px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-foreground">Dashboard</h2>
+                        <p class="text-muted-foreground">Manage your WhatsApp bot instances</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button class="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors flex items-center space-x-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Add New Bot</span>
+                        </button>
+                        <div class="relative">
+                            <button class="w-10 h-10 bg-muted rounded-md flex items-center justify-center hover:bg-muted/80 transition-colors">
+                                <i class="fas fa-bell text-muted-foreground"></i>
+                            </button>
+                            <span class="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full"></span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Statistics Cards -->
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-card border border-border rounded-lg p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-muted-foreground text-sm">Total Bots</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="stats.totalBots">12</p>
+                            </div>
+                            <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-robot text-primary text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center space-x-2">
+                            <span class="text-green-400 text-sm">+2</span>
+                            <span class="text-muted-foreground text-sm">from last week</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card border border-border rounded-lg p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-muted-foreground text-sm">Active Bots</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="stats.activeBots">9</p>
+                            </div>
+                            <div class="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-400 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center space-x-2">
+                            <span class="text-green-400 text-sm">75%</span>
+                            <span class="text-muted-foreground text-sm">uptime</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card border border-border rounded-lg p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-muted-foreground text-sm">Messages Today</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="stats.messagesCount">1,247</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-comment text-blue-400 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center space-x-2">
+                            <span class="text-green-400 text-sm">+12.5%</span>
+                            <span class="text-muted-foreground text-sm">vs yesterday</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card border border-border rounded-lg p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-muted-foreground text-sm">Commands Executed</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="stats.commandsCount">435</p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-terminal text-purple-400 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center space-x-2">
+                            <span class="text-green-400 text-sm">+8.2%</span>
+                            <span class="text-muted-foreground text-sm">from last hour</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bot Instances Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+                    <!-- @MAP: botInstances.map(bot => ( -->
+                    <div class="bg-card border border-border rounded-lg p-6" data-mock="true">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
+                                    <i class="fab fa-whatsapp text-primary-foreground text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-foreground" data-bind="bot.name">Bailey Bot #1</h3>
+                                    <p class="text-sm text-muted-foreground" data-bind="bot.phone">+1 234 567 8901</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-1 rounded-full text-xs border status-online">Online</span>
+                                <button class="w-8 h-8 bg-muted rounded-md flex items-center justify-center hover:bg-muted/80">
+                                    <i class="fas fa-ellipsis-v text-muted-foreground"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3 mb-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-muted-foreground">Auto Like</span>
+                                <div class="w-10 h-5 bg-primary rounded-full flex items-center justify-end px-1">
+                                    <div class="w-3 h-3 bg-white rounded-full"></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-muted-foreground">Auto View Status</span>
+                                <div class="w-10 h-5 bg-primary rounded-full flex items-center justify-end px-1">
+                                    <div class="w-3 h-3 bg-white rounded-full"></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-muted-foreground">Auto React</span>
+                                <div class="w-10 h-5 bg-muted rounded-full flex items-center justify-start px-1">
+                                    <div class="w-3 h-3 bg-muted-foreground rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="text-center">
+                                <p class="text-lg font-semibold text-foreground" data-bind="bot.stats.messages">347</p>
+                                <p class="text-xs text-muted-foreground">Messages</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-lg font-semibold text-foreground" data-bind="bot.stats.commands">89</p>
+                                <p class="text-xs text-muted-foreground">Commands</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-primary text-primary-foreground py-2 px-3 rounded-md text-sm hover:bg-primary/90 transition-colors" data-event="click:manageBotInstance">
+                                Manage
+                            </button>
+                            <button class="bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm hover:bg-muted/80 transition-colors">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            <button class="bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm hover:bg-muted/80 transition-colors">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                    
+                    <!-- Duplicate cards with different status examples -->
+                    <div class="bg-card border border-border rounded-lg p-6" data-mock="true">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                                    <i class="fab fa-whatsapp text-muted-foreground text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-foreground">Bailey Bot #2</h3>
+                                    <p class="text-sm text-muted-foreground">+1 234 567 8902</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-1 rounded-full text-xs border status-offline">Offline</span>
+                                <button class="w-8 h-8 bg-muted rounded-md flex items-center justify-center hover:bg-muted/80">
+                                    <i class="fas fa-ellipsis-v text-muted-foreground"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3 mb-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-muted-foreground">Auto Like</span>
+                                <div class="w-10 h-5 bg-muted rounded-full flex items-center justify-start px-1">
+                                    <div class="w-3 h-3 bg-muted-foreground rounded-full"></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-muted-foreground">Auto View Status</span>
+                                <div class="w-10 h-5 bg-primary rounded-full flex items-center justify-end px-1">
+                                    <div class="w-3 h-3 bg-white rounded-full"></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-muted-foreground">Auto React</span>
+                                <div class="w-10 h-5 bg-primary rounded-full flex items-center justify-end px-1">
+                                    <div class="w-3 h-3 bg-white rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="text-center">
+                                <p class="text-lg font-semibold text-foreground">0</p>
+                                <p class="text-xs text-muted-foreground">Messages</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-lg font-semibold text-foreground">0</p>
+                                <p class="text-xs text-muted-foreground">Commands</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-green-600 text-white py-2 px-3 rounded-md text-sm hover:bg-green-700 transition-colors">
+                                Start
+                            </button>
+                            <button class="bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm hover:bg-muted/80 transition-colors">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            <button class="bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm hover:bg-muted/80 transition-colors">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-card border border-border rounded-lg p-6" data-mock="true">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                                    <i class="fab fa-whatsapp text-yellow-400 text-xl pulse-animation"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-foreground">Bailey Bot #3</h3>
+                                    <p class="text-sm text-muted-foreground">+1 234 567 8903</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2 py-1 rounded-full text-xs border status-error">Error</span>
+                                <button class="w-8 h-8 bg-muted rounded-md flex items-center justify-center hover:bg-muted/80">
+                                    <i class="fas fa-ellipsis-v text-muted-foreground"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-destructive/10 border border-destructive/20 rounded-md p-3 mb-4">
+                            <p class="text-sm text-destructive">Connection timeout - attempting restart</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="text-center">
+                                <p class="text-lg font-semibold text-foreground">152</p>
+                                <p class="text-xs text-muted-foreground">Messages</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-lg font-semibold text-foreground">34</p>
+                                <p class="text-xs text-muted-foreground">Commands</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-destructive text-destructive-foreground py-2 px-3 rounded-md text-sm hover:bg-destructive/90 transition-colors">
+                                Restart
+                            </button>
+                            <button class="bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm hover:bg-muted/80 transition-colors">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            <button class="bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm hover:bg-muted/80 transition-colors">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Add Bot Card -->
+                    <div class="bg-card border border-dashed border-border rounded-lg p-6 flex flex-col items-center justify-center min-h-[300px] hover:border-primary/50 transition-colors cursor-pointer" data-event="click:showAddBotModal">
+                        <div class="w-16 h-16 bg-muted rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-plus text-muted-foreground text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-foreground mb-2">Add New Bot</h3>
+                        <p class="text-muted-foreground text-center mb-4">Upload credentials and configure a new WhatsApp bot instance</p>
+                        <button class="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors">
+                            Upload creds.json
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Management Sections -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Command Management -->
+                    <div class="bg-card border border-border rounded-lg">
+                        <div class="p-6 border-b border-border">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-lg font-semibold text-foreground">Command Management</h3>
+                                <button class="bg-primary text-primary-foreground px-3 py-1 rounded-md text-sm hover:bg-primary/90 transition-colors">
+                                    Add Command
+                                </button>
+                            </div>
+                            <p class="text-muted-foreground text-sm mt-1">Manage bot commands with prefix (.)</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="space-y-3">
+                                <!-- @MAP: commands.slice(0, 5).map(command => ( -->
+                                <div class="flex items-center justify-between p-3 bg-muted/50 rounded-md" data-mock="true">
+                                    <div class="flex items-center space-x-3">
+                                        <code class="bg-primary/10 text-primary px-2 py-1 rounded text-sm">.help</code>
+                                        <span class="text-sm text-foreground">Show available commands</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded">Active</span>
+                                        <button class="text-muted-foreground hover:text-foreground">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                                
+                                <div class="flex items-center justify-between p-3 bg-muted/50 rounded-md" data-mock="true">
+                                    <div class="flex items-center space-x-3">
+                                        <code class="bg-primary/10 text-primary px-2 py-1 rounded text-sm">.gpt</code>
+                                        <span class="text-sm text-foreground">ChatGPT integration</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded">Active</span>
+                                        <button class="text-muted-foreground hover:text-foreground">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between p-3 bg-muted/50 rounded-md" data-mock="true">
+                                    <div class="flex items-center space-x-3">
+                                        <code class="bg-primary/10 text-primary px-2 py-1 rounded text-sm">.status</code>
+                                        <span class="text-sm text-foreground">Check bot status</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs text-green-400 bg-green-500/10 px-2 py-1 rounded">Active</span>
+                                        <button class="text-muted-foreground hover:text-foreground">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between p-3 bg-muted/50 rounded-md" data-mock="true">
+                                    <div class="flex items-center space-x-3">
+                                        <code class="bg-primary/10 text-primary px-2 py-1 rounded text-sm">.mute</code>
+                                        <span class="text-sm text-foreground">Mute group notifications</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xs text-red-400 bg-red-500/10 px-2 py-1 rounded">Inactive</span>
+                                        <button class="text-muted-foreground hover:text-foreground">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center pt-3">
+                                    <button class="text-primary hover:text-primary/80 text-sm font-medium">
+                                        View All 300+ Commands
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity -->
+                    <div class="bg-card border border-border rounded-lg">
+                        <div class="p-6 border-b border-border">
+                            <h3 class="text-lg font-semibold text-foreground">Recent Activity</h3>
+                            <p class="text-muted-foreground text-sm mt-1">Live activity across all bot instances</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="space-y-4">
+                                <!-- @MAP: recentActivity.map(activity => ( -->
+                                <div class="flex items-start space-x-3" data-mock="true">
+                                    <div class="w-8 h-8 bg-green-500/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-comment text-green-400 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm text-foreground">
+                                            <span class="font-medium" data-bind="activity.bot">Bailey Bot #1</span> processed command
+                                            <code class="bg-primary/10 text-primary px-1 rounded text-xs" data-bind="activity.command">.help</code>
+                                        </p>
+                                        <p class="text-xs text-muted-foreground" data-bind="activity.time">2 minutes ago</p>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                                
+                                <div class="flex items-start space-x-3" data-mock="true">
+                                    <div class="w-8 h-8 bg-blue-500/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-heart text-blue-400 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm text-foreground">
+                                            <span class="font-medium">Bailey Bot #2</span> auto-liked 3 status updates
+                                        </p>
+                                        <p class="text-xs text-muted-foreground">5 minutes ago</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start space-x-3" data-mock="true">
+                                    <div class="w-8 h-8 bg-yellow-500/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-exclamation-triangle text-yellow-400 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm text-foreground">
+                                            <span class="font-medium">Bailey Bot #3</span> connection error - restarting
+                                        </p>
+                                        <p class="text-xs text-muted-foreground">8 minutes ago</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start space-x-3" data-mock="true">
+                                    <div class="w-8 h-8 bg-purple-500/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-brain text-purple-400 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm text-foreground">
+                                            <span class="font-medium">Bailey Bot #1</span> ChatGPT response generated
+                                        </p>
+                                        <p class="text-xs text-muted-foreground">12 minutes ago</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start space-x-3" data-mock="true">
+                                    <div class="w-8 h-8 bg-green-500/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-users text-green-400 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm text-foreground">
+                                            <span class="font-medium">Bailey Bot #1</span> joined new group "Tech Support"
+                                        </p>
+                                        <p class="text-xs text-muted-foreground">15 minutes ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: MainLayout -->
+    
+    <!-- Modal for Adding New Bot -->
+    <!-- @COMPONENT: AddBotModal -->
+    <div id="addBotModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" data-implementation="Modal component for uploading creds.json">
+        <div class="bg-card border border-border rounded-lg w-full max-w-md mx-4">
+            <div class="p-6 border-b border-border">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-foreground">Add New Bot Instance</h3>
+                    <button class="text-muted-foreground hover:text-foreground" data-event="click:closeModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Bot Name</label>
+                        <input type="text" placeholder="Enter bot name..." class="w-full bg-input border border-border rounded-md px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-2">Upload Credentials</label>
+                        <div class="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer" data-implementation="File upload dropzone for creds.json">
+                            <div class="w-12 h-12 bg-muted rounded-lg flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-upload text-muted-foreground text-xl"></i>
+                            </div>
+                            <p class="text-sm text-foreground font-medium">Click to upload creds.json</p>
+                            <p class="text-xs text-muted-foreground mt-1">or drag and drop your credentials file</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2">Auto Features</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" checked class="rounded border-border bg-input">
+                                    <span class="text-sm text-foreground">Auto Like</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" checked class="rounded border-border bg-input">
+                                    <span class="text-sm text-foreground">Auto View Status</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" class="rounded border-border bg-input">
+                                    <span class="text-sm text-foreground">Auto React</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-foreground mb-2">Typing Mode</label>
+                            <select class="w-full bg-input border border-border rounded-md px-3 py-2 text-foreground">
+                                <option>Always Typing</option>
+                                <option>Recording Audio</option>
+                                <option>Both (Switch)</option>
+                                <option>None</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-border flex justify-end space-x-3">
+                <button class="px-4 py-2 text-muted-foreground hover:text-foreground transition-colors" data-event="click:closeModal">
+                    Cancel
+                </button>
+                <button class="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors" data-event="click:createBotInstance">
+                    Create Bot Instance
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: AddBotModal -->
+    
+    <script>
+        // TODO: Implement real-time bot status updates, WebSocket connections for live activity
+        // TODO: Implement file upload validation for creds.json files
+        // TODO: Implement bot instance management (start/stop/restart)
+        // TODO: Implement command management system with 300+ commands
+        // TODO: Implement ChatGPT integration configuration
+        // TODO: Implement group management features
+        // TODO: Implement analytics and monitoring dashboards
+        
+        (function() {
+            // Basic modal functionality for demonstration
+            const addBotModal = document.getElementById('addBotModal');
+            
+            // Show modal when clicking add bot cards/buttons
+            document.querySelectorAll('[data-event*="showAddBotModal"], [data-event*="click:showAddBotModal"]').forEach(element => {
+                element.addEventListener('click', () => {
+                    addBotModal.classList.remove('hidden');
+                    addBotModal.classList.add('flex');
+                });
+            });
+            
+            // Close modal functionality
+            document.querySelectorAll('[data-event*="closeModal"]').forEach(element => {
+                element.addEventListener('click', () => {
+                    addBotModal.classList.add('hidden');
+                    addBotModal.classList.remove('flex');
+                });
+            });
+            
+            // Close modal when clicking backdrop
+            addBotModal.addEventListener('click', (e) => {
+                if (e.target === addBotModal) {
+                    addBotModal.classList.add('hidden');
+                    addBotModal.classList.remove('flex');
+                }
+            });
+            
+            // Simulate real-time status updates
+            const statusElements = document.querySelectorAll('.status-online, .status-offline, .status-error, .status-loading');
+            
+            // Add placeholder interactivity for demonstration
+            document.querySelectorAll('[data-event*="manageBotInstance"]').forEach(button => {
+                button.addEventListener('click', () => {
+                    alert('Bot management interface would open here');
+                });
+            });
+            
+            console.log('WhatsApp Bot Manager Dashboard initialized');
+            console.log('Features: Multi-bot management, real-time monitoring, command system, ChatGPT integration');
+        })();
+    </script>
+</body>
+</html>

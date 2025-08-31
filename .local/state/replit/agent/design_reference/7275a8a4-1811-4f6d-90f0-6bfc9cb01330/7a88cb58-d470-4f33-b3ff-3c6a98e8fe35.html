@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bot Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    popover: {
+                        DEFAULT: "var(--popover)",
+                        foreground: "var(--popover-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                    whatsapp: {
+                        DEFAULT: "var(--whatsapp)",
+                        foreground: "var(--whatsapp-foreground)",
+                    }
+                },
+                fontFamily: {
+                    sans: ["var(--font-sans)"],
+                }
+            },
+        }
+    };
+    </script>
+    <style>
+        :root {
+            --background: hsl(224 71% 4%);
+            --foreground: hsl(213 31% 91%);
+            --card: hsl(224 71% 4%);
+            --card-foreground: hsl(213 31% 91%);
+            --popover: hsl(224 71% 4%);
+            --popover-foreground: hsl(213 31% 91%);
+            --primary: hsl(142 86% 28%);
+            --primary-foreground: hsl(356 29% 98%);
+            --secondary: hsl(215 27% 17%);
+            --secondary-foreground: hsl(213 31% 91%);
+            --muted: hsl(215 27% 17%);
+            --muted-foreground: hsl(217 10% 64%);
+            --accent: hsl(215 27% 17%);
+            --accent-foreground: hsl(213 31% 91%);
+            --destructive: hsl(0 63% 31%);
+            --destructive-foreground: hsl(213 31% 91%);
+            --border: hsl(215 27% 17%);
+            --input: hsl(215 27% 17%);
+            --ring: hsl(142 86% 28%);
+            --radius: 0.5rem;
+            --whatsapp: hsl(142 86% 28%);
+            --whatsapp-foreground: hsl(356 29% 98%);
+            --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dark bg-background text-foreground font-sans">
+    <!-- @COMPONENT: AppLayout -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- @COMPONENT: Sidebar -->
+        <div class="w-64 bg-card border-r border-border flex flex-col">
+            <!-- Logo and Brand -->
+            <div class="p-6 border-b border-border">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-whatsapp rounded-lg flex items-center justify-center">
+                        <i class="fab fa-whatsapp text-whatsapp-foreground text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-semibold text-foreground">Bot Manager</h1>
+                        <p class="text-xs text-muted-foreground">WhatsApp Automation</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md bg-primary text-primary-foreground" data-event="click:navigateToDashboard">
+                    <i class="fas fa-tachometer-alt w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors" data-event="click:navigateToBot">
+                    <i class="fas fa-robot w-5"></i>
+                    <span>Bot Status</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors" data-event="click:navigateToUsers">
+                    <i class="fas fa-users w-5"></i>
+                    <span>User Database</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors" data-event="click:navigateToCommands">
+                    <i class="fas fa-terminal w-5"></i>
+                    <span>Commands</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors" data-event="click:navigateToGroups">
+                    <i class="fas fa-layer-group w-5"></i>
+                    <span>Group Management</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors" data-event="click:navigateToAutoFeatures">
+                    <i class="fas fa-magic w-5"></i>
+                    <span>Auto Features</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors" data-event="click:navigateToAI">
+                    <i class="fas fa-brain w-5"></i>
+                    <span>ChatGPT Integration</span>
+                </a>
+                <a href="#" class="flex items-center space-x-3 px-3 py-2 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors" data-event="click:navigateToLogs">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span>Analytics & Logs</span>
+                </a>
+            </nav>
+
+            <!-- User Profile -->
+            <div class="p-4 border-t border-border">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-muted-foreground"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-foreground" data-bind="user.name">Admin User</p>
+                        <p class="text-xs text-muted-foreground">Administrator</p>
+                    </div>
+                    <button class="text-muted-foreground hover:text-foreground transition-colors" data-event="click:showUserMenu">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="bg-card border-b border-border px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-semibold text-foreground">Dashboard Overview</h2>
+                        <p class="text-sm text-muted-foreground">Manage your WhatsApp bot and automation features</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- Bot Status -->
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-whatsapp rounded-full animate-pulse"></div>
+                            <span class="text-sm text-whatsapp font-medium" data-bind="bot.status">Bot Online</span>
+                        </div>
+                        <!-- Notifications -->
+                        <button class="relative p-2 text-muted-foreground hover:text-foreground transition-colors" data-event="click:showNotifications">
+                            <i class="fas fa-bell"></i>
+                            <span class="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center" data-bind="notifications.count">3</span>
+                        </button>
+                        <!-- Settings -->
+                        <button class="p-2 text-muted-foreground hover:text-foreground transition-colors" data-event="click:showSettings">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Dashboard Content -->
+            <main class="flex-1 overflow-auto p-6">
+                <!-- Stats Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-card rounded-lg border border-border p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-muted-foreground">Active Users</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="stats.activeUsers">1,247</p>
+                            </div>
+                            <div class="w-12 h-12 bg-whatsapp/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-whatsapp"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center">
+                            <span class="text-xs text-whatsapp">+12%</span>
+                            <span class="text-xs text-muted-foreground ml-1">from last week</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-card rounded-lg border border-border p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-muted-foreground">Commands Executed</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="stats.commandsExecuted">8,492</p>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-terminal text-blue-500"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center">
+                            <span class="text-xs text-whatsapp">+8%</span>
+                            <span class="text-xs text-muted-foreground ml-1">from last week</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-card rounded-lg border border-border p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-muted-foreground">Groups Managed</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="stats.groupsManaged">56</p>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-layer-group text-purple-500"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center">
+                            <span class="text-xs text-whatsapp">+3</span>
+                            <span class="text-xs text-muted-foreground ml-1">new this week</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-card rounded-lg border border-border p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-muted-foreground">Auto Actions</p>
+                                <p class="text-2xl font-bold text-foreground" data-bind="stats.autoActions">2,103</p>
+                            </div>
+                            <div class="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-magic text-orange-500"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center">
+                            <span class="text-xs text-whatsapp">+24%</span>
+                            <span class="text-xs text-muted-foreground ml-1">from last week</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Bot Configuration Panel -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Bot Status Card -->
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-semibold text-foreground">Bot Configuration</h3>
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-2 h-2 bg-whatsapp rounded-full animate-pulse"></div>
+                                    <span class="text-sm text-whatsapp font-medium">Connected</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div class="space-y-2">
+                                    <label class="text-sm font-medium text-foreground">Bot Name</label>
+                                    <input type="text" value="WhiskyBot" class="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" data-bind="bot.name">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-sm font-medium text-foreground">Command Prefix</label>
+                                    <input type="text" value="." class="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" data-bind="bot.prefix">
+                                </div>
+                            </div>
+
+                            <!-- Auto Features Toggle -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="flex items-center justify-between p-3 bg-muted rounded-lg">
+                                    <div>
+                                        <p class="text-sm font-medium text-foreground">Auto Like Status</p>
+                                        <p class="text-xs text-muted-foreground">Automatically like user status updates</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer" data-bind="autoFeatures.autoLike">
+                                        <div class="w-11 h-6 bg-input peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-whatsapp"></div>
+                                    </label>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3 bg-muted rounded-lg">
+                                    <div>
+                                        <p class="text-sm font-medium text-foreground">Auto View Status</p>
+                                        <p class="text-xs text-muted-foreground">Automatically view user status updates</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer" data-bind="autoFeatures.autoView">
+                                        <div class="w-11 h-6 bg-input peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-whatsapp"></div>
+                                    </label>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3 bg-muted rounded-lg">
+                                    <div>
+                                        <p class="text-sm font-medium text-foreground">Auto React</p>
+                                        <p class="text-xs text-muted-foreground">Automatically react to messages</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer" data-bind="autoFeatures.autoReact">
+                                        <div class="w-11 h-6 bg-input peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-whatsapp"></div>
+                                    </label>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3 bg-muted rounded-lg">
+                                    <div>
+                                        <p class="text-sm font-medium text-foreground">Always Typing</p>
+                                        <p class="text-xs text-muted-foreground">Show typing indicator continuously</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer" data-bind="autoFeatures.alwaysTyping">
+                                        <div class="w-11 h-6 bg-input peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-whatsapp"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Command Management -->
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-semibold text-foreground">Command Management</h3>
+                                <button class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors" data-event="click:addNewCommand">
+                                    <i class="fas fa-plus mr-2"></i>Add Command
+                                </button>
+                            </div>
+
+                            <!-- Command Search -->
+                            <div class="mb-4">
+                                <div class="relative">
+                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"></i>
+                                    <input type="text" placeholder="Search commands..." class="w-full pl-10 pr-4 py-2 bg-input border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" data-event="input:searchCommands">
+                                </div>
+                            </div>
+
+                            <!-- Commands Table -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead>
+                                        <tr class="border-b border-border">
+                                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Command</th>
+                                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Description</th>
+                                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Usage</th>
+                                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
+                                            <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-border">
+                                        <!-- @MAP: commands.map(command => ( -->
+                                        <tr class="hover:bg-accent/50 transition-colors" data-mock="true">
+                                            <td class="py-3 px-4">
+                                                <code class="text-sm bg-muted px-2 py-1 rounded text-whatsapp">.help</code>
+                                            </td>
+                                            <td class="py-3 px-4 text-sm text-foreground">Show available commands</td>
+                                            <td class="py-3 px-4 text-sm text-muted-foreground">847</td>
+                                            <td class="py-3 px-4">
+                                                <span class="inline-flex px-2 py-1 text-xs font-medium bg-whatsapp/10 text-whatsapp rounded-full">Active</span>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <div class="flex space-x-2">
+                                                    <button class="text-muted-foreground hover:text-foreground transition-colors" data-event="click:editCommand">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="text-muted-foreground hover:text-destructive transition-colors" data-event="click:deleteCommand">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-accent/50 transition-colors" data-mock="true">
+                                            <td class="py-3 px-4">
+                                                <code class="text-sm bg-muted px-2 py-1 rounded text-whatsapp">.weather</code>
+                                            </td>
+                                            <td class="py-3 px-4 text-sm text-foreground">Get weather information</td>
+                                            <td class="py-3 px-4 text-sm text-muted-foreground">632</td>
+                                            <td class="py-3 px-4">
+                                                <span class="inline-flex px-2 py-1 text-xs font-medium bg-whatsapp/10 text-whatsapp rounded-full">Active</span>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <div class="flex space-x-2">
+                                                    <button class="text-muted-foreground hover:text-foreground transition-colors" data-event="click:editCommand">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="text-muted-foreground hover:text-destructive transition-colors" data-event="click:deleteCommand">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-accent/50 transition-colors" data-mock="true">
+                                            <td class="py-3 px-4">
+                                                <code class="text-sm bg-muted px-2 py-1 rounded text-whatsapp">.gpt</code>
+                                            </td>
+                                            <td class="py-3 px-4 text-sm text-foreground">ChatGPT AI responses</td>
+                                            <td class="py-3 px-4 text-sm text-muted-foreground">1,204</td>
+                                            <td class="py-3 px-4">
+                                                <span class="inline-flex px-2 py-1 text-xs font-medium bg-whatsapp/10 text-whatsapp rounded-full">Active</span>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <div class="flex space-x-2">
+                                                    <button class="text-muted-foreground hover:text-foreground transition-colors" data-event="click:editCommand">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="text-muted-foreground hover:text-destructive transition-colors" data-event="click:deleteCommand">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-accent/50 transition-colors" data-mock="true">
+                                            <td class="py-3 px-4">
+                                                <code class="text-sm bg-muted px-2 py-1 rounded text-orange-500">.admin</code>
+                                            </td>
+                                            <td class="py-3 px-4 text-sm text-foreground">Admin-only commands</td>
+                                            <td class="py-3 px-4 text-sm text-muted-foreground">89</td>
+                                            <td class="py-3 px-4">
+                                                <span class="inline-flex px-2 py-1 text-xs font-medium bg-orange-500/10 text-orange-500 rounded-full">Admin Only</span>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <div class="flex space-x-2">
+                                                    <button class="text-muted-foreground hover:text-foreground transition-colors" data-event="click:editCommand">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="text-muted-foreground hover:text-destructive transition-colors" data-event="click:deleteCommand">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-accent/50 transition-colors" data-mock="true">
+                                            <td class="py-3 px-4">
+                                                <code class="text-sm bg-muted px-2 py-1 rounded text-red-500">.ban</code>
+                                            </td>
+                                            <td class="py-3 px-4 text-sm text-foreground">Ban user from group</td>
+                                            <td class="py-3 px-4 text-sm text-muted-foreground">12</td>
+                                            <td class="py-3 px-4">
+                                                <span class="inline-flex px-2 py-1 text-xs font-medium bg-yellow-500/10 text-yellow-500 rounded-full">Paused</span>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <div class="flex space-x-2">
+                                                    <button class="text-muted-foreground hover:text-foreground transition-colors" data-event="click:editCommand">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="text-muted-foreground hover:text-destructive transition-colors" data-event="click:deleteCommand">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <!-- @END_MAP )) -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="mt-4 flex items-center justify-between">
+                                <p class="text-sm text-muted-foreground">Showing 5 of 347 commands</p>
+                                <div class="flex space-x-2">
+                                    <button class="px-3 py-1 text-sm bg-muted text-muted-foreground rounded hover:bg-accent transition-colors" data-event="click:previousPage">
+                                        <i class="fas fa-chevron-left mr-1"></i>Previous
+                                    </button>
+                                    <button class="px-3 py-1 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors" data-event="click:nextPage">
+                                        Next<i class="fas fa-chevron-right ml-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Group Management -->
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-semibold text-foreground">Active Groups</h3>
+                                <button class="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors" data-event="click:refreshGroups">
+                                    <i class="fas fa-sync-alt mr-2"></i>Refresh
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- @MAP: groups.map(group => ( -->
+                                <div class="p-4 bg-muted rounded-lg" data-mock="true">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h4 class="font-medium text-foreground">Whiskey Enthusiasts</h4>
+                                        <span class="text-xs bg-whatsapp/10 text-whatsapp px-2 py-1 rounded-full">Active</span>
+                                    </div>
+                                    <div class="space-y-2 text-sm text-muted-foreground">
+                                        <div class="flex items-center justify-between">
+                                            <span>Members:</span>
+                                            <span data-bind="group.memberCount">156</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span>Commands Used:</span>
+                                            <span data-bind="group.commandsUsed">2,847</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span>Bot Role:</span>
+                                            <span class="text-whatsapp">Admin</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2 mt-4">
+                                        <button class="px-3 py-1 text-xs bg-accent text-accent-foreground rounded hover:bg-accent/90 transition-colors" data-event="click:manageGroup">
+                                            Manage
+                                        </button>
+                                        <button class="px-3 py-1 text-xs border border-border text-muted-foreground rounded hover:bg-accent hover:text-accent-foreground transition-colors" data-event="click:viewGroup">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="p-4 bg-muted rounded-lg" data-mock="true">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <h4 class="font-medium text-foreground">Bailey's Lovers</h4>
+                                        <span class="text-xs bg-whatsapp/10 text-whatsapp px-2 py-1 rounded-full">Active</span>
+                                    </div>
+                                    <div class="space-y-2 text-sm text-muted-foreground">
+                                        <div class="flex items-center justify-between">
+                                            <span>Members:</span>
+                                            <span data-bind="group.memberCount">89</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span>Commands Used:</span>
+                                            <span data-bind="group.commandsUsed">1,523</span>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <span>Bot Role:</span>
+                                            <span class="text-blue-500">Moderator</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2 mt-4">
+                                        <button class="px-3 py-1 text-xs bg-accent text-accent-foreground rounded hover:bg-accent/90 transition-colors" data-event="click:manageGroup">
+                                            Manage
+                                        </button>
+                                        <button class="px-3 py-1 text-xs border border-border text-muted-foreground rounded hover:bg-accent hover:text-accent-foreground transition-colors" data-event="click:viewGroup">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar Widgets -->
+                    <div class="space-y-6">
+                        <!-- User Activity -->
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <h3 class="text-lg font-semibold text-foreground mb-4">Recent User Activity</h3>
+                            <div class="space-y-4">
+                                <!-- @MAP: recentActivity.map(activity => ( -->
+                                <div class="flex items-center space-x-3" data-mock="true">
+                                    <div class="w-8 h-8 bg-whatsapp rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user text-whatsapp-foreground text-xs"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-foreground" data-bind="activity.user">@johnsmith</p>
+                                        <p class="text-xs text-muted-foreground" data-bind="activity.action">Used .weather command</p>
+                                    </div>
+                                    <span class="text-xs text-muted-foreground" data-bind="activity.time">2m ago</span>
+                                </div>
+                                <div class="flex items-center space-x-3" data-mock="true">
+                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user text-white text-xs"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-foreground" data-bind="activity.user">@maria_k</p>
+                                        <p class="text-xs text-muted-foreground" data-bind="activity.action">Used .gpt command</p>
+                                    </div>
+                                    <span class="text-xs text-muted-foreground" data-bind="activity.time">5m ago</span>
+                                </div>
+                                <div class="flex items-center space-x-3" data-mock="true">
+                                    <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user text-white text-xs"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-foreground" data-bind="activity.user">@alexbrown</p>
+                                        <p class="text-xs text-muted-foreground" data-bind="activity.action">Used .help command</p>
+                                    </div>
+                                    <span class="text-xs text-muted-foreground" data-bind="activity.time">8m ago</span>
+                                </div>
+                                <!-- @END_MAP )) -->
+                            </div>
+                            <button class="w-full mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors" data-event="click:viewAllActivity">
+                                View All Activity <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+
+                        <!-- ChatGPT Integration -->
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <h3 class="text-lg font-semibold text-foreground mb-4">ChatGPT Integration</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-foreground">AI Status</span>
+                                    <span class="text-sm text-whatsapp font-medium" data-bind="ai.status">Connected</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-foreground">Requests Today</span>
+                                    <span class="text-sm text-foreground" data-bind="ai.requestsToday">1,847</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-foreground">Model</span>
+                                    <span class="text-sm text-muted-foreground" data-bind="ai.model">GPT-4</span>
+                                </div>
+                                <div class="pt-2 border-t border-border">
+                                    <button class="w-full px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors" data-event="click:configureAI">
+                                        <i class="fas fa-cog mr-2"></i>Configure AI
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Status -->
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <h3 class="text-lg font-semibold text-foreground mb-4">System Status</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-2 h-2 bg-whatsapp rounded-full"></div>
+                                        <span class="text-sm text-foreground">WhatsApp Connection</span>
+                                    </div>
+                                    <span class="text-xs text-whatsapp">Healthy</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-2 h-2 bg-whatsapp rounded-full"></div>
+                                        <span class="text-sm text-foreground">Database</span>
+                                    </div>
+                                    <span class="text-xs text-whatsapp">Online</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                        <span class="text-sm text-foreground">Message Queue</span>
+                                    </div>
+                                    <span class="text-xs text-yellow-500">Delayed</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-2 h-2 bg-whatsapp rounded-full"></div>
+                                        <span class="text-sm text-foreground">Auto Features</span>
+                                    </div>
+                                    <span class="text-xs text-whatsapp">Running</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Commands Log -->
+                <div class="mt-8 bg-card rounded-lg border border-border p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-foreground">Recent Command Executions</h3>
+                        <div class="flex space-x-2">
+                            <button class="px-3 py-1 text-sm bg-muted text-muted-foreground rounded hover:bg-accent hover:text-accent-foreground transition-colors" data-event="click:filterCommands">
+                                <i class="fas fa-filter mr-1"></i>Filter
+                            </button>
+                            <button class="px-3 py-1 text-sm bg-muted text-muted-foreground rounded hover:bg-accent hover:text-accent-foreground transition-colors" data-event="click:exportLogs">
+                                <i class="fas fa-download mr-1"></i>Export
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-border">
+                                    <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Time</th>
+                                    <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">User</th>
+                                    <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Command</th>
+                                    <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Group</th>
+                                    <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
+                                    <th class="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Response Time</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border">
+                                <!-- @MAP: commandLogs.map(log => ( -->
+                                <tr class="hover:bg-accent/50 transition-colors" data-mock="true">
+                                    <td class="py-3 px-4 text-sm text-muted-foreground" data-bind="log.timestamp">14:32:18</td>
+                                    <td class="py-3 px-4 text-sm text-foreground" data-bind="log.user">@johnsmith</td>
+                                    <td class="py-3 px-4">
+                                        <code class="text-sm bg-muted px-2 py-1 rounded text-whatsapp" data-bind="log.command">.weather NYC</code>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-muted-foreground" data-bind="log.group">Whiskey Enthusiasts</td>
+                                    <td class="py-3 px-4">
+                                        <span class="inline-flex px-2 py-1 text-xs font-medium bg-whatsapp/10 text-whatsapp rounded-full">Success</span>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-muted-foreground" data-bind="log.responseTime">245ms</td>
+                                </tr>
+                                <tr class="hover:bg-accent/50 transition-colors" data-mock="true">
+                                    <td class="py-3 px-4 text-sm text-muted-foreground" data-bind="log.timestamp">14:31:45</td>
+                                    <td class="py-3 px-4 text-sm text-foreground" data-bind="log.user">@maria_k</td>
+                                    <td class="py-3 px-4">
+                                        <code class="text-sm bg-muted px-2 py-1 rounded text-whatsapp" data-bind="log.command">.gpt explain whiskey types</code>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-muted-foreground" data-bind="log.group">Bailey's Lovers</td>
+                                    <td class="py-3 px-4">
+                                        <span class="inline-flex px-2 py-1 text-xs font-medium bg-whatsapp/10 text-whatsapp rounded-full">Success</span>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-muted-foreground" data-bind="log.responseTime">1.2s</td>
+                                </tr>
+                                <tr class="hover:bg-accent/50 transition-colors" data-mock="true">
+                                    <td class="py-3 px-4 text-sm text-muted-foreground" data-bind="log.timestamp">14:30:12</td>
+                                    <td class="py-3 px-4 text-sm text-foreground" data-bind="log.user">@alexbrown</td>
+                                    <td class="py-3 px-4">
+                                        <code class="text-sm bg-muted px-2 py-1 rounded text-red-500" data-bind="log.command">.admin kick @spammer</code>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-muted-foreground" data-bind="log.group">Whiskey Enthusiasts</td>
+                                    <td class="py-3 px-4">
+                                        <span class="inline-flex px-2 py-1 text-xs font-medium bg-destructive/10 text-destructive rounded-full">Failed</span>
+                                    </td>
+                                    <td class="py-3 px-4 text-sm text-muted-foreground" data-bind="log.responseTime">180ms</td>
+                                </tr>
+                                <!-- @END_MAP )) -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: AppLayout -->
+
+    <!-- @COMPONENT: CommandPalette Modal -->
+    <!-- @STATE: commandPaletteOpen:boolean = false -->
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden" id="commandPalette" data-implementation="Should show/hide based on commandPaletteOpen state">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-card border border-border rounded-lg shadow-2xl w-full max-w-2xl">
+                <div class="p-6 border-b border-border">
+                    <h3 class="text-lg font-semibold text-foreground mb-4">Add New Command</h3>
+                    <form class="space-y-4" data-event="submit:createCommand">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-foreground">Command Name</label>
+                                <input type="text" placeholder="e.g., weather" class="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" data-bind="newCommand.name">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-foreground">Category</label>
+                                <select class="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring" data-bind="newCommand.category">
+                                    <option>Utility</option>
+                                    <option>Admin</option>
+                                    <option>Fun</option>
+                                    <option>Information</option>
+                                    <option>Moderation</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-foreground">Description</label>
+                            <input type="text" placeholder="Brief description of what this command does" class="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" data-bind="newCommand.description">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-foreground">Response Template</label>
+                            <textarea rows="3" placeholder="Command response template..." class="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" data-bind="newCommand.response"></textarea>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-foreground">Permission Level</label>
+                                <select class="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring" data-bind="newCommand.permission">
+                                    <option>All Users</option>
+                                    <option>Moderators</option>
+                                    <option>Admins Only</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-foreground">Cooldown (seconds)</label>
+                                <input type="number" value="5" class="w-full px-3 py-2 bg-input border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" data-bind="newCommand.cooldown">
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="enableCommand" class="rounded border-border focus:ring-ring" data-bind="newCommand.enabled">
+                            <label for="enableCommand" class="text-sm text-foreground">Enable command immediately</label>
+                        </div>
+                        <div class="flex space-x-3 pt-4">
+                            <button type="submit" class="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+                                <i class="fas fa-plus mr-2"></i>Create Command
+                            </button>
+                            <button type="button" class="px-6 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors" data-event="click:closeCommandPalette">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: CommandPalette Modal -->
+
+    <!-- @COMPONENT: ToastNotifications -->
+    <div class="fixed top-4 right-4 z-50 space-y-2" id="toastContainer">
+        <!-- Toast notifications will be dynamically added here -->
+        <div class="bg-whatsapp text-whatsapp-foreground px-4 py-3 rounded-lg shadow-lg flex items-center space-x-3 transform translate-x-full opacity-0 transition-all duration-300" data-mock="true">
+            <i class="fas fa-check-circle"></i>
+            <span class="text-sm">Command executed successfully</span>
+            <button class="text-whatsapp-foreground/80 hover:text-whatsapp-foreground">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: ToastNotifications -->
+
+    <script>
+        // TODO: Implement React state management and component logic
+        (function() {
+            // Mock data for demonstration
+            const mockData = {
+                bot: {
+                    status: 'Connected',
+                    name: 'WhiskyBot',
+                    prefix: '.'
+                },
+                stats: {
+                    activeUsers: 1247,
+                    commandsExecuted: 8492,
+                    groupsManaged: 56,
+                    autoActions: 2103
+                },
+                commands: [
+                    { name: '.help', description: 'Show available commands', usage: 847, status: 'Active' },
+                    { name: '.weather', description: 'Get weather information', usage: 632, status: 'Active' },
+                    { name: '.gpt', description: 'ChatGPT AI responses', usage: 1204, status: 'Active' }
+                ]
+            };
+
+            // Simple event delegation for demonstration
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('[data-event]');
+                if (target) {
+                    const eventData = target.getAttribute('data-event');
+                    console.log('Event triggered:', eventData);
+                    
+                    // Example: Show command palette
+                    if (eventData === 'click:addNewCommand') {
+                        document.getElementById('commandPalette').classList.remove('hidden');
+                    }
+                    
+                    // Example: Close command palette
+                    if (eventData === 'click:closeCommandPalette') {
+                        document.getElementById('commandPalette').classList.add('hidden');
+                    }
+                }
+            });
+
+            // Close modal when clicking outside
+            document.getElementById('commandPalette').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                }
+            });
+
+            // TODO: Implement proper state management with React/Vue
+            // TODO: Add real WhatsApp Web API integration
+            // TODO: Implement database operations for user management
+            // TODO: Add real-time command execution monitoring
+            // TODO: Implement ChatGPT API integration
+            // TODO: Add comprehensive error handling and logging
+        })();
+    </script>
+</body>
+</html>
