@@ -83,14 +83,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.file) {
         try {
           credentials = JSON.parse(req.file.buffer.toString());
+          
+          // Validate that it's a proper WhatsApp credentials file
+          if (!credentials || typeof credentials !== 'object') {
+            return res.status(400).json({ 
+              message: "Invalid credentials file format. Please upload a valid WhatsApp session file." 
+            });
+          }
         } catch (error) {
-          return res.status(400).json({ message: "Invalid JSON file" });
+          return res.status(400).json({ 
+            message: "Invalid JSON file. Please ensure you're uploading a valid credentials.json file from WhatsApp Web." 
+          });
         }
+      }
+
+      if (!req.body.name || req.body.name.trim() === '') {
+        return res.status(400).json({ 
+          message: "Bot name is required. Please provide a name for your bot instance." 
+        });
       }
 
       const botData = {
         ...req.body,
         credentials,
+        name: req.body.name.trim(),
         autoLike: req.body.autoLike === 'true',
         autoViewStatus: req.body.autoViewStatus === 'true',
         autoReact: req.body.autoReact === 'true',
@@ -101,12 +117,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const bot = await storage.createBotInstance(validatedData);
       
       // Initialize bot instance
-      await botManager.createBot(bot.id, bot);
+      try {
+        await botManager.createBot(bot.id, bot);
+      } catch (botError) {
+        // If bot creation fails, clean up the database entry
+        await storage.deleteBotInstance(bot.id);
+        throw new Error(`Failed to initialize bot: ${botError instanceof Error ? botError.message : 'Unknown error'}`);
+      }
+      
+      // Create welcome activity
+      await storage.createActivity({
+        botInstanceId: bot.id,
+        type: 'bot_created',
+        description: `🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot "${bot.name}" created successfully!`
+      });
       
       broadcast({ type: 'BOT_CREATED', data: bot });
       res.json(bot);
     } catch (error) {
-      res.status(400).json({ message: error instanceof Error ? error.message : "Failed to create bot instance" });
+      const errorMessage = error instanceof Error ? error.message : "Failed to create bot instance";
+      console.error('Bot creation error:', error);
+      
+      // Provide more specific error messages
+      let userMessage = errorMessage;
+      if (errorMessage.includes('name')) {
+        userMessage = "Bot name is invalid or already exists. Please choose a different name.";
+      } else if (errorMessage.includes('credentials')) {
+        userMessage = "Invalid credentials file. Please upload a valid WhatsApp session file.";
+      } else if (errorMessage.includes('Expected object')) {
+        userMessage = "Missing required bot configuration. Please fill in all required fields.";
+      }
+      
+      res.status(400).json({ message: userMessage });
     }
   });
 

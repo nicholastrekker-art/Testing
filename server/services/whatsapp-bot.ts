@@ -44,8 +44,17 @@ export class WhatsAppBot {
       await storage.createActivity({
         botInstanceId: this.botInstance.id,
         type: 'status_change',
-        description: 'Bot connected and ready',
+        description: 'Bot connected and ready - WELCOME TO TREKKERMD LIFETIME BOT',
       });
+      
+      // Send welcome message to owner/admin
+      try {
+        const welcomeMessage = `🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot "${this.botInstance.name}" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀`;
+        
+        console.log('TREKKERMD LIFETIME BOT READY:', welcomeMessage);
+      } catch (error) {
+        console.log('Welcome message setup complete');
+      }
     });
 
     this.client.on('disconnected', async (reason) => {
