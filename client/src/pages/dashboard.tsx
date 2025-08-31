@@ -1,23 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import BotCard from "@/components/bot-card";
-import AddBotModal from "@/components/add-bot-modal";
 import { useState } from "react";
 import { Link } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
 
 export default function Dashboard() {
-  const [showAddBotModal, setShowAddBotModal] = useState(false);
 
   // Fetch dashboard stats
   const { data: stats = {}, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/dashboard/stats"],
   });
 
-  // Fetch bot instances
-  const { data: botInstances = [], isLoading: botsLoading } = useQuery({
-    queryKey: ["/api/bot-instances"],
-  });
+  // Note: Bot management has been moved to Admin Console only
 
   // Fetch recent activities
   const { data: activities = [], isLoading: activitiesLoading } = useQuery({
@@ -39,17 +33,9 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-foreground">Dashboard</h2>
-            <p className="text-muted-foreground">Manage your WhatsApp bot instances</p>
+            <p className="text-muted-foreground">Overview of your WhatsApp automation system</p>
           </div>
           <div className="flex items-center space-x-4">
-            <button 
-              onClick={() => setShowAddBotModal(true)}
-              className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors flex items-center space-x-2"
-              data-testid="button-add-bot"
-            >
-              <i className="fas fa-plus"></i>
-              <span>Add New Bot</span>
-            </button>
             <div className="relative">
               <button className="w-10 h-10 bg-muted rounded-md flex items-center justify-center hover:bg-muted/80 transition-colors" data-testid="button-notifications">
                 <i className="fas fa-bell text-muted-foreground"></i>
@@ -77,7 +63,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="mt-4 flex items-center space-x-2">
-                <span className="text-green-400 text-sm">+{(botInstances as any[]).length}</span>
+                <span className="text-green-400 text-sm">+{(stats as any)?.activeBots || 0}</span>
                 <span className="text-muted-foreground text-sm">instances</span>
               </div>
             </CardContent>
@@ -146,39 +132,16 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Bot Instances Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
-          {botsLoading ? (
-            <div className="col-span-full text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="mt-4 text-muted-foreground">Loading bot instances...</p>
+        {/* Welcome Message */}
+        <Card className="bg-card border-border mb-8">
+          <CardContent className="p-6">
+            <div className="text-center">
+              <h3 className="text-xl font-semibold text-foreground mb-2">Welcome to WhatsApp Bot Manager</h3>
+              <p className="text-muted-foreground mb-4">Bot management is now handled through the Admin Console for enhanced security and control.</p>
+              <p className="text-sm text-muted-foreground">Administrators can manage all bot instances, view system activities, and control bot operations from the dedicated Admin Console.</p>
             </div>
-          ) : (
-            <>
-              {(botInstances as any[]).map((bot: any) => (
-                <BotCard key={bot.id} bot={bot} />
-              ))}
-              
-              {/* Add Bot Card */}
-              <Card 
-                className="bg-card border-dashed border-border hover:border-primary/50 transition-colors cursor-pointer"
-                onClick={() => setShowAddBotModal(true)}
-                data-testid="card-add-bot"
-              >
-                <CardContent className="p-6 flex flex-col items-center justify-center min-h-[300px]">
-                  <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center mb-4">
-                    <i className="fas fa-plus text-muted-foreground text-2xl"></i>
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Add New Bot</h3>
-                  <p className="text-muted-foreground text-center mb-4">Upload credentials and configure a new WhatsApp bot instance</p>
-                  <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors">
-                    Upload creds.json
-                  </button>
-                </CardContent>
-              </Card>
-            </>
-          )}
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Management Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -259,7 +222,7 @@ export default function Dashboard() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-foreground">
-                          <span className="font-medium">{getBotName(activity.botInstanceId, botInstances as any[])}</span> {activity.description}
+                          <span className="font-medium">{getBotName(activity.botInstanceId)}</span> {activity.description}
                         </p>
                         <p className="text-xs text-muted-foreground">{formatTimeAgo(activity.createdAt)}</p>
                       </div>
@@ -272,7 +235,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <AddBotModal open={showAddBotModal} onClose={() => setShowAddBotModal(false)} />
     </div>
   );
 }
@@ -299,9 +261,8 @@ function getActivityIconBg(type: string): string {
   }
 }
 
-function getBotName(botInstanceId: string, botInstances: any[]): string {
-  const bot = botInstances.find(b => b.id === botInstanceId);
-  return bot?.name || 'Unknown Bot';
+function getBotName(botInstanceId: string): string {
+  return 'Bot';
 }
 
 function formatTimeAgo(dateString: string): string {

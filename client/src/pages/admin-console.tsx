@@ -9,12 +9,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Play, Square, Trash2, Shield, Activity, Bot, Users, BarChart3 } from "lucide-react";
+import { Play, Square, Trash2, Shield, Activity, Bot, Users, BarChart3, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 import type { BotInstance, Activity as ActivityType } from "@shared/schema";
 
 export default function AdminConsole() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { logout } = useAuth();
 
   // Fetch all bot instances
   const { data: botInstances = [], isLoading: loadingBots } = useQuery({
@@ -22,7 +24,7 @@ export default function AdminConsole() {
     queryFn: async () => {
       const response = await fetch("/api/admin/bot-instances", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
       });
       if (!response.ok) throw new Error("Failed to fetch bot instances");
@@ -36,7 +38,7 @@ export default function AdminConsole() {
     queryFn: async () => {
       const response = await fetch("/api/admin/activities", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
       });
       if (!response.ok) throw new Error("Failed to fetch activities");
@@ -50,7 +52,7 @@ export default function AdminConsole() {
     queryFn: async () => {
       const response = await fetch("/api/admin/stats", {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
       });
       if (!response.ok) throw new Error("Failed to fetch stats");
@@ -64,7 +66,7 @@ export default function AdminConsole() {
       return apiRequest(`/api/admin/bot-instances/${botId}/start`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
       });
     },
@@ -82,7 +84,7 @@ export default function AdminConsole() {
       return apiRequest(`/api/admin/bot-instances/${botId}/stop`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
       });
     },
@@ -100,7 +102,7 @@ export default function AdminConsole() {
       return apiRequest(`/api/admin/bot-instances/${botId}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
       });
     },
@@ -138,11 +140,22 @@ export default function AdminConsole() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-2 mb-6">
-        <Shield className="h-6 w-6 text-red-600" />
-        <h1 className="text-3xl font-bold" data-testid="admin-console-title">
-          Admin Console
-        </h1>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2">
+          <Shield className="h-6 w-6 text-red-600" />
+          <h1 className="text-3xl font-bold" data-testid="admin-console-title">
+            Admin Console
+          </h1>
+        </div>
+        <Button 
+          variant="outline" 
+          onClick={logout}
+          className="flex items-center gap-2"
+          data-testid="button-logout-admin"
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
       </div>
 
       {/* Stats Overview */}
