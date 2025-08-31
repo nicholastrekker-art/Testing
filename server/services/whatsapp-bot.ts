@@ -12,6 +12,8 @@ import { generateChatGPTResponse } from './openai';
 import type { BotInstance } from '@shared/schema';
 import { join } from 'path';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { commandRegistry, type CommandContext } from './command-registry.js';
+import './core-commands.js'; // Load core commands
 
 export class WhatsAppBot {
   private sock: any;
@@ -226,10 +228,63 @@ export class WhatsAppBot {
   }
 
   private async handleCommand(message: WAMessage, commandText: string) {
-    const commandName = commandText.substring(1).split(' ')[0];
+    const args = commandText.substring(1).split(' ');
+    const commandName = args[0].toLowerCase();
+    const commandArgs = args.slice(1);
+    
+    console.log(`Bot ${this.botInstance.name}: Processing command .${commandName} with args:`, commandArgs);
+    
+    // Check our command registry first
+    const registeredCommand = commandRegistry.get(commandName);
+    if (registeredCommand) {
+      try {
+        const respond = async (text: string) => {
+          if (message.key.remoteJid) {
+            await this.sock.sendMessage(message.key.remoteJid, { text });
+          }
+        };
+
+        const context: CommandContext = {
+          message,
+          client: this.sock,
+          respond,
+          from: message.key.remoteJid || '',
+          sender: message.key.participant || message.key.remoteJid || '',
+          args: commandArgs,
+          command: commandName,
+          prefix: '.'
+        };
+
+        await registeredCommand.handler(context);
+        
+        // Update bot stats
+        await storage.updateBotInstance(this.botInstance.id, {
+          commandsCount: (this.botInstance.commandsCount || 0) + 1
+        });
+
+        await storage.createActivity({
+          botInstanceId: this.botInstance.id,
+          type: 'command',
+          description: `Executed command: .${commandName}`,
+          metadata: { command: commandName, user: message.key.remoteJid }
+        });
+        
+        console.log(`Bot ${this.botInstance.name}: Successfully executed command .${commandName}`);
+        return;
+      } catch (error) {
+        console.error(`Error executing command .${commandName}:`, error);
+        if (message.key.remoteJid) {
+          await this.sock.sendMessage(message.key.remoteJid, { 
+            text: `❌ Error executing command .${commandName}` 
+          });
+        }
+        return;
+      }
+    }
+    
+    // Fallback to database commands
     const commands = await storage.getCommands(this.botInstance.id);
     const globalCommands = await storage.getCommands(); // Global commands
-    
     const command = [...commands, ...globalCommands].find(cmd => cmd.name === commandName);
     
     if (command) {
@@ -253,6 +308,13 @@ export class WhatsAppBot {
 
       if (response && message.key.remoteJid) {
         await this.sock.sendMessage(message.key.remoteJid, { text: response });
+      }
+    } else {
+      console.log(`Bot ${this.botInstance.name}: Command .${commandName} not found`);
+      if (message.key.remoteJid) {
+        await this.sock.sendMessage(message.key.remoteJid, { 
+          text: `❌ Command .${commandName} not found. Type .help to see available commands.` 
+        });
       }
     }
   }
