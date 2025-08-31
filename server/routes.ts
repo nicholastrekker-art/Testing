@@ -1,10 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import jwt from 'jsonwebtoken';
 import multer from "multer";
+import fs from 'fs';
+import path from 'path';
 import { storage } from "./storage";
 import { insertBotInstanceSchema, insertCommandSchema, insertActivitySchema } from "@shared/schema";
 import { botManager } from "./services/bot-manager";
+import { authenticateAdmin, authenticateUser, validateAdminCredentials, generateToken, type AuthRequest } from './middleware/auth';
 
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -43,6 +47,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Set broadcast function in bot manager
   botManager.setBroadcastFunction(broadcast);
+
+  // Auth endpoints
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+      
+      const isValidAdmin = validateAdminCredentials(username, password);
+      
+      if (isValidAdmin) {
+        const token = generateToken(username, true);
+        res.json({ 
+          token, 
+          user: { username, isAdmin: true },
+          message: "Admin login successful" 
+        });
+      } else {
+        res.status(401).json({ message: "Invalid credentials" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+  
+  app.get("/api/auth/verify", authenticateUser, (req: AuthRequest, res) => {
+    res.json({ user: req.user });
+  });
+  
+  // Credentials validation endpoint (accessible to everyone)
+  app.post("/api/validate-credentials", upload.single('credentials'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          message: "Please upload a credentials.json file" 
+        });
+      }
+      
+      let credentials;
+      try {
+        credentials = JSON.parse(req.file.buffer.toString());
+      } catch (error) {
+        return res.status(400).json({ 
+          message: "❌ Invalid JSON file. Please ensure you're uploading a valid credentials.json file." 
+        });
+      }
+      
+      // Basic validation of credentials structure
+      if (!credentials || typeof credentials !== 'object') {
+        return res.status(400).json({ 
+          message: "❌ Invalid credentials file format. Please upload a valid WhatsApp session file." 
+        });
+      }
+      
+      // Try to test the credentials by creating a temporary bot instance
+      const testBotData = {
+        name: `Test_${Date.now()}`,
+        credentials,
+        autoLike: false,
+        autoViewStatus: false,
+        autoReact: false,
+        chatgptEnabled: false,
+        typingMode: 'none'
+      };
+      
+      try {
+        const validatedData = insertBotInstanceSchema.parse(testBotData);
+        const testBot = await storage.createBotInstance(validatedData);
+        
+        // Try to initialize the bot to test credentials
+        await botManager.createBot(testBot.id, testBot);
+        
+        // If we get here, credentials are valid
+        // Clean up the test bot immediately
+        await botManager.destroyBot(testBot.id);
+        await storage.deleteBotInstance(testBot.id);
+        
+        res.json({ 
+          valid: true,
+          message: "✅ Your credentials.json is valid! Checking admin approval...",
+          status: "pending_approval"
+        });
+        
+      } catch (botError) {
+        // Clean up if bot creation failed
+        try {
+          if (testBot) {
+            await botManager.destroyBot(testBot.id);
+            await storage.deleteBotInstance(testBot.id);
+          }
+        } catch (cleanupError) {
+          console.error('Cleanup error:', cleanupError);
+        }
+        
+        res.status(400).json({ 
+          valid: false,
+          message: "❌ Invalid credentials.json file. Please ensure it's a valid WhatsApp session file.",
+          error: botError instanceof Error ? botError.message : 'Unknown error'
+        });
+      }
+      
+    } catch (error) {
+      console.error('Credentials validation error:', error);
+      res.status(500).json({ 
+        message: "Failed to validate credentials",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
 
   // Dashboard stats
   app.get("/api/dashboard/stats", async (req, res) => {
@@ -162,7 +277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/bot-instances/:id", async (req, res) => {
+  app.delete("/api/bot-instances/:id", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       await botManager.destroyBot(req.params.id);
       await storage.deleteBotInstance(req.params.id);
@@ -173,8 +288,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Bot control endpoints
-  app.post("/api/bot-instances/:id/start", async (req, res) => {
+  // Bot control endpoints (restricted to admins)
+  app.post("/api/bot-instances/:id/start", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const bot = await storage.getBotInstance(req.params.id);
       if (!bot) {
@@ -207,7 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/bot-instances/:id/stop", async (req, res) => {
+  app.post("/api/bot-instances/:id/stop", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       await botManager.stopBot(req.params.id);
       const bot = await storage.updateBotInstance(req.params.id, { status: 'offline' });
@@ -218,7 +333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/bot-instances/:id/restart", async (req, res) => {
+  app.post("/api/bot-instances/:id/restart", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       await botManager.restartBot(req.params.id);
       const bot = await storage.updateBotInstance(req.params.id, { status: 'loading' });

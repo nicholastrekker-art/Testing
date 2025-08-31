@@ -8,6 +8,7 @@ import BotInstances from "@/pages/bot-instances";
 import Commands from "@/pages/commands";
 import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/sidebar";
+import { AuthProvider } from "@/hooks/use-auth";
 
 function Router() {
   return (
@@ -28,12 +29,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <div className="dark">
-          <Toaster />
-          <Router />
-        </div>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <div className="dark">
+            <Toaster />
+            <Router />
+          </div>
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

@@ -1,5 +1,10 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { useState } from "react";
+import { LoginModal } from "./login-modal";
+import { ValidateCredentialsModal } from "./validate-credentials-modal";
+import { Button } from "./ui/button";
 
 const navigationItems = [
   { href: "/", label: "Dashboard", icon: "fas fa-tachometer-alt" },
@@ -13,6 +18,9 @@ const navigationItems = [
 
 export default function Sidebar() {
   const [location] = useLocation();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showValidateModal, setShowValidateModal] = useState(false);
 
   return (
     <aside className="w-64 bg-card border-r border-border flex flex-col" data-testid="sidebar">
@@ -47,20 +55,61 @@ export default function Sidebar() {
         ))}
       </nav>
       
+      {/* Validate Credentials Button (always available) */}
       <div className="p-4 border-t border-border">
-        <div className="flex items-center space-x-3 px-3 py-2">
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-            <i className="fas fa-user text-primary-foreground text-sm"></i>
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">Admin User</p>
-            <p className="text-xs text-muted-foreground">Administrator</p>
-          </div>
-          <button className="text-muted-foreground hover:text-foreground" data-testid="button-logout">
-            <i className="fas fa-sign-out-alt"></i>
-          </button>
-        </div>
+        <Button 
+          onClick={() => setShowValidateModal(true)}
+          variant="outline" 
+          className="w-full mb-3"
+        >
+          <i className="fas fa-check-circle mr-2"></i>
+          Validate Credentials
+        </Button>
       </div>
+      
+      <div className="p-4 border-t border-border">
+        {isAuthenticated ? (
+          <div className="flex items-center space-x-3 px-3 py-2">
+            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+              <i className="fas fa-user text-primary-foreground text-sm"></i>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">{user?.username || 'User'}</p>
+              <p className="text-xs text-muted-foreground">{isAdmin ? 'Administrator' : 'User'}</p>
+            </div>
+            <button 
+              onClick={logout}
+              className="text-muted-foreground hover:text-foreground" 
+              data-testid="button-logout"
+              title="Logout"
+            >
+              <i className="fas fa-sign-out-alt"></i>
+            </button>
+          </div>
+        ) : (
+          <Button 
+            onClick={() => setShowLoginModal(true)}
+            className="w-full"
+          >
+            <i className="fas fa-sign-in-alt mr-2"></i>
+            Admin Login
+          </Button>
+        )}
+      </div>
+      
+      <LoginModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)}
+        onLogin={(token, user) => {
+          // The login is handled by the useAuth hook
+          setShowLoginModal(false);
+        }} 
+      />
+      
+      <ValidateCredentialsModal 
+        isOpen={showValidateModal} 
+        onClose={() => setShowValidateModal(false)}
+      />
     </aside>
   );
 }

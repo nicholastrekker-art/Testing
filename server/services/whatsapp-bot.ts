@@ -203,19 +203,20 @@ export class WhatsAppBot {
         lastActivity: new Date()
       });
 
-      // Handle commands (prefix: .)
-      if (messageText.startsWith('.')) {
+      // Get command prefix from environment variable (default: .)
+      const commandPrefix = process.env.BOT_PREFIX || '.';
+
+      // Handle commands (only respond to messages with the configured prefix)
+      if (messageText.startsWith(commandPrefix)) {
         await this.handleCommand(message, messageText);
         return;
       }
 
-      // Auto-reactions and features
+      // Auto-reactions and features (only for prefix commands)
       await this.handleAutoFeatures(message);
 
-      // ChatGPT integration for non-command messages
-      if (this.botInstance.chatgptEnabled) {
-        await this.handleChatGPTResponse(message, messageText);
-      }
+      // No automatic ChatGPT responses - only respond to prefix commands
+      // This prevents the bot from responding to every message
 
     } catch (error) {
       console.error(`Error handling message for bot ${this.botInstance.name}:`, error);
@@ -228,7 +229,8 @@ export class WhatsAppBot {
   }
 
   private async handleCommand(message: WAMessage, commandText: string) {
-    const args = commandText.substring(1).split(' ');
+    const commandPrefix = process.env.BOT_PREFIX || '.';
+    const args = commandText.substring(commandPrefix.length).split(' ');
     const commandName = args[0].toLowerCase();
     const commandArgs = args.slice(1);
     

@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 interface BotCardProps {
   bot: {
@@ -20,37 +21,92 @@ interface BotCardProps {
 export default function BotCard({ bot }: BotCardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isAdmin, token } = useAuth();
 
   const startBotMutation = useMutation({
-    mutationFn: () => apiRequest("POST", `/api/bot-instances/${bot.id}/start`),
+    mutationFn: () => {
+      if (!isAdmin) {
+        throw new Error("Admin access required");
+      }
+      return fetch(`/api/bot-instances/${bot.id}/start`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }).then(res => {
+        if (!res.ok) throw new Error('Failed to start bot');
+        return res.json();
+      });
+    },
     onSuccess: () => {
       toast({ title: "Bot started successfully" });
       queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
     },
-    onError: () => {
-      toast({ title: "Failed to start bot", variant: "destructive" });
+    onError: (error: Error) => {
+      toast({ 
+        title: "Failed to start bot", 
+        description: error.message.includes("Admin") ? "Admin access required" : "Server error",
+        variant: "destructive" 
+      });
     },
   });
 
   const stopBotMutation = useMutation({
-    mutationFn: () => apiRequest("POST", `/api/bot-instances/${bot.id}/stop`),
+    mutationFn: () => {
+      if (!isAdmin) {
+        throw new Error("Admin access required");
+      }
+      return fetch(`/api/bot-instances/${bot.id}/stop`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }).then(res => {
+        if (!res.ok) throw new Error('Failed to stop bot');
+        return res.json();
+      });
+    },
     onSuccess: () => {
       toast({ title: "Bot stopped successfully" });
       queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
     },
-    onError: () => {
-      toast({ title: "Failed to stop bot", variant: "destructive" });
+    onError: (error: Error) => {
+      toast({ 
+        title: "Failed to stop bot", 
+        description: error.message.includes("Admin") ? "Admin access required" : "Server error",
+        variant: "destructive" 
+      });
     },
   });
 
   const restartBotMutation = useMutation({
-    mutationFn: () => apiRequest("POST", `/api/bot-instances/${bot.id}/restart`),
+    mutationFn: () => {
+      if (!isAdmin) {
+        throw new Error("Admin access required");
+      }
+      return fetch(`/api/bot-instances/${bot.id}/restart`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }).then(res => {
+        if (!res.ok) throw new Error('Failed to restart bot');
+        return res.json();
+      });
+    },
     onSuccess: () => {
       toast({ title: "Bot restarted successfully" });
       queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
     },
-    onError: () => {
-      toast({ title: "Failed to restart bot", variant: "destructive" });
+    onError: (error: Error) => {
+      toast({ 
+        title: "Failed to restart bot", 
+        description: error.message.includes("Admin") ? "Admin access required" : "Server error",
+        variant: "destructive" 
+      });
     },
   });
 
@@ -65,6 +121,18 @@ export default function BotCard({ bot }: BotCardProps) {
   };
 
   const getActionButton = () => {
+    if (!isAdmin) {
+      return (
+        <button
+          disabled
+          className="flex-1 bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm cursor-not-allowed"
+          title="Admin access required"
+        >
+          🔒 Admin Only
+        </button>
+      );
+    }
+    
     if (bot.status === 'online') {
       return (
         <button
