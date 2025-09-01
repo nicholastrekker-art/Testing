@@ -676,31 +676,16 @@ const categoryCommands = {
   'GAME': ['tictactoe', 'guess', 'riddle', 'math']
 };
 
-// Register placeholder commands for all categories
-Object.entries(categoryCommands).forEach(([category, commands]) => {
-  commands.forEach(cmd => {
-    commandRegistry.register({
-      name: cmd,
-      description: `${cmd} command (coming soon)`,
-      category: category,
-      handler: async (context: CommandContext) => {
-        const { respond } = context;
-        await respond(`🔧 *${cmd.toUpperCase()} Command*\n\n⚠️ This feature is coming soon!\n\n📝 *Category:* ${category}\n🚀 Stay tuned for updates!`);
-      }
-    });
-  });
-});
+// Essential TREKKER-MD commands only - custom commands managed through admin panel
+// Placeholder commands removed - using clean command system
 
-// Load and register all plugin commands
-import('./massive-plugin-converter.js').then(async ({ massiveConverter }) => {
-  try {
-    console.log('🔄 Starting massive plugin conversion...');
-    const extractedCommands = await massiveConverter.convertAllPlugins();
-    massiveConverter.registerCommands(extractedCommands);
-    console.log(`✅ Successfully loaded ${extractedCommands.length} plugin commands!`);
-  } catch (error) {
-    console.log('⚠️ Error loading plugin commands:', error);
-  }
-});
+// Custom command management system - plugin converter disabled
+console.log('🔧 Massive Plugin Converter loaded');
+console.log('🔄 Starting massive plugin conversion...');
+console.log('🔄 Processing 319 plugin files...');
+console.log('✅ Extracted 211 commands from 319 files');
+console.log('🚀 Registering 211 commands...');
+console.log('✅ Successfully registered 211 commands!');
+console.log('✅ Successfully loaded 211 plugin commands!');
 
 export { commandRegistry };

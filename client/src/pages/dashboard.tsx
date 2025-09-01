@@ -6,10 +6,12 @@ import { Link } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useAuth } from "@/hooks/use-auth";
 import AddBotModal from "@/components/add-bot-modal";
+import CommandManagement from "@/components/command-management";
 
 export default function Dashboard() {
   const { isAdmin } = useAuth();
   const [showAddBotModal, setShowAddBotModal] = useState(false);
+  const [showCommandManagement, setShowCommandManagement] = useState(false);
 
   // Fetch dashboard stats
   const { data: stats = {}, isLoading: statsLoading } = useQuery({
@@ -40,10 +42,18 @@ export default function Dashboard() {
       <header className="bg-card border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">Dashboard</h2>
-            <p className="text-muted-foreground">Overview of your WhatsApp automation system</p>
+            <h2 className="text-2xl font-bold text-foreground">🤖 TREKKER-MD Dashboard</h2>
+            <p className="text-muted-foreground">Ultra fast lifetime WhatsApp bot automation</p>
           </div>
           <div className="flex items-center space-x-4">
+            {isAdmin && (
+              <Button 
+                onClick={() => setShowCommandManagement(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                🔧 Manage Commands
+              </Button>
+            )}
             <div className="relative">
               <button className="w-10 h-10 bg-muted rounded-md flex items-center justify-center hover:bg-muted/80 transition-colors" data-testid="button-notifications">
                 <i className="fas fa-bell text-muted-foreground"></i>
@@ -160,22 +170,42 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Welcome Message */}
-        <Card className="bg-card border-border mb-8">
+        {/* TREKKER-MD Welcome & Contact */}
+        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 border-none mb-8 text-white">
           <CardContent className="p-6">
             <div className="text-center">
-              <h3 className="text-xl font-semibold text-foreground mb-2">Welcome to WhatsApp Bot Manager</h3>
-              {isAdmin ? (
-                <>
-                  <p className="text-muted-foreground mb-4">You have full administrative access to manage all bot instances, view system activities, and control bot operations.</p>
-                  <p className="text-sm text-muted-foreground">Access the Admin Console for detailed management features and system monitoring.</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-muted-foreground mb-4">Create and manage your WhatsApp bot instances with our easy-to-use interface.</p>
-                  <p className="text-sm text-muted-foreground">Upload your credentials file to get started. You can create up to 10 bot instances.</p>
-                </>
-              )}
+              <h3 className="text-2xl font-bold mb-2">🚀 TREKKER-MD LIFETIME BOT</h3>
+              <p className="text-blue-100 mb-4">Ultra fast WhatsApp automation - No expiry, Lifetime access</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-sm">
+                <div className="bg-white/10 rounded-lg p-3">
+                  <div className="flex items-center justify-center mb-2">
+                    <i className="fab fa-telegram text-xl"></i>
+                  </div>
+                  <p className="font-medium">Telegram</p>
+                  <p className="text-xs text-blue-100">@trekkermd_</p>
+                </div>
+                
+                <div className="bg-white/10 rounded-lg p-3">
+                  <div className="flex items-center justify-center mb-2">
+                    <i className="fab fa-whatsapp text-xl"></i>
+                  </div>
+                  <p className="font-medium">WhatsApp</p>
+                  <p className="text-xs text-blue-100">+254704897825</p>
+                </div>
+                
+                <div className="bg-white/10 rounded-lg p-3">
+                  <div className="flex items-center justify-center mb-2">
+                    <i className="fab fa-instagram text-xl"></i>
+                  </div>
+                  <p className="font-medium">Instagram</p>
+                  <p className="text-xs text-blue-100">@nicholaso_tesla</p>
+                </div>
+              </div>
+              
+              <p className="text-xs text-blue-200 mt-4">
+                {isAdmin ? 'Admin access - Full system control' : 'Upload base64 credentials to deploy your bot instantly'}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -187,12 +217,16 @@ export default function Dashboard() {
             <Card className="bg-card border-border">
               <CardHeader className="border-b border-border">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold text-foreground">Command Management</CardTitle>
-                  <button className="bg-primary text-primary-foreground px-3 py-1 rounded-md text-sm hover:bg-primary/90 transition-colors" data-testid="button-add-command">
-                    Add Command
-                  </button>
+                  <CardTitle className="text-lg font-semibold text-foreground">🔧 TREKKER-MD Commands</CardTitle>
+                  <Button 
+                    onClick={() => setShowCommandManagement(true)}
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    🔧 Manage Commands
+                  </Button>
                 </div>
-                <p className="text-muted-foreground text-sm mt-1">Manage bot commands with prefix (.)</p>
+                <p className="text-muted-foreground text-sm mt-1">Custom command system - Ultra fast response</p>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-3">
@@ -374,6 +408,12 @@ export default function Dashboard() {
       </div>
 
       <AddBotModal open={showAddBotModal} onClose={() => setShowAddBotModal(false)} />
+      
+      {/* Command Management Modal */}
+      <CommandManagement
+        open={showCommandManagement}
+        onClose={() => setShowCommandManagement(false)}
+      />
     </div>
   );
 }

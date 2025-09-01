@@ -641,6 +641,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Custom Command Code Execution - Admin Only
+  app.post("/api/commands/custom", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { name, code, description, category } = req.body;
+      
+      if (!name || !code || !description) {
+        return res.status(400).json({ message: "Name, code, and description are required" });
+      }
+
+      // Validate the command code (basic safety check)
+      if (code.includes('require(') && !code.includes('// @allow-require')) {
+        return res.status(400).json({ message: "Custom require() not allowed for security reasons" });
+      }
+
+      // Create command in database
+      const commandData = {
+        name: name.toLowerCase(),
+        description,
+        response: code, // Store the custom code in response field
+        isActive: true,
+        category: category || 'CUSTOM',
+        useChatGPT: false,
+        customCode: true // Flag to identify custom code commands
+      };
+
+      const command = await storage.createCommand(commandData);
+      
+      // Register the command in the command registry dynamically
+      const { commandRegistry } = await import('./services/command-registry.js');
+      
+      try {
+        // Create a safe execution context for the custom command
+        const customHandler = new Function('context', `
+          const { respond, args, message, client } = context;
+          return (async () => {
+            ${code}
+          })();
+        `);
+
+        commandRegistry.register({
+          name: name.toLowerCase(),
+          description,
+          category: category || 'CUSTOM',
+          handler: customHandler
+        });
+
+        console.log(`✅ Custom command '${name}' registered successfully`);
+      } catch (error) {
+        console.error(`❌ Failed to register custom command '${name}':`, error);
+        // Remove from database if registration fails
+        await storage.deleteCommand(command.id);
+        return res.status(400).json({ message: "Invalid command code syntax" });
+      }
+
+      broadcast({ type: 'CUSTOM_COMMAND_CREATED', data: command });
+      res.json({ success: true, command });
+      
+    } catch (error) {
+      console.error('Custom command creation error:', error);
+      res.status(500).json({ message: "Failed to create custom command" });
+    }
+  });
+
   // Activities
   app.get("/api/activities", async (req, res) => {
     try {
