@@ -8,8 +8,7 @@ packages = ["chromium", "nss", "atk", "cups", "gtk3", "libdrm", "mesa", "alsa-li
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["sh", "-c", "yarn start"]
-build = ["sh", "-c", "yarn build"]
+run = ["sh", "-c", "npm run dev"]
 
 [env]
 PORT = "5000"
