@@ -51,6 +51,10 @@ export async function initializeDatabase() {
     try {
       await db.query.botInstances.findFirst();
       console.log('✅ Database tables exist');
+      
+      // Check for expired bots on startup
+      const { storage } = await import('./storage');
+      await storage.checkAndExpireBots();
     } catch (error: any) {
       if (error.code === '42P01') { // Table does not exist
         console.log('⚠️ Database tables do not exist, creating them...');

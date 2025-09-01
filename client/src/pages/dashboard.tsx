@@ -2,18 +2,21 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import * as React from "react";
 import { Link } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useAuth } from "@/hooks/use-auth";
 import AddBotModal from "@/components/add-bot-modal";
 import CommandManagement from "@/components/command-management";
 import GuestBotRegistration from "@/components/guest-bot-registration";
+import AdminBotManagement from "@/components/admin-bot-management";
 
 export default function Dashboard() {
   const { isAdmin } = useAuth();
   const [showAddBotModal, setShowAddBotModal] = useState(false);
   const [showCommandManagement, setShowCommandManagement] = useState(false);
   const [showGuestRegistration, setShowGuestRegistration] = useState(false);
+  const [showAdminBotManagement, setShowAdminBotManagement] = useState(false);
 
   // Fetch dashboard stats
   const { data: stats = {}, isLoading: statsLoading } = useQuery({
@@ -38,6 +41,18 @@ export default function Dashboard() {
   // WebSocket for real-time updates
   useWebSocket();
 
+  // Auto-refresh for admin users
+  React.useEffect(() => {
+    if (isAdmin) {
+      // Refresh the page to load admin features if not already loaded
+      const hasRefreshed = sessionStorage.getItem('admin-refreshed');
+      if (!hasRefreshed) {
+        sessionStorage.setItem('admin-refreshed', 'true');
+        window.location.reload();
+      }
+    }
+  }, [isAdmin]);
+
   return (
     <div>
       {/* Header */}
@@ -49,12 +64,20 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center space-x-4">
             {isAdmin && (
-              <Button 
-                onClick={() => setShowCommandManagement(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                🔧 Manage Commands
-              </Button>
+              <div className="flex space-x-2">
+                <Button 
+                  onClick={() => setShowCommandManagement(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  🔧 Manage Commands
+                </Button>
+                <Button 
+                  onClick={() => setShowAdminBotManagement(true)}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  👥 Manage Bots
+                </Button>
+              </div>
             )}
             <div className="relative">
               <button className="w-10 h-10 bg-muted rounded-md flex items-center justify-center hover:bg-muted/80 transition-colors" data-testid="button-notifications">
@@ -419,6 +442,14 @@ export default function Dashboard() {
         open={showGuestRegistration}
         onClose={() => setShowGuestRegistration(false)}
       />
+      
+      {/* Admin Bot Management Modal */}
+      {isAdmin && (
+        <AdminBotManagement
+          open={showAdminBotManagement}
+          onClose={() => setShowAdminBotManagement(false)}
+        />
+      )}
     </div>
   );
 }

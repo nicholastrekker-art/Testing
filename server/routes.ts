@@ -888,27 +888,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/approved-bots", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const approvedBots = await storage.getApprovedBots();
+      res.json(approvedBots);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch approved bots" });
+    }
+  });
+
   app.post("/api/admin/approve-bot/:id", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const botId = req.params.id;
+      const { duration } = req.body; // Duration in months
       const botInstance = await storage.getBotInstance(botId);
       
       if (!botInstance) {
         return res.status(404).json({ message: "Bot instance not found" });
       }
+      
+      if (!duration || duration < 1 || duration > 12) {
+        return res.status(400).json({ message: "Duration must be between 1-12 months" });
+      }
 
-      // Update approval status
+      // Update approval status with expiration
+      const approvalDate = new Date().toISOString();
       await storage.updateBotInstance(botId, { 
         approvalStatus: 'approved',
-        status: 'offline' // Ready to be started
+        status: 'offline', // Ready to be started
+        approvalDate,
+        expirationMonths: duration
       });
 
       // Log activity
       await storage.createActivity({
         botInstanceId: botId,
         type: 'approval',
-        description: `Bot ${botInstance.name} approved by admin`,
-        metadata: { adminAction: 'approve', phoneNumber: botInstance.phoneNumber }
+        description: `Bot ${botInstance.name} approved by admin for ${duration} months`,
+        metadata: { adminAction: 'approve', phoneNumber: botInstance.phoneNumber, duration, approvalDate }
       });
 
       // Send activation message (placeholder for now)

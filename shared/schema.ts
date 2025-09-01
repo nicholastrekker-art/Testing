@@ -28,6 +28,8 @@ export const botInstances = pgTable("bot_instances", {
   commandsCount: integer("commands_count").default(0),
   approvalStatus: text("approval_status").default("pending"), // pending, approved, rejected
   isGuest: boolean("is_guest").default(false),
+  approvalDate: text("approval_date"), // Date when bot was approved
+  expirationMonths: integer("expiration_months"), // Duration in months
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });

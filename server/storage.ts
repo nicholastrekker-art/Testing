@@ -126,6 +126,41 @@ export class DatabaseStorage implements IStorage {
   async getPendingBots(): Promise<BotInstance[]> {
     return await db.select().from(botInstances).where(eq(botInstances.approvalStatus, 'pending')).orderBy(desc(botInstances.createdAt));
   }
+
+  async getApprovedBots(): Promise<BotInstance[]> {
+    return await db.select().from(botInstances).where(eq(botInstances.approvalStatus, 'approved')).orderBy(desc(botInstances.createdAt));
+  }
+
+  async checkAndExpireBots(): Promise<void> {
+    console.log('🔄 Checking for expired bots...');
+    const approvedBots = await this.getApprovedBots();
+    const now = new Date();
+    
+    for (const bot of approvedBots) {
+      if (bot.approvalDate && bot.expirationMonths) {
+        const approvalDate = new Date(bot.approvalDate);
+        const expirationDate = new Date(approvalDate);
+        expirationDate.setMonth(expirationDate.getMonth() + bot.expirationMonths);
+        
+        if (now > expirationDate) {
+          console.log(`⏰ Bot ${bot.name} (${bot.phoneNumber}) expired - moving back to pending`);
+          await this.updateBotInstance(bot.id, {
+            approvalStatus: 'pending',
+            status: 'offline',
+            approvalDate: null,
+            expirationMonths: null
+          });
+          
+          await this.createActivity({
+            botInstanceId: bot.id,
+            type: 'expiration',
+            description: `Bot ${bot.name} expired after ${bot.expirationMonths} months`,
+            metadata: { originalApprovalDate: bot.approvalDate, expiredOn: now.toISOString() }
+          });
+        }
+      }
+    }
+  }
   
   // Command methods
   async getCommands(botInstanceId?: string): Promise<Command[]> {
