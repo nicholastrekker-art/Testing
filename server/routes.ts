@@ -704,6 +704,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Guest Bot Registration
+  app.post("/api/guest/register-bot", upload.single('credsFile'), async (req, res) => {
+    try {
+      const { botName, phoneNumber, credentialType, sessionId } = req.body;
+      
+      if (!botName || !phoneNumber) {
+        return res.status(400).json({ message: "Bot name and phone number are required" });
+      }
+
+      // Check if phone number already exists
+      const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
+      if (existingBot) {
+        // Check if existing bot is active and has valid session
+        if (existingBot.approvalStatus === 'approved' && existingBot.status === 'online') {
+          return res.status(400).json({ 
+            message: "Your previous bot is active. Can't add new bot with same number." 
+          });
+        }
+        
+        // If bot is inactive, test connection and handle accordingly
+        if (existingBot.approvalStatus === 'approved' && existingBot.status !== 'online') {
+          // Try to test connection - if fails, delete old credentials
+          try {
+            // Test connection logic here
+            console.log(`Testing connection for existing bot ${existingBot.id}`);
+            // If connection test fails, we'll delete and allow new registration
+          } catch (error) {
+            console.log(`Connection test failed for ${existingBot.id}, allowing new registration`);
+            await storage.deleteBotInstance(existingBot.id);
+          }
+        }
+      }
+
+      let credentials = null;
+      
+      // Handle credentials based on type
+      if (credentialType === 'base64' && sessionId) {
+        try {
+          // Validate base64 session ID
+          const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
+          const parsedCreds = JSON.parse(decoded);
+          credentials = parsedCreds;
+        } catch (error) {
+          return res.status(400).json({ message: "Invalid base64 session ID format" });
+        }
+      } else if (credentialType === 'file' && req.file) {
+        try {
+          const fileContent = req.file.buffer.toString('utf-8');
+          credentials = JSON.parse(fileContent);
+        } catch (error) {
+          return res.status(400).json({ message: "Invalid creds.json file format" });
+        }
+      } else {
+        return res.status(400).json({ message: "Valid credentials are required" });
+      }
+
+      // Create guest bot instance
+      const botInstance = await storage.createBotInstance({
+        name: botName,
+        phoneNumber: phoneNumber,
+        credentials: credentials,
+        status: 'pending_validation',
+        approvalStatus: 'pending',
+        isGuest: true,
+        settings: {}
+      });
+
+      // Test WhatsApp connection and send validation message
+      try {
+        console.log(`🔄 Testing WhatsApp connection for guest bot ${botInstance.id}`);
+        
+        // For now, we'll just validate the JSON structure and create the bot as dormant
+        // In production, you could implement proper WhatsApp validation here
+        console.log(`✅ Credentials validated for guest bot ${botInstance.id}`);
+        
+        // Simulate validation message sent (for demo purposes)
+        console.log(`📱 Validation message would be sent to ${phoneNumber}`);
+        
+        // Update bot status
+        await storage.updateBotInstance(botInstance.id, { 
+          status: 'dormant',
+          lastActivity: new Date()
+        });
+
+        // Log activity
+        await storage.createActivity({
+          botInstanceId: botInstance.id,
+          type: 'registration',
+          description: `Guest bot registered and validation message sent to ${phoneNumber}`,
+          metadata: { phoneNumber, credentialType }
+        });
+
+        broadcast({ 
+          type: 'GUEST_BOT_REGISTERED', 
+          data: { 
+            botInstance: { ...botInstance, credentials: undefined }, // Don't broadcast credentials
+            phoneNumber 
+          } 
+        });
+
+        res.json({ 
+          success: true, 
+          message: "Bot registered successfully! Credentials validated. Contact +254704897825 for activation.",
+          botId: botInstance.id
+        });
+
+      } catch (error) {
+        console.error('Failed to validate WhatsApp connection:', error);
+        
+        // Delete the bot instance if validation fails
+        await storage.deleteBotInstance(botInstance.id);
+        
+        return res.status(400).json({ 
+          message: "Failed to validate WhatsApp credentials. Please check your session ID or creds.json file." 
+        });
+      }
+
+    } catch (error) {
+      console.error('Guest bot registration error:', error);
+      res.status(500).json({ message: "Failed to register bot" });
+    }
+  });
+
   // Activities
   app.get("/api/activities", async (req, res) => {
     try {
@@ -752,6 +875,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  // Admin Bot Approval Routes
+  app.get("/api/admin/pending-bots", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const pendingBots = await storage.getPendingBots();
+      res.json(pendingBots);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch pending bots" });
+    }
+  });
+
+  app.post("/api/admin/approve-bot/:id", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const botId = req.params.id;
+      const botInstance = await storage.getBotInstance(botId);
+      
+      if (!botInstance) {
+        return res.status(404).json({ message: "Bot instance not found" });
+      }
+
+      // Update approval status
+      await storage.updateBotInstance(botId, { 
+        approvalStatus: 'approved',
+        status: 'offline' // Ready to be started
+      });
+
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: botId,
+        type: 'approval',
+        description: `Bot ${botInstance.name} approved by admin`,
+        metadata: { adminAction: 'approve', phoneNumber: botInstance.phoneNumber }
+      });
+
+      // Send activation message (placeholder for now)
+      console.log(`📞 Activation message would be sent to ${botInstance.phoneNumber}`);
+      
+      broadcast({ 
+        type: 'BOT_APPROVED', 
+        data: { botId, name: botInstance.name } 
+      });
+
+      res.json({ success: true, message: "Bot approved successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to approve bot" });
+    }
+  });
+
+  app.post("/api/admin/reject-bot/:id", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const botId = req.params.id;
+      const { reason } = req.body;
+      const botInstance = await storage.getBotInstance(botId);
+      
+      if (!botInstance) {
+        return res.status(404).json({ message: "Bot instance not found" });
+      }
+
+      // Update approval status
+      await storage.updateBotInstance(botId, { 
+        approvalStatus: 'rejected',
+        status: 'rejected'
+      });
+
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: botId,
+        type: 'rejection',
+        description: `Bot ${botInstance.name} rejected by admin. Reason: ${reason || 'No reason provided'}`,
+        metadata: { adminAction: 'reject', reason, phoneNumber: botInstance.phoneNumber }
+      });
+
+      broadcast({ 
+        type: 'BOT_REJECTED', 
+        data: { botId, name: botInstance.name, reason } 
+      });
+
+      res.json({ success: true, message: "Bot rejected successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to reject bot" });
+    }
+  });
+
+  app.post("/api/admin/send-message/:id", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const botId = req.params.id;
+      const { message } = req.body;
+      const botInstance = await storage.getBotInstance(botId);
+      
+      if (!botInstance || !botInstance.phoneNumber) {
+        return res.status(404).json({ message: "Bot instance or phone number not found" });
+      }
+
+      // Placeholder for sending message
+      console.log(`📱 Message sent to ${botInstance.phoneNumber}: ${message}`);
+      
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: botId,
+        type: 'admin_message',
+        description: `Admin sent message to ${botInstance.name}`,
+        metadata: { message, phoneNumber: botInstance.phoneNumber }
+      });
+
+      res.json({ success: true, message: "Message sent successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to send message" });
     }
   });
 

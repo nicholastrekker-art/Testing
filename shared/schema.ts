@@ -26,6 +26,8 @@ export const botInstances = pgTable("bot_instances", {
   lastActivity: timestamp("last_activity"),
   messagesCount: integer("messages_count").default(0),
   commandsCount: integer("commands_count").default(0),
+  approvalStatus: text("approval_status").default("pending"), // pending, approved, rejected
+  isGuest: boolean("is_guest").default(false),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });

@@ -7,11 +7,13 @@ import { useWebSocket } from "@/hooks/use-websocket";
 import { useAuth } from "@/hooks/use-auth";
 import AddBotModal from "@/components/add-bot-modal";
 import CommandManagement from "@/components/command-management";
+import GuestBotRegistration from "@/components/guest-bot-registration";
 
 export default function Dashboard() {
   const { isAdmin } = useAuth();
   const [showAddBotModal, setShowAddBotModal] = useState(false);
   const [showCommandManagement, setShowCommandManagement] = useState(false);
+  const [showGuestRegistration, setShowGuestRegistration] = useState(false);
 
   // Fetch dashboard stats
   const { data: stats = {}, isLoading: statsLoading } = useQuery({
@@ -270,39 +272,36 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           ) : (
-            // Guests see upload credentials section
+            // Guests see bot registration section
             <Card className="bg-card border-border">
               <CardHeader className="border-b border-border">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold text-foreground">Add New Bot</CardTitle>
+                  <CardTitle className="text-lg font-semibold text-foreground">🚀 Register Your Bot</CardTitle>
                   <Button 
-                    onClick={() => setShowAddBotModal(true)}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
-                    disabled={(botInstances as any[]).length >= 10}
-                    data-testid="button-add-new-bot"
+                    onClick={() => setShowGuestRegistration(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    data-testid="button-register-bot"
                   >
                     <i className="fas fa-plus mr-2"></i>
-                    Add Bot {(botInstances as any[]).length >= 10 ? '(Limit Reached)' : ''}
+                    Register Bot
                   </Button>
                 </div>
-                <p className="text-muted-foreground text-sm mt-1">Upload WhatsApp credentials to create a new bot instance</p>
+                <p className="text-muted-foreground text-sm mt-1">Upload credentials or paste session ID to register your TREKKER-MD bot</p>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <i className="fas fa-upload text-primary text-2xl"></i>
+                  <div className="w-16 h-16 bg-blue-600/10 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <i className="fas fa-robot text-blue-600 text-2xl"></i>
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Upload Bot Credentials</h3>
-                  <p className="text-muted-foreground mb-6">Add your WhatsApp bot credentials to get started with automation</p>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">TREKKER-MD Lifetime Bot</h3>
+                  <p className="text-muted-foreground mb-6">Register your WhatsApp bot with credentials or session ID</p>
                   <Button 
-                    onClick={() => setShowAddBotModal(true)}
-                    variant="outline"
-                    className="w-full max-w-xs"
-                    disabled={(botInstances as any[]).length >= 10}
-                    data-testid="button-upload-credentials"
+                    onClick={() => setShowGuestRegistration(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white w-full max-w-xs"
+                    data-testid="button-start-registration"
                   >
-                    <i className="fas fa-file-upload mr-2"></i>
-                    {(botInstances as any[]).length >= 10 ? 'Bot Limit Reached' : 'Upload creds.json'}
+                    <i className="fas fa-rocket mr-2"></i>
+                    Register Your Bot
                   </Button>
                 </div>
               </CardContent>
@@ -413,6 +412,12 @@ export default function Dashboard() {
       <CommandManagement
         open={showCommandManagement}
         onClose={() => setShowCommandManagement(false)}
+      />
+      
+      {/* Guest Bot Registration Modal */}
+      <GuestBotRegistration
+        open={showGuestRegistration}
+        onClose={() => setShowGuestRegistration(false)}
       />
     </div>
   );

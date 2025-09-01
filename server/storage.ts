@@ -117,6 +117,15 @@ export class DatabaseStorage implements IStorage {
   async deleteBotInstance(id: string): Promise<void> {
     await db.delete(botInstances).where(eq(botInstances.id, id));
   }
+
+  async getBotByPhoneNumber(phoneNumber: string): Promise<BotInstance | undefined> {
+    const [botInstance] = await db.select().from(botInstances).where(eq(botInstances.phoneNumber, phoneNumber));
+    return botInstance || undefined;
+  }
+
+  async getPendingBots(): Promise<BotInstance[]> {
+    return await db.select().from(botInstances).where(eq(botInstances.approvalStatus, 'pending')).orderBy(desc(botInstances.createdAt));
+  }
   
   // Command methods
   async getCommands(botInstanceId?: string): Promise<Command[]> {
