@@ -17,7 +17,15 @@ The client-side is built with React and TypeScript using Vite as the build tool.
 The server runs on Express.js with TypeScript, following a modular architecture. The bot management system uses a service-oriented approach with dedicated services for WhatsApp bot operations, OpenAI integration, and database operations. The WhatsApp functionality is implemented using the whatsapp-web.js library, which provides a reliable interface to WhatsApp Web. Real-time communication between server and clients is achieved through WebSocket connections for instant status updates and notifications.
 
 ### Database Layer
-The application uses PostgreSQL as the primary database with Drizzle ORM for type-safe database operations. The schema includes tables for users, bot instances, commands, activities, and groups. The database design supports multiple bot instances per user, command management with ChatGPT integration options, and comprehensive activity logging for monitoring and analytics.
+The application uses PostgreSQL as the primary database with Drizzle ORM for type-safe database operations. The database configuration is flexible and supports multiple deployment scenarios:
+
+**Database Configuration Options:**
+- **Environment Variables**: Supports both DATABASE_URL or individual database variables (DB_HOST, DB_NAME, DB_USER, DB_PASSWORD)
+- **SSL Configuration**: Automatically configures SSL based on environment (can be disabled with DB_SSL=false)
+- **Connection Pooling**: Configurable connection pool size via DB_MAX_CONNECTIONS
+- **Auto-Initialization**: Automatically creates database tables on startup if they don't exist
+
+The schema includes tables for users, bot instances, commands, activities, and groups. The database design supports multiple bot instances per user, command management with ChatGPT integration options, and comprehensive activity logging for monitoring and analytics.
 
 ### Authentication & Session Management
 Session management is handled through PostgreSQL session storage using connect-pg-simple, providing secure and scalable session persistence. The authentication system is designed to support user-specific bot instances and command management.
@@ -34,9 +42,10 @@ Bots support various automation modes including auto-like for status updates, au
 ## External Dependencies
 
 ### Primary Database
-- **PostgreSQL**: Main database using Neon's serverless PostgreSQL service
-- **Drizzle ORM**: Type-safe database operations and migrations
+- **PostgreSQL**: Flexible database connection supporting multiple providers (Neon, Supabase, AWS RDS, etc.)
+- **Drizzle ORM**: Type-safe database operations and automatic schema initialization
 - **connect-pg-simple**: PostgreSQL session store for Express sessions
+- **Auto-Migration**: Automatic table creation and schema management on startup
 
 ### WhatsApp Integration
 - **whatsapp-web.js**: Primary library for WhatsApp Web automation
