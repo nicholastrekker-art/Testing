@@ -11,9 +11,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useRef } from "react";
 import { z } from "zod";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const formSchema = insertBotInstanceSchema.extend({
   credentialsFile: z.any().optional(),
+  credentialsBase64: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -28,6 +31,8 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [base64Credentials, setBase64Credentials] = useState<string>("");
+  const [uploadMethod, setUploadMethod] = useState<"file" | "base64">("file");
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -47,14 +52,19 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
       
       // Append form fields
       Object.entries(data).forEach(([key, value]) => {
-        if (key !== 'credentialsFile') {
+        if (key !== 'credentialsFile' && key !== 'credentialsBase64') {
           formData.append(key, String(value));
         }
       });
       
-      // Append file if selected
-      if (selectedFile) {
+      // Append file if selected (file upload method)
+      if (uploadMethod === "file" && selectedFile) {
         formData.append('credentials', selectedFile);
+      }
+      
+      // Append base64 credentials if provided (base64 method)
+      if (uploadMethod === "base64" && base64Credentials.trim()) {
+        formData.append('credentialsBase64', base64Credentials.trim());
       }
 
       const response = await fetch("/api/bot-instances", {
@@ -75,6 +85,7 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       form.reset();
       setSelectedFile(null);
+      setBase64Credentials("");
       onClose();
     },
     onError: (error) => {
@@ -154,6 +165,40 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
     }
   };
 
+  const handleBase64Input = (value: string) => {
+    setBase64Credentials(value);
+    
+    if (value.trim()) {
+      try {
+        // Decode base64 and validate JSON
+        const decoded = atob(value.trim());
+        const parsed = JSON.parse(decoded);
+        
+        // Check if it looks like a valid credentials file
+        if (typeof parsed !== 'object' || !parsed || Array.isArray(parsed)) {
+          throw new Error('Invalid credentials format');
+        }
+
+        // Check for essential fields (basic validation)
+        if (Object.keys(parsed).length === 0) {
+          throw new Error('Credentials file is empty');
+        }
+
+        toast({ 
+          title: "Base64 credentials validated", 
+          description: "Credentials data looks valid",
+          variant: "default" 
+        });
+      } catch (error) {
+        toast({ 
+          title: "Invalid base64 credentials", 
+          description: "Please check that your base64 string contains valid JSON credentials",
+          variant: "destructive" 
+        });
+      }
+    }
+  };
+
   const onSubmit = (data: FormData) => {
     createBotMutation.mutate(data);
   };
@@ -184,31 +229,55 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
 
           <div>
             <Label className="block text-sm font-medium text-foreground mb-2">
-              Upload Credentials
+              Credentials
             </Label>
-            <div 
-              className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
-              onClick={() => fileInputRef.current?.click()}
-              data-testid="dropzone-credentials"
-            >
-              <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center mx-auto mb-3">
-                <i className="fas fa-upload text-muted-foreground text-xl"></i>
-              </div>
-              <p className="text-sm text-foreground font-medium">
-                {selectedFile ? selectedFile.name : "Click to upload creds.json"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                or drag and drop your credentials file
-              </p>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              onChange={handleFileSelect}
-              className="hidden"
-              data-testid="input-credentials-file"
-            />
+            <Tabs value={uploadMethod} onValueChange={(value) => setUploadMethod(value as "file" | "base64")} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="file">Upload File</TabsTrigger>
+                <TabsTrigger value="base64">Paste Base64</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="file" className="mt-4">
+                <div 
+                  className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                  data-testid="dropzone-credentials"
+                >
+                  <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <i className="fas fa-upload text-muted-foreground text-xl"></i>
+                  </div>
+                  <p className="text-sm text-foreground font-medium">
+                    {selectedFile ? selectedFile.name : "Click to upload creds.json"}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    or drag and drop your credentials file
+                  </p>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  data-testid="input-credentials-file"
+                />
+              </TabsContent>
+              
+              <TabsContent value="base64" className="mt-4">
+                <div className="space-y-2">
+                  <Textarea
+                    placeholder="Paste your base64-encoded credentials here..."
+                    value={base64Credentials}
+                    onChange={(e) => handleBase64Input(e.target.value)}
+                    className="min-h-[120px] bg-input border-border text-foreground placeholder:text-muted-foreground font-mono text-sm"
+                    data-testid="textarea-base64-credentials"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Paste the base64-encoded version of your creds.json file. The bot will decode and validate it automatically.
+                  </p>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

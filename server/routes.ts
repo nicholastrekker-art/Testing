@@ -47,6 +47,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Set broadcast function in bot manager
   botManager.setBroadcastFunction(broadcast);
+  
+  // Function to resume all saved bots from database on startup
+  async function resumeSavedBots() {
+    try {
+      console.log('🔄 Starting bot resume process...');
+      
+      const savedBots = await storage.getAllBotInstances();
+      
+      if (savedBots.length === 0) {
+        console.log('📋 No saved bots found in database');
+        return;
+      }
+
+      console.log(`📱 Found ${savedBots.length} saved bot(s) in database`);
+      
+      // Filter bots that have credentials (can be resumed)
+      const resumableBots = savedBots.filter(bot => bot.credentials);
+      
+      if (resumableBots.length === 0) {
+        console.log('⚠️ No bots with credentials found to resume');
+        return;
+      }
+
+      console.log(`🚀 Resuming ${resumableBots.length} bot(s) with credentials...`);
+      
+      // Set all bots to loading status initially
+      for (const bot of resumableBots) {
+        await storage.updateBotInstance(bot.id, { status: 'loading' });
+        await storage.createActivity({
+          botInstanceId: bot.id,
+          type: 'startup',
+          description: 'Bot resume initiated on server restart'
+        });
+      }
+
+      // Resume bots with a delay between each to prevent overwhelming
+      for (let i = 0; i < resumableBots.length; i++) {
+        const bot = resumableBots[i];
+        
+        setTimeout(async () => {
+          try {
+            console.log(`🔄 Resuming bot: ${bot.name} (${bot.id})`);
+            
+            // Create and start the bot
+            await botManager.createBot(bot.id, bot);
+            await botManager.startBot(bot.id);
+            
+            console.log(`✅ Bot ${bot.name} resumed successfully`);
+            
+            await storage.createActivity({
+              botInstanceId: bot.id,
+              type: 'startup',
+              description: 'Bot resumed successfully on server restart'
+            });
+            
+            // Broadcast bot status update
+            broadcast({ 
+              type: 'BOT_RESUMED', 
+              data: { 
+                botId: bot.id, 
+                name: bot.name,
+                status: 'loading' 
+              } 
+            });
+            
+          } catch (error) {
+            console.error(`❌ Failed to resume bot ${bot.name}:`, error);
+            
+            await storage.updateBotInstance(bot.id, { status: 'error' });
+            await storage.createActivity({
+              botInstanceId: bot.id,
+              type: 'error',
+              description: `Bot resume failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+            });
+            
+            // Broadcast bot error
+            broadcast({ 
+              type: 'BOT_ERROR', 
+              data: { 
+                botId: bot.id, 
+                name: bot.name,
+                status: 'error',
+                error: error instanceof Error ? error.message : 'Unknown error'
+              } 
+            });
+          }
+        }, i * 2000); // 2 second delay between each bot
+      }
+      
+      console.log(`✅ Bot resume process initiated for ${resumableBots.length} bot(s)`);
+      
+    } catch (error) {
+      console.error('❌ Failed to resume saved bots:', error);
+    }
+  }
+
+  // Resume all saved bots from database on startup
+  await resumeSavedBots();
 
   // Auth endpoints
   app.post("/api/auth/login", async (req, res) => {
@@ -195,7 +293,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       let credentials = null;
       
-      if (req.file) {
+      // Handle base64 credentials
+      if (req.body.credentialsBase64) {
+        try {
+          const base64Data = req.body.credentialsBase64.trim();
+          if (!base64Data) {
+            return res.status(400).json({ 
+              message: "Base64 credentials string is empty. Please provide valid base64-encoded credentials." 
+            });
+          }
+
+          // Decode base64
+          const decodedContent = Buffer.from(base64Data, 'base64').toString('utf8');
+          if (!decodedContent.trim()) {
+            return res.status(400).json({ 
+              message: "Decoded credentials are empty. Please check your base64 string." 
+            });
+          }
+
+          // Parse JSON
+          credentials = JSON.parse(decodedContent);
+          
+          // Validate that it's a proper WhatsApp credentials file
+          if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
+            return res.status(400).json({ 
+              message: "Invalid credentials format. Please ensure your base64 string contains valid WhatsApp session data." 
+            });
+          }
+
+          // Check for empty object
+          if (Object.keys(credentials).length === 0) {
+            return res.status(400).json({ 
+              message: "Credentials are empty. Please provide valid base64-encoded credentials with session data." 
+            });
+          }
+        } catch (error) {
+          return res.status(400).json({ 
+            message: "Invalid base64 or JSON format. Please ensure you're providing a valid base64-encoded credentials.json file." 
+          });
+        }
+      } else if (req.file) {
         // Check file size (minimum 10 bytes, maximum 5MB)
         if (req.file.size < 10) {
           return res.status(400).json({ 
