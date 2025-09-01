@@ -163,6 +163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const stats = await storage.getDashboardStats();
       res.json(stats);
     } catch (error) {
+      console.error("Dashboard stats error:", error);
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
     }
   });
@@ -173,6 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const bots = await storage.getAllBotInstances();
       res.json(bots);
     } catch (error) {
+      console.error("Bot instances error:", error);
       res.status(500).json({ message: "Failed to fetch bot instances" });
     }
   });

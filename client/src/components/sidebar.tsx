@@ -43,9 +43,9 @@ export default function Sidebar() {
       <nav className="flex-1 p-4 space-y-2">
         {navigationItems.map((item) => (
           <Link key={item.href} href={item.href}>
-            <a
+            <div
               className={cn(
-                "flex items-center space-x-3 px-3 py-2 rounded-md transition-colors",
+                "flex items-center space-x-3 px-3 py-2 rounded-md transition-colors cursor-pointer",
                 location === item.href
                   ? "bg-primary/10 text-primary border border-primary/20"
                   : "hover:bg-muted text-muted-foreground hover:text-foreground"
@@ -54,7 +54,7 @@ export default function Sidebar() {
             >
               <i className={`${item.icon} w-5`}></i>
               <span>{item.label}</span>
-            </a>
+            </div>
           </Link>
         ))}
         
@@ -69,9 +69,9 @@ export default function Sidebar() {
             </div>
             {adminNavigationItems.map((item) => (
               <Link key={item.href} href={item.href}>
-                <a
+                <div
                   className={cn(
-                    "flex items-center space-x-3 px-3 py-2 rounded-md transition-colors",
+                    "flex items-center space-x-3 px-3 py-2 rounded-md transition-colors cursor-pointer",
                     location === item.href
                       ? "bg-red-500/10 text-red-600 border border-red-500/20"
                       : "hover:bg-red-500/5 text-muted-foreground hover:text-red-600"
@@ -80,7 +80,7 @@ export default function Sidebar() {
                 >
                   <i className={`${item.icon} w-5`}></i>
                   <span>{item.label}</span>
-                </a>
+                </div>
               </Link>
             ))}
           </>
