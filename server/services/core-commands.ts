@@ -679,13 +679,7 @@ const categoryCommands = {
 // Essential TREKKER-MD commands only - custom commands managed through admin panel
 // Placeholder commands removed - using clean command system
 
-// Custom command management system - plugin converter disabled
-console.log('🔧 Massive Plugin Converter loaded');
-console.log('🔄 Starting massive plugin conversion...');
-console.log('🔄 Processing 319 plugin files...');
-console.log('✅ Extracted 211 commands from 319 files');
-console.log('🚀 Registering 211 commands...');
-console.log('✅ Successfully registered 211 commands!');
-console.log('✅ Successfully loaded 211 plugin commands!');
+// Plugin system completely removed - using clean TREKKER-MD command system
+console.log('🧹 Plugin system disabled - Clean TREKKER-MD commands only');
 
 export { commandRegistry };
