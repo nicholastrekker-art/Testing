@@ -53,6 +53,34 @@ const createCommandContext = (m: any, options: any): CommandContext => {
   };
 };
 
+// Function to save commands to database
+export const saveCommandsToDatabase = async (storage: any) => {
+  const commands = commandRegistry.getAllCommands();
+  
+  console.log(`Saving ${commands.length} commands to database...`);
+  
+  for (const command of commands) {
+    try {
+      await storage.createCommand({
+        name: command.name,
+        description: command.description,
+        response: `Executing ${command.name}...`,
+        isActive: true,
+        category: command.category,
+        useChatGPT: false
+      });
+      console.log(`✅ Saved command: ${command.name}`);
+    } catch (error: any) {
+      // Command might already exist, ignore duplicate errors
+      if (!error?.message?.includes('duplicate') && !error?.message?.includes('already exists')) {
+        console.log(`⚠️ Error saving command ${command.name}:`, error?.message);
+      }
+    }
+  }
+  
+  console.log('✅ All commands saved to database');
+};
+
 // Category mapping from plugin tags to our categories
 const getCategoryFromTags = (tags: string[] = []): string => {
   const tagMap: Record<string, string> = {

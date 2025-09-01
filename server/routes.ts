@@ -430,9 +430,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/commands", async (req, res) => {
     try {
       const botInstanceId = req.query.botInstanceId as string;
-      const commands = await storage.getCommands(botInstanceId);
+      let commands = await storage.getCommands(botInstanceId);
+      
+      // If database is empty and no specific bot instance requested, populate with registered commands
+      if (commands.length === 0 && !botInstanceId) {
+        try {
+          const { commandRegistry } = await import('./services/command-registry.js');
+          const registeredCommands = commandRegistry.getAllCommands();
+          
+          console.log('Database empty, populating with registered commands...');
+          
+          for (const command of registeredCommands) {
+            try {
+              await storage.createCommand({
+                name: command.name,
+                description: command.description,
+                response: `Executing ${command.name}...`,
+                isActive: true,
+                category: command.category,
+                useChatGPT: false
+              });
+            } catch (error: any) {
+              // Ignore duplicate errors
+              if (!error?.message?.includes('duplicate') && !error?.message?.includes('unique')) {
+                console.log(`Error saving ${command.name}:`, error?.message);
+              }
+            }
+          }
+          
+          // Fetch commands again after populating
+          commands = await storage.getCommands(botInstanceId);
+          console.log(`✅ Populated database with ${commands.length} commands`);
+        } catch (error) {
+          console.log('Note: Could not populate database with commands:', error);
+        }
+      }
+      
       res.json(commands);
     } catch (error) {
+      console.error("Commands error:", error);
       res.status(500).json({ message: "Failed to fetch commands" });
     }
   });

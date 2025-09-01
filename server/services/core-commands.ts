@@ -72,7 +72,12 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { respond, client, message } = context;
     
-    const commands = commandRegistry.getAllCommands();
+    // Get commands from both registry and database
+    const registryCommands = commandRegistry.getAllCommands();
+    
+    // Just use registry commands for now - database integration will be handled separately
+    const allCommands = registryCommands;
+    
     const categorizedCommands = commandRegistry.getCommandsByCategory();
     
     moment.tz.setDefault("Africa/Nairobi");
@@ -94,7 +99,7 @@ ${greeting}, *User*
 ┃ *👤ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD
 ┃ *🥏ᴘʀᴇғɪx:* *[ . ]*
 ┃ *🕒ᴛɪᴍᴇ:* ${formattedTime}
-┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* ${commands.length} 
+┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* ${allCommands.length} 
 ┃ *📆ᴅᴀᴛᴇ:* ${formattedDate}
 ┃ *🧑‍💻ᴍᴏᴅᴇ:* ${mode}
 ┃ *📼ʀᴀᴍ:* ${formatMemory(os.totalmem() - os.freemem())}/${formatMemory(os.totalmem())}
