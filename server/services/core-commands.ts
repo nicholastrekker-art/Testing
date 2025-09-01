@@ -691,4 +691,16 @@ Object.entries(categoryCommands).forEach(([category, commands]) => {
   });
 });
 
+// Load and register all plugin commands
+import('./massive-plugin-converter.js').then(async ({ massiveConverter }) => {
+  try {
+    console.log('🔄 Starting massive plugin conversion...');
+    const extractedCommands = await massiveConverter.convertAllPlugins();
+    massiveConverter.registerCommands(extractedCommands);
+    console.log(`✅ Successfully loaded ${extractedCommands.length} plugin commands!`);
+  } catch (error) {
+    console.log('⚠️ Error loading plugin commands:', error);
+  }
+});
+
 export { commandRegistry };
