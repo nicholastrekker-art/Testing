@@ -190,7 +190,8 @@ export class DatabaseStorage implements IStorage {
             botInstanceId: bot.id,
             type: 'expiration',
             description: `Bot ${bot.name} expired after ${bot.expirationMonths} months`,
-            metadata: { originalApprovalDate: bot.approvalDate, expiredOn: now.toISOString() }
+            metadata: { originalApprovalDate: bot.approvalDate, expiredOn: now.toISOString() },
+            serverName: getServerName()
           });
         }
       }
@@ -205,7 +206,7 @@ export class DatabaseStorage implements IStorage {
       const result = await db.update(botInstances)
         .set({
           approvalStatus: 'approved',
-          approvalDate: now,
+          approvalDate: now.toISOString(),
           expirationMonths: expirationMonths || null
         })
         .where(and(eq(botInstances.id, id), eq(botInstances.serverName, serverName)))
@@ -216,7 +217,8 @@ export class DatabaseStorage implements IStorage {
           botInstanceId: id,
           type: 'approval',
           description: `Bot approved by admin${expirationMonths ? ` for ${expirationMonths} months` : ' with unlimited access'}`,
-          metadata: { approvalDate: now.toISOString(), expirationMonths }
+          metadata: { approvalDate: now.toISOString(), expirationMonths },
+          serverName
         });
         return true;
       }
@@ -240,7 +242,8 @@ export class DatabaseStorage implements IStorage {
           botInstanceId: id,
           type: 'rejection',
           description: `Bot rejected and removed by admin`,
-          metadata: { rejectionDate: new Date().toISOString() }
+          metadata: { rejectionDate: new Date().toISOString() },
+          serverName
         });
         return true;
       }

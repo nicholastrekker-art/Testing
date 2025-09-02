@@ -10,6 +10,15 @@ import { insertBotInstanceSchema, insertCommandSchema, insertActivitySchema } fr
 import { botManager } from "./services/bot-manager";
 import { authenticateAdmin, authenticateUser, validateAdminCredentials, generateToken, type AuthRequest } from './middleware/auth';
 
+// Helper function to get server name
+function getServerName(): string {
+  const serverName = process.env.NAME;
+  if (!serverName) {
+    throw new Error('Server NAME environment variable is required for multi-tenancy');
+  }
+  return serverName;
+}
+
 const upload = multer({ 
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
@@ -78,7 +87,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createActivity({
           botInstanceId: bot.id,
           type: 'startup',
-          description: 'Bot resume initiated on server restart'
+          description: 'Bot resume initiated on server restart',
+          serverName: getServerName()
         });
       }
 
@@ -99,7 +109,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await storage.createActivity({
               botInstanceId: bot.id,
               type: 'startup',
-              description: 'Bot resumed successfully on server restart'
+              description: 'Bot resumed successfully on server restart',
+              serverName: getServerName()
             });
             
             // Broadcast bot status update
@@ -119,7 +130,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await storage.createActivity({
               botInstanceId: bot.id,
               type: 'error',
-              description: `Bot resume failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+              description: `Bot resume failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              serverName: getServerName()
             });
             
             // Broadcast bot error
