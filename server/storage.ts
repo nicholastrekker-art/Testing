@@ -18,6 +18,24 @@ import {
 import { db } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
 
+// Get current server name from environment variables
+function getServerName(): string {
+  const serverName = process.env.NAME;
+  if (!serverName) {
+    throw new Error('Server NAME environment variable is required for multi-tenancy');
+  }
+  return serverName;
+}
+
+// Get maximum bot count from environment variables
+function getMaxBotCount(): number {
+  const botCount = process.env.BOTSCOUNT;
+  if (!botCount) {
+    throw new Error('BOTSCOUNT environment variable is required');
+  }
+  return parseInt(botCount, 10);
+}
+
 export interface IStorage {
   // User methods
   getUser(id: string): Promise<User | undefined>;
@@ -30,6 +48,7 @@ export interface IStorage {
   createBotInstance(botInstance: InsertBotInstance): Promise<BotInstance>;
   updateBotInstance(id: string, updates: Partial<BotInstance>): Promise<BotInstance>;
   deleteBotInstance(id: string): Promise<void>;
+  checkBotCountLimit(): Promise<boolean>;
   
   // Command methods
   getCommands(botInstanceId?: string): Promise<Command[]>;
@@ -75,32 +94,37 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+    const serverName = getServerName();
+    const [user] = await db.select().from(users).where(and(eq(users.username, username), eq(users.serverName, serverName)));
     return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    const serverName = getServerName();
     const [user] = await db
       .insert(users)
-      .values(insertUser)
+      .values({ ...insertUser, serverName })
       .returning();
     return user;
   }
   
   // Bot Instance methods
   async getBotInstance(id: string): Promise<BotInstance | undefined> {
-    const [botInstance] = await db.select().from(botInstances).where(eq(botInstances.id, id));
+    const serverName = getServerName();
+    const [botInstance] = await db.select().from(botInstances).where(and(eq(botInstances.id, id), eq(botInstances.serverName, serverName)));
     return botInstance || undefined;
   }
 
   async getAllBotInstances(): Promise<BotInstance[]> {
-    return await db.select().from(botInstances).orderBy(desc(botInstances.createdAt));
+    const serverName = getServerName();
+    return await db.select().from(botInstances).where(eq(botInstances.serverName, serverName)).orderBy(desc(botInstances.createdAt));
   }
 
   async createBotInstance(insertBotInstance: InsertBotInstance): Promise<BotInstance> {
+    const serverName = getServerName();
     const [botInstance] = await db
       .insert(botInstances)
-      .values(insertBotInstance)
+      .values({ ...insertBotInstance, serverName })
       .returning();
     return botInstance;
   }
@@ -115,20 +139,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteBotInstance(id: string): Promise<void> {
-    await db.delete(botInstances).where(eq(botInstances.id, id));
+    const serverName = getServerName();
+    await db.delete(botInstances).where(and(eq(botInstances.id, id), eq(botInstances.serverName, serverName)));
+  }
+
+  async checkBotCountLimit(): Promise<boolean> {
+    const serverName = getServerName();
+    const maxBots = getMaxBotCount();
+    const currentBots = await db.select().from(botInstances).where(eq(botInstances.serverName, serverName));
+    return currentBots.length < maxBots;
   }
 
   async getBotByPhoneNumber(phoneNumber: string): Promise<BotInstance | undefined> {
-    const [botInstance] = await db.select().from(botInstances).where(eq(botInstances.phoneNumber, phoneNumber));
+    const serverName = getServerName();
+    const [botInstance] = await db.select().from(botInstances).where(and(eq(botInstances.phoneNumber, phoneNumber), eq(botInstances.serverName, serverName)));
     return botInstance || undefined;
   }
 
   async getPendingBots(): Promise<BotInstance[]> {
-    return await db.select().from(botInstances).where(eq(botInstances.approvalStatus, 'pending')).orderBy(desc(botInstances.createdAt));
+    const serverName = getServerName();
+    return await db.select().from(botInstances).where(and(eq(botInstances.approvalStatus, 'pending'), eq(botInstances.serverName, serverName))).orderBy(desc(botInstances.createdAt));
   }
 
   async getApprovedBots(): Promise<BotInstance[]> {
-    return await db.select().from(botInstances).where(eq(botInstances.approvalStatus, 'approved')).orderBy(desc(botInstances.createdAt));
+    const serverName = getServerName();
+    return await db.select().from(botInstances).where(and(eq(botInstances.approvalStatus, 'approved'), eq(botInstances.serverName, serverName))).orderBy(desc(botInstances.createdAt));
   }
 
   async checkAndExpireBots(): Promise<void> {
@@ -164,94 +199,108 @@ export class DatabaseStorage implements IStorage {
   
   // Command methods
   async getCommands(botInstanceId?: string): Promise<Command[]> {
+    const serverName = getServerName();
     if (botInstanceId) {
       return await db.select().from(commands).where(
         and(
           eq(commands.botInstanceId, botInstanceId),
-          eq(commands.isActive, true)
+          eq(commands.isActive, true),
+          eq(commands.serverName, serverName)
         )
       );
     }
-    return await db.select().from(commands).where(eq(commands.isActive, true));
+    return await db.select().from(commands).where(and(eq(commands.isActive, true), eq(commands.serverName, serverName)));
   }
 
   async getCommand(id: string): Promise<Command | undefined> {
-    const [command] = await db.select().from(commands).where(eq(commands.id, id));
+    const serverName = getServerName();
+    const [command] = await db.select().from(commands).where(and(eq(commands.id, id), eq(commands.serverName, serverName)));
     return command || undefined;
   }
 
   async createCommand(insertCommand: InsertCommand): Promise<Command> {
+    const serverName = getServerName();
     const [command] = await db
       .insert(commands)
-      .values(insertCommand)
+      .values({ ...insertCommand, serverName })
       .returning();
     return command;
   }
 
   async updateCommand(id: string, updates: Partial<Command>): Promise<Command> {
+    const serverName = getServerName();
     const [command] = await db
       .update(commands)
       .set(updates)
-      .where(eq(commands.id, id))
+      .where(and(eq(commands.id, id), eq(commands.serverName, serverName)))
       .returning();
     return command;
   }
 
   async deleteCommand(id: string): Promise<void> {
-    await db.delete(commands).where(eq(commands.id, id));
+    const serverName = getServerName();
+    await db.delete(commands).where(and(eq(commands.id, id), eq(commands.serverName, serverName)));
   }
   
   // Activity methods
   async getActivities(botInstanceId?: string, limit = 50): Promise<Activity[]> {
+    const serverName = getServerName();
     if (botInstanceId) {
       return await db.select().from(activities)
-        .where(eq(activities.botInstanceId, botInstanceId))
+        .where(and(eq(activities.botInstanceId, botInstanceId), eq(activities.serverName, serverName)))
         .orderBy(desc(activities.createdAt))
         .limit(limit);
     }
     
     return await db.select().from(activities)
+      .where(eq(activities.serverName, serverName))
       .orderBy(desc(activities.createdAt))
       .limit(limit);
   }
 
   async createActivity(insertActivity: InsertActivity): Promise<Activity> {
+    const serverName = getServerName();
     const [activity] = await db
       .insert(activities)
-      .values(insertActivity)
+      .values({ ...insertActivity, serverName })
       .returning();
     return activity;
   }
   
   // Group methods
   async getGroups(botInstanceId: string): Promise<Group[]> {
+    const serverName = getServerName();
     return await db.select().from(groups).where(
       and(
         eq(groups.botInstanceId, botInstanceId),
-        eq(groups.isActive, true)
+        eq(groups.isActive, true),
+        eq(groups.serverName, serverName)
       )
     );
   }
 
   async createGroup(insertGroup: InsertGroup): Promise<Group> {
+    const serverName = getServerName();
     const [group] = await db
       .insert(groups)
-      .values(insertGroup)
+      .values({ ...insertGroup, serverName })
       .returning();
     return group;
   }
 
   async updateGroup(id: string, updates: Partial<Group>): Promise<Group> {
+    const serverName = getServerName();
     const [group] = await db
       .update(groups)
       .set(updates)
-      .where(eq(groups.id, id))
+      .where(and(eq(groups.id, id), eq(groups.serverName, serverName)))
       .returning();
     return group;
   }
 
   async deleteGroup(id: string): Promise<void> {
-    await db.delete(groups).where(eq(groups.id, id));
+    const serverName = getServerName();
+    await db.delete(groups).where(and(eq(groups.id, id), eq(groups.serverName, serverName)));
   }
   
   // Statistics
@@ -261,10 +310,11 @@ export class DatabaseStorage implements IStorage {
     messagesCount: number;
     commandsCount: number;
   }> {
-    const [totalBotsResult] = await db.select({ count: sql<number>`count(*)` }).from(botInstances);
-    const [activeBotsResult] = await db.select({ count: sql<number>`count(*)` }).from(botInstances).where(eq(botInstances.status, "online"));
-    const [messagesResult] = await db.select({ sum: sql<number>`sum(${botInstances.messagesCount})` }).from(botInstances);
-    const [commandsResult] = await db.select({ sum: sql<number>`sum(${botInstances.commandsCount})` }).from(botInstances);
+    const serverName = getServerName();
+    const [totalBotsResult] = await db.select({ count: sql<number>`count(*)` }).from(botInstances).where(eq(botInstances.serverName, serverName));
+    const [activeBotsResult] = await db.select({ count: sql<number>`count(*)` }).from(botInstances).where(and(eq(botInstances.status, "online"), eq(botInstances.serverName, serverName)));
+    const [messagesResult] = await db.select({ sum: sql<number>`sum(${botInstances.messagesCount})` }).from(botInstances).where(eq(botInstances.serverName, serverName));
+    const [commandsResult] = await db.select({ sum: sql<number>`sum(${botInstances.commandsCount})` }).from(botInstances).where(eq(botInstances.serverName, serverName));
     
     return {
       totalBots: totalBotsResult.count || 0,
@@ -275,7 +325,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllActivities(limit = 100): Promise<Activity[]> {
+    const serverName = getServerName();
     return await db.select().from(activities)
+      .where(eq(activities.serverName, serverName))
       .orderBy(desc(activities.createdAt))
       .limit(limit);
   }
@@ -288,12 +340,13 @@ export class DatabaseStorage implements IStorage {
     totalCommands: number;
     recentActivities: number;
   }> {
-    const [totalBotsResult] = await db.select({ count: sql<number>`count(*)` }).from(botInstances);
-    const [onlineBotsResult] = await db.select({ count: sql<number>`count(*)` }).from(botInstances).where(eq(botInstances.status, "online"));
-    const [offlineBotsResult] = await db.select({ count: sql<number>`count(*)` }).from(botInstances).where(eq(botInstances.status, "offline"));
-    const [messagesResult] = await db.select({ sum: sql<number>`sum(${botInstances.messagesCount})` }).from(botInstances);
-    const [commandsResult] = await db.select({ sum: sql<number>`sum(${botInstances.commandsCount})` }).from(botInstances);
-    const [activitiesResult] = await db.select({ count: sql<number>`count(*)` }).from(activities);
+    const serverName = getServerName();
+    const [totalBotsResult] = await db.select({ count: sql<number>`count(*)` }).from(botInstances).where(eq(botInstances.serverName, serverName));
+    const [onlineBotsResult] = await db.select({ count: sql<number>`count(*)` }).from(botInstances).where(and(eq(botInstances.status, "online"), eq(botInstances.serverName, serverName)));
+    const [offlineBotsResult] = await db.select({ count: sql<number>`count(*)` }).from(botInstances).where(and(eq(botInstances.status, "offline"), eq(botInstances.serverName, serverName)));
+    const [messagesResult] = await db.select({ sum: sql<number>`sum(${botInstances.messagesCount})` }).from(botInstances).where(eq(botInstances.serverName, serverName));
+    const [commandsResult] = await db.select({ sum: sql<number>`sum(${botInstances.commandsCount})` }).from(botInstances).where(eq(botInstances.serverName, serverName));
+    const [activitiesResult] = await db.select({ count: sql<number>`count(*)` }).from(activities).where(eq(activities.serverName, serverName));
     
     return {
       totalBots: totalBotsResult.count || 0,

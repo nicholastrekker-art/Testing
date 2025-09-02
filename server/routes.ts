@@ -266,6 +266,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Server info
+  app.get("/api/server/info", async (req, res) => {
+    try {
+      const serverName = process.env.NAME || 'Unknown';
+      const maxBots = parseInt(process.env.BOTSCOUNT || '10', 10);
+      const currentBots = await storage.getAllBotInstances();
+      
+      res.json({
+        serverName,
+        maxBots,
+        currentBots: currentBots.length,
+        availableSlots: maxBots - currentBots.length
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch server info" });
+    }
+  });
+
   // Bot Instances
   app.get("/api/bot-instances", async (req, res) => {
     try {
@@ -385,10 +403,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check for duplicate bot name and bot count limit
       const existingBots = await storage.getAllBotInstances();
       
-      // Check bot count limit (max 10 bots for regular users)
-      if (existingBots.length >= 10) {
+      // Check bot count limit using environment variable
+      const canAddBot = await storage.checkBotCountLimit();
+      if (!canAddBot) {
+        const maxBots = parseInt(process.env.BOTSCOUNT || '10', 10);
         return res.status(400).json({ 
-          message: `Maximum bot limit reached (10 bots). Please delete existing bots before adding new ones.` 
+          message: `Sorry 😞... The server is full! Maximum bot limit reached (${maxBots} bots). Please contact administrator for more capacity.` 
         });
       }
       

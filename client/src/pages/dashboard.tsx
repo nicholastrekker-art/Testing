@@ -23,6 +23,11 @@ export default function Dashboard() {
     queryKey: ["/api/dashboard/stats"],
   });
 
+  // Fetch server info
+  const { data: serverInfo = {}, isLoading: serverLoading } = useQuery({
+    queryKey: ["/api/server/info"],
+  });
+
   // Fetch bot instances for guest users
   const { data: botInstances = [], isLoading: botsLoading } = useQuery({
     queryKey: ["/api/bot-instances"],
@@ -59,8 +64,15 @@ export default function Dashboard() {
       <header className="bg-card border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">🤖 TREKKER-MD Dashboard</h2>
-            <p className="text-muted-foreground">Ultra fast lifetime WhatsApp bot automation</p>
+            <h2 className="text-2xl font-bold text-foreground">🤖 {serverInfo.serverName || 'TREKKER-MD'} Dashboard</h2>
+            <p className="text-muted-foreground">
+              Ultra fast lifetime WhatsApp bot automation
+              {serverInfo.serverName && (
+                <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-1 rounded">
+                  {serverInfo.currentBots}/{serverInfo.maxBots} slots used
+                </span>
+              )}
+            </p>
           </div>
           <div className="flex items-center space-x-4">
             {isAdmin && (

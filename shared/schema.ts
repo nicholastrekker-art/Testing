@@ -8,6 +8,7 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   role: text("role").notNull().default("user"), // user, admin
+  serverName: text("server_name").notNull(), // isolate by server instance
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -30,6 +31,7 @@ export const botInstances = pgTable("bot_instances", {
   isGuest: boolean("is_guest").default(false),
   approvalDate: text("approval_date"), // Date when bot was approved
   expirationMonths: integer("expiration_months"), // Duration in months
+  serverName: text("server_name").notNull(), // isolate by server instance
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
@@ -42,6 +44,7 @@ export const commands = pgTable("commands", {
   isActive: boolean("is_active").default(true),
   useChatGPT: boolean("use_chatgpt").default(false),
   botInstanceId: varchar("bot_instance_id"), // null for global commands
+  serverName: text("server_name").notNull(), // isolate by server instance
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -51,6 +54,7 @@ export const activities = pgTable("activities", {
   type: text("type").notNull(), // command, message, auto_like, auto_react, error, etc.
   description: text("description").notNull(),
   metadata: jsonb("metadata").default({}),
+  serverName: text("server_name").notNull(), // isolate by server instance
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -62,6 +66,7 @@ export const groups = pgTable("groups", {
   participantCount: integer("participant_count").default(0),
   botInstanceId: varchar("bot_instance_id").notNull(),
   isActive: boolean("is_active").default(true),
+  serverName: text("server_name").notNull(), // isolate by server instance
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 

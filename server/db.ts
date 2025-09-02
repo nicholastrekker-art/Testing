@@ -76,6 +76,7 @@ export async function initializeDatabase() {
             username TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
             role TEXT NOT NULL DEFAULT 'user',
+            server_name TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
@@ -100,6 +101,7 @@ export async function initializeDatabase() {
             is_guest BOOLEAN DEFAULT false,
             approval_date TEXT,
             expiration_months INTEGER,
+            server_name TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
@@ -114,6 +116,7 @@ export async function initializeDatabase() {
             is_active BOOLEAN DEFAULT true,
             use_chatgpt BOOLEAN DEFAULT false,
             bot_instance_id VARCHAR,
+            server_name TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
@@ -125,6 +128,7 @@ export async function initializeDatabase() {
             type TEXT NOT NULL,
             description TEXT NOT NULL,
             metadata JSONB DEFAULT '{}',
+            server_name TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
@@ -138,6 +142,7 @@ export async function initializeDatabase() {
             participant_count INTEGER DEFAULT 0,
             bot_instance_id VARCHAR NOT NULL,
             is_active BOOLEAN DEFAULT true,
+            server_name TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
