@@ -23,7 +23,9 @@ export default function Dashboard() {
   const [showCommandManagement, setShowCommandManagement] = useState(false);
   const [showGuestRegistration, setShowGuestRegistration] = useState(false);
   const [showAdminBotManagement, setShowAdminBotManagement] = useState(false);
+  const [showGodRegistry, setShowGodRegistry] = useState(false);
   const [selectedBotForFeatures, setSelectedBotForFeatures] = useState<any>(null);
+  const [editingRegistration, setEditingRegistration] = useState<any>(null);
 
   // Fetch dashboard stats
   const { data: stats = {}, isLoading: statsLoading } = useQuery({
@@ -60,6 +62,12 @@ export default function Dashboard() {
   // Fetch commands for command management
   const { data: commands = [], isLoading: commandsLoading } = useQuery({
     queryKey: ["/api/commands"],
+  });
+
+  // Fetch God registry for admin
+  const { data: godRegistry = [], isLoading: registryLoading } = useQuery({
+    queryKey: ["/api/admin/god-registry"],
+    enabled: isAdmin
   });
 
   // WebSocket for real-time updates
@@ -134,6 +142,32 @@ export default function Dashboard() {
     }
   });
 
+  // God registry mutations
+  const updateRegistrationMutation = useMutation({
+    mutationFn: ({ phoneNumber, tenancyName }: { phoneNumber: string; tenancyName: string }) =>
+      apiRequest("PUT", `/api/admin/god-registry/${encodeURIComponent(phoneNumber)}`, { tenancyName }),
+    onSuccess: () => {
+      toast({ title: "Registration updated successfully!" });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/god-registry"] });
+      setEditingRegistration(null);
+    },
+    onError: () => {
+      toast({ title: "Failed to update registration", variant: "destructive" });
+    }
+  });
+
+  const deleteRegistrationMutation = useMutation({
+    mutationFn: (phoneNumber: string) => 
+      apiRequest("DELETE", `/api/admin/god-registry/${encodeURIComponent(phoneNumber)}`),
+    onSuccess: () => {
+      toast({ title: "Registration deleted successfully!" });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/god-registry"] });
+    },
+    onError: () => {
+      toast({ title: "Failed to delete registration", variant: "destructive" });
+    }
+  });
+
   // Auto-refresh for admin users
   React.useEffect(() => {
     if (isAdmin) {
@@ -176,6 +210,12 @@ export default function Dashboard() {
                   className="bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   👥 Manage Bots
+                </Button>
+                <Button 
+                  onClick={() => setShowGodRegistry(true)}
+                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                >
+                  📱 God Registry
                 </Button>
               </div>
             )}
@@ -676,6 +716,155 @@ export default function Dashboard() {
                 </Button>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* God Registry Management Modal */}
+      {showGodRegistry && (
+        <Dialog open={showGodRegistry} onOpenChange={() => setShowGodRegistry(false)}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>📱 God Registry Management</DialogTitle>
+              <DialogDescription>
+                Manage global phone number registrations across all tenants
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {registryLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : godRegistry.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No registrations found
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {godRegistry.map((registration: any) => (
+                    <div key={registration.phoneNumber} className="border border-border rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-foreground">
+                            📱 {registration.phoneNumber}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Tenant: {registration.tenancyName}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Registered: {new Date(registration.registeredAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingRegistration(registration)}
+                            data-testid={`button-edit-${registration.phoneNumber}`}
+                          >
+                            ✏️ Edit
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              if (confirm(`Delete registration for ${registration.phoneNumber}?`)) {
+                                deleteRegistrationMutation.mutate(registration.phoneNumber);
+                              }
+                            }}
+                            disabled={deleteRegistrationMutation.isPending}
+                            data-testid={`button-delete-${registration.phoneNumber}`}
+                          >
+                            {deleteRegistrationMutation.isPending ? '...' : '🗑️ Delete'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end">
+              <Button onClick={() => setShowGodRegistry(false)}>
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Edit Registration Modal */}
+      {editingRegistration && (
+        <Dialog open={!!editingRegistration} onOpenChange={() => setEditingRegistration(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>✏️ Edit Registration</DialogTitle>
+              <DialogDescription>
+                Update the tenant assignment for {editingRegistration.phoneNumber}
+              </DialogDescription>
+            </DialogHeader>
+
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const tenancyName = formData.get('tenancyName') as string;
+                if (tenancyName.trim()) {
+                  updateRegistrationMutation.mutate({
+                    phoneNumber: editingRegistration.phoneNumber,
+                    tenancyName: tenancyName.trim()
+                  });
+                }
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Phone Number
+                </label>
+                <input 
+                  type="text" 
+                  value={editingRegistration.phoneNumber}
+                  disabled
+                  className="w-full p-3 border border-border rounded-md bg-muted text-muted-foreground"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Tenant Name
+                </label>
+                <input 
+                  type="text" 
+                  name="tenancyName"
+                  defaultValue={editingRegistration.tenancyName}
+                  placeholder="Enter new tenant name"
+                  required
+                  className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+                  data-testid="input-tenancy-name"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2">
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  onClick={() => setEditingRegistration(null)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={updateRegistrationMutation.isPending}
+                  data-testid="button-update-registration"
+                >
+                  {updateRegistrationMutation.isPending ? 'Updating...' : 'Update'}
+                </Button>
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
       )}

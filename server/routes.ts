@@ -1821,5 +1821,74 @@ Thank you for choosing TREKKER-MD! 🚀`;
     }
   });
 
+  // God Registry Management Endpoints (Admin only)
+  app.get("/api/admin/god-registry", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const registrations = await storage.getAllGlobalRegistrations();
+      res.json(registrations);
+    } catch (error) {
+      console.error("Get god registry error:", error);
+      res.status(500).json({ message: "Failed to fetch god registry" });
+    }
+  });
+
+  app.put("/api/admin/god-registry/:phoneNumber", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { phoneNumber } = req.params;
+      const { tenancyName } = req.body;
+      
+      if (!tenancyName) {
+        return res.status(400).json({ message: "Tenancy name is required" });
+      }
+
+      const updated = await storage.updateGlobalRegistration(phoneNumber, tenancyName);
+      if (!updated) {
+        return res.status(404).json({ message: "Registration not found" });
+      }
+
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: null,
+        type: 'god_registry_update',
+        description: `Admin updated god registry: ${phoneNumber} moved to ${tenancyName}`,
+        metadata: { phoneNumber, newTenancy: tenancyName, adminAction: 'update_registry' },
+        serverName: getServerName()
+      });
+
+      res.json({ message: "Registration updated successfully", registration: updated });
+    } catch (error) {
+      console.error("Update god registry error:", error);
+      res.status(500).json({ message: "Failed to update registration" });
+    }
+  });
+
+  app.delete("/api/admin/god-registry/:phoneNumber", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { phoneNumber } = req.params;
+      
+      // Check if registration exists
+      const existing = await storage.checkGlobalRegistration(phoneNumber);
+      if (!existing) {
+        return res.status(404).json({ message: "Registration not found" });
+      }
+
+      await storage.deleteGlobalRegistration(phoneNumber);
+
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: null,
+        type: 'god_registry_delete',
+        description: `Admin deleted god registry entry: ${phoneNumber} (was on ${existing.tenancyName})`,
+        metadata: { phoneNumber, previousTenancy: existing.tenancyName, adminAction: 'delete_registry' },
+        serverName: getServerName()
+      });
+
+      res.json({ message: "Registration deleted successfully" });
+    } catch (error) {
+      console.error("Delete god registry error:", error);
+      res.status(500).json({ message: "Failed to delete registration" });
+    }
+  });
+
   return httpServer;
 }

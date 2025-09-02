@@ -83,6 +83,8 @@ export interface IStorage {
   checkGlobalRegistration(phoneNumber: string): Promise<GodRegister | undefined>;
   addGlobalRegistration(phoneNumber: string, tenancyName: string): Promise<GodRegister>;
   deleteGlobalRegistration(phoneNumber: string): Promise<void>;
+  getAllGlobalRegistrations(): Promise<GodRegister[]>;
+  updateGlobalRegistration(phoneNumber: string, tenancyName: string): Promise<GodRegister | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -456,6 +458,19 @@ export class DatabaseStorage implements IStorage {
 
   async deleteGlobalRegistration(phoneNumber: string): Promise<void> {
     await db.delete(godRegister).where(eq(godRegister.phoneNumber, phoneNumber));
+  }
+
+  async getAllGlobalRegistrations(): Promise<GodRegister[]> {
+    return await db.select().from(godRegister).orderBy(desc(godRegister.registeredAt));
+  }
+
+  async updateGlobalRegistration(phoneNumber: string, tenancyName: string): Promise<GodRegister | undefined> {
+    const [registration] = await db
+      .update(godRegister)
+      .set({ tenancyName })
+      .where(eq(godRegister.phoneNumber, phoneNumber))
+      .returning();
+    return registration || undefined;
   }
 }
 
