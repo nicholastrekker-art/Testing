@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,30 +27,25 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
 
   // Fetch pending bots
   const { data: pendingBots = [], isLoading: pendingLoading } = useQuery({
-    queryKey: ["/api/admin/pending-bots"],
+    queryKey: ["/api/bots/pending"],
     enabled: open && activeTab === "pending"
   });
 
   // Fetch approved bots
   const { data: approvedBots = [], isLoading: approvedLoading } = useQuery({
-    queryKey: ["/api/admin/approved-bots"],
+    queryKey: ["/api/bots/approved"],
     enabled: open && activeTab === "approved"
   });
 
   // Approve bot mutation
   const approveMutation = useMutation({
     mutationFn: async ({ botId, duration }: { botId: string; duration: number }) => {
-      const response = await fetch(`/api/admin/approve-bot/${botId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ duration })
-      });
-      if (!response.ok) throw new Error("Failed to approve bot");
+      const response = await apiRequest("POST", `/api/bots/${botId}/approve`, { expirationMonths: duration });
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-bots"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/approved-bots"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/approved"] });
       setShowApprovalModal(false);
       setSelectedBot(null);
     }
@@ -58,16 +54,11 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
   // Reject bot mutation
   const rejectMutation = useMutation({
     mutationFn: async ({ botId, reason }: { botId: string; reason: string }) => {
-      const response = await fetch(`/api/admin/reject-bot/${botId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason })
-      });
-      if (!response.ok) throw new Error("Failed to reject bot");
+      const response = await apiRequest("POST", `/api/bots/${botId}/reject`, { reason });
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/pending-bots"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/pending"] });
       setRejectionReason("");
     }
   });
@@ -157,7 +148,7 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              🔄 Pending Bots ({pendingBots.length})
+              🔄 Pending Bots ({(pendingBots as any[]).length})
             </button>
             <button
               onClick={() => setActiveTab("approved")}
@@ -167,7 +158,7 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              ✅ Approved Bots ({approvedBots.length})
+              ✅ Approved Bots ({(approvedBots as any[]).length})
             </button>
           </div>
 
@@ -179,7 +170,7 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
                 <div className="text-center py-8">
                   <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                 </div>
-              ) : pendingBots.length === 0 ? (
+              ) : (pendingBots as any[]).length === 0 ? (
                 <Card>
                   <CardContent className="text-center py-8">
                     <p className="text-muted-foreground">No pending bot registrations</p>
@@ -187,7 +178,7 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
                 </Card>
               ) : (
                 <div className="grid gap-4">
-                  {pendingBots.map((bot: any) => (
+                  {(pendingBots as any[]).map((bot: any) => (
                     <Card key={bot.id} className="border-orange-200">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
@@ -249,7 +240,7 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
                 <div className="text-center py-8">
                   <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                 </div>
-              ) : approvedBots.length === 0 ? (
+              ) : (approvedBots as any[]).length === 0 ? (
                 <Card>
                   <CardContent className="text-center py-8">
                     <p className="text-muted-foreground">No approved bots yet</p>
@@ -257,7 +248,7 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
                 </Card>
               ) : (
                 <div className="grid gap-4">
-                  {approvedBots.map((bot: any) => (
+                  {(approvedBots as any[]).map((bot: any) => (
                     <Card key={bot.id} className="border-green-200">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">

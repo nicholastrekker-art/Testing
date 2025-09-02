@@ -4,6 +4,15 @@
 
 This is a WhatsApp Bot Management application built as a full-stack web application for creating, managing, and monitoring WhatsApp bot instances. The system provides a comprehensive dashboard for controlling multiple bot instances, managing commands, and tracking activities in real-time. Each bot can be configured with automation features like auto-like, auto-react, and ChatGPT integration for intelligent responses.
 
+## Recent Changes (September 2, 2025)
+
+- **Multi-Tenancy System**: Implemented server isolation with bot count limits per tenant
+- **Bot Approval Workflow**: Complete workflow with pending bots requiring admin approval
+- **Feature Management**: Bot registration includes feature selection (auto like, auto react, auto view status, typing indicator, ChatGPT integration)
+- **Admin Controls**: Individual feature toggles for approved bots with real-time UI updates
+- **Authentication**: Fixed admin authentication middleware for approval endpoints
+- **Database Schema**: Updated to store bot feature preferences in JSONB settings field
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
