@@ -32,11 +32,7 @@ export default function BotCard({ bot }: BotCardProps) {
   // Feature toggle mutation
   const toggleFeatureMutation = useMutation({
     mutationFn: ({ feature, enabled }: { feature: string; enabled: boolean }) => {
-      return apiRequest(`/api/bot-instances/${bot.id}/toggle-feature`, {
-        method: 'POST',
-        body: JSON.stringify({ feature, enabled }),
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return apiRequest('POST', `/api/bot-instances/${bot.id}/toggle-feature`, { feature, enabled });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
@@ -54,11 +50,7 @@ export default function BotCard({ bot }: BotCardProps) {
   // Approve bot mutation
   const approveBotMutation = useMutation({
     mutationFn: () => {
-      return apiRequest(`/api/bot-instances/${bot.id}/approve`, {
-        method: 'POST',
-        body: JSON.stringify({ expirationMonths: 3 }),
-        headers: { 'Content-Type': 'application/json' }
-      });
+      return apiRequest('POST', `/api/bot-instances/${bot.id}/approve`, { expirationMonths: 3 });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
@@ -67,6 +59,25 @@ export default function BotCard({ bot }: BotCardProps) {
     onError: (error) => {
       toast({
         title: "Failed to approve bot",
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Revoke approval mutation
+  const revokeApprovalMutation = useMutation({
+    mutationFn: () => {
+      return apiRequest('POST', `/api/bot-instances/${bot.id}/revoke`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/approved"] });
+      toast({ title: "Bot approval revoked", description: "Bot has been returned to pending status" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to revoke approval",
         description: error instanceof Error ? error.message : "Unknown error",
         variant: "destructive"
       });
@@ -354,6 +365,36 @@ export default function BotCard({ bot }: BotCardProps) {
 
         <div className="flex space-x-2">
           {getActionButton()}
+          
+          {/* Approval Status Management - Admin Only */}
+          {isAdmin && (
+            <>
+              {/* Approve Button for pending bots */}
+              {bot.approvalStatus === 'pending' && (
+                <button
+                  onClick={() => approveBotMutation.mutate()}
+                  disabled={approveBotMutation.isPending}
+                  className="bg-green-600 text-white py-2 px-3 rounded-md text-sm hover:bg-green-700 transition-colors disabled:opacity-50"
+                  data-testid={`button-approve-${bot.id}`}
+                >
+                  {approveBotMutation.isPending ? 'Approving...' : '✓ Approve'}
+                </button>
+              )}
+              
+              {/* Revoke Approval for approved bots */}
+              {bot.approvalStatus === 'approved' && (
+                <button
+                  onClick={() => revokeApprovalMutation.mutate()}
+                  disabled={revokeApprovalMutation.isPending}
+                  className="bg-orange-600 text-white py-2 px-3 rounded-md text-sm hover:bg-orange-700 transition-colors disabled:opacity-50"
+                  data-testid={`button-revoke-${bot.id}`}
+                >
+                  {revokeApprovalMutation.isPending ? 'Revoking...' : '↓ Normal'}
+                </button>
+              )}
+            </>
+          )}
+          
           <button className="bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm hover:bg-muted/80 transition-colors" data-testid={`button-analytics-${bot.id}`}>
             <i className="fas fa-chart-line"></i>
           </button>

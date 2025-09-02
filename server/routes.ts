@@ -766,6 +766,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Revoke Bot Approval (change back to normal/pending status)
+  app.post("/api/bot-instances/:id/revoke", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { id } = req.params;
+
+      // Get bot instance first
+      const botInstance = await storage.getBotInstance(id);
+      if (!botInstance) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+
+      // Stop the bot if it's running
+      await botManager.destroyBot(id);
+
+      // Update bot status to pending
+      const bot = await storage.updateBotInstance(id, {
+        approvalStatus: 'pending',
+        status: 'offline',
+        approvalDate: null,
+        expirationMonths: null,
+      });
+
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: id,
+        type: 'revoke_approval',
+        description: `Bot approval revoked - returned to pending status`,
+        metadata: { previousStatus: botInstance.approvalStatus },
+        serverName: getServerName()
+      });
+
+      // Broadcast update
+      broadcast({ type: 'BOT_APPROVAL_REVOKED', data: bot });
+
+      res.json({ message: "Bot approval revoked successfully" });
+    } catch (error) {
+      console.error('Bot approval revoke error:', error);
+      res.status(500).json({ message: "Failed to revoke bot approval" });
+    }
+  });
+
   // Bot control endpoints (restricted to admins)
   app.post("/api/bot-instances/:id/start", authenticateAdmin, async (req: AuthRequest, res) => {
     try {

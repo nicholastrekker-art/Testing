@@ -68,7 +68,7 @@ export default function Dashboard() {
   // Mutations for bot approval
   const approveBotMutation = useMutation({
     mutationFn: ({ id, expirationMonths }: { id: string; expirationMonths?: number }) =>
-      apiRequest(`/api/bots/${id}/approve`, "POST", { expirationMonths }),
+      apiRequest("POST", `/api/bots/${id}/approve`, { expirationMonths }),
     onSuccess: () => {
       toast({ title: "Bot approved successfully!" });
       queryClient.invalidateQueries({ queryKey: ["/api/bots/pending"] });
@@ -81,7 +81,7 @@ export default function Dashboard() {
   });
 
   const rejectBotMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/bots/${id}/reject`, "POST"),
+    mutationFn: (id: string) => apiRequest("POST", `/api/bots/${id}/reject`),
     onSuccess: () => {
       toast({ title: "Bot rejected and removed" });
       queryClient.invalidateQueries({ queryKey: ["/api/bots/pending"] });
@@ -95,7 +95,7 @@ export default function Dashboard() {
   // Feature toggle mutation
   const toggleFeatureMutation = useMutation({
     mutationFn: ({ botId, feature, enabled }: { botId: string; feature: string; enabled: boolean }) =>
-      apiRequest(`/api/bots/${botId}/toggle-feature`, "POST", { feature, enabled }),
+      apiRequest("POST", `/api/bot-instances/${botId}/toggle-feature`, { feature, enabled }),
     onSuccess: () => {
       toast({ title: "Feature updated successfully!" });
       queryClient.invalidateQueries({ queryKey: ["/api/bots/approved"] });
@@ -103,6 +103,34 @@ export default function Dashboard() {
     },
     onError: () => {
       toast({ title: "Failed to update feature", variant: "destructive" });
+    }
+  });
+
+  // Revoke approval mutation for dashboard
+  const revokeApprovalMutation = useMutation({
+    mutationFn: (botId: string) => apiRequest("POST", `/api/bot-instances/${botId}/revoke`),
+    onSuccess: () => {
+      toast({ title: "Bot approval revoked", description: "Bot returned to pending status" });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/approved"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+    },
+    onError: () => {
+      toast({ title: "Failed to revoke approval", variant: "destructive" });
+    }
+  });
+
+  // Restart bot mutation for dashboard
+  const restartBotMutation = useMutation({
+    mutationFn: (botId: string) => apiRequest("POST", `/api/bot-instances/${botId}/restart`),
+    onSuccess: () => {
+      toast({ title: "Bot restarted successfully" });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/approved"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
+    },
+    onError: () => {
+      toast({ title: "Failed to restart bot", variant: "destructive" });
     }
   });
 
@@ -419,13 +447,19 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Button 
-                            size="sm"
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                            data-testid={`button-restart-${bot.id}`}
-                          >
-                            🔄 Restart
-                          </Button>
+                          {/* Restart Button - only show for error status */}
+                          {bot.status === 'error' && (
+                            <Button 
+                              size="sm"
+                              onClick={() => restartBotMutation.mutate(bot.id)}
+                              disabled={restartBotMutation.isPending}
+                              className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                              data-testid={`button-restart-${bot.id}`}
+                            >
+                              {restartBotMutation.isPending ? 'Restarting...' : '🔄 Restart'}
+                            </Button>
+                          )}
+                          
                           <Button 
                             size="sm"
                             variant="outline"
@@ -433,6 +467,17 @@ export default function Dashboard() {
                             data-testid={`button-features-${bot.id}`}
                           >
                             ⚙️ Features
+                          </Button>
+                          
+                          {/* Revoke Approval Button */}
+                          <Button 
+                            size="sm"
+                            onClick={() => revokeApprovalMutation.mutate(bot.id)}
+                            disabled={revokeApprovalMutation.isPending}
+                            className="bg-orange-600 hover:bg-orange-700 text-white"
+                            data-testid={`button-revoke-${bot.id}`}
+                          >
+                            {revokeApprovalMutation.isPending ? 'Revoking...' : '↓ Normal'}
                           </Button>
                         </div>
                       </div>
