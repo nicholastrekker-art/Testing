@@ -66,12 +66,7 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
   // Send message mutation
   const messageMutation = useMutation({
     mutationFn: async ({ botId, message }: { botId: string; message: string }) => {
-      const response = await fetch(`/api/admin/send-message/${botId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message })
-      });
-      if (!response.ok) throw new Error("Failed to send message");
+      const response = await apiRequest("POST", `/api/admin/send-message/${botId}`, { message });
       return response.json();
     },
     onSuccess: () => {
