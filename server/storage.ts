@@ -119,6 +119,16 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(botInstances).where(eq(botInstances.serverName, serverName)).orderBy(desc(botInstances.createdAt));
   }
 
+  async getBotInstancesByApprovalStatus(approvalStatus: string): Promise<BotInstance[]> {
+    const serverName = getServerName();
+    return await db.select().from(botInstances).where(
+      and(
+        eq(botInstances.serverName, serverName),
+        eq(botInstances.approvalStatus, approvalStatus)
+      )
+    ).orderBy(desc(botInstances.createdAt));
+  }
+
   async createBotInstance(insertBotInstance: InsertBotInstance): Promise<BotInstance> {
     const serverName = getServerName();
     const [botInstance] = await db

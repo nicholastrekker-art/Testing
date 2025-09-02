@@ -291,8 +291,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bot Instances
   app.get("/api/bot-instances", async (req, res) => {
     try {
-      const bots = await storage.getAllBotInstances();
-      res.json(bots);
+      const showPendingOnly = req.query.pending === 'true';
+      
+      if (showPendingOnly) {
+        // Show only pending bots for approval workflow
+        const bots = await storage.getBotInstancesByApprovalStatus('pending');
+        res.json(bots);
+      } else {
+        // Show all bots (default behavior)
+        const bots = await storage.getAllBotInstances();
+        res.json(bots);
+      }
     } catch (error) {
       console.error("Bot instances error:", error);
       res.status(500).json({ message: "Failed to fetch bot instances" });
@@ -625,6 +634,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete bot instance" });
+    }
+  });
+
+  // Toggle Bot Feature
+  app.post("/api/bot-instances/:id/toggle-feature", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { feature, enabled } = req.body;
+      
+      if (!feature || enabled === undefined) {
+        return res.status(400).json({ message: "Feature and enabled status are required" });
+      }
+      
+      // Get bot instance
+      const bot = await storage.getBotInstance(id);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+      
+      // Only allow approved bots to have features toggled
+      if (bot.approvalStatus !== 'approved') {
+        return res.status(400).json({ message: "Only approved bots can have features toggled" });
+      }
+      
+      // Map feature names to database columns
+      const featureMap: Record<string, string> = {
+        'autoLike': 'autoLike',
+        'autoView': 'autoViewStatus', 
+        'autoReact': 'autoReact',
+        'typingIndicator': 'typingMode',
+        'chatGPT': 'chatgptEnabled'
+      };
+      
+      const dbField = featureMap[feature];
+      if (!dbField) {
+        return res.status(400).json({ message: "Invalid feature name" });
+      }
+      
+      // Prepare update object
+      const updates: any = {};
+      if (dbField === 'typingMode') {
+        updates[dbField] = enabled ? 'typing' : 'none';
+      } else {
+        updates[dbField] = enabled;
+      }
+      
+      // Also update settings.features
+      const currentSettings = bot.settings || {};
+      const currentFeatures = currentSettings.features || {};
+      updates.settings = {
+        ...currentSettings,
+        features: {
+          ...currentFeatures,
+          [feature]: enabled
+        }
+      };
+      
+      await storage.updateBotInstance(id, updates);
+      
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: id,
+        type: 'feature_toggle',
+        description: `${feature} feature ${enabled ? 'enabled' : 'disabled'}`,
+        metadata: { feature, enabled },
+        serverName: getServerName()
+      });
+      
+      res.json({ message: "Feature updated successfully", feature, enabled });
+      
+    } catch (error) {
+      console.error('Feature toggle error:', error);
+      res.status(500).json({ message: "Failed to toggle feature" });
+    }
+  });
+  
+  // Approve Bot
+  app.post("/api/bot-instances/:id/approve", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { expirationMonths = 3 } = req.body;
+      
+      const bot = await storage.getBotInstance(id);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+      
+      if (bot.approvalStatus !== 'pending') {
+        return res.status(400).json({ message: "Only pending bots can be approved" });
+      }
+      
+      await storage.updateBotInstance(id, {
+        approvalStatus: 'approved',
+        approvalDate: new Date().toISOString(),
+        expirationMonths,
+        status: 'offline' // Ready for activation
+      });
+      
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: id,
+        type: 'approval',
+        description: `Bot approved for ${expirationMonths} months`,
+        metadata: { expirationMonths },
+        serverName: getServerName()
+      });
+      
+      res.json({ message: "Bot approved successfully" });
+      
+    } catch (error) {
+      console.error('Bot approval error:', error);
+      res.status(500).json({ message: "Failed to approve bot" });
     }
   });
 
@@ -980,6 +1101,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         approvalStatus: 'pending',
         isGuest: true,
         settings: { features: botFeatures },
+        // Map features to individual columns
+        autoLike: botFeatures.autoLike || false,
+        autoViewStatus: botFeatures.autoView || false,
+        autoReact: botFeatures.autoReact || false,
+        typingMode: botFeatures.typingIndicator ? 'typing' : 'none',
+        chatgptEnabled: botFeatures.chatGPT || false,
         serverName: getServerName()
       });
 

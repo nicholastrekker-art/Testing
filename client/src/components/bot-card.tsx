@@ -13,8 +13,14 @@ interface BotCardProps {
     autoLike: boolean;
     autoViewStatus: boolean;
     autoReact: boolean;
+    typingMode: string;
+    chatgptEnabled: boolean;
     messagesCount: number;
     commandsCount: number;
+    approvalStatus: string;
+    approvalDate?: string;
+    expirationMonths?: number;
+    settings?: any;
   };
 }
 
@@ -22,6 +28,50 @@ export default function BotCard({ bot }: BotCardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isAdmin, token } = useAuth();
+
+  // Feature toggle mutation
+  const toggleFeatureMutation = useMutation({
+    mutationFn: ({ feature, enabled }: { feature: string; enabled: boolean }) => {
+      return apiRequest(`/api/bot-instances/${bot.id}/toggle-feature`, {
+        method: 'POST',
+        body: JSON.stringify({ feature, enabled }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
+      toast({ title: "Feature updated successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to update feature",
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Approve bot mutation
+  const approveBotMutation = useMutation({
+    mutationFn: () => {
+      return apiRequest(`/api/bot-instances/${bot.id}/approve`, {
+        method: 'POST',
+        body: JSON.stringify({ expirationMonths: 3 }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
+      toast({ title: "Bot approved successfully", description: "Bot is now approved for 3 months" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to approve bot",
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "destructive"
+      });
+    }
+  });
 
   const startBotMutation = useMutation({
     mutationFn: () => {
@@ -201,22 +251,86 @@ export default function BotCard({ bot }: BotCardProps) {
         </div>
 
         <div className="space-y-3 mb-4">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Auto Like</span>
-            <div className={`w-10 h-5 rounded-full flex items-center px-1 ${bot.autoLike ? 'bg-primary justify-end' : 'bg-muted justify-start'}`}>
-              <div className={`w-3 h-3 rounded-full ${bot.autoLike ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+          {/* Show approval status for pending bots */}
+          {bot.approvalStatus === 'pending' && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-yellow-800">⏳ Awaiting Approval</p>
+                  <p className="text-xs text-yellow-600">This bot is waiting for admin approval</p>
+                </div>
+                <button
+                  onClick={() => approveBotMutation.mutate()}
+                  disabled={approveBotMutation.isPending}
+                  className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 disabled:opacity-50"
+                >
+                  {approveBotMutation.isPending ? '⏳' : '✅ Approve'}
+                </button>
+              </div>
             </div>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Auto View Status</span>
-            <div className={`w-10 h-5 rounded-full flex items-center px-1 ${bot.autoViewStatus ? 'bg-primary justify-end' : 'bg-muted justify-start'}`}>
-              <div className={`w-3 h-3 rounded-full ${bot.autoViewStatus ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+          )}
+
+          {/* Feature toggles */}
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Auto Like</span>
+              <button
+                onClick={() => toggleFeatureMutation.mutate({ feature: 'autoLike', enabled: !bot.autoLike })}
+                disabled={toggleFeatureMutation.isPending || bot.approvalStatus !== 'approved'}
+                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                  bot.autoLike ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+              >
+                <div className={`w-2 h-2 rounded-full ${bot.autoLike ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+              </button>
             </div>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Auto React</span>
-            <div className={`w-10 h-5 rounded-full flex items-center px-1 ${bot.autoReact ? 'bg-primary justify-end' : 'bg-muted justify-start'}`}>
-              <div className={`w-3 h-3 rounded-full ${bot.autoReact ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Auto View</span>
+              <button
+                onClick={() => toggleFeatureMutation.mutate({ feature: 'autoView', enabled: !bot.autoViewStatus })}
+                disabled={toggleFeatureMutation.isPending || bot.approvalStatus !== 'approved'}
+                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                  bot.autoViewStatus ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+              >
+                <div className={`w-2 h-2 rounded-full ${bot.autoViewStatus ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+              </button>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Auto React</span>
+              <button
+                onClick={() => toggleFeatureMutation.mutate({ feature: 'autoReact', enabled: !bot.autoReact })}
+                disabled={toggleFeatureMutation.isPending || bot.approvalStatus !== 'approved'}
+                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                  bot.autoReact ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+              >
+                <div className={`w-2 h-2 rounded-full ${bot.autoReact ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+              </button>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">ChatGPT</span>
+              <button
+                onClick={() => toggleFeatureMutation.mutate({ feature: 'chatGPT', enabled: !bot.chatgptEnabled })}
+                disabled={toggleFeatureMutation.isPending || bot.approvalStatus !== 'approved'}
+                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                  bot.chatgptEnabled ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+              >
+                <div className={`w-2 h-2 rounded-full ${bot.chatgptEnabled ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+              </button>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground">Typing</span>
+              <button
+                onClick={() => toggleFeatureMutation.mutate({ feature: 'typingIndicator', enabled: bot.typingMode === 'none' })}
+                disabled={toggleFeatureMutation.isPending || bot.approvalStatus !== 'approved'}
+                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                  bot.typingMode !== 'none' ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+              >
+                <div className={`w-2 h-2 rounded-full ${bot.typingMode !== 'none' ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+              </button>
             </div>
           </div>
         </div>

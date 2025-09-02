@@ -10,6 +10,7 @@ export default function BotInstances() {
 
   const { data: botInstances = [], isLoading } = useQuery({
     queryKey: ["/api/bot-instances"],
+    queryFn: () => fetch("/api/bot-instances?pending=true").then(res => res.json())
   });
 
   useWebSocket();
@@ -19,8 +20,8 @@ export default function BotInstances() {
       <header className="bg-card border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">Bot Instances</h2>
-            <p className="text-muted-foreground">Manage all your WhatsApp bot instances</p>
+            <h2 className="text-2xl font-bold text-foreground">Pending Bot Approvals</h2>
+            <p className="text-muted-foreground">Review and approve bot registration requests</p>
           </div>
           <Button 
             onClick={() => setShowAddBotModal(true)}
