@@ -38,40 +38,78 @@ const client = postgres(connectionString, {
 
 export const db = drizzle(client, { schema });
 
+// Get server name from environment variable or default
+export function getServerName(): string {
+  return process.env.SERVER1 || 'default-server';
+}
+
 // Function to initialize database (create tables if they don't exist)
 export async function initializeDatabase() {
   try {
     console.log('🔄 Checking database connectivity...');
     
+    // Get server name for this instance
+    const serverName = getServerName();
+    console.log(`🏷️ Server instance: ${serverName}`);
+    
     // Test database connection
     await client`SELECT 1`;
     console.log('✅ Database connection established');
 
-    // Check if tables exist by trying to query one of them
+    // Check if tables exist by checking the information schema first
     try {
-      await db.query.botInstances.findFirst();
-      console.log('✅ Database tables exist');
+      const tableExists = await client`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'bot_instances'
+        )
+      `;
       
-      // Check for expired bots on startup
-      const { storage } = await import('./storage');
-      await storage.checkAndExpireBots();
+      if (tableExists[0].exists) {
+        console.log('✅ Bot instances table exists, checking schema...');
+        
+        // Check if required columns exist
+        const columnsExist = await client`
+          SELECT column_name 
+          FROM information_schema.columns 
+          WHERE table_name = 'bot_instances' 
+          AND column_name IN ('approval_status', 'is_guest', 'approval_date', 'expiration_months', 'server_name')
+        `;
+        
+        if (columnsExist.length >= 5) {
+          console.log('✅ Database schema is up to date');
+          
+          // Try querying to verify everything works
+          try {
+            await db.query.botInstances.findFirst();
+            console.log('✅ Database tables functional');
+            
+            // Check for expired bots on startup
+            const { storage } = await import('./storage');
+            await storage.checkAndExpireBots();
+            return;
+          } catch (queryError: any) {
+            console.log('⚠️ Database query failed, will recreate schema:', queryError.message);
+          }
+        } else {
+          console.log('⚠️ Database schema is outdated, missing columns');
+        }
+      } else {
+        console.log('⚠️ Bot instances table does not exist');
+      }
+      
+      // If we reach here, we need to create or update the schema
+      console.log('⚠️ Database tables missing or schema outdated, creating/updating them...');
     } catch (error: any) {
-      if (error.code === '42P01') { // Table does not exist
-        console.log('⚠️ Database tables do not exist, creating them...');
-        
-        // Import and run the schema creation
-        const { sql } = await import('drizzle-orm');
-        const { 
-          botInstances, 
-          commands, 
-          activities, 
-          groups, 
-          users 
-        } = await import('@shared/schema');
-        
-        // Create tables manually using raw SQL
-        await client`
-          CREATE TABLE IF NOT EXISTS users (
+      console.log('⚠️ Database schema check failed, will create/update tables:', error.message);
+    }
+    
+    // Create or update tables
+    try {
+      // Create tables manually using raw SQL with proper schema
+      await client`
+        CREATE TABLE IF NOT EXISTS users (
             id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
             username TEXT NOT NULL UNIQUE,
             password TEXT NOT NULL,
@@ -146,11 +184,48 @@ export async function initializeDatabase() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
+
+        // Handle existing tables that might be missing columns
+        try {
+          // Update bot_instances table
+          await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS approval_status TEXT DEFAULT 'pending'`;
+          await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS is_guest BOOLEAN DEFAULT false`;
+          await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS approval_date TEXT`;
+          await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS expiration_months INTEGER`;
+          await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS server_name TEXT`;
+          
+          // Update existing rows without server_name to use current server
+          await client`UPDATE bot_instances SET server_name = ${serverName} WHERE server_name IS NULL`;
+          
+          // Make server_name NOT NULL after setting values
+          await client`ALTER TABLE bot_instances ALTER COLUMN server_name SET NOT NULL`;
+          
+          // Update other tables with server_name column
+          await client`ALTER TABLE users ADD COLUMN IF NOT EXISTS server_name TEXT`;
+          await client`UPDATE users SET server_name = ${serverName} WHERE server_name IS NULL`;
+          await client`ALTER TABLE users ALTER COLUMN server_name SET NOT NULL`;
+          
+          await client`ALTER TABLE commands ADD COLUMN IF NOT EXISTS server_name TEXT`;
+          await client`UPDATE commands SET server_name = ${serverName} WHERE server_name IS NULL`;
+          await client`ALTER TABLE commands ALTER COLUMN server_name SET NOT NULL`;
+          
+          await client`ALTER TABLE activities ADD COLUMN IF NOT EXISTS server_name TEXT`;
+          await client`UPDATE activities SET server_name = ${serverName} WHERE server_name IS NULL`;
+          await client`ALTER TABLE activities ALTER COLUMN server_name SET NOT NULL`;
+          
+          await client`ALTER TABLE groups ADD COLUMN IF NOT EXISTS server_name TEXT`;
+          await client`UPDATE groups SET server_name = ${serverName} WHERE server_name IS NULL`;
+          await client`ALTER TABLE groups ALTER COLUMN server_name SET NOT NULL`;
+          
+          console.log('✅ Database schema updated with missing columns');
+        } catch (alterError: any) {
+          console.log('ℹ️ Some schema updates may have already been applied:', alterError.message);
+        }
         
-        console.log('✅ Database tables created successfully');
-      } else {
-        throw error;
-      }
+      console.log('✅ Database tables created/updated successfully');
+    } catch (createError: any) {
+      console.error('❌ Failed to create/update database tables:', createError);
+      throw createError;
     }
   } catch (error) {
     console.error('❌ Database initialization failed:', error);

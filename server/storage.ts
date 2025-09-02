@@ -15,17 +15,8 @@ import {
   type Group,
   type InsertGroup
 } from "@shared/schema";
-import { db } from "./db";
+import { db, getServerName } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
-
-// Get current server name from environment variables
-function getServerName(): string {
-  const serverName = process.env.NAME;
-  if (!serverName) {
-    throw new Error('Server NAME environment variable is required for multi-tenancy');
-  }
-  return serverName;
-}
 
 // Get maximum bot count from environment variables
 function getMaxBotCount(): number {
@@ -190,7 +181,8 @@ export class DatabaseStorage implements IStorage {
             botInstanceId: bot.id,
             type: 'expiration',
             description: `Bot ${bot.name} expired after ${bot.expirationMonths} months`,
-            metadata: { originalApprovalDate: bot.approvalDate, expiredOn: now.toISOString() }
+            metadata: { originalApprovalDate: bot.approvalDate, expiredOn: now.toISOString() },
+            serverName: getServerName()
           });
         }
       }
@@ -205,7 +197,7 @@ export class DatabaseStorage implements IStorage {
       const result = await db.update(botInstances)
         .set({
           approvalStatus: 'approved',
-          approvalDate: now,
+          approvalDate: now.toISOString(),
           expirationMonths: expirationMonths || null
         })
         .where(and(eq(botInstances.id, id), eq(botInstances.serverName, serverName)))
@@ -216,7 +208,8 @@ export class DatabaseStorage implements IStorage {
           botInstanceId: id,
           type: 'approval',
           description: `Bot approved by admin${expirationMonths ? ` for ${expirationMonths} months` : ' with unlimited access'}`,
-          metadata: { approvalDate: now.toISOString(), expirationMonths }
+          metadata: { approvalDate: now.toISOString(), expirationMonths },
+          serverName: getServerName()
         });
         return true;
       }
@@ -240,7 +233,8 @@ export class DatabaseStorage implements IStorage {
           botInstanceId: id,
           type: 'rejection',
           description: `Bot rejected and removed by admin`,
-          metadata: { rejectionDate: new Date().toISOString() }
+          metadata: { rejectionDate: new Date().toISOString() },
+          serverName: getServerName()
         });
         return true;
       }
