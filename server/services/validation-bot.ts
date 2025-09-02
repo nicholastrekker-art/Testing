@@ -1,6 +1,6 @@
 import { makeWASocket, useMultiFileAuthState, DisconnectReason, ConnectionState, WAMessage } from '@whiskeysockets/baileys';
 import { join } from 'path';
-import { existsSync, mkdirSync, rmSync } from 'fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import { Boom } from '@hapi/boom';
 import P from 'pino';
 
@@ -28,15 +28,12 @@ export class ValidationBot {
 
   private saveCredentialsToAuthDir(credentials: string) {
     try {
-      const fs = require('fs');
-      const path = require('path');
-      
       // Parse base64 credentials
       const credentialsData = JSON.parse(Buffer.from(credentials, 'base64').toString());
       
       // Save creds.json
-      fs.writeFileSync(
-        path.join(this.authDir, 'creds.json'), 
+      writeFileSync(
+        join(this.authDir, 'creds.json'), 
         JSON.stringify(credentialsData, null, 2)
       );
       
