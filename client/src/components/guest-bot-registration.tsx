@@ -108,8 +108,14 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       return;
     }
 
+    // Clean phone number by removing + if present
+    const cleanedFormData = {
+      ...formData,
+      phoneNumber: formData.phoneNumber.replace(/^\+/, '')
+    };
+
     setStep(2);
-    registerBotMutation.mutate(formData);
+    registerBotMutation.mutate(cleanedFormData);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +131,14 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       phoneNumber: '',
       credentialType: 'base64',
       sessionId: '',
-      credsFile: null
+      credsFile: null,
+      features: {
+        autoLike: false,
+        autoReact: false,
+        autoView: false,
+        typingIndicator: false,
+        chatGPT: false
+      }
     });
     setStep(1);
   };
@@ -181,6 +194,9 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                     onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
                     required
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Enter your phone number with country code (+ will be removed automatically)
+                  </p>
                 </div>
               </div>
 

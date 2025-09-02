@@ -878,6 +878,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Valid credentials are required" });
       }
 
+      // Validate phone number ownership
+      if (credentials && credentials.me && credentials.me.id) {
+        // Extract phone number from credentials (format: "254704897825:33@s.whatsapp.net")
+        const credentialsPhoneMatch = credentials.me.id.match(/^(\d+):/); 
+        const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
+        
+        // Clean the input phone number (remove + if present)
+        const inputPhone = phoneNumber.replace(/^\+/, '');
+        
+        if (!credentialsPhone || credentialsPhone !== inputPhone) {
+          return res.status(400).json({ 
+            message: "You are not the owner of this credentials file. The phone number in the session does not match your input." 
+          });
+        }
+      } else {
+        return res.status(400).json({ message: "Invalid credentials format - missing phone number data" });
+      }
+
       // Parse features if provided
       let botFeatures = {};
       if (features) {
@@ -921,7 +939,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           botInstanceId: botInstance.id,
           type: 'registration',
           description: `Guest bot registered and validation message sent to ${phoneNumber}`,
-          metadata: { phoneNumber, credentialType }
+          metadata: { phoneNumber, credentialType, phoneValidated: true }
         });
 
         broadcast({ 
