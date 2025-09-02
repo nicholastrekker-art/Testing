@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 
@@ -22,7 +23,14 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     phoneNumber: '',
     credentialType: 'base64', // 'base64' or 'file'
     sessionId: '',
-    credsFile: null as File | null
+    credsFile: null as File | null,
+    features: {
+      autoLike: false,
+      autoReact: false,
+      autoView: false,
+      typingIndicator: false,
+      chatGPT: false
+    }
   });
 
   const [step, setStep] = useState(1); // 1: form, 2: validation, 3: success
@@ -34,6 +42,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       formDataToSend.append('botName', data.botName);
       formDataToSend.append('phoneNumber', data.phoneNumber);
       formDataToSend.append('credentialType', data.credentialType);
+      formDataToSend.append('features', JSON.stringify(data.features));
       
       if (data.credentialType === 'base64') {
         formDataToSend.append('sessionId', data.sessionId);
@@ -223,6 +232,104 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                   </p>
                 </div>
               )}
+
+              {/* Bot Features Selection */}
+              <div className="space-y-4">
+                <Label className="text-base font-medium">Bot Features (Optional)</Label>
+                <p className="text-sm text-muted-foreground">Select the automation features you want for your bot</p>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="autoLike"
+                      checked={formData.features.autoLike}
+                      onCheckedChange={(checked) => 
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          features: { ...prev.features, autoLike: !!checked } 
+                        }))
+                      }
+                    />
+                    <Label htmlFor="autoLike" className="text-sm">
+                      <span className="font-medium">Auto Like Status</span>
+                      <br />
+                      <span className="text-xs text-muted-foreground">Automatically like WhatsApp status updates</span>
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="autoReact"
+                      checked={formData.features.autoReact}
+                      onCheckedChange={(checked) => 
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          features: { ...prev.features, autoReact: !!checked } 
+                        }))
+                      }
+                    />
+                    <Label htmlFor="autoReact" className="text-sm">
+                      <span className="font-medium">Auto React</span>
+                      <br />
+                      <span className="text-xs text-muted-foreground">Automatically react to messages</span>
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="autoView"
+                      checked={formData.features.autoView}
+                      onCheckedChange={(checked) => 
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          features: { ...prev.features, autoView: !!checked } 
+                        }))
+                      }
+                    />
+                    <Label htmlFor="autoView" className="text-sm">
+                      <span className="font-medium">Auto View Status</span>
+                      <br />
+                      <span className="text-xs text-muted-foreground">Automatically view WhatsApp status</span>
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="typingIndicator"
+                      checked={formData.features.typingIndicator}
+                      onCheckedChange={(checked) => 
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          features: { ...prev.features, typingIndicator: !!checked } 
+                        }))
+                      }
+                    />
+                    <Label htmlFor="typingIndicator" className="text-sm">
+                      <span className="font-medium">Typing Indicator</span>
+                      <br />
+                      <span className="text-xs text-muted-foreground">Show typing indicator for responses</span>
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 col-span-2">
+                    <Checkbox 
+                      id="chatGPT"
+                      checked={formData.features.chatGPT}
+                      onCheckedChange={(checked) => 
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          features: { ...prev.features, chatGPT: !!checked } 
+                        }))
+                      }
+                    />
+                    <Label htmlFor="chatGPT" className="text-sm">
+                      <span className="font-medium">ChatGPT Integration</span>
+                      <br />
+                      <span className="text-xs text-muted-foreground">Enable AI responses for conversations</span>
+                    </Label>
+                  </div>
+                </div>
+              </div>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <h4 className="font-medium text-yellow-800 mb-2">📝 Important Notes:</h4>

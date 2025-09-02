@@ -318,7 +318,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Approve Bot (Admin only)
-  app.post("/api/bots/:id/approve", async (req, res) => {
+  app.post("/api/bots/:id/approve", authenticateAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       const { expirationMonths } = req.body;
@@ -336,7 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Reject Bot (Admin only)
-  app.post("/api/bots/:id/reject", async (req, res) => {
+  app.post("/api/bots/:id/reject", authenticateAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       
@@ -349,6 +349,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Reject bot error:", error);
       res.status(500).json({ message: "Failed to reject bot" });
+    }
+  });
+
+  // Toggle Bot Features (Admin only)
+  app.post("/api/bots/:id/toggle-feature", authenticateAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { feature, enabled } = req.body;
+      
+      const bot = await storage.getBotInstance(id);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+
+      // Update bot settings
+      const currentSettings = bot.settings || {};
+      const features = currentSettings.features || {};
+      features[feature] = enabled;
+      
+      const success = await storage.updateBotInstance(id, {
+        settings: { ...currentSettings, features }
+      });
+
+      if (success) {
+        await storage.createActivity({
+          botInstanceId: id,
+          type: 'settings_change',
+          description: `Admin ${enabled ? 'enabled' : 'disabled'} ${feature} feature`,
+          metadata: { feature, enabled, admin: true }
+        });
+        res.json({ message: "Feature updated successfully" });
+      } else {
+        res.status(404).json({ message: "Failed to update feature" });
+      }
+    } catch (error) {
+      console.error("Toggle feature error:", error);
+      res.status(500).json({ message: "Failed to toggle feature" });
     }
   });
 
@@ -784,7 +821,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Guest Bot Registration
   app.post("/api/guest/register-bot", upload.single('credsFile'), async (req, res) => {
     try {
-      const { botName, phoneNumber, credentialType, sessionId } = req.body;
+      const { botName, phoneNumber, credentialType, sessionId, features } = req.body;
       
       if (!botName || !phoneNumber) {
         return res.status(400).json({ message: "Bot name and phone number are required" });
@@ -837,6 +874,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Valid credentials are required" });
       }
 
+      // Parse features if provided
+      let botFeatures = {};
+      if (features) {
+        try {
+          botFeatures = JSON.parse(features);
+        } catch (error) {
+          console.warn('Invalid features JSON:', error);
+        }
+      }
+
       // Create guest bot instance
       const botInstance = await storage.createBotInstance({
         name: botName,
@@ -845,7 +892,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'pending_validation',
         approvalStatus: 'pending',
         isGuest: true,
-        settings: {}
+        settings: { features: botFeatures }
       });
 
       // Test WhatsApp connection and send validation message

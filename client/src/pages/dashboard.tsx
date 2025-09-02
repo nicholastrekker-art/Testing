@@ -1,6 +1,9 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import * as React from "react";
 import { Link } from "wouter";
@@ -20,6 +23,7 @@ export default function Dashboard() {
   const [showCommandManagement, setShowCommandManagement] = useState(false);
   const [showGuestRegistration, setShowGuestRegistration] = useState(false);
   const [showAdminBotManagement, setShowAdminBotManagement] = useState(false);
+  const [selectedBotForFeatures, setSelectedBotForFeatures] = useState<any>(null);
 
   // Fetch dashboard stats
   const { data: stats = {}, isLoading: statsLoading } = useQuery({
@@ -85,6 +89,20 @@ export default function Dashboard() {
     },
     onError: () => {
       toast({ title: "Failed to reject bot", variant: "destructive" });
+    }
+  });
+
+  // Feature toggle mutation
+  const toggleFeatureMutation = useMutation({
+    mutationFn: ({ botId, feature, enabled }: { botId: string; feature: string; enabled: boolean }) =>
+      apiRequest(`/api/bots/${botId}/toggle-feature`, "POST", { feature, enabled }),
+    onSuccess: () => {
+      toast({ title: "Feature updated successfully!" });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/approved"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/activities"] });
+    },
+    onError: () => {
+      toast({ title: "Failed to update feature", variant: "destructive" });
     }
   });
 
@@ -411,6 +429,7 @@ export default function Dashboard() {
                           <Button 
                             size="sm"
                             variant="outline"
+                            onClick={() => setSelectedBotForFeatures(bot)}
                             data-testid={`button-features-${bot.id}`}
                           >
                             ⚙️ Features
@@ -542,6 +561,78 @@ export default function Dashboard() {
           open={showAdminBotManagement}
           onClose={() => setShowAdminBotManagement(false)}
         />
+      )}
+
+      {/* Feature Management Dialog */}
+      {selectedBotForFeatures && (
+        <Dialog open={!!selectedBotForFeatures} onOpenChange={() => setSelectedBotForFeatures(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-semibold">
+                Manage Bot Features - {selectedBotForFeatures.name}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Toggle features for this bot. Changes take effect immediately.
+              </p>
+              
+              {/* Feature toggles */}
+              <div className="space-y-3">
+                {[
+                  { key: 'autoLike', label: 'Auto Like Status', description: 'Automatically like WhatsApp status updates' },
+                  { key: 'autoReact', label: 'Auto React', description: 'Automatically react to messages' },
+                  { key: 'autoView', label: 'Auto View Status', description: 'Automatically view WhatsApp status' },
+                  { key: 'typingIndicator', label: 'Typing Indicator', description: 'Show typing indicator for responses' },
+                  { key: 'chatGPT', label: 'ChatGPT Integration', description: 'Enable AI responses for conversations' }
+                ].map((feature) => {
+                  const currentValue = selectedBotForFeatures.settings?.features?.[feature.key] || false;
+                  
+                  return (
+                    <div key={feature.key} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex-1">
+                        <Label className="text-sm font-medium">{feature.label}</Label>
+                        <p className="text-xs text-muted-foreground">{feature.description}</p>
+                      </div>
+                      <Checkbox
+                        checked={currentValue}
+                        onCheckedChange={(checked) => {
+                          toggleFeatureMutation.mutate({
+                            botId: selectedBotForFeatures.id,
+                            feature: feature.key,
+                            enabled: !!checked
+                          });
+                          // Update local state immediately for UI responsiveness
+                          setSelectedBotForFeatures(prev => ({
+                            ...prev,
+                            settings: {
+                              ...prev.settings,
+                              features: {
+                                ...prev.settings?.features,
+                                [feature.key]: !!checked
+                              }
+                            }
+                          }));
+                        }}
+                        disabled={toggleFeatureMutation.isPending}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSelectedBotForFeatures(null)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
