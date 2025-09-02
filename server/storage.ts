@@ -152,6 +152,22 @@ export class DatabaseStorage implements IStorage {
     await db.delete(botInstances).where(and(eq(botInstances.id, id), eq(botInstances.serverName, serverName)));
   }
 
+  // Delete all related data when a bot is deleted
+  async deleteBotRelatedData(botId: string): Promise<void> {
+    const serverName = getServerName();
+    
+    // Delete bot-specific commands
+    await db.delete(commands).where(and(eq(commands.botInstanceId, botId), eq(commands.serverName, serverName)));
+    
+    // Delete bot activities
+    await db.delete(activities).where(and(eq(activities.botInstanceId, botId), eq(activities.serverName, serverName)));
+    
+    // Delete bot groups
+    await db.delete(groups).where(and(eq(groups.botInstanceId, botId), eq(groups.serverName, serverName)));
+    
+    console.log(`🧹 Cleaned up related data for bot ${botId}`);
+  }
+
   async checkBotCountLimit(): Promise<boolean> {
     const serverName = getServerName();
     const maxBots = getMaxBotCount();

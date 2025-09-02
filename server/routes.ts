@@ -64,11 +64,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`📱 Found ${savedBots.length} saved bot(s) in database`);
       
-      // Filter bots that have credentials (can be resumed)
-      const resumableBots = savedBots.filter(bot => bot.credentials);
+      // Filter bots that have credentials AND are approved (can be resumed)
+      const resumableBots = savedBots.filter(bot => bot.credentials && bot.approvalStatus === 'approved');
       
       if (resumableBots.length === 0) {
-        console.log('⚠️ No bots with credentials found to resume');
+        console.log('⚠️ No approved bots with credentials found to resume');
         return;
       }
 
@@ -633,6 +633,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const botInstance = await storage.getBotInstance(req.params.id);
       
       await botManager.destroyBot(req.params.id);
+      
+      // Delete all related data (commands, activities, groups)
+      await storage.deleteBotRelatedData(req.params.id);
+      
+      // Delete the bot instance itself
       await storage.deleteBotInstance(req.params.id);
       
       // Remove from god register table if bot instance was found
@@ -693,8 +698,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Also update settings.features
-      const currentSettings = bot.settings || {};
-      const currentFeatures = currentSettings.features || {};
+      const currentSettings = (bot.settings as any) || {};
+      const currentFeatures = (currentSettings.features as any) || {};
       updates.settings = {
         ...currentSettings,
         features: {
@@ -1114,11 +1119,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isGuest: true,
         settings: { features: botFeatures },
         // Map features to individual columns
-        autoLike: botFeatures.autoLike || false,
-        autoViewStatus: botFeatures.autoView || false,
-        autoReact: botFeatures.autoReact || false,
-        typingMode: botFeatures.typingIndicator ? 'typing' : 'none',
-        chatgptEnabled: botFeatures.chatGPT || false,
+        autoLike: (botFeatures as any).autoLike || false,
+        autoViewStatus: (botFeatures as any).autoView || false,
+        autoReact: (botFeatures as any).autoReact || false,
+        typingMode: (botFeatures as any).typingIndicator ? 'typing' : 'none',
+        chatgptEnabled: (botFeatures as any).chatGPT || false,
         serverName: getServerName()
       });
 
