@@ -39,6 +39,7 @@ export interface IStorage {
   // Bot Instance methods
   getBotInstance(id: string): Promise<BotInstance | undefined>;
   getAllBotInstances(): Promise<BotInstance[]>;
+  getOnlineBots(): Promise<BotInstance[]>;
   createBotInstance(botInstance: InsertBotInstance): Promise<BotInstance>;
   updateBotInstance(id: string, updates: Partial<BotInstance>): Promise<BotInstance>;
   deleteBotInstance(id: string): Promise<void>;
@@ -117,6 +118,17 @@ export class DatabaseStorage implements IStorage {
   async getAllBotInstances(): Promise<BotInstance[]> {
     const serverName = getServerName();
     return await db.select().from(botInstances).where(eq(botInstances.serverName, serverName)).orderBy(desc(botInstances.createdAt));
+  }
+
+  async getOnlineBots(): Promise<BotInstance[]> {
+    const serverName = getServerName();
+    return await db.select().from(botInstances).where(
+      and(
+        eq(botInstances.serverName, serverName),
+        eq(botInstances.status, 'online'),
+        eq(botInstances.approvalStatus, 'approved')
+      )
+    ).orderBy(desc(botInstances.createdAt));
   }
 
   async getBotInstancesByApprovalStatus(approvalStatus: string): Promise<BotInstance[]> {

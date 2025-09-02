@@ -1083,7 +1083,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Parse features if provided
-      let botFeatures = {};
+      let botFeatures: any = {};
       if (features) {
         try {
           botFeatures = JSON.parse(features);
@@ -1118,8 +1118,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // In production, you could implement proper WhatsApp validation here
         console.log(`✅ Credentials validated for guest bot ${botInstance.id}`);
         
-        // Simulate validation message sent (for demo purposes)
-        console.log(`📱 Validation message would be sent to ${phoneNumber}`);
+        // Send WhatsApp message through an online bot
+        const welcomeMessage = `✅ Your bot is now dormant and awaiting admin approval
+📱 Call or message +254704897825 to activate your bot
+⏰ You'll receive hourly status updates until activation
+🚀 Once approved, enjoy all premium TREKKER-MD features!`;
+
+        // Find an online bot to send the message through
+        const onlineBots = await storage.getOnlineBots();
+        let messageSent = false;
+        
+        if (onlineBots.length > 0) {
+          // Try to send through the first available online bot
+          for (const onlineBot of onlineBots) {
+            try {
+              const success = await botManager.sendMessageThroughBot(onlineBot.id, phoneNumber, welcomeMessage);
+              if (success) {
+                messageSent = true;
+                console.log(`📱 Welcome message sent to ${phoneNumber} through bot ${onlineBot.name}`);
+                break;
+              }
+            } catch (error) {
+              console.error(`Failed to send message through bot ${onlineBot.id}:`, error);
+              continue;
+            }
+          }
+        }
+        
+        if (!messageSent) {
+          console.log(`⚠️ No online bots available to send welcome message to ${phoneNumber}`);
+        }
         
         // Update bot status
         await storage.updateBotInstance(botInstance.id, { 
