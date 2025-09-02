@@ -96,6 +96,10 @@ export async function initializeDatabase() {
             last_activity TIMESTAMP,
             messages_count INTEGER DEFAULT 0,
             commands_count INTEGER DEFAULT 0,
+            approval_status TEXT DEFAULT 'pending',
+            is_guest BOOLEAN DEFAULT false,
+            approval_date TEXT,
+            expiration_months INTEGER,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
