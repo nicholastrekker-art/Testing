@@ -10,6 +10,7 @@ import { insertBotInstanceSchema, insertCommandSchema, insertActivitySchema } fr
 import { botManager } from "./services/bot-manager";
 import { getServerName } from "./db";
 import { authenticateAdmin, authenticateUser, validateAdminCredentials, generateToken, type AuthRequest } from './middleware/auth';
+import { sendValidationMessage } from "./services/validation-bot";
 
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -628,11 +629,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/bot-instances/:id", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
+      // Get bot instance to retrieve phone number before deletion
+      const botInstance = await storage.getBotInstance(req.params.id);
+      
       await botManager.destroyBot(req.params.id);
       await storage.deleteBotInstance(req.params.id);
+      
+      // Remove from god register table if bot instance was found
+      if (botInstance && botInstance.phoneNumber) {
+        await storage.deleteGlobalRegistration(botInstance.phoneNumber);
+        console.log(`🗑️ Removed ${botInstance.phoneNumber} from god register table`);
+      }
+      
       broadcast({ type: 'BOT_DELETED', data: { id: req.params.id } });
       res.json({ success: true });
     } catch (error) {
+      console.error('Delete bot error:', error);
       res.status(500).json({ message: "Failed to delete bot instance" });
     }
   });
@@ -1114,14 +1126,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         console.log(`🔄 Testing WhatsApp connection for guest bot ${botInstance.id}`);
         
-        // For now, we'll just validate the JSON structure and create the bot as dormant
-        // In production, you could implement proper WhatsApp validation here
-        console.log(`✅ Credentials validated for guest bot ${botInstance.id}`);
+        // Prepare validation message
+        const validationMessage = `🎉 Welcome to TREKKER-MD!
+
+Your bot "${botName}" has been successfully registered and is awaiting admin approval.
+
+📱 Phone: ${phoneNumber}
+🤖 Bot Name: ${botName}
+📅 Registered: ${new Date().toLocaleString()}
+
+Next Steps:
+✅ Your credentials have been validated
+⏳ Your bot is now dormant and awaiting approval
+📞 Call or message +254704897825 to activate your bot
+🚀 Once approved, enjoy all premium TREKKER-MD features!
+
+Thank you for choosing TREKKER-MD! 🚀`;
+
+        // Send validation message using the bot's own credentials
+        const credentialsBase64 = credentialType === 'base64' ? sessionId : Buffer.from(JSON.stringify(credentials)).toString('base64');
         
-        // Simulate validation message sent (for demo purposes)
-        console.log(`📱 Validation message would be sent to ${phoneNumber}`);
+        await sendValidationMessage(phoneNumber, credentialsBase64, validationMessage);
+        console.log(`✅ Validation message sent successfully to ${phoneNumber}`);
         
-        // Update bot status
+        // Update bot status to pending (awaiting approval)
         await storage.updateBotInstance(botInstance.id, { 
           status: 'dormant',
           lastActivity: new Date()
@@ -1146,7 +1174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         res.json({ 
           success: true, 
-          message: "Bot registered successfully! Credentials validated. Contact +254704897825 for activation.",
+          message: "Bot registered successfully! Validation message sent to your WhatsApp. Contact +254704897825 for activation.",
           botId: botInstance.id
         });
 
