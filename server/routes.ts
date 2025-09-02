@@ -275,7 +275,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/server/info", async (req, res) => {
     try {
       const serverName = process.env.NAME || 'Unknown';
-      const maxBots = parseInt(process.env.BOTSCOUNT || '10', 10);
+      const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
       const currentBots = await storage.getAllBotInstances();
       
       res.json({
@@ -581,13 +581,66 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       // Check for duplicate bot name and bot count limit
       const existingBots = await storage.getAllBotInstances();
       
-      // Check bot count limit using environment variable
+      // Check bot count limit and handle auto-removal if needed
       const canAddBot = await storage.checkBotCountLimit();
       if (!canAddBot) {
-        const maxBots = parseInt(process.env.BOTSCOUNT || '10', 10);
-        return res.status(400).json({ 
-          message: `Sorry 😞... The server is full! Maximum bot limit reached (${maxBots} bots). Please contact administrator for more capacity.` 
-        });
+        // Check if there are pending bots that can be removed
+        const oldestPendingBot = await storage.getOldestPendingBot();
+        if (oldestPendingBot) {
+          try {
+            // Send notification to the bot owner before removal
+            const notificationMessage = `Your bot "${oldestPendingBot.name}" took too long before approval and has been removed from the server to make space for new registrations. Please register again when needed.`;
+            
+            // Try to send notification through the bot's own credentials if possible
+            try {
+              await botManager.sendMessageThroughBot(
+                oldestPendingBot.id, 
+                oldestPendingBot.phoneNumber || '', 
+                notificationMessage
+              );
+              console.log(`📱 Notification sent to ${oldestPendingBot.phoneNumber}: ${notificationMessage}`);
+            } catch (notificationError) {
+              console.warn(`Failed to send notification to ${oldestPendingBot.phoneNumber}:`, notificationError);
+            }
+
+            // Remove from god registry
+            if (oldestPendingBot.phoneNumber) {
+              await storage.deleteGlobalRegistration(oldestPendingBot.phoneNumber);
+            }
+
+            // Stop and delete the bot
+            await botManager.destroyBot(oldestPendingBot.id);
+            await storage.deleteBotInstance(oldestPendingBot.id);
+
+            // Log the activity
+            await storage.createActivity({
+              botInstanceId: null,
+              type: 'auto_removal',
+              description: `Auto-removed oldest pending bot "${oldestPendingBot.name}" (${oldestPendingBot.phoneNumber}) to make space for new registration`,
+              metadata: { 
+                removedBotId: oldestPendingBot.id,
+                removedBotName: oldestPendingBot.name,
+                removedBotPhone: oldestPendingBot.phoneNumber,
+                reason: 'capacity_limit_reached'
+              },
+              serverName: getServerName()
+            });
+
+            console.log(`🗑️ Auto-removed oldest pending bot: ${oldestPendingBot.name} (${oldestPendingBot.phoneNumber})`);
+          } catch (removalError) {
+            console.error("Failed to remove oldest pending bot:", removalError);
+            const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
+            return res.status(400).json({ 
+              message: `Sorry 😞... The server is full! Maximum bot limit reached (${maxBots} bots). Please contact administrator for more capacity.` 
+            });
+          }
+        } else {
+          // No pending bots to remove, server is truly full
+          const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
+          return res.status(400).json({ 
+            message: `Sorry 😞... The server is full! Maximum bot limit reached (${maxBots} bots) and all bots are approved. Please contact administrator for more capacity.` 
+          });
+        }
       }
       
       const duplicateName = existingBots.find(bot => 

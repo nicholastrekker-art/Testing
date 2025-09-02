@@ -58,7 +58,7 @@ export const commands = pgTable("commands", {
 
 export const activities = pgTable("activities", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  botInstanceId: varchar("bot_instance_id").notNull(),
+  botInstanceId: varchar("bot_instance_id"), // nullable for system activities
   type: text("type").notNull(), // command, message, auto_like, auto_react, error, etc.
   description: text("description").notNull(),
   metadata: jsonb("metadata").default({}),

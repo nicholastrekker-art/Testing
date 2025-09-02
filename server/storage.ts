@@ -23,9 +23,9 @@ import { eq, desc, and, sql } from "drizzle-orm";
 
 // Get maximum bot count from environment variables
 function getMaxBotCount(): number {
-  const botCount = process.env.BOTSCOUNT;
+  const botCount = process.env.BOTCOUNT;
   if (!botCount) {
-    throw new Error('BOTSCOUNT environment variable is required');
+    throw new Error('BOTCOUNT environment variable is required');
   }
   return parseInt(botCount, 10);
 }
@@ -43,6 +43,7 @@ export interface IStorage {
   updateBotInstance(id: string, updates: Partial<BotInstance>): Promise<BotInstance>;
   deleteBotInstance(id: string): Promise<void>;
   checkBotCountLimit(): Promise<boolean>;
+  getOldestPendingBot(): Promise<BotInstance | undefined>;
   
   // Command methods
   getCommands(botInstanceId?: string): Promise<Command[]>;
@@ -175,6 +176,20 @@ export class DatabaseStorage implements IStorage {
     const maxBots = getMaxBotCount();
     const currentBots = await db.select().from(botInstances).where(eq(botInstances.serverName, serverName));
     return currentBots.length < maxBots;
+  }
+
+  async getOldestPendingBot(): Promise<BotInstance | undefined> {
+    const serverName = getServerName();
+    const [bot] = await db
+      .select()
+      .from(botInstances)
+      .where(and(
+        eq(botInstances.serverName, serverName),
+        eq(botInstances.approvalStatus, 'pending')
+      ))
+      .orderBy(botInstances.createdAt)
+      .limit(1);
+    return bot;
   }
 
   async getBotByPhoneNumber(phoneNumber: string): Promise<BotInstance | undefined> {
@@ -449,6 +464,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addGlobalRegistration(phoneNumber: string, tenancyName: string): Promise<GodRegister> {
+    // Check if phone number already exists
+    const existing = await this.checkGlobalRegistration(phoneNumber);
+    if (existing) {
+      throw new Error(`Phone number ${phoneNumber} is already registered on ${existing.tenancyName}`);
+    }
+
     const [registration] = await db
       .insert(godRegister)
       .values({ phoneNumber, tenancyName })

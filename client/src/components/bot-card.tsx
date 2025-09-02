@@ -24,6 +24,17 @@ interface BotCardProps {
   };
 }
 
+// Utility function to mask phone numbers for non-admin users
+function maskPhoneNumber(phoneNumber: string): string {
+  if (!phoneNumber || phoneNumber.length < 8) return phoneNumber;
+  
+  const start = phoneNumber.slice(0, 7);
+  const end = phoneNumber.slice(-2);
+  const middle = '*'.repeat(Math.max(0, phoneNumber.length - 9));
+  
+  return `${start}${middle}${end}`;
+}
+
 export default function BotCard({ bot }: BotCardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -247,7 +258,7 @@ export default function BotCard({ bot }: BotCardProps) {
             <div>
               <h3 className="font-semibold text-foreground" data-testid={`bot-name-${bot.id}`}>{bot.name}</h3>
               <p className="text-sm text-muted-foreground" data-testid={`bot-phone-${bot.id}`}>
-                {bot.phoneNumber || 'Not connected'}
+                {bot.phoneNumber ? (isAdmin ? bot.phoneNumber : maskPhoneNumber(bot.phoneNumber)) : 'Not connected'}
               </p>
             </div>
           </div>
