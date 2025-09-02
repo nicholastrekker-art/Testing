@@ -335,14 +335,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/bots/:id/approve", authenticateAdmin, async (req, res) => {
     try {
       const { id } = req.params;
-      const { expirationMonths } = req.body;
+      const { expirationMonths = 3 } = req.body;
       
-      const success = await storage.approveBotInstance(id, expirationMonths);
-      if (success) {
-        res.json({ message: "Bot approved successfully" });
-      } else {
-        res.status(404).json({ message: "Bot not found" });
+      // Get bot details first
+      const bot = await storage.getBotInstance(id);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot not found" });
       }
+      
+      // Update bot to approved status  
+      const updatedBot = await storage.updateBotInstance(id, {
+        approvalStatus: 'approved',
+        approvalDate: new Date().toISOString(),
+        expirationMonths,
+        status: 'loading' // Set to loading as we're about to start it
+      });
+
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: id,
+        type: 'approval',
+        description: `Bot approved for ${expirationMonths} months by admin`,
+        metadata: { expirationMonths },
+        serverName: getServerName()
+      });
+
+      // Automatically start the bot after approval
+      try {
+        console.log(`Auto-starting approved bot ${bot.name} (${bot.id})...`);
+        await botManager.startBot(id);
+        
+        // Wait a moment for the bot to initialize before sending notification
+        setTimeout(async () => {
+          try {
+            if (bot.phoneNumber) {
+              const approvalMessage = `🎉 *Bot Approval Confirmed!* 🎉
+
+Congratulations! Your TREKKER-MD WhatsApp bot "${bot.name}" has been successfully approved and is now active!
+
+📱 *Bot Details:*
+• Name: ${bot.name}
+• Phone: ${bot.phoneNumber}
+• Status: ✅ Active & Online
+• Approval Date: ${new Date().toLocaleDateString()}
+• Valid For: ${expirationMonths} months
+
+🚀 *Your bot is now live and ready to serve!*
+• All automation features are enabled
+• ChatGPT integration is active
+• Auto-like, auto-react, and status viewing are operational
+
+Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationMonths} months from today.
+
+---
+*TREKKER-MD - Ultra Fast Lifetime WhatsApp Bot Automation*`;
+
+              // Send notification using the bot's own credentials
+              const messageSent = await botManager.sendMessageThroughBot(id, bot.phoneNumber, approvalMessage);
+              
+              if (messageSent) {
+                console.log(`✅ Approval notification sent to ${bot.phoneNumber} via bot ${bot.name}`);
+              } else {
+                console.log(`⚠️ Failed to send approval notification to ${bot.phoneNumber} - bot might not be online yet`);
+              }
+            }
+          } catch (notificationError) {
+            console.error('Failed to send approval notification:', notificationError);
+          }
+        }, 5000); // Wait 5 seconds for bot to fully initialize
+        
+      } catch (startError) {
+        console.error(`Failed to auto-start bot ${id}:`, startError);
+        // Update status to error if start failed
+        await storage.updateBotInstance(id, { status: 'error' });
+      }
+
+      broadcast({ type: 'BOT_APPROVED', data: updatedBot });
+      res.json({ message: "Bot approved successfully and starting automatically" });
     } catch (error) {
       console.error("Approve bot error:", error);
       res.status(500).json({ message: "Failed to approve bot" });
