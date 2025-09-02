@@ -1083,7 +1083,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Parse features if provided
-      let botFeatures: any = {};
+      let botFeatures = {};
       if (features) {
         try {
           botFeatures = JSON.parse(features);
@@ -1118,44 +1118,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // In production, you could implement proper WhatsApp validation here
         console.log(`✅ Credentials validated for guest bot ${botInstance.id}`);
         
-        // Use the new bot's own credentials to send welcome message
-        const welcomeMessage = `✅ Your bot is now dormant and awaiting admin approval
-📱 Call or message +254704897825 to activate your bot
-⏰ You'll receive hourly status updates until activation
-🚀 Once approved, enjoy all premium TREKKER-MD features!`;
-
-        let messageSent = false;
-        
-        try {
-          // Create and temporarily start the new bot to send the welcome message
-          console.log(`🚀 Starting new bot ${botInstance.id} to send welcome message...`);
-          await botManager.createBot(botInstance.id, botInstance);
-          
-          // Give the bot a moment to initialize
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          
-          // Try to send the welcome message using the bot's own credentials
-          const success = await botManager.sendMessageThroughBot(botInstance.id, phoneNumber, welcomeMessage);
-          if (success) {
-            messageSent = true;
-            console.log(`📱 Welcome message sent to ${phoneNumber} using bot's own credentials`);
-          } else {
-            console.log(`⚠️ Failed to send welcome message using bot's own credentials`);
-          }
-          
-          // Stop the bot after sending the message to keep it dormant
-          console.log(`⏸️ Stopping bot ${botInstance.id} after sending welcome message...`);
-          await botManager.stopBot(botInstance.id);
-          
-        } catch (error) {
-          console.error(`Error sending welcome message with bot's own credentials:`, error);
-          // Clean up if there was an error
-          try {
-            await botManager.destroyBot(botInstance.id);
-          } catch (cleanupError) {
-            console.error(`Error cleaning up bot after failure:`, cleanupError);
-          }
-        }
+        // Simulate validation message sent (for demo purposes)
+        console.log(`📱 Validation message would be sent to ${phoneNumber}`);
         
         // Update bot status
         await storage.updateBotInstance(botInstance.id, { 
