@@ -70,6 +70,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       });
     },
     onError: (error) => {
+      setStep(1); // Go back to form on error
       toast({
         title: "Registration failed",
         description: error instanceof Error ? error.message : "Unknown error",
