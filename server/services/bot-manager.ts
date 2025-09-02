@@ -136,6 +136,23 @@ class BotManager {
     return statuses;
   }
 
+  async sendMessageThroughBot(botId: string, phoneNumber: string, message: string): Promise<boolean> {
+    const bot = this.bots.get(botId);
+    if (!bot || bot.getStatus() !== 'online') {
+      return false;
+    }
+
+    try {
+      // Format phone number as WhatsApp JID
+      const jid = phoneNumber.includes('@') ? phoneNumber : `${phoneNumber}@s.whatsapp.net`;
+      await bot.sendDirectMessage(jid, message);
+      return true;
+    } catch (error) {
+      console.error(`Failed to send message through bot ${botId}:`, error);
+      return false;
+    }
+  }
+
   async initializeDefaultCommands() {
     // Create comprehensive set of 300+ default commands
     const defaultCommands = [

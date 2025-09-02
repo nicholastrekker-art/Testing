@@ -1133,11 +1133,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Bot instance or phone number not found" });
       }
 
-      // Placeholder for sending message
+      // Send message through the bot manager
+      const success = await botManager.sendMessageThroughBot(botId, botInstance.phoneNumber, message);
+      
+      if (!success) {
+        return res.status(400).json({ message: "Bot is not online or failed to send message" });
+      }
+      
       console.log(`📱 Message sent to ${botInstance.phoneNumber}: ${message}`);
       
       // Log activity
       await storage.createActivity({
+        serverName: 'default-server',
         botInstanceId: botId,
         type: 'admin_message',
         description: `Admin sent message to ${botInstance.name}`,
@@ -1146,6 +1153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ success: true, message: "Message sent successfully" });
     } catch (error) {
+      console.error('Admin send message error:', error);
       res.status(500).json({ message: "Failed to send message" });
     }
   });

@@ -552,4 +552,27 @@ export class WhatsAppBot {
   updateBotInstance(botInstance: BotInstance) {
     this.botInstance = botInstance;
   }
+
+  async sendDirectMessage(recipient: string, message: string): Promise<void> {
+    if (!this.sock || !this.isRunning) {
+      throw new Error('Bot is not running or socket is not available');
+    }
+    
+    try {
+      await this.sock.sendMessage(recipient, { text: message });
+      console.log(`Bot ${this.botInstance.name}: Message sent to ${recipient}`);
+      
+      // Log the activity
+      await storage.createActivity({
+        serverName: 'default-server',
+        botInstanceId: this.botInstance.id,
+        type: 'message_sent',
+        description: `Message sent to ${recipient}`,
+        metadata: { recipient, message: message.substring(0, 100) }
+      });
+    } catch (error) {
+      console.error(`Bot ${this.botInstance.name}: Failed to send message to ${recipient}:`, error);
+      throw error;
+    }
+  }
 }
