@@ -8,6 +8,7 @@ import path from 'path';
 import { storage } from "./storage";
 import { insertBotInstanceSchema, insertCommandSchema, insertActivitySchema } from "@shared/schema";
 import { botManager } from "./services/bot-manager";
+import { getServerName } from "./db";
 import { authenticateAdmin, authenticateUser, validateAdminCredentials, generateToken, type AuthRequest } from './middleware/auth';
 
 const upload = multer({ 
@@ -78,7 +79,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createActivity({
           botInstanceId: bot.id,
           type: 'startup',
-          description: 'Bot resume initiated on server restart'
+          description: 'Bot resume initiated on server restart',
+          serverName: getServerName()
         });
       }
 
@@ -99,7 +101,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await storage.createActivity({
               botInstanceId: bot.id,
               type: 'startup',
-              description: 'Bot resumed successfully on server restart'
+              description: 'Bot resumed successfully on server restart',
+              serverName: getServerName()
             });
             
             // Broadcast bot status update
@@ -119,7 +122,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await storage.createActivity({
               botInstanceId: bot.id,
               type: 'error',
-              description: `Bot resume failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+              description: `Bot resume failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              serverName: getServerName()
             });
             
             // Broadcast bot error
@@ -177,7 +181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Credentials validation endpoint (accessible to everyone)
-  app.post("/api/validate-credentials", upload.single('credentials'), async (req, res) => {
+  app.post("/api/validate-credentials", upload.single('credentials') as any, async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ 
@@ -401,7 +405,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/bot-instances", upload.single('credentials'), async (req, res) => {
+  app.post("/api/bot-instances", upload.single('credentials') as any, async (req, res) => {
     try {
       let credentials = null;
       
@@ -819,7 +823,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Guest Bot Registration
-  app.post("/api/guest/register-bot", upload.single('credsFile'), async (req, res) => {
+  app.post("/api/guest/register-bot", upload.single('credsFile') as any, async (req, res) => {
     try {
       const { botName, phoneNumber, credentialType, sessionId, features } = req.body;
       
