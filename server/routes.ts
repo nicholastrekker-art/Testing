@@ -368,8 +368,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Update bot settings
-      const currentSettings = bot.settings || {};
-      const features = currentSettings.features || {};
+      const currentSettings = (bot.settings as any) || {};
+      const features = (currentSettings.features as any) || {};
       features[feature] = enabled;
       
       const success = await storage.updateBotInstance(id, {
@@ -381,7 +381,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           botInstanceId: id,
           type: 'settings_change',
           description: `Admin ${enabled ? 'enabled' : 'disabled'} ${feature} feature`,
-          metadata: { feature, enabled, admin: true }
+          metadata: { feature, enabled, admin: true },
+          serverName: getServerName()
         });
         res.json({ message: "Feature updated successfully" });
       } else {
@@ -563,7 +564,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               await storage.createActivity({
                 botInstanceId: bot.id,
                 type: 'auto_cleanup',
-                description: `Bot "${bot.name}" was automatically deleted due to connection failure`
+                description: `Bot "${bot.name}" was automatically deleted due to connection failure`,
+                serverName: getServerName()
               });
               broadcast({ type: 'BOT_DELETED', data: { botId: bot.id } });
             }
@@ -581,7 +583,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createActivity({
         botInstanceId: bot.id,
         type: 'bot_created',
-        description: `🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot "${bot.name}" created successfully!`
+        description: `🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot "${bot.name}" created successfully!`,
+        serverName: getServerName()
       });
       
       broadcast({ type: 'BOT_CREATED', data: bot });
@@ -784,7 +787,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customCode: true // Flag to identify custom code commands
       };
 
-      const command = await storage.createCommand(commandData);
+      const command = await storage.createCommand({
+        ...commandData,
+        serverName: getServerName()
+      });
       
       // Register the command in the command registry dynamically
       const { commandRegistry } = await import('./services/command-registry.js');
@@ -830,8 +836,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!botName || !phoneNumber) {
         return res.status(400).json({ message: "Bot name and phone number are required" });
       }
+      
+      // Get current tenant name
+      const currentTenancyName = getServerName();
+      
+      // Check global registration first
+      const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
+      if (globalRegistration) {
+        // Phone number is already registered to another tenant
+        if (globalRegistration.tenancyName !== currentTenancyName) {
+          return res.status(400).json({ 
+            message: `This phone number is registered to ${globalRegistration.tenancyName}. Please go to ${globalRegistration.tenancyName} server to manage your bot.`,
+            registeredTo: globalRegistration.tenancyName
+          });
+        }
+        
+        // Phone number belongs to this tenant - check for existing bot
+        const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
+        if (existingBot) {
+          // User has a bot on this server - provide management options
+          const isActive = existingBot.status === 'online';
+          const isApproved = existingBot.approvalStatus === 'approved';
+          
+          // Check expiry if bot is approved
+          let timeRemaining = null;
+          let isExpired = false;
+          if (isApproved && existingBot.approvalDate && existingBot.expirationMonths) {
+            const approvalDate = new Date(existingBot.approvalDate);
+            const expirationDate = new Date(approvalDate);
+            expirationDate.setMonth(expirationDate.getMonth() + existingBot.expirationMonths);
+            const now = new Date();
+            
+            if (now > expirationDate) {
+              isExpired = true;
+            } else {
+              timeRemaining = Math.ceil((expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)); // days
+            }
+          }
+          
+          return res.json({
+            type: 'existing_bot_found',
+            message: `Welcome back! You have a bot on this server.`,
+            botDetails: {
+              id: existingBot.id,
+              name: existingBot.name,
+              phoneNumber: existingBot.phoneNumber,
+              status: existingBot.status,
+              isActive,
+              isApproved,
+              approvalStatus: existingBot.approvalStatus,
+              isExpired,
+              timeRemaining,
+              expirationMonths: existingBot.expirationMonths
+            }
+          });
+        }
+      } else {
+        // This is a new registration - add to global register
+        await storage.addGlobalRegistration(phoneNumber, currentTenancyName);
+      }
 
-      // Check if phone number already exists
+      // Check if phone number already exists locally (redundant check but for safety)
       const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
       if (existingBot) {
         // Check if existing bot is active and has valid session
@@ -914,7 +979,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'pending_validation',
         approvalStatus: 'pending',
         isGuest: true,
-        settings: { features: botFeatures }
+        settings: { features: botFeatures },
+        serverName: getServerName()
       });
 
       // Test WhatsApp connection and send validation message
@@ -939,7 +1005,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           botInstanceId: botInstance.id,
           type: 'registration',
           description: `Guest bot registered and validation message sent to ${phoneNumber}`,
-          metadata: { phoneNumber, credentialType, phoneValidated: true }
+          metadata: { phoneNumber, credentialType, phoneValidated: true },
+          serverName: getServerName()
         });
 
         broadcast({ 
@@ -970,6 +1037,217 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Guest bot registration error:', error);
       res.status(500).json({ message: "Failed to register bot" });
+    }
+  });
+
+  // Bot Management for Existing Users
+  app.post("/api/guest/manage-bot", upload.single('credsFile') as any, async (req, res) => {
+    try {
+      const { phoneNumber, action, credentialType, sessionId, botId } = req.body;
+      
+      if (!phoneNumber || !action || !botId) {
+        return res.status(400).json({ message: "Phone number, action, and bot ID are required" });
+      }
+      
+      const currentTenancyName = getServerName();
+      
+      // Verify global registration
+      const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
+      if (!globalRegistration || globalRegistration.tenancyName !== currentTenancyName) {
+        return res.status(400).json({ 
+          message: `Phone number not registered to this server or registered to ${globalRegistration?.tenancyName || 'another server'}` 
+        });
+      }
+      
+      // Get the bot instance
+      const botInstance = await storage.getBotInstance(botId);
+      if (!botInstance || botInstance.phoneNumber !== phoneNumber) {
+        return res.status(404).json({ message: "Bot not found or phone number mismatch" });
+      }
+      
+      switch (action) {
+        case 'restart':
+          if (botInstance.approvalStatus !== 'approved') {
+            return res.status(400).json({ message: "Bot must be approved before it can be restarted" });
+          }
+          
+          // Check if bot is expired
+          if (botInstance.approvalDate && botInstance.expirationMonths) {
+            const approvalDate = new Date(botInstance.approvalDate);
+            const expirationDate = new Date(approvalDate);
+            expirationDate.setMonth(expirationDate.getMonth() + botInstance.expirationMonths);
+            const now = new Date();
+            
+            if (now > expirationDate) {
+              return res.status(400).json({ 
+                message: "Bot has expired. Please contact admin for renewal.",
+                expired: true
+              });
+            }
+          }
+          
+          // Restart the bot
+          try {
+            await botManager.destroyBot(botId);
+          } catch (error) {
+            console.log('Bot was not running, creating new instance');
+          }
+          
+          await botManager.createBot(botId, botInstance);
+          await storage.updateBotInstance(botId, { status: 'loading' });
+          
+          await storage.createActivity({
+            botInstanceId: botId,
+            type: 'restart',
+            description: `Bot restarted by user via management interface`,
+            serverName: getServerName()
+          });
+          
+          res.json({ 
+            success: true, 
+            message: "Bot restart initiated",
+            botStatus: 'loading'
+          });
+          break;
+          
+        case 'update_credentials':
+          let newCredentials = null;
+          
+          if (credentialType === 'base64' && sessionId) {
+            try {
+              const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
+              newCredentials = JSON.parse(decoded);
+            } catch (error) {
+              return res.status(400).json({ message: "Invalid base64 session ID format" });
+            }
+          } else if (credentialType === 'file' && req.file) {
+            try {
+              const fileContent = req.file.buffer.toString('utf-8');
+              newCredentials = JSON.parse(fileContent);
+            } catch (error) {
+              return res.status(400).json({ message: "Invalid creds.json file format" });
+            }
+          } else {
+            return res.status(400).json({ message: "Valid credentials are required for update" });
+          }
+          
+          // Validate phone number ownership
+          if (newCredentials && newCredentials.me && newCredentials.me.id) {
+            const credentialsPhoneMatch = newCredentials.me.id.match(/^(\d+):/);
+            const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
+            const inputPhone = phoneNumber.replace(/^\+/, '');
+            
+            if (!credentialsPhone || credentialsPhone !== inputPhone) {
+              return res.status(400).json({ 
+                message: "Credentials don't match your phone number" 
+              });
+            }
+          }
+          
+          // Update credentials
+          await storage.updateBotInstance(botId, { 
+            credentials: newCredentials,
+            status: 'offline' // Reset to offline for reactivation
+          });
+          
+          await storage.createActivity({
+            botInstanceId: botId,
+            type: 'credentials_update',
+            description: `Bot credentials updated by user`,
+            metadata: { credentialType },
+            serverName: getServerName()
+          });
+          
+          res.json({ 
+            success: true, 
+            message: "Credentials updated successfully. Bot can now be restarted."
+          });
+          break;
+          
+        case 'stop':
+          try {
+            await botManager.destroyBot(botId);
+            await storage.updateBotInstance(botId, { status: 'offline' });
+            
+            await storage.createActivity({
+              botInstanceId: botId,
+              type: 'stop',
+              description: `Bot stopped by user via management interface`,
+              serverName: getServerName()
+            });
+            
+            res.json({ 
+              success: true, 
+              message: "Bot stopped successfully"
+            });
+          } catch (error) {
+            console.error('Error stopping bot:', error);
+            res.status(500).json({ message: "Failed to stop bot" });
+          }
+          break;
+          
+        default:
+          res.status(400).json({ message: "Invalid action specified" });
+      }
+      
+    } catch (error) {
+      console.error('Bot management error:', error);
+      res.status(500).json({ message: "Failed to manage bot" });
+    }
+  });
+  
+  // Check Tenant Registration
+  app.post("/api/guest/check-registration", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      const currentTenancyName = getServerName();
+      const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
+      
+      if (!globalRegistration) {
+        return res.json({
+          registered: false,
+          message: "Phone number not registered to any server"
+        });
+      }
+      
+      if (globalRegistration.tenancyName !== currentTenancyName) {
+        return res.json({
+          registered: true,
+          currentServer: false,
+          registeredTo: globalRegistration.tenancyName,
+          message: `Phone number is registered to ${globalRegistration.tenancyName}. Please go to ${globalRegistration.tenancyName} server.`
+        });
+      }
+      
+      // Check for existing bot on this server
+      const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
+      
+      res.json({
+        registered: true,
+        currentServer: true,
+        hasBot: !!existingBot,
+        bot: existingBot ? {
+          id: existingBot.id,
+          name: existingBot.name,
+          status: existingBot.status,
+          approvalStatus: existingBot.approvalStatus,
+          isApproved: existingBot.approvalStatus === 'approved',
+          approvalDate: existingBot.approvalDate,
+          expirationMonths: existingBot.expirationMonths
+        } : null,
+        message: existingBot 
+          ? `Welcome back! You have a bot named "${existingBot.name}" on this server.`
+          : "Phone number registered to this server but no bot found."
+      });
+      
+    } catch (error) {
+      console.error('Check registration error:', error);
+      res.status(500).json({ message: "Failed to check registration" });
     }
   });
 
@@ -1071,7 +1349,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         botInstanceId: botId,
         type: 'approval',
         description: `Bot ${botInstance.name} approved by admin for ${duration} months`,
-        metadata: { adminAction: 'approve', phoneNumber: botInstance.phoneNumber, duration, approvalDate }
+        metadata: { adminAction: 'approve', phoneNumber: botInstance.phoneNumber, duration, approvalDate },
+        serverName: getServerName()
       });
 
       // Send activation message (placeholder for now)
@@ -1109,7 +1388,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         botInstanceId: botId,
         type: 'rejection',
         description: `Bot ${botInstance.name} rejected by admin. Reason: ${reason || 'No reason provided'}`,
-        metadata: { adminAction: 'reject', reason, phoneNumber: botInstance.phoneNumber }
+        metadata: { adminAction: 'reject', reason, phoneNumber: botInstance.phoneNumber },
+        serverName: getServerName()
       });
 
       broadcast({ 

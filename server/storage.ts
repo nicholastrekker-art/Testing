@@ -4,6 +4,7 @@ import {
   commands, 
   activities, 
   groups,
+  godRegister,
   type User, 
   type InsertUser,
   type BotInstance,
@@ -13,7 +14,9 @@ import {
   type Activity,
   type InsertActivity,
   type Group,
-  type InsertGroup
+  type InsertGroup,
+  type GodRegister,
+  type InsertGodRegister
 } from "@shared/schema";
 import { db, getServerName } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -75,6 +78,11 @@ export interface IStorage {
     totalCommands: number;
     recentActivities: number;
   }>;
+  
+  // Global registration methods (tenant-independent)
+  checkGlobalRegistration(phoneNumber: string): Promise<GodRegister | undefined>;
+  addGlobalRegistration(phoneNumber: string, tenancyName: string): Promise<GodRegister>;
+  deleteGlobalRegistration(phoneNumber: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -404,6 +412,24 @@ export class DatabaseStorage implements IStorage {
       totalCommands: commandsResult.sum || 0,
       recentActivities: activitiesResult.count || 0,
     };
+  }
+  
+  // Global registration methods (tenant-independent)
+  async checkGlobalRegistration(phoneNumber: string): Promise<GodRegister | undefined> {
+    const [registration] = await db.select().from(godRegister).where(eq(godRegister.phoneNumber, phoneNumber));
+    return registration || undefined;
+  }
+
+  async addGlobalRegistration(phoneNumber: string, tenancyName: string): Promise<GodRegister> {
+    const [registration] = await db
+      .insert(godRegister)
+      .values({ phoneNumber, tenancyName })
+      .returning();
+    return registration;
+  }
+
+  async deleteGlobalRegistration(phoneNumber: string): Promise<void> {
+    await db.delete(godRegister).where(eq(godRegister.phoneNumber, phoneNumber));
   }
 }
 

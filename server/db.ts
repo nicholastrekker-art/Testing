@@ -184,6 +184,15 @@ export async function initializeDatabase() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
+        
+        await client`
+          CREATE TABLE IF NOT EXISTS god_register (
+            id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+            phone_number TEXT NOT NULL UNIQUE,
+            tenancy_name TEXT NOT NULL,
+            registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `;
 
         // Handle existing tables that might be missing columns
         try {

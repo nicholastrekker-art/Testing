@@ -3,6 +3,14 @@ import { pgTable, text, varchar, integer, boolean, timestamp, jsonb } from "driz
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Global registration table - stores registrations across all tenants
+export const godRegister = pgTable("god_register", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  phoneNumber: text("phone_number").notNull().unique(),
+  tenancyName: text("tenancy_name").notNull(), // SERVER1, SERVER2, etc
+  registeredAt: timestamp("registered_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
@@ -129,6 +137,11 @@ export const insertGroupSchema = createInsertSchema(groups).omit({
   createdAt: true,
 });
 
+export const insertGodRegisterSchema = createInsertSchema(godRegister).omit({
+  id: true,
+  registeredAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -144,3 +157,6 @@ export type InsertActivity = z.infer<typeof insertActivitySchema>;
 
 export type Group = typeof groups.$inferSelect;
 export type InsertGroup = z.infer<typeof insertGroupSchema>;
+
+export type GodRegister = typeof godRegister.$inferSelect;
+export type InsertGodRegister = z.infer<typeof insertGodRegisterSchema>;

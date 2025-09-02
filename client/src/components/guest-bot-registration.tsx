@@ -33,7 +33,9 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     }
   });
 
-  const [step, setStep] = useState(1); // 1: form, 2: validation, 3: success
+  const [step, setStep] = useState(1); // 1: form, 2: validation, 3: success, 4: existing_bot_management, 5: wrong_server
+  const [existingBotData, setExistingBotData] = useState<any>(null);
+  const [serverMismatch, setServerMismatch] = useState<any>(null);
 
   // Guest bot registration mutation
   const registerBotMutation = useMutation({
@@ -63,13 +65,31 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       return response.json();
     },
     onSuccess: (data) => {
-      setStep(3);
-      toast({ 
-        title: "Bot registration submitted", 
-        description: data.message || "Your bot is being validated..."
-      });
+      if (data.type === 'existing_bot_found') {
+        setExistingBotData(data.botDetails);
+        setStep(4); // Show existing bot management
+        toast({ 
+          title: "Existing Bot Found", 
+          description: data.message || "Welcome back! You have a bot on this server."
+        });
+      } else {
+        setStep(3); // New registration success
+        toast({ 
+          title: "Bot registration submitted", 
+          description: data.message || "Your bot is being validated..."
+        });
+      }
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      const errorData = error.message;
+      
+      // Check if it's a server mismatch error
+      if (errorData?.includes('server') && errorData?.includes('registered to')) {
+        setServerMismatch({ message: errorData });
+        setStep(5); // Show server mismatch screen
+        return;
+      }
+      
       setStep(1); // Go back to form on error
       toast({
         title: "Registration failed",
@@ -397,6 +417,160 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
 
             <Button onClick={handleClose} className="w-full">
               Done
+            </Button>
+          </div>
+        )}
+
+        {step === 4 && existingBotData && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-robot text-2xl text-blue-600"></i>
+              </div>
+              <h3 className="text-xl font-bold mb-2">Welcome Back!</h3>
+              <p className="text-muted-foreground">
+                You have an existing bot on this server. Here's what you can do:
+              </p>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <span>🤖</span>
+                  {existingBotData.name}
+                </CardTitle>
+                <CardDescription>
+                  Phone: {existingBotData.phoneNumber}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Status:</span>
+                    <div className={`inline-block ml-2 px-2 py-1 rounded-full text-xs ${
+                      existingBotData.isActive 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {existingBotData.status}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="font-medium">Approval:</span>
+                    <div className={`inline-block ml-2 px-2 py-1 rounded-full text-xs ${
+                      existingBotData.isApproved 
+                        ? 'bg-blue-100 text-blue-800' 
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {existingBotData.approvalStatus}
+                    </div>
+                  </div>
+                </div>
+
+                {existingBotData.isApproved && existingBotData.timeRemaining && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <p className="text-sm text-green-800">
+                      ⏰ <strong>{existingBotData.timeRemaining} days</strong> remaining until expiry
+                    </p>
+                  </div>
+                )}
+
+                {existingBotData.isExpired && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p className="text-sm text-red-800">
+                      ⚠️ Your bot has expired. Please contact admin for renewal.
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <h4 className="font-medium">Available Actions:</h4>
+                  
+                  {existingBotData.isApproved && !existingBotData.isExpired && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          // Handle restart
+                          toast({
+                            title: "Feature Coming Soon",
+                            description: "Bot restart functionality will be available soon"
+                          });
+                        }}
+                      >
+                        🔄 Restart Bot
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          // Handle stop
+                          toast({
+                            title: "Feature Coming Soon", 
+                            description: "Bot stop functionality will be available soon"
+                          });
+                        }}
+                      >
+                        ⏸️ Stop Bot
+                      </Button>
+                    </div>
+                  )}
+
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => {
+                      // Handle credentials update
+                      toast({
+                        title: "Feature Coming Soon",
+                        description: "Credential update functionality will be available soon"
+                      });
+                    }}
+                  >
+                    🔑 Update Credentials
+                  </Button>
+                  
+                  {!existingBotData.isApproved && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <p className="text-sm text-yellow-800">
+                        📞 Contact +254704897825 to get your bot approved
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Button onClick={handleClose} className="w-full">
+              Close
+            </Button>
+          </div>
+        )}
+
+        {step === 5 && serverMismatch && (
+          <div className="text-center py-8">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-red-600">Wrong Server!</h3>
+            <p className="text-muted-foreground mb-4">
+              {serverMismatch.message}
+            </p>
+            
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <h4 className="font-medium text-red-800 mb-2">⚠️ Important:</h4>
+              <ul className="text-sm text-red-700 space-y-1 text-left">
+                <li>• This phone number is registered to a different server</li>
+                <li>• You can only manage your bot from the correct server</li>
+                <li>• Please go to the correct server to manage your bot</li>
+                <li>• Each phone number can only be registered to one server</li>
+              </ul>
+            </div>
+
+            <Button onClick={handleClose} variant="outline" className="w-full">
+              I Understand
             </Button>
           </div>
         )}
