@@ -295,6 +295,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Pending Bots (Admin only)
+  app.get("/api/bots/pending", async (req, res) => {
+    try {
+      const pendingBots = await storage.getPendingBots();
+      res.json(pendingBots);
+    } catch (error) {
+      console.error("Get pending bots error:", error);
+      res.status(500).json({ message: "Failed to fetch pending bots" });
+    }
+  });
+
+  // Approved Bots (Admin only)
+  app.get("/api/bots/approved", async (req, res) => {
+    try {
+      const approvedBots = await storage.getApprovedBots();
+      res.json(approvedBots);
+    } catch (error) {
+      console.error("Get approved bots error:", error);
+      res.status(500).json({ message: "Failed to fetch approved bots" });
+    }
+  });
+
+  // Approve Bot (Admin only)
+  app.post("/api/bots/:id/approve", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { expirationMonths } = req.body;
+      
+      const success = await storage.approveBotInstance(id, expirationMonths);
+      if (success) {
+        res.json({ message: "Bot approved successfully" });
+      } else {
+        res.status(404).json({ message: "Bot not found" });
+      }
+    } catch (error) {
+      console.error("Approve bot error:", error);
+      res.status(500).json({ message: "Failed to approve bot" });
+    }
+  });
+
+  // Reject Bot (Admin only)
+  app.post("/api/bots/:id/reject", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const success = await storage.rejectBotInstance(id);
+      if (success) {
+        res.json({ message: "Bot rejected successfully" });
+      } else {
+        res.status(404).json({ message: "Bot not found" });
+      }
+    } catch (error) {
+      console.error("Reject bot error:", error);
+      res.status(500).json({ message: "Failed to reject bot" });
+    }
+  });
+
   app.get("/api/bot-instances/:id", async (req, res) => {
     try {
       const bot = await storage.getBotInstance(req.params.id);

@@ -196,6 +196,60 @@ export class DatabaseStorage implements IStorage {
       }
     }
   }
+
+  async approveBotInstance(id: string, expirationMonths?: number): Promise<boolean> {
+    const serverName = getServerName();
+    const now = new Date();
+    
+    try {
+      const result = await db.update(botInstances)
+        .set({
+          approvalStatus: 'approved',
+          approvalDate: now,
+          expirationMonths: expirationMonths || null
+        })
+        .where(and(eq(botInstances.id, id), eq(botInstances.serverName, serverName)))
+        .returning();
+
+      if (result.length > 0) {
+        await this.createActivity({
+          botInstanceId: id,
+          type: 'approval',
+          description: `Bot approved by admin${expirationMonths ? ` for ${expirationMonths} months` : ' with unlimited access'}`,
+          metadata: { approvalDate: now.toISOString(), expirationMonths }
+        });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error approving bot:', error);
+      return false;
+    }
+  }
+
+  async rejectBotInstance(id: string): Promise<boolean> {
+    const serverName = getServerName();
+    
+    try {
+      const result = await db.delete(botInstances)
+        .where(and(eq(botInstances.id, id), eq(botInstances.serverName, serverName)))
+        .returning();
+
+      if (result.length > 0) {
+        await this.createActivity({
+          botInstanceId: id,
+          type: 'rejection',
+          description: `Bot rejected and removed by admin`,
+          metadata: { rejectionDate: new Date().toISOString() }
+        });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error rejecting bot:', error);
+      return false;
+    }
+  }
   
   // Command methods
   async getCommands(botInstanceId?: string): Promise<Command[]> {

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -6,6 +6,8 @@ import * as React from "react";
 import { Link } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useAuth } from "@/hooks/use-auth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import AddBotModal from "@/components/add-bot-modal";
 import CommandManagement from "@/components/command-management";
 import GuestBotRegistration from "@/components/guest-bot-registration";
@@ -13,6 +15,7 @@ import AdminBotManagement from "@/components/admin-bot-management";
 
 export default function Dashboard() {
   const { isAdmin } = useAuth();
+  const { toast } = useToast();
   const [showAddBotModal, setShowAddBotModal] = useState(false);
   const [showCommandManagement, setShowCommandManagement] = useState(false);
   const [showGuestRegistration, setShowGuestRegistration] = useState(false);
@@ -28,9 +31,21 @@ export default function Dashboard() {
     queryKey: ["/api/server/info"],
   });
 
-  // Fetch bot instances for guest users
+  // Fetch bot instances for guest users  
   const { data: botInstances = [], isLoading: botsLoading } = useQuery({
     queryKey: ["/api/bot-instances"],
+  });
+
+  // Fetch pending bots for admin
+  const { data: pendingBots = [], isLoading: pendingLoading } = useQuery({
+    queryKey: ["/api/bots/pending"],
+    enabled: isAdmin
+  });
+
+  // Fetch approved bots for admin
+  const { data: approvedBots = [], isLoading: approvedLoading } = useQuery({
+    queryKey: ["/api/bots/approved"],
+    enabled: isAdmin
   });
 
   // Fetch recent activities
@@ -45,6 +60,33 @@ export default function Dashboard() {
 
   // WebSocket for real-time updates
   useWebSocket();
+
+  // Mutations for bot approval
+  const approveBotMutation = useMutation({
+    mutationFn: ({ id, expirationMonths }: { id: string; expirationMonths?: number }) =>
+      apiRequest(`/api/bots/${id}/approve`, "POST", { expirationMonths }),
+    onSuccess: () => {
+      toast({ title: "Bot approved successfully!" });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/approved"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+    },
+    onError: () => {
+      toast({ title: "Failed to approve bot", variant: "destructive" });
+    }
+  });
+
+  const rejectBotMutation = useMutation({
+    mutationFn: (id: string) => apiRequest(`/api/bots/${id}/reject`, "POST"),
+    onSuccess: () => {
+      toast({ title: "Bot rejected and removed" });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+    },
+    onError: () => {
+      toast({ title: "Failed to reject bot", variant: "destructive" });
+    }
+  });
 
   // Auto-refresh for admin users
   React.useEffect(() => {
@@ -247,14 +289,14 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Management Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {isAdmin ? (
-            // Admin sees command management
+        {/* Admin Bot Management or Guest Registration */}
+        {isAdmin ? (
+          <div className="space-y-6">
+            {/* Pending Bots Section */}
             <Card className="bg-card border-border">
               <CardHeader className="border-b border-border">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold text-foreground">🔧 TREKKER-MD Commands</CardTitle>
+                  <CardTitle className="text-lg font-semibold text-foreground">⏳ Pending Bot Registrations</CardTitle>
                   <Button 
                     onClick={() => setShowCommandManagement(true)}
                     size="sm"
@@ -263,51 +305,127 @@ export default function Dashboard() {
                     🔧 Manage Commands
                   </Button>
                 </div>
-                <p className="text-muted-foreground text-sm mt-1">Custom command system - Ultra fast response</p>
+                <p className="text-muted-foreground text-sm mt-1">Review and approve new bot registrations</p>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="space-y-3">
-                  {commandsLoading ? (
+                <div className="space-y-4">
+                  {pendingLoading ? (
                     <div className="text-center py-4">
                       <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                     </div>
-                  ) : (commands as any[]).length === 0 ? (
+                  ) : (pendingBots as any[]).length === 0 ? (
                     <div className="text-center py-4">
-                      <p className="text-muted-foreground">No commands configured yet</p>
+                      <p className="text-muted-foreground">No pending bot registrations</p>
                     </div>
                   ) : (
-                    (commands as any[]).slice(0, 5).map((command: any) => (
-                      <div key={command.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-md" data-testid={`command-${command.name}`}>
+                    (pendingBots as any[]).map((bot: any) => (
+                      <div key={bot.id} className="flex items-center justify-between p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-md" data-testid={`pending-bot-${bot.id}`}>
                         <div className="flex items-center space-x-3">
-                          <code className="bg-primary/10 text-primary px-2 py-1 rounded text-sm">.{command.name}</code>
-                          <span className="text-sm text-foreground">{command.description}</span>
+                          <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                            <i className="fas fa-clock text-yellow-500"></i>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{bot.name}</p>
+                            <p className="text-xs text-muted-foreground">{bot.phoneNumber || 'No phone number'}</p>
+                            <p className="text-xs text-muted-foreground">Registered: {new Date(bot.createdAt).toLocaleDateString()}</p>
+                          </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className={`text-xs px-2 py-1 rounded ${command.isActive ? 'text-green-400 bg-green-500/10' : 'text-red-400 bg-red-500/10'}`}>
-                            {command.isActive ? 'Active' : 'Inactive'}
-                          </span>
-                          <button className="text-muted-foreground hover:text-foreground" data-testid={`button-edit-command-${command.name}`}>
-                            <i className="fas fa-edit"></i>
-                          </button>
+                          <Button 
+                            size="sm"
+                            onClick={() => approveBotMutation.mutate({ id: bot.id, expirationMonths: 12 })}
+                            disabled={approveBotMutation.isPending}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            data-testid={`button-approve-${bot.id}`}
+                          >
+                            ✅ Approve
+                          </Button>
+                          <Button 
+                            size="sm"
+                            onClick={() => rejectBotMutation.mutate(bot.id)}
+                            disabled={rejectBotMutation.isPending}
+                            variant="destructive"
+                            data-testid={`button-reject-${bot.id}`}
+                          >
+                            ❌ Reject
+                          </Button>
                         </div>
                       </div>
                     ))
                   )}
-                  
-                  {(commands as any[]).length > 5 && (
-                    <div className="text-center pt-3">
-                      <Link href="/commands">
-                        <a className="text-primary hover:text-primary/80 text-sm font-medium" data-testid="link-view-all-commands">
-                          View All {(commands as any[]).length} Commands
-                        </a>
-                      </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Approved Bots Section */}
+            <Card className="bg-card border-border">
+              <CardHeader className="border-b border-border">
+                <CardTitle className="text-lg font-semibold text-foreground">✅ Approved Bot Instances</CardTitle>
+                <p className="text-muted-foreground text-sm mt-1">Active bots with auto-running capabilities</p>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {approvedLoading ? (
+                    <div className="text-center py-4">
+                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                     </div>
+                  ) : (approvedBots as any[]).length === 0 ? (
+                    <div className="text-center py-4">
+                      <p className="text-muted-foreground">No approved bots yet</p>
+                    </div>
+                  ) : (
+                    (approvedBots as any[]).map((bot: any) => (
+                      <div key={bot.id} className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/20 rounded-md" data-testid={`approved-bot-${bot.id}`}>
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                            <i className="fas fa-robot text-green-500"></i>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{bot.name}</p>
+                            <p className="text-xs text-muted-foreground">{bot.phoneNumber || 'No phone number'}</p>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span className={`text-xs px-2 py-1 rounded ${
+                                bot.status === 'online' ? 'text-green-400 bg-green-500/10' :
+                                bot.status === 'offline' ? 'text-gray-400 bg-gray-500/10' :
+                                bot.status === 'loading' ? 'text-blue-400 bg-blue-500/10' :
+                                'text-red-400 bg-red-500/10'
+                              }`}>
+                                {bot.status.replace('_', ' ').toUpperCase()}
+                              </span>
+                              {bot.expirationMonths && (
+                                <span className="text-xs text-orange-400 bg-orange-500/10 px-2 py-1 rounded">
+                                  Expires: {bot.expirationMonths}mo
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button 
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            data-testid={`button-restart-${bot.id}`}
+                          >
+                            🔄 Restart
+                          </Button>
+                          <Button 
+                            size="sm"
+                            variant="outline"
+                            data-testid={`button-features-${bot.id}`}
+                          >
+                            ⚙️ Features
+                          </Button>
+                        </div>
+                      </div>
+                    ))
                   )}
                 </div>
               </CardContent>
             </Card>
-          ) : (
-            // Guests see bot registration section
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Guest Registration Section */}
             <Card className="bg-card border-border">
               <CardHeader className="border-b border-border">
                 <div className="flex items-center justify-between">
@@ -341,45 +459,8 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-          )}
 
-          {/* Bot Instances for Guests, Recent Activity for Admins */}
-          {isAdmin ? (
-            <Card className="bg-card border-border">
-              <CardHeader className="border-b border-border">
-                <CardTitle className="text-lg font-semibold text-foreground">Recent Activity</CardTitle>
-                <p className="text-muted-foreground text-sm mt-1">Live activity across all bot instances</p>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {activitiesLoading ? (
-                    <div className="text-center py-4">
-                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                    </div>
-                  ) : (activities as any[]).length === 0 ? (
-                    <div className="text-center py-4">
-                      <p className="text-muted-foreground">No recent activity</p>
-                    </div>
-                  ) : (
-                    (activities as any[]).slice(0, 5).map((activity: any) => (
-                      <div key={activity.id} className="flex items-start space-x-3" data-testid={`activity-${activity.id}`}>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${getActivityIconBg(activity.type)}`}>
-                          <i className={`${getActivityIcon(activity.type)} text-sm`}></i>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-foreground">
-                            <span className="font-medium">{getBotName(activity.botInstanceId)}</span> {activity.description}
-                          </p>
-                          <p className="text-xs text-muted-foreground">{formatTimeAgo(activity.createdAt)}</p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            // Guests see bot instances list
+            {/* Guest Bot Instances */}
             <Card className="bg-card border-border">
               <CardHeader className="border-b border-border">
                 <CardTitle className="text-lg font-semibold text-foreground">Your Bot Instances</CardTitle>
@@ -437,8 +518,8 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <AddBotModal open={showAddBotModal} onClose={() => setShowAddBotModal(false)} />
