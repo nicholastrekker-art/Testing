@@ -1,1 +1,1 @@
-(api=your-api-key-1,url=https://server1.replit.app),(api=your-api-key-2,url=https://server2.replit.app)
+(api=your-api-key-1,url=https://server1.replit.app),(api=your-api-key-2,url=https://server2.render.com),(api=your-api-key-3,url=https://server3.railway.app)
