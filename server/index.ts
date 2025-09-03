@@ -39,23 +39,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Run yarn install to ensure dependencies are up to date
-  const { spawn } = await import("child_process");
-  const yarnInstall = spawn("yarn", ["install"], { 
-    stdio: "inherit",
-    cwd: process.cwd() 
-  });
-  
-  await new Promise((resolve, reject) => {
-    yarnInstall.on("close", (code) => {
-      if (code === 0) {
-        console.log("✅ Dependencies installed successfully");
-        resolve(void 0);
-      } else {
-        reject(new Error(`yarn install failed with code ${code}`));
-      }
-    });
-  });
 
   // Initialize database (create tables if they don't exist)
   await initializeDatabase();
