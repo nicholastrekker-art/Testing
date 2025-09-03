@@ -156,62 +156,13 @@ export class WhatsAppBot {
         });
       }
       
-      // Force update to online if we detect the bot is actually connected
-      if (this.sock?.user?.id && !this.isRunning) {
-        console.log(`Bot ${this.botInstance.name}: Detected connected state, updating to online`);
-        this.isRunning = true;
-        
-        await storage.updateBotInstance(this.botInstance.id, { 
-          status: 'online',
-          lastActivity: new Date()
-        });
-        
-        await storage.createActivity({
-          botInstanceId: this.botInstance.id,
-          type: 'status_change',
-          description: '🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot connected and ready!'
-        });
-
-        // Send welcome message
-        try {
-          const welcomeMessage = `🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot "${this.botInstance.name}" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀`;
-          
-          const me = this.sock.user.id;
-          await this.sock.sendMessage(me, { text: welcomeMessage });
-          console.log(`TREKKERMD LIFETIME BOT: Welcome message sent to ${me}`);
-        } catch (error) {
-          console.log('Welcome message setup complete');
-        }
-      }
+      // Only mark as online when connection is explicitly 'open' - not based on user.id alone
     });
 
     this.sock.ev.on('messages.upsert', async (m: { messages: WAMessage[], type: string }) => {
-      // Check if bot should be marked as online when first message is received
-      if (!this.isRunning && this.sock?.user?.id) {
-        console.log(`Bot ${this.botInstance.name}: First message received, marking as online`);
-        this.isRunning = true;
-        
-        await storage.updateBotInstance(this.botInstance.id, { 
-          status: 'online',
-          lastActivity: new Date()
-        });
-        
-        await storage.createActivity({
-          botInstanceId: this.botInstance.id,
-          type: 'status_change',
-          description: '🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot is now fully active!'
-        });
-
-        // Send welcome message
-        try {
-          const welcomeMessage = `🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot "${this.botInstance.name}" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀`;
-          
-          const me = this.sock.user.id;
-          await this.sock.sendMessage(me, { text: welcomeMessage });
-          console.log(`TREKKERMD LIFETIME BOT: Welcome message sent to ${me}`);
-        } catch (error) {
-          console.log('Welcome message ready');
-        }
+      // Only process messages if the bot is actually running and connected
+      if (!this.isRunning) {
+        return;
       }
       
       if (m.type === 'notify') {
@@ -551,6 +502,39 @@ export class WhatsAppBot {
 
   updateBotInstance(botInstance: BotInstance) {
     this.botInstance = botInstance;
+  }
+
+  // Validate credentials by checking essential fields
+  static validateCredentials(credentials: any): { valid: boolean; error?: string } {
+    try {
+      if (!credentials || typeof credentials !== 'object') {
+        return { valid: false, error: 'Invalid credentials format' };
+      }
+
+      // Check for essential fields
+      if (!credentials.creds || !credentials.creds.noiseKey || !credentials.creds.signedIdentityKey) {
+        return { valid: false, error: 'Missing essential credential fields (creds.noiseKey, creds.signedIdentityKey)' };
+      }
+
+      // Check if credentials have a valid user ID structure
+      if (credentials.creds.me?.id) {
+        const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
+        if (!phoneMatch) {
+          return { valid: false, error: 'Invalid phone number format in credentials' };
+        }
+      } else {
+        return { valid: false, error: 'Missing user ID in credentials' };
+      }
+
+      // Check for other essential fields
+      if (!credentials.creds.signedPreKey || !credentials.creds.registrationId) {
+        return { valid: false, error: 'Missing essential credential fields (signedPreKey, registrationId)' };
+      }
+
+      return { valid: true };
+    } catch (error) {
+      return { valid: false, error: `Credential validation failed: ${error instanceof Error ? error.message : 'Unknown error'}` };
+    }
   }
 
   async sendDirectMessage(recipient: string, message: string): Promise<void> {

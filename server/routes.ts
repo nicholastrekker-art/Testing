@@ -1508,9 +1508,18 @@ Thank you for choosing TREKKER-MD! 🚀`;
             return res.status(400).json({ message: "Valid credentials are required for update" });
           }
           
+          // Validate credentials structure and content
+          const { WhatsAppBot } = await import('./services/whatsapp-bot');
+          const validation = WhatsAppBot.validateCredentials(newCredentials);
+          if (!validation.valid) {
+            return res.status(400).json({ 
+              message: `Invalid credentials: ${validation.error}` 
+            });
+          }
+          
           // Validate phone number ownership
-          if (newCredentials && newCredentials.me && newCredentials.me.id) {
-            const credentialsPhoneMatch = newCredentials.me.id.match(/^(\d+):/);
+          if (newCredentials && newCredentials.creds && newCredentials.creds.me && newCredentials.creds.me.id) {
+            const credentialsPhoneMatch = newCredentials.creds.me.id.match(/^(\d+):/);
             const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
             const inputPhone = phoneNumber.replace(/^\+/, '');
             
@@ -1519,6 +1528,10 @@ Thank you for choosing TREKKER-MD! 🚀`;
                 message: "Credentials don't match your phone number" 
               });
             }
+          } else {
+            return res.status(400).json({ 
+              message: "Unable to verify phone number in credentials" 
+            });
           }
           
           // Update credentials
