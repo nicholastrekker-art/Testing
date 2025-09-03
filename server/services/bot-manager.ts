@@ -32,8 +32,10 @@ class BotManager {
       
       // Check if bot is already running
       const existingBot = this.bots.get(botId);
-      if (existingBot && existingBot.getStatus() === 'online') {
-        console.log(`BotManager: Bot ${botId} is already running`);
+      const currentStatus = existingBot?.getStatus();
+      
+      if (existingBot && currentStatus === 'online') {
+        console.log(`BotManager: Bot ${botId} is already online, not restarting`);
         return;
       }
 
@@ -43,22 +45,26 @@ class BotManager {
         throw new Error(`Bot with ID ${botId} not found`);
       }
 
-      // Stop existing bot if it exists but not online
-      if (existingBot) {
-        console.log(`BotManager: Stopping existing bot ${botId} before restart`);
+      // Only stop existing bot if it's offline (to restart it)
+      if (existingBot && currentStatus === 'offline') {
+        console.log(`BotManager: Stopping offline bot ${botId} before restart`);
         await existingBot.stop();
         await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
       }
 
-      // Create new isolated bot instance
-      console.log(`BotManager: Creating new isolated bot instance for ${botId}`);
-      const newBot = new WhatsAppBot(botInstance);
-      this.bots.set(botId, newBot);
-      
-      // Start bot in isolated container
-      await newBot.start();
-      
-      console.log(`BotManager: Bot ${botId} started successfully in isolated container`);
+      // Create new isolated bot instance only if none exists or if it was offline
+      if (!existingBot || currentStatus === 'offline') {
+        console.log(`BotManager: Creating new isolated bot instance for ${botId}`);
+        const newBot = new WhatsAppBot(botInstance);
+        this.bots.set(botId, newBot);
+        
+        // Start bot in isolated container
+        await newBot.start();
+        
+        console.log(`BotManager: Bot ${botId} started successfully in isolated container`);
+      } else {
+        console.log(`BotManager: Bot ${botId} instance already exists and is healthy`);
+      }
     } catch (error) {
       console.error(`BotManager: Failed to start bot ${botId}:`, error);
       
