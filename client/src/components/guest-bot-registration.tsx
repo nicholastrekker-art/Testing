@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
+import CredentialUpdateModal from "./credential-update-modal";
 
 interface GuestBotRegistrationProps {
   open: boolean;
@@ -36,6 +37,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
   const [step, setStep] = useState(1); // 1: form, 2: validation, 3: success, 4: existing_bot_management, 5: wrong_server
   const [existingBotData, setExistingBotData] = useState<any>(null);
   const [serverMismatch, setServerMismatch] = useState<any>(null);
+  const [showCredentialUpdate, setShowCredentialUpdate] = useState(false);
+  const [managingBot, setManagingBot] = useState<string | null>(null); // Track which action is in progress
 
   // Guest bot registration mutation
   const registerBotMutation = useMutation({
@@ -146,6 +149,68 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     }
   };
 
+  // Bot management functions
+  const manageBotMutation = useMutation({
+    mutationFn: async ({ action, botId, phoneNumber }: { action: string; botId: string; phoneNumber: string }) => {
+      const formData = new FormData();
+      formData.append('phoneNumber', phoneNumber);
+      formData.append('action', action);
+      formData.append('botId', botId);
+      
+      const response = await fetch('/api/guest/manage-bot', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || `Failed to ${action} bot`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: "Success!",
+        description: data.message
+      });
+      setManagingBot(null);
+      
+      // Refresh bot status after successful action
+      if (variables.action !== 'update_credentials') {
+        refreshBotStatus();
+      }
+    },
+    onError: (error: Error, variables) => {
+      toast({
+        title: `${variables.action.charAt(0).toUpperCase() + variables.action.slice(1)} Failed`,
+        description: error.message,
+        variant: "destructive"
+      });
+      setManagingBot(null);
+    }
+  });
+
+  const refreshBotStatus = () => {
+    // This would typically refetch bot data, but for now we'll just refresh the page section
+    // In a real implementation, you'd want to refetch the existing bot data
+    toast({
+      title: "Status Updated",
+      description: "Bot status has been updated. Please check the bot status."
+    });
+  };
+
+  const handleBotAction = (action: string) => {
+    if (!existingBotData) return;
+    
+    setManagingBot(action);
+    manageBotMutation.mutate({
+      action,
+      botId: existingBotData.id,
+      phoneNumber: existingBotData.phoneNumber
+    });
+  };
+
   const resetForm = () => {
     setFormData({
       botName: '',
@@ -166,6 +231,10 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
 
   const handleClose = () => {
     resetForm();
+    setExistingBotData(null);
+    setServerMismatch(null);
+    setShowCredentialUpdate(false);
+    setManagingBot(null);
     onClose();
   };
 
@@ -487,33 +556,39 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                   <h4 className="font-medium">Available Actions:</h4>
                   
                   {existingBotData.isApproved && !existingBotData.isExpired && (
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => {
-                          // Handle restart
-                          toast({
-                            title: "Feature Coming Soon",
-                            description: "Bot restart functionality will be available soon"
-                          });
-                        }}
+                        onClick={() => handleBotAction('start')}
+                        disabled={managingBot === 'start' || existingBotData.status === 'online'}
                       >
-                        🔄 Restart Bot
+                        {managingBot === 'start' ? '🔄' : '▶️'} {existingBotData.status === 'online' ? 'Online' : 'Start'}
                       </Button>
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => {
-                          // Handle stop
-                          toast({
-                            title: "Feature Coming Soon", 
-                            description: "Bot stop functionality will be available soon"
-                          });
-                        }}
+                        onClick={() => handleBotAction('stop')}
+                        disabled={managingBot === 'stop' || existingBotData.status === 'offline'}
                       >
-                        ⏸️ Stop Bot
+                        {managingBot === 'stop' ? '🔄' : '⏸️'} {existingBotData.status === 'offline' ? 'Offline' : 'Stop'}
                       </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleBotAction('restart')}
+                        disabled={managingBot === 'restart'}
+                      >
+                        {managingBot === 'restart' ? '🔄' : '🔄'} Restart
+                      </Button>
+                    </div>
+                  )}
+
+                  {!existingBotData.isApproved && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                      <p className="text-sm text-yellow-800">
+                        ⚠️ Your bot is not approved yet. You can only update credentials until it's approved.
+                      </p>
                     </div>
                   )}
 
@@ -521,21 +596,15 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                     variant="outline" 
                     size="sm" 
                     className="w-full"
-                    onClick={() => {
-                      // Handle credentials update
-                      toast({
-                        title: "Feature Coming Soon",
-                        description: "Credential update functionality will be available soon"
-                      });
-                    }}
+                    onClick={() => setShowCredentialUpdate(true)}
                   >
                     🔑 Update Credentials
                   </Button>
                   
                   {!existingBotData.isApproved && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                      <p className="text-sm text-yellow-800">
-                        📞 Contact +254704897825 to get your bot approved
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-sm text-blue-800">
+                        📞 Contact +254704897825 to get your bot approved and access all features
                       </p>
                     </div>
                   )}
@@ -575,6 +644,20 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
           </div>
         )}
       </DialogContent>
+      
+      {/* Credential Update Modal */}
+      {existingBotData && (
+        <CredentialUpdateModal
+          open={showCredentialUpdate}
+          onClose={() => setShowCredentialUpdate(false)}
+          botId={existingBotData.id}
+          phoneNumber={existingBotData.phoneNumber}
+          onSuccess={() => {
+            // Could refresh bot status here if needed
+            refreshBotStatus();
+          }}
+        />
+      )}
     </Dialog>
   );
 }

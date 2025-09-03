@@ -1541,9 +1541,56 @@ Thank you for choosing TREKKER-MD! 🚀`;
           });
           break;
           
-        case 'stop':
+        case 'start':
+          if (botInstance.approvalStatus !== 'approved') {
+            return res.status(400).json({ message: "Bot must be approved before it can be started" });
+          }
+          
+          // Check if bot is expired
+          if (botInstance.approvalDate && botInstance.expirationMonths) {
+            const approvalDate = new Date(botInstance.approvalDate);
+            const expirationDate = new Date(approvalDate);
+            expirationDate.setMonth(expirationDate.getMonth() + botInstance.expirationMonths);
+            const now = new Date();
+            
+            if (now > expirationDate) {
+              return res.status(400).json({ 
+                message: "Bot has expired. Please contact admin for renewal.",
+                expired: true
+              });
+            }
+          }
+          
+          // Start the bot
           try {
-            await botManager.destroyBot(botId);
+            await botManager.startBot(botId);
+            await storage.updateBotInstance(botId, { status: 'loading' });
+            
+            await storage.createActivity({
+              botInstanceId: botId,
+              type: 'start',
+              description: `Bot started by user via management interface`,
+              serverName: getServerName()
+            });
+            
+            res.json({ 
+              success: true, 
+              message: "Bot start initiated",
+              botStatus: 'loading'
+            });
+          } catch (error) {
+            console.error('Error starting bot:', error);
+            res.status(500).json({ message: "Failed to start bot" });
+          }
+          break;
+          
+        case 'stop':
+          if (botInstance.approvalStatus !== 'approved') {
+            return res.status(400).json({ message: "Bot must be approved before it can be stopped" });
+          }
+          
+          try {
+            await botManager.stopBot(botId);
             await storage.updateBotInstance(botId, { status: 'offline' });
             
             await storage.createActivity({
