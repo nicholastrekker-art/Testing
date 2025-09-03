@@ -289,6 +289,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Server Configuration for standalone HTML interface (reads from Replit secrets)
+  app.get("/api/server-config", async (req, res) => {
+    try {
+      // Read server configuration from Replit secrets (environment variables)
+      const serverConfig = process.env.SERVER_CONFIG;
+      
+      if (serverConfig) {
+        // Return the configuration string directly
+        res.set('Content-Type', 'text/plain');
+        res.send(serverConfig);
+      } else {
+        // No configuration found
+        res.status(404).send('');
+      }
+    } catch (error) {
+      console.error('Server config error:', error);
+      res.status(500).send('');
+    }
+  });
+
   // Bot Instances
   app.get("/api/bot-instances", async (req, res) => {
     try {
