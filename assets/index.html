@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Bot Management - Universal Guest Interface</title>
+    <title>Trekker-MD Universal Deploy - Lifetime Bot Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .server-card { transition: all 0.3s ease; }
@@ -24,8 +24,8 @@
     <!-- Header -->
     <header class="bg-white shadow-sm border-b">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <h1 class="text-2xl font-bold text-gray-900">🤖 WhatsApp Bot Management</h1>
-            <p class="text-gray-600 mt-1">Universal Multi-Server Guest Interface</p>
+            <h1 class="text-2xl font-bold text-gray-900">🚀 Trekker-MD Universal Deploy</h1>
+            <p class="text-gray-600 mt-1">Welcome to Trekker-MD Lifetime Bot - Advanced WhatsApp Bot Management Platform</p>
         </div>
     </header>
 
@@ -58,12 +58,17 @@
                         Load Configuration
                     </button>
                 </div>
-                <div class="mt-3 bg-blue-50 border border-blue-200 rounded p-3">
+                <div class="mt-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-center mb-2">
+                        <span class="text-2xl mr-2">🎉</span>
+                        <h4 class="font-semibold text-blue-800">Welcome to Trekker-MD Lifetime Bot!</h4>
+                    </div>
                     <p class="text-sm text-blue-700">
-                        💡 <strong>Universal Deployment:</strong> This interface can be deployed on any platform (Render, Railway, Choreo, Netlify, Vercel, etc.)
-                        <br>• Configure your WhatsApp bot servers in <code>store.txt</code>
-                        <br>• Format: <code>(api=key,url=https://server1.com),(api=key2,url=https://server2.com)</code>
-                        <br>• Servers can be hosted anywhere (Replit, Render, Railway, etc.)
+                        🚀 <strong>Universal Deployment:</strong> Deploy on any platform (Render, Railway, Choreo, Netlify, Vercel, etc.)
+                        <br>⚡ <strong>Advanced Features:</strong> 300+ commands, AI integration, group management, auto reactions
+                        <br>🔧 <strong>Configuration:</strong> Set your WhatsApp bot servers in <code>store.txt</code>
+                        <br>📋 <strong>Format:</strong> <code>(api=key,url=https://server1.com),(api=key2,url=https://server2.com)</code>
+                        <br>🌐 <strong>Multi-Server:</strong> Connect to servers hosted anywhere for maximum reliability
                     </p>
                 </div>
             </div>
@@ -74,7 +79,8 @@
             <div class="bg-white rounded-lg shadow-sm p-6">
                 <h2 class="text-xl font-semibold mb-4 flex items-center">
                     <span class="bg-purple-100 p-2 rounded-lg mr-3">🎯</span>
-                    Available Servers
+                    Trekker-MD Server Network
+                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full ml-3">Sorted by Availability</span>
                 </h2>
                 <div id="serverList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
             </div>
@@ -111,13 +117,13 @@
                 <div class="border-b border-gray-200">
                     <nav class="flex space-x-8 px-6">
                         <button onclick="showTab('register')" class="tab-button border-b-2 border-blue-500 text-blue-600 py-4 px-1 font-medium">
-                            Register Bot
+                            Deploy Bot
                         </button>
                         <button onclick="showTab('manage')" class="tab-button border-b-2 border-transparent text-gray-500 hover:text-gray-700 py-4 px-1 font-medium">
-                            Manage Bots
+                            Manage Your Bots
                         </button>
                         <button onclick="showTab('list')" class="tab-button border-b-2 border-transparent text-gray-500 hover:text-gray-700 py-4 px-1 font-medium">
-                            Bot List
+                            Trekker-MD Network
                         </button>
                     </nav>
                 </div>
@@ -126,7 +132,7 @@
                 <div id="registerTab" class="tab-content p-6">
                     <h3 class="text-lg font-semibold mb-4 flex items-center">
                         <span class="bg-green-100 p-2 rounded-lg mr-3">➕</span>
-                        Register New Bot
+                        Deploy Trekker-MD Bot
                     </h3>
                     <form id="registrationForm" class="space-y-4">
                         <div class="grid md:grid-cols-2 gap-4">
@@ -195,7 +201,7 @@
                         </div>
 
                         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-md transition font-medium">
-                            Register Bot
+                            Deploy Trekker-MD Bot
                         </button>
                     </form>
                 </div>
@@ -224,8 +230,8 @@
                 <!-- Bot List Tab -->
                 <div id="listTab" class="tab-content p-6" style="display: none;">
                     <h3 class="text-lg font-semibold mb-4 flex items-center">
-                        <span class="bg-blue-100 p-2 rounded-lg mr-3">📋</span>
-                        Bot List
+                        <span class="bg-blue-100 p-2 rounded-lg mr-3">🌐</span>
+                        Trekker-MD Network
                     </h3>
                     <div class="flex gap-3 mb-4">
                         <button onclick="loadBotList(false)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition">
@@ -392,10 +398,10 @@
 
             document.getElementById('serverSelection').style.display = 'block';
 
+            // Store server data for sorting
+            const serverDataList = [];
+
             for (const server of savedServers) {
-                const serverCard = document.createElement('div');
-                serverCard.className = 'server-card bg-white border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500';
-                
                 try {
                     const headers = { 'Content-Type': 'application/json' };
                     if (server.apiKey) headers['Authorization'] = `Bearer ${server.apiKey}`;
@@ -403,33 +409,73 @@
                     const response = await fetch(`${server.url}/api/server/info`, { headers });
                     const data = await response.json();
                     
+                    serverDataList.push({
+                        server,
+                        data,
+                        online: true
+                    });
+                } catch (error) {
+                    serverDataList.push({
+                        server,
+                        data: null,
+                        online: false
+                    });
+                }
+            }
+
+            // Sort servers: online first, then by lowest bot count
+            serverDataList.sort((a, b) => {
+                // Online servers first
+                if (a.online && !b.online) return -1;
+                if (!a.online && b.online) return 1;
+                
+                // Among online servers, sort by current bot count (ascending)
+                if (a.online && b.online) {
+                    return a.data.currentBots - b.data.currentBots;
+                }
+                
+                return 0; // Keep offline servers in original order
+            });
+
+            // Create server cards in sorted order
+            for (const { server, data, online } of serverDataList) {
+                const serverCard = document.createElement('div');
+                serverCard.className = 'server-card bg-white border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-500';
+                
+                if (online) {
+                    const availability = data.availableSlots > 0 ? 'text-green-600' : 'text-orange-600';
+                    const priorityBadge = data.currentBots === 0 ? '<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2">🚀 Best Choice</span>' : '';
+                    
                     serverCard.innerHTML = `
                         <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-semibold text-lg">${data.serverName}</h3>
-                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Online</span>
+                            <div class="flex items-center">
+                                <h3 class="font-semibold text-lg">${data.serverName}</h3>
+                                ${priorityBadge}
+                            </div>
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">✅ Online</span>
                         </div>
-                        <p class="text-gray-600 text-sm mb-3">${server.url}</p>
+                        <p class="text-gray-600 text-sm mb-3">🌐 ${server.url}</p>
                         <div class="grid grid-cols-2 gap-2 text-sm">
                             <div class="bg-gray-50 p-2 rounded">
-                                <div class="font-medium">${data.currentBots}/${data.maxBots}</div>
-                                <div class="text-gray-500">Bots</div>
+                                <div class="font-medium ${availability}">${data.currentBots}/${data.maxBots}</div>
+                                <div class="text-gray-500">Trekker-MD Bots</div>
                             </div>
                             <div class="bg-gray-50 p-2 rounded">
-                                <div class="font-medium">${data.availableSlots}</div>
-                                <div class="text-gray-500">Available</div>
+                                <div class="font-medium ${availability}">${data.availableSlots}</div>
+                                <div class="text-gray-500">Available Slots</div>
                             </div>
                         </div>
                     `;
                     
                     serverCard.onclick = () => selectServer(server, data);
-                } catch (error) {
+                } else {
                     serverCard.innerHTML = `
                         <div class="flex justify-between items-start mb-2">
                             <h3 class="font-semibold text-lg">${server.name}</h3>
-                            <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">Offline</span>
+                            <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">❌ Offline</span>
                         </div>
-                        <p class="text-gray-600 text-sm mb-3">${server.url}</p>
-                        <p class="text-red-500 text-sm">Connection failed</p>
+                        <p class="text-gray-600 text-sm mb-3">🌐 ${server.url}</p>
+                        <p class="text-red-500 text-sm">⚠️ Connection failed - Server unavailable</p>
                     `;
                 }
                 
@@ -520,11 +566,11 @@
 
                 if (response.ok) {
                     if (result.type === 'existing_bot_found') {
-                        showToast('Bot already exists for this phone number', 'info');
+                        showToast('🎉 Welcome back! Your Trekker-MD bot already exists for this number', 'info');
                         // Show management options
                         showBotManagementOptions(result.botDetails);
                     } else {
-                        showToast('Bot registered successfully! Awaiting approval.', 'success');
+                        showToast('🚀 Trekker-MD bot deployed successfully! Awaiting server approval...', 'success');
                         e.target.reset();
                     }
                 } else {
@@ -571,7 +617,7 @@
                 if (response.ok && result.type === 'existing_bot_found') {
                     showBotManagementOptions(result.botDetails);
                 } else {
-                    showToast('No bot found for this phone number', 'error');
+                    showToast('No Trekker-MD bot found for this phone number', 'error');
                 }
             } catch (error) {
                 hideStatus();
