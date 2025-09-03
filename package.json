@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
-    "build": "yarn --frozen-lockfile install && yarn build",
+    "build": "yarn --frozen-lockfile install && vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "npm run dev",
     "check": "tsc",
     "db:push": "drizzle-kit push"
