@@ -1,0 +1,11 @@
+schemaVersion: 1.1
+
+endpoints:
+  - name: websocket-service
+    displayName: WebSocket Service
+    service:
+      basePath: /your-websocket-context
+      port: 8080
+      type: WS
+      networkVisibilities:
+        - Public
