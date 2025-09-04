@@ -1080,8 +1080,8 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
                 description: command.description,
                 response: `Executing ${command.name}...`,
                 isActive: true,
-                category: command.category,
-                useChatGPT: false
+                useChatGPT: false,
+                serverName: getServerName()
               });
             } catch (error: any) {
               // Ignore duplicate errors
@@ -1183,7 +1183,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           name: name.toLowerCase(),
           description,
           category: category || 'CUSTOM',
-          handler: customHandler
+          handler: customHandler as any
         });
 
         console.log(`✅ Custom command '${name}' registered successfully`);
@@ -2220,6 +2220,71 @@ Thank you for choosing TREKKER-MD! 🚀`;
     } catch (error) {
       console.error('Failed to perform bot action:', error);
       res.status(500).json({ message: "Failed to perform action" });
+    }
+  });
+
+  // Server capacity management endpoints
+  app.get("/api/server/capacity", async (req, res) => {
+    try {
+      const serverName = getServerName();
+      const maxBots = parseInt(process.env.BOTCOUNT || '10');
+      const currentBots = await storage.getAllBotInstances();
+      const approvedBots = currentBots.filter(bot => bot.approvalStatus === 'approved');
+      
+      res.json({
+        serverName,
+        maxBots,
+        currentBots: currentBots.length,
+        approvedBots: approvedBots.length,
+        availableSlots: maxBots - approvedBots.length,
+        isFull: approvedBots.length >= maxBots,
+        capacity: `${approvedBots.length}/${maxBots}`
+      });
+    } catch (error) {
+      console.error('Failed to get server capacity:', error);
+      res.status(500).json({ message: "Failed to get server capacity" });
+    }
+  });
+
+  // Get available alternative servers for guests when current server is full
+  app.get("/api/guest/alternative-servers", async (req, res) => {
+    try {
+      const registrations = await storage.getAllGlobalRegistrations();
+      const currentTenancy = getServerName();
+      
+      // Group by tenancy and count bots
+      const tenancyStats = registrations.reduce((acc, reg) => {
+        if (!acc[reg.tenancyName]) {
+          acc[reg.tenancyName] = {
+            name: reg.tenancyName,
+            botCount: 0,
+            isCurrentServer: reg.tenancyName === currentTenancy
+          };
+        }
+        acc[reg.tenancyName].botCount++;
+        return acc;
+      }, {} as any);
+
+      // Add default capacity info (assuming 20 max for now, can be made configurable)
+      const alternativeServers = Object.values(tenancyStats).map((server: any) => ({
+        ...server,
+        maxBots: 20, // This could be made configurable per server
+        availableSlots: Math.max(0, 20 - server.botCount),
+        isFull: server.botCount >= 20,
+        capacity: `${server.botCount}/20`
+      })).filter((server: any) => !server.isCurrentServer && !server.isFull);
+
+      res.json({
+        currentServer: {
+          name: currentTenancy,
+          isFull: true,
+          capacity: `${tenancyStats[currentTenancy]?.botCount || 0}/20`
+        },
+        alternativeServers
+      });
+    } catch (error) {
+      console.error('Failed to get alternative servers:', error);
+      res.status(500).json({ message: "Failed to get alternative servers" });
     }
   });
 

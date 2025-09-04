@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import CredentialUpdateModal from "./credential-update-modal";
+import CredentialUpdateModal from "./credential-update-modal"; import ServerSelectionPanel from "./server-selection-panel";
 
 interface GuestBotRegistrationProps {
   open: boolean;
@@ -34,9 +34,11 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     }
   });
 
-  const [step, setStep] = useState(1); // 1: form, 2: validation, 3: success, 4: existing_bot_management, 5: wrong_server
+  const [step, setStep] = useState(1); // 1: form, 2: validation, 3: success, 4: existing_bot_management, 5: wrong_server, 6: server_full
   const [existingBotData, setExistingBotData] = useState<any>(null);
   const [serverMismatch, setServerMismatch] = useState<any>(null);
+  const [serverFullData, setServerFullData] = useState<any>(null);
+  const [showServerSelection, setShowServerSelection] = useState(false);
   const [showCredentialUpdate, setShowCredentialUpdate] = useState(false);
   const [managingBot, setManagingBot] = useState<string | null>(null); // Track which action is in progress
 

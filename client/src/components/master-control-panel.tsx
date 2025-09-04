@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -18,10 +19,11 @@ interface MasterControlPanelProps {
 
 interface TenancyServer {
   name: string;
-  url: string;
-  status: 'online' | 'offline' | 'unknown';
+  url?: string;
+  status?: 'online' | 'offline' | 'unknown';
   botCount: number;
-  lastSync: string;
+  lastSync?: string;
+  registrations: any[];
 }
 
 interface CrossTenancyBot {
@@ -32,6 +34,7 @@ interface CrossTenancyBot {
   approvalStatus: string;
   tenancy: string;
   lastActivity: string;
+  isLocal: boolean;
 }
 
 export default function MasterControlPanel({ open, onClose }: MasterControlPanelProps) {
@@ -87,16 +90,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
       tenancy: string; 
       data?: any 
     }) => {
-      const response = await fetch('/api/master/bot-action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, botId, tenancy, data })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to ${action} bot`);
-      }
-      
+      const response = await apiRequest('POST', '/api/master/bot-action', { action, botId, tenancy, data });
       return response.json();
     },
     onSuccess: (data, variables) => {
@@ -183,7 +177,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
               <div className="text-center py-8">Loading tenancies from God Registry...</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {connectedTenancies.map((tenancy: any) => (
+                {(connectedTenancies as TenancyServer[]).map((tenancy) => (
                   <Card key={tenancy.name}>
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
@@ -212,13 +206,13 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
 
           <TabsContent value="tenancies" className="space-y-4">
             <div className="grid gap-4">
-              {connectedTenancies.map((tenancy) => (
+              {(connectedTenancies as TenancyServer[]).map((tenancy) => (
                 <Card key={tenancy.name}>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         {tenancy.name}
-                        {getStatusBadge(tenancy.status)}
+                        {getStatusBadge(tenancy.status || 'unknown')}
                       </div>
                       <div className="flex gap-2">
                         <Button 
@@ -258,16 +252,17 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
           </TabsContent>
 
           <TabsContent value="bots" className="space-y-4">
+            {/* Pending Bots Section */}
             <Card>
               <CardHeader>
-                <CardTitle>Cross-Tenancy Bot Management</CardTitle>
+                <CardTitle className="text-orange-600">⏳ Pending Bot Approvals</CardTitle>
                 <CardDescription>
-                  Manage bots across different tenancy servers from this central panel
+                  Bots waiting for approval across all tenancies
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {botsLoading ? (
-                  <div className="text-center py-8">Loading bots...</div>
+                  <div className="text-center py-8">Loading pending bots...</div>
                 ) : (
                   <Table>
                     <TableHeader>
@@ -282,8 +277,8 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {crossTenancyBots.map((bot: CrossTenancyBot) => (
-                        <TableRow key={`${bot.tenancy}-${bot.id}`}>
+                      {(crossTenancyBots as CrossTenancyBot[]).filter(bot => bot.approvalStatus === 'pending').map((bot) => (
+                        <TableRow key={`pending-${bot.tenancy}-${bot.id}`}>
                           <TableCell className="font-medium">{bot.name}</TableCell>
                           <TableCell>{bot.phoneNumber}</TableCell>
                           <TableCell>
@@ -296,50 +291,106 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
-                              {bot.approvalStatus === 'pending' && (
-                                <>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={() => handleBotAction('approve', bot.id, bot.tenancy)}
-                                    disabled={botActionMutation.isPending}
-                                  >
-                                    Approve
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="destructive"
-                                    onClick={() => handleBotAction('reject', bot.id, bot.tenancy)}
-                                    disabled={botActionMutation.isPending}
-                                  >
-                                    Reject
-                                  </Button>
-                                </>
-                              )}
-                              {bot.approvalStatus === 'approved' && (
-                                <>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={() => handleBotAction(
-                                      bot.status === 'online' ? 'stop' : 'start', 
-                                      bot.id, 
-                                      bot.tenancy
-                                    )}
-                                    disabled={botActionMutation.isPending}
-                                  >
-                                    {bot.status === 'online' ? 'Stop' : 'Start'}
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="destructive"
-                                    onClick={() => handleBotAction('delete', bot.id, bot.tenancy)}
-                                    disabled={botActionMutation.isPending}
-                                  >
-                                    Delete
-                                  </Button>
-                                </>
-                              )}
+                              <Button 
+                                size="sm" 
+                                variant="default"
+                                onClick={() => handleBotAction('approve', bot.id, bot.tenancy, { duration: 6 })}
+                                disabled={botActionMutation.isPending}
+                                data-testid={`button-approve-${bot.id}`}
+                              >
+                                ✅ Approve
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => handleBotAction('reject', bot.id, bot.tenancy)}
+                                disabled={botActionMutation.isPending}
+                                data-testid={`button-reject-${bot.id}`}
+                              >
+                                ❌ Reject
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleBotAction('delete', bot.id, bot.tenancy)}
+                                disabled={botActionMutation.isPending}
+                                data-testid={`button-delete-${bot.id}`}
+                              >
+                                🗑️ Delete
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Approved Bots Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-green-600">✅ Approved & Active Bots</CardTitle>
+                <CardDescription>
+                  Currently approved and active bots across all tenancies
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {botsLoading ? (
+                  <div className="text-center py-8">Loading approved bots...</div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Bot Name</TableHead>
+                        <TableHead>Phone Number</TableHead>
+                        <TableHead>Tenancy</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Approval Date</TableHead>
+                        <TableHead>Last Activity</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(crossTenancyBots as CrossTenancyBot[]).filter(bot => bot.approvalStatus === 'approved').map((bot) => (
+                        <TableRow key={`approved-${bot.tenancy}-${bot.id}`}>
+                          <TableCell className="font-medium">{bot.name}</TableCell>
+                          <TableCell>{bot.phoneNumber}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{bot.tenancy}</Badge>
+                          </TableCell>
+                          <TableCell>{getStatusBadge(bot.status)}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {new Date().toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {bot.lastActivity}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleBotAction(
+                                  bot.status === 'online' ? 'stop' : 'start', 
+                                  bot.id, 
+                                  bot.tenancy
+                                )}
+                                disabled={botActionMutation.isPending}
+                                data-testid={`button-${bot.status === 'online' ? 'stop' : 'start'}-${bot.id}`}
+                              >
+                                {bot.status === 'online' ? '⏹️ Stop' : '▶️ Start'}
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive"
+                                onClick={() => handleBotAction('delete', bot.id, bot.tenancy)}
+                                disabled={botActionMutation.isPending}
+                                data-testid={`button-delete-approved-${bot.id}`}
+                              >
+                                🗑️ Delete
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
