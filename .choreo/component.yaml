@@ -1,11 +1,24 @@
 schemaVersion: "1.2"
 
 endpoints:
+  # REST Endpoint
+  - name: rest-service
+    displayName: REST Service
+    type: REST
+    service:
+      basePath: /api
+      port: 9090
+      networkVisibilities:
+        - Public
+      schemaFilePath: openapi.yaml
+
+  # WebSocket Endpoint
   - name: websocket-service
     displayName: WebSocket Service
-    type: WS                # <-- required here
+    type: WS
     service:
       basePath: /your-websocket-context
       port: 8080
       networkVisibilities:
         - Public
+      schemaFilePath: chat_asyncapi.yaml
