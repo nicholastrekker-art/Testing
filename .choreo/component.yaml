@@ -7,7 +7,6 @@ spec:
       type: WS
       networkVisibility: Public
       context: /your-websocket-context
-  outbound: {}
   env:
     - from: START_COMMAND
       to: npm run dev
