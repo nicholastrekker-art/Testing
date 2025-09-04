@@ -1,0 +1,8 @@
+schemaVersion: "1.2"
+endpoints:
+- name: your-service
+  port: 9090
+  type: REST
+  networkVisibility: Project
+  context: /your-service
+  schemaFilePath: openapi.yaml
