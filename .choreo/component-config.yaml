@@ -1,20 +1,16 @@
 apiVersion: core.choreo.dev/v1beta1
 kind: ComponentConfig
-metadata:
-  name: server1
-  displayName: Server1 WebSocket Service
-  description: A WebSocket service for real-time communication
 spec:
-  type: websocket
-  runtime: nodejs21
+  inbound:
+    - name: Your WebSocket Service
+      port: 8080
+      type: WS
+      networkVisibility: Public
+      context: /your-websocket-context
+  outbound:
+    # Define outbound connections if needed
   env:
-    - name: NODE_ENV
-      value: development
-  endpoint:
-    port: 8080
-  build:
-    commands:
-      - yarn --frozen-lockfile install
-      - yarn build
-  start:
-    command: npm run dev
+    - from: START_COMMAND
+      to: npm run dev
+    - from: BUILD_COMMAND
+      to: yarn --frozen-lockfile install;yarn build
