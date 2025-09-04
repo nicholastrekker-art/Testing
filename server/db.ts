@@ -88,6 +88,9 @@ export async function initializeDatabase() {
             // Check for expired bots on startup
             const { storage } = await import('./storage');
             await storage.checkAndExpireBots();
+            
+            // Initialize server registry for multi-tenancy
+            await storage.initializeCurrentServer();
             return;
           } catch (queryError: any) {
             console.log('⚠️ Database query failed, will recreate schema:', queryError.message);
@@ -193,6 +196,20 @@ export async function initializeDatabase() {
             registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
+        
+        await client`
+          CREATE TABLE IF NOT EXISTS server_registry (
+            id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+            server_name TEXT NOT NULL UNIQUE,
+            max_bot_count INTEGER NOT NULL,
+            current_bot_count INTEGER DEFAULT 0,
+            server_status TEXT DEFAULT 'active',
+            server_url TEXT,
+            description TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `;
 
         // Handle existing tables that might be missing columns
         try {
@@ -232,6 +249,12 @@ export async function initializeDatabase() {
         }
         
       console.log('✅ Database tables created/updated successfully');
+      
+      // Initialize server registry for multi-tenancy after tables are created
+      const { storage } = await import('./storage');
+      await storage.checkAndExpireBots();
+      await storage.initializeCurrentServer();
+      
     } catch (createError: any) {
       console.error('❌ Failed to create/update database tables:', createError);
       throw createError;

@@ -5,6 +5,7 @@ import {
   activities, 
   groups,
   godRegister,
+  serverRegistry,
   type User, 
   type InsertUser,
   type BotInstance,
@@ -16,7 +17,9 @@ import {
   type Group,
   type InsertGroup,
   type GodRegister,
-  type InsertGodRegister
+  type InsertGodRegister,
+  type ServerRegistry,
+  type InsertServerRegistry
 } from "@shared/schema";
 import { db, getServerName } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -86,6 +89,15 @@ export interface IStorage {
   deleteGlobalRegistration(phoneNumber: string): Promise<void>;
   getAllGlobalRegistrations(): Promise<GodRegister[]>;
   updateGlobalRegistration(phoneNumber: string, tenancyName: string): Promise<GodRegister | undefined>;
+  
+  // Server registry methods (multi-tenancy management)
+  getAllServers(): Promise<ServerRegistry[]>;
+  getServerByName(serverName: string): Promise<ServerRegistry | undefined>;
+  createServer(server: InsertServerRegistry): Promise<ServerRegistry>;
+  updateServerBotCount(serverName: string, currentBotCount: number): Promise<ServerRegistry>;
+  getAvailableServers(): Promise<ServerRegistry[]>;
+  initializeCurrentServer(): Promise<void>;
+  strictCheckBotCountLimit(serverName?: string): Promise<{ canAdd: boolean; currentCount: number; maxCount: number; }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -492,6 +504,109 @@ export class DatabaseStorage implements IStorage {
       .where(eq(godRegister.phoneNumber, phoneNumber))
       .returning();
     return registration || undefined;
+  }
+  
+  // Server registry methods (multi-tenancy management)
+  async getAllServers(): Promise<ServerRegistry[]> {
+    return await db.select().from(serverRegistry).orderBy(serverRegistry.serverName);
+  }
+
+  async getServerByName(serverName: string): Promise<ServerRegistry | undefined> {
+    const [server] = await db.select().from(serverRegistry).where(eq(serverRegistry.serverName, serverName));
+    return server || undefined;
+  }
+
+  async createServer(server: InsertServerRegistry): Promise<ServerRegistry> {
+    const [newServer] = await db
+      .insert(serverRegistry)
+      .values(server)
+      .returning();
+    return newServer;
+  }
+
+  async updateServerBotCount(serverName: string, currentBotCount: number): Promise<ServerRegistry> {
+    const [server] = await db
+      .update(serverRegistry)
+      .set({ 
+        currentBotCount,
+        updatedAt: sql`CURRENT_TIMESTAMP`
+      })
+      .where(eq(serverRegistry.serverName, serverName))
+      .returning();
+    return server;
+  }
+
+  async getAvailableServers(): Promise<ServerRegistry[]> {
+    // Get servers that have capacity (currentBotCount < maxBotCount) and are active
+    return await db
+      .select()
+      .from(serverRegistry)
+      .where(
+        and(
+          eq(serverRegistry.serverStatus, 'active'),
+          sql`${serverRegistry.currentBotCount} < ${serverRegistry.maxBotCount}`
+        )
+      )
+      .orderBy(serverRegistry.serverName);
+  }
+
+  async initializeCurrentServer(): Promise<void> {
+    const currentServerName = getServerName();
+    const maxBots = getMaxBotCount();
+    
+    // Check if current server exists in registry
+    const existingServer = await this.getServerByName(currentServerName);
+    
+    if (!existingServer) {
+      // Create new server entry
+      await this.createServer({
+        serverName: currentServerName,
+        maxBotCount: maxBots,
+        currentBotCount: 0,
+        serverStatus: 'active',
+        description: `Auto-created server ${currentServerName}`
+      });
+      console.log(`✅ Created server registry entry for ${currentServerName}`);
+    } else if (existingServer.maxBotCount !== maxBots) {
+      // Update max bot count if BOTCOUNT environment variable changed
+      await db
+        .update(serverRegistry)
+        .set({ 
+          maxBotCount: maxBots,
+          updatedAt: sql`CURRENT_TIMESTAMP`
+        })
+        .where(eq(serverRegistry.serverName, currentServerName));
+      console.log(`✅ Updated max bot count for ${currentServerName} to ${maxBots}`);
+    }
+    
+    // Update current bot count to reflect actual database state
+    const actualBotCount = await db.select().from(botInstances).where(eq(botInstances.serverName, currentServerName));
+    await this.updateServerBotCount(currentServerName, actualBotCount.length);
+  }
+
+  async strictCheckBotCountLimit(serverName?: string): Promise<{ canAdd: boolean; currentCount: number; maxCount: number; }> {
+    const targetServer = serverName || getServerName();
+    
+    // Get actual bot count from database
+    const actualBots = await db.select().from(botInstances).where(eq(botInstances.serverName, targetServer));
+    const currentCount = actualBots.length;
+    
+    // Get max count from server registry or fallback to environment variable
+    let maxCount = getMaxBotCount(); // Default fallback
+    const serverInfo = await this.getServerByName(targetServer);
+    if (serverInfo) {
+      maxCount = serverInfo.maxBotCount;
+      // Update the current count in registry to keep it in sync
+      await this.updateServerBotCount(targetServer, currentCount);
+    }
+    
+    const canAdd = currentCount < maxCount;
+    
+    return {
+      canAdd,
+      currentCount,
+      maxCount
+    };
   }
 }
 

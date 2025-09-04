@@ -11,6 +11,19 @@ export const godRegister = pgTable("god_register", {
   registeredAt: timestamp("registered_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
+// Server registry table for multi-tenancy management
+export const serverRegistry = pgTable("server_registry", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  serverName: text("server_name").notNull().unique(), // SERVER1, SERVER2, SERVER3, etc
+  maxBotCount: integer("max_bot_count").notNull(), // Maximum bots allowed on this server
+  currentBotCount: integer("current_bot_count").default(0), // Current number of bots
+  serverStatus: text("server_status").default("active"), // active, inactive, maintenance
+  serverUrl: text("server_url"), // URL to access this server
+  description: text("description"), // Optional description of this server
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
@@ -142,6 +155,12 @@ export const insertGodRegisterSchema = createInsertSchema(godRegister).omit({
   registeredAt: true,
 });
 
+export const insertServerRegistrySchema = createInsertSchema(serverRegistry).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -160,3 +179,6 @@ export type InsertGroup = z.infer<typeof insertGroupSchema>;
 
 export type GodRegister = typeof godRegister.$inferSelect;
 export type InsertGodRegister = z.infer<typeof insertGodRegisterSchema>;
+
+export type ServerRegistry = typeof serverRegistry.$inferSelect;
+export type InsertServerRegistry = z.infer<typeof insertServerRegistrySchema>;

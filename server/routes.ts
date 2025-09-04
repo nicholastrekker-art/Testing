@@ -601,64 +601,34 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       // Check for duplicate bot name and bot count limit
       const existingBots = await storage.getAllBotInstances();
       
-      // Check bot count limit and handle auto-removal if needed
-      const canAddBot = await storage.checkBotCountLimit();
-      if (!canAddBot) {
-        // Check if there are pending bots that can be removed
-        const oldestPendingBot = await storage.getOldestPendingBot();
-        if (oldestPendingBot) {
-          try {
-            // Send notification to the bot owner before removal
-            const notificationMessage = `Your bot "${oldestPendingBot.name}" took too long before approval and has been removed from the server to make space for new registrations. Please register again when needed.`;
-            
-            // Try to send notification through the bot's own credentials if possible
-            try {
-              await botManager.sendMessageThroughBot(
-                oldestPendingBot.id, 
-                oldestPendingBot.phoneNumber || '', 
-                notificationMessage
-              );
-              console.log(`📱 Notification sent to ${oldestPendingBot.phoneNumber}: ${notificationMessage}`);
-            } catch (notificationError) {
-              console.warn(`Failed to send notification to ${oldestPendingBot.phoneNumber}:`, notificationError);
-            }
-
-            // Remove from god registry
-            if (oldestPendingBot.phoneNumber) {
-              await storage.deleteGlobalRegistration(oldestPendingBot.phoneNumber);
-            }
-
-            // Stop and delete the bot
-            await botManager.destroyBot(oldestPendingBot.id);
-            await storage.deleteBotInstance(oldestPendingBot.id);
-
-            // Log the activity
-            await storage.createActivity({
-              botInstanceId: null,
-              type: 'auto_removal',
-              description: `Auto-removed oldest pending bot "${oldestPendingBot.name}" (${oldestPendingBot.phoneNumber}) to make space for new registration`,
-              metadata: { 
-                removedBotId: oldestPendingBot.id,
-                removedBotName: oldestPendingBot.name,
-                removedBotPhone: oldestPendingBot.phoneNumber,
-                reason: 'capacity_limit_reached'
-              },
-              serverName: getServerName()
-            });
-
-            console.log(`🗑️ Auto-removed oldest pending bot: ${oldestPendingBot.name} (${oldestPendingBot.phoneNumber})`);
-          } catch (removalError) {
-            console.error("Failed to remove oldest pending bot:", removalError);
-            const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
-            return res.status(400).json({ 
-              message: `Sorry 😞... The server is full! Maximum bot limit reached (${maxBots} bots). Please contact administrator for more capacity.` 
-            });
-          }
-        } else {
-          // No pending bots to remove, server is truly full
-          const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
+      // Check bot count limit using strict validation (no auto-removal)
+      const botCountCheck = await storage.strictCheckBotCountLimit();
+      if (!botCountCheck.canAdd) {
+        // Get available servers for user to choose from
+        const availableServers = await storage.getAvailableServers();
+        
+        if (availableServers.length > 0) {
+          // Server is full but there are other available servers
           return res.status(400).json({ 
-            message: `Sorry 😞... The server is full! Maximum bot limit reached (${maxBots} bots) and all bots are approved. Please contact administrator for more capacity.` 
+            message: `🚫 ${getServerName()} is full! (${botCountCheck.currentCount}/${botCountCheck.maxCount} bots)`,
+            serverFull: true,
+            currentServer: getServerName(),
+            availableServers: availableServers.map(server => ({
+              serverName: server.serverName,
+              currentBots: server.currentBotCount || 0,
+              maxBots: server.maxBotCount,
+              availableSlots: server.maxBotCount - (server.currentBotCount || 0),
+              serverUrl: server.serverUrl,
+              description: server.description
+            })),
+            action: 'select_server'
+          });
+        } else {
+          // All servers are full
+          return res.status(400).json({ 
+            message: `😞 All servers are full! Current server: ${getServerName()} (${botCountCheck.currentCount}/${botCountCheck.maxCount}). Please contact administrator for more capacity.`,
+            serverFull: true,
+            allServersFull: true
           });
         }
       }
@@ -1343,6 +1313,38 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           botFeatures = JSON.parse(features);
         } catch (error) {
           console.warn('Invalid features JSON:', error);
+        }
+      }
+
+      // Check bot count limit using strict validation (no auto-removal)
+      const botCountCheck = await storage.strictCheckBotCountLimit();
+      if (!botCountCheck.canAdd) {
+        // Get available servers for user to choose from
+        const availableServers = await storage.getAvailableServers();
+        
+        if (availableServers.length > 0) {
+          // Server is full but there are other available servers
+          return res.status(400).json({ 
+            message: `🚫 ${getServerName()} is full! (${botCountCheck.currentCount}/${botCountCheck.maxCount} bots)`,
+            serverFull: true,
+            currentServer: getServerName(),
+            availableServers: availableServers.map(server => ({
+              serverName: server.serverName,
+              currentBots: server.currentBotCount || 0,
+              maxBots: server.maxBotCount,
+              availableSlots: server.maxBotCount - (server.currentBotCount || 0),
+              serverUrl: server.serverUrl,
+              description: server.description
+            })),
+            action: 'select_server'
+          });
+        } else {
+          // All servers are full
+          return res.status(400).json({ 
+            message: `😞 All servers are full! Current server: ${getServerName()} (${botCountCheck.currentCount}/${botCountCheck.maxCount}). Please contact administrator for more capacity.`,
+            serverFull: true,
+            allServersFull: true
+          });
         }
       }
 
@@ -2285,6 +2287,173 @@ Thank you for choosing TREKKER-MD! 🚀`;
     } catch (error) {
       console.error('Failed to get alternative servers:', error);
       res.status(500).json({ message: "Failed to get alternative servers" });
+    }
+  });
+
+  // Server Registry API endpoints for multi-tenancy
+  app.get("/api/servers/available", async (req, res) => {
+    try {
+      const availableServers = await storage.getAvailableServers();
+      res.json({
+        servers: availableServers.map(server => ({
+          serverName: server.serverName,
+          currentBots: server.currentBotCount || 0,
+          maxBots: server.maxBotCount,
+          availableSlots: server.maxBotCount - (server.currentBotCount || 0),
+          serverUrl: server.serverUrl,
+          description: server.description,
+          serverStatus: server.serverStatus
+        }))
+      });
+    } catch (error) {
+      console.error('Failed to get available servers:', error);
+      res.status(500).json({ message: "Failed to retrieve available servers" });
+    }
+  });
+
+  app.get("/api/servers/all", async (req, res) => {
+    try {
+      const allServers = await storage.getAllServers();
+      res.json({
+        servers: allServers.map(server => ({
+          serverName: server.serverName,
+          currentBots: server.currentBotCount || 0,
+          maxBots: server.maxBotCount,
+          availableSlots: server.maxBotCount - (server.currentBotCount || 0),
+          serverUrl: server.serverUrl,
+          description: server.description,
+          serverStatus: server.serverStatus
+        }))
+      });
+    } catch (error) {
+      console.error('Failed to get all servers:', error);
+      res.status(500).json({ message: "Failed to retrieve servers" });
+    }
+  });
+
+  // Cross-server bot registration endpoint
+  app.post("/api/cross-server/register-bot", upload.single('credsFile') as any, async (req, res) => {
+    try {
+      const { targetServer, botName, phoneNumber, credentialType, sessionId, features } = req.body;
+      
+      if (!targetServer || !botName || !phoneNumber) {
+        return res.status(400).json({ message: "Target server, bot name and phone number are required" });
+      }
+      
+      // Check if target server exists and has capacity
+      const serverCheck = await storage.strictCheckBotCountLimit(targetServer);
+      if (!serverCheck.canAdd) {
+        return res.status(400).json({ 
+          message: `Selected server ${targetServer} is now full (${serverCheck.currentCount}/${serverCheck.maxCount} bots). Please select another server.`
+        });
+      }
+      
+      // Check global registration to prevent duplicate registrations
+      const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
+      if (globalRegistration) {
+        return res.status(400).json({ 
+          message: `This phone number is already registered on ${globalRegistration.tenancyName}. Please go to that server to manage your bot.`,
+          registeredTo: globalRegistration.tenancyName
+        });
+      }
+      
+      // Process credentials (similar to guest registration logic)
+      let credentials = null;
+      if (credentialType === 'base64' && sessionId) {
+        try {
+          const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
+          credentials = JSON.parse(decoded);
+        } catch (error) {
+          return res.status(400).json({ message: "Invalid base64 session ID format" });
+        }
+      } else if (credentialType === 'file' && req.file) {
+        try {
+          const fileContent = req.file.buffer.toString('utf-8');
+          credentials = JSON.parse(fileContent);
+        } catch (error) {
+          return res.status(400).json({ message: "Invalid creds.json file format" });
+        }
+      } else {
+        return res.status(400).json({ message: "Valid credentials are required" });
+      }
+      
+      // Validate phone number ownership
+      if (credentials && credentials.me && credentials.me.id) {
+        const credentialsPhoneMatch = credentials.me.id.match(/^(\d+):/);
+        const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
+        const inputPhone = phoneNumber.replace(/^\+/, '');
+        
+        if (!credentialsPhone || credentialsPhone !== inputPhone) {
+          return res.status(400).json({ 
+            message: "You are not the owner of this credentials file. The phone number in the session does not match your input." 
+          });
+        }
+      } else {
+        return res.status(400).json({ message: "Invalid credentials format - missing phone number data" });
+      }
+      
+      // Parse features if provided
+      let botFeatures = {};
+      if (features) {
+        try {
+          botFeatures = JSON.parse(features);
+        } catch (error) {
+          console.warn('Invalid features JSON:', error);
+        }
+      }
+      
+      // Create bot instance on target server
+      const botInstance = await storage.createBotInstance({
+        name: botName,
+        phoneNumber: phoneNumber,
+        credentials: credentials,
+        status: 'dormant',
+        approvalStatus: 'pending',
+        isGuest: true,
+        settings: { features: botFeatures },
+        autoLike: (botFeatures as any).autoLike || false,
+        autoViewStatus: (botFeatures as any).autoView || false,
+        autoReact: (botFeatures as any).autoReact || false,
+        typingMode: (botFeatures as any).typingIndicator ? 'typing' : 'none',
+        chatgptEnabled: (botFeatures as any).chatGPT || false,
+        serverName: targetServer // Register under target server
+      });
+      
+      // Add to global registry under target server
+      await storage.addGlobalRegistration(phoneNumber, targetServer);
+      
+      // Log activity for cross-server registration
+      await storage.createActivity({
+        botInstanceId: botInstance.id,
+        type: 'cross_server_registration',
+        description: `Bot registered on ${targetServer} via cross-server registration from ${getServerName()}`,
+        metadata: { 
+          originalServer: getServerName(),
+          targetServer,
+          phoneNumber,
+          credentialType 
+        },
+        serverName: targetServer
+      });
+      
+      // Update server bot count
+      await storage.updateServerBotCount(targetServer, serverCheck.currentCount + 1);
+      
+      res.json({ 
+        success: true, 
+        message: `Bot successfully registered on ${targetServer}! Your bot is awaiting admin approval.`,
+        botId: botInstance.id,
+        targetServer: targetServer,
+        serverInfo: {
+          serverName: targetServer,
+          newBotCount: serverCheck.currentCount + 1,
+          maxBots: serverCheck.maxCount
+        }
+      });
+      
+    } catch (error) {
+      console.error('Cross-server bot registration error:', error);
+      res.status(500).json({ message: "Failed to register bot on target server" });
     }
   });
 
