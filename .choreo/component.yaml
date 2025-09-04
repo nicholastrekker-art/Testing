@@ -1,7 +1,8 @@
 schemaVersion: "1.2"
 spec:
   inbound:
-    - name: Your WebSocket Service
+    - name: Your WebSocket Serviceskip
+      TrivyScan: true
       port: 8080
       type: WS
       networkVisibility: Public
