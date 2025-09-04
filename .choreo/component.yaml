@@ -1,7 +1,7 @@
 schemaVersion: "1.2"
 
 build:
-  command: yarn --frozen-lockfile install;yarn build
+  command: yarn --frozen-lockfile install; yarn build
 
 run:
   command: npm run dev
