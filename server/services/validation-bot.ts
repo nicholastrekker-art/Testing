@@ -193,8 +193,8 @@ export async function sendValidationMessage(phoneNumber: string, credentials: st
     
     return true;
   } finally {
-    // Always disconnect and cleanup
-    await validationBot.disconnect();
+    // Always disconnect and cleanup - preserving credentials for regular validation
+    await validationBot.disconnect(true); // Change to preserve credentials by default
   }
 }
 

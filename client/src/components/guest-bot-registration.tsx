@@ -240,7 +240,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
             🚀 Register Your TREKKER-MD Bot
@@ -248,7 +248,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
         </DialogHeader>
 
         {step === 1 && (
-          <div className="space-y-6">
+          <div className="space-y-4 pb-4">
             {/* TREKKER-MD Info Card */}
             <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-none">
               <CardContent className="p-4">
