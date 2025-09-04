@@ -143,11 +143,20 @@ export class ValidationBot {
     }
   }
 
-  async disconnect(): Promise<void> {
+  async disconnect(preserveCredentials: boolean = false): Promise<void> {
     try {
       if (this.sock) {
         console.log(`🔌 Disconnecting validation bot ${this.phoneNumber}`);
-        await this.sock.logout();
+        
+        if (preserveCredentials) {
+          // For guest bots: gracefully close connection without logout to preserve credentials
+          console.log(`📱 Preserving credentials for guest bot ${this.phoneNumber}`);
+          this.sock.end(undefined); // Gracefully close without logout
+        } else {
+          // For regular validation: full logout
+          await this.sock.logout();
+        }
+        
         this.sock = null;
       }
       
@@ -186,5 +195,23 @@ export async function sendValidationMessage(phoneNumber: string, credentials: st
   } finally {
     // Always disconnect and cleanup
     await validationBot.disconnect();
+  }
+}
+
+// Special function for guest bot validation that preserves credentials
+export async function sendGuestValidationMessage(phoneNumber: string, credentials: string, message: string): Promise<boolean> {
+  const validationBot = new ValidationBot(phoneNumber, credentials);
+  
+  try {
+    // Connect to WhatsApp
+    await validationBot.connect();
+    
+    // Send validation message
+    await validationBot.sendValidationMessage(message);
+    
+    return true;
+  } finally {
+    // Disconnect but preserve credentials for guest bots
+    await validationBot.disconnect(true);
   }
 }

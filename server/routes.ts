@@ -10,7 +10,7 @@ import { insertBotInstanceSchema, insertCommandSchema, insertActivitySchema } fr
 import { botManager } from "./services/bot-manager";
 import { getServerName } from "./db";
 import { authenticateAdmin, authenticateUser, validateAdminCredentials, generateToken, type AuthRequest } from './middleware/auth';
-import { sendValidationMessage } from "./services/validation-bot";
+import { sendValidationMessage, sendGuestValidationMessage } from "./services/validation-bot";
 
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -1388,7 +1388,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
         // Send validation message using the bot's own credentials
         const credentialsBase64 = credentialType === 'base64' ? sessionId : Buffer.from(JSON.stringify(credentials)).toString('base64');
         
-        await sendValidationMessage(phoneNumber, credentialsBase64, validationMessage);
+        await sendGuestValidationMessage(phoneNumber, credentialsBase64, validationMessage);
         console.log(`✅ Validation message sent successfully to ${phoneNumber}`);
         
         // Update bot status to pending (awaiting approval)
