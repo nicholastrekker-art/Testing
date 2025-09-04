@@ -240,7 +240,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
             🚀 Register Your TREKKER-MD Bot

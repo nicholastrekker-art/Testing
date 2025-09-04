@@ -12,11 +12,13 @@ import { apiRequest } from "@/lib/queryClient";
 import { Play, Square, Trash2, Shield, Activity, Bot, Users, BarChart3, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { BotInstance, Activity as ActivityType } from "@shared/schema";
+import MasterControlPanel from "@/components/master-control-panel";
 
 export default function AdminConsole() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { logout } = useAuth();
+  const [showMasterControl, setShowMasterControl] = useState(false);
 
   // Fetch all bot instances
   const { data: botInstances = [], isLoading: loadingBots } = useQuery({
@@ -225,6 +227,7 @@ export default function AdminConsole() {
         <TabsList>
           <TabsTrigger value="bots" data-testid="tab-bots">Bot Management</TabsTrigger>
           <TabsTrigger value="activities" data-testid="tab-activities">Recent Activity</TabsTrigger>
+          <TabsTrigger value="master" data-testid="tab-master">Master Control</TabsTrigger>
         </TabsList>
 
         <TabsContent value="bots" className="space-y-4">
@@ -384,7 +387,35 @@ export default function AdminConsole() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="master" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Master Control Panel</CardTitle>
+              <CardDescription>
+                Cross-tenancy bot management using God Registry
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={() => setShowMasterControl(true)}
+                className="w-full"
+                data-testid="button-open-master-control"
+              >
+                🎛️ Open Master Control Panel
+              </Button>
+              <p className="text-sm text-muted-foreground mt-2 text-center">
+                Manage bots across all tenancies from a centralized interface
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      <MasterControlPanel 
+        open={showMasterControl} 
+        onClose={() => setShowMasterControl(false)} 
+      />
     </div>
   );
 }

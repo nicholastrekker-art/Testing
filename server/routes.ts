@@ -2023,5 +2023,205 @@ Thank you for choosing TREKKER-MD! 🚀`;
     }
   });
 
+  // Master Control Panel API routes - Cross-tenancy management using God Registry
+  app.get("/api/master/tenancies", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const registrations = await storage.getAllGlobalRegistrations();
+      
+      // Group registrations by tenancy
+      const tenancies = registrations.reduce((acc, reg) => {
+        if (!acc[reg.tenancyName]) {
+          acc[reg.tenancyName] = {
+            name: reg.tenancyName,
+            botCount: 0,
+            registrations: []
+          };
+        }
+        acc[reg.tenancyName].botCount++;
+        acc[reg.tenancyName].registrations.push(reg);
+        return acc;
+      }, {} as any);
+      
+      res.json(Object.values(tenancies));
+    } catch (error) {
+      console.error('Failed to fetch tenancies:', error);
+      res.status(500).json({ message: "Failed to fetch tenancies" });
+    }
+  });
+
+  app.get("/api/master/cross-tenancy-bots", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      // Get all global registrations from God Registry
+      const registrations = await storage.getAllGlobalRegistrations();
+      const currentTenancy = getServerName();
+      
+      const crossTenancyData = [];
+      
+      // For each registration in God Registry, get bot data
+      for (const registration of registrations) {
+        try {
+          // If it's current tenancy, get local bot data
+          if (registration.tenancyName === currentTenancy) {
+            const localBot = await storage.getBotByPhoneNumber(registration.phoneNumber);
+            if (localBot) {
+              crossTenancyData.push({
+                ...localBot,
+                tenancy: registration.tenancyName,
+                isLocal: true
+              });
+            }
+          } else {
+            // For other tenancies, show registry info
+            crossTenancyData.push({
+              id: `remote-${registration.phoneNumber}`,
+              name: `Remote Bot (${registration.tenancyName})`,
+              phoneNumber: registration.phoneNumber,
+              status: 'remote',
+              approvalStatus: 'unknown',
+              tenancy: registration.tenancyName,
+              lastActivity: registration.registeredAt?.toISOString() || 'Unknown',
+              isLocal: false,
+              registeredAt: registration.registeredAt
+            });
+          }
+        } catch (error) {
+          console.error(`Failed to get bot data for ${registration.phoneNumber}:`, error);
+        }
+      }
+      
+      res.json(crossTenancyData);
+    } catch (error) {
+      console.error('Failed to fetch cross-tenancy bots:', error);
+      res.status(500).json({ message: "Failed to fetch cross-tenancy bots" });
+    }
+  });
+
+  app.post("/api/master/bot-action", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { action, botId, tenancy, data } = req.body;
+      const currentTenancy = getServerName();
+      
+      if (!action || !tenancy) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Handle actions for local tenancy
+      if (tenancy === currentTenancy) {
+        switch (action) {
+          case 'approve':
+            if (!botId) return res.status(400).json({ message: "Bot ID required" });
+            
+            const botInstance = await storage.getBotInstance(botId);
+            if (!botInstance) {
+              return res.status(404).json({ message: "Bot not found" });
+            }
+            
+            const duration = data?.duration || 6; // Default 6 months
+            const approvalDate = new Date().toISOString();
+            
+            await storage.updateBotInstance(botId, {
+              approvalStatus: 'approved',
+              status: 'offline',
+              approvalDate,
+              expirationMonths: duration
+            });
+            
+            await storage.createActivity({
+              botInstanceId: botId,
+              type: 'master_approval',
+              description: `Bot approved via master control panel for ${duration} months`,
+              metadata: { action: 'approve', duration, approvedBy: 'master_admin' },
+              serverName: getServerName()
+            });
+            
+            broadcast({ 
+              type: 'BOT_APPROVED_MASTER', 
+              data: { botId, name: botInstance.name, tenancy } 
+            });
+            
+            break;
+            
+          case 'reject':
+            if (!botId) return res.status(400).json({ message: "Bot ID required" });
+            
+            await storage.updateBotInstance(botId, {
+              approvalStatus: 'rejected',
+              status: 'rejected'
+            });
+            
+            await storage.createActivity({
+              botInstanceId: botId,
+              type: 'master_rejection',
+              description: 'Bot rejected via master control panel',
+              metadata: { action: 'reject', rejectedBy: 'master_admin' },
+              serverName: getServerName()
+            });
+            
+            break;
+            
+          case 'start':
+            if (!botId) return res.status(400).json({ message: "Bot ID required" });
+            await botManager.startBot(botId);
+            break;
+            
+          case 'stop':
+            if (!botId) return res.status(400).json({ message: "Bot ID required" });
+            await botManager.stopBot(botId);
+            break;
+            
+          case 'delete':
+            if (!botId) return res.status(400).json({ message: "Bot ID required" });
+            
+            const botToDelete = await storage.getBotInstance(botId);
+            if (botToDelete) {
+              // Stop bot if running
+              await botManager.stopBot(botId);
+              
+              // Delete from god registry
+              await storage.deleteGlobalRegistration(botToDelete.phoneNumber || '');
+              
+              // Delete bot instance
+              await storage.deleteBotInstance(botId);
+              
+              await storage.createActivity({
+                botInstanceId: null,
+                type: 'master_deletion',
+                description: `Bot ${botToDelete.name} deleted via master control panel`,
+                metadata: { action: 'delete', phoneNumber: botToDelete.phoneNumber, deletedBy: 'master_admin' },
+                serverName: getServerName()
+              });
+            }
+            break;
+            
+          default:
+            return res.status(400).json({ message: "Unknown action" });
+        }
+        
+        res.json({ success: true, message: `Action ${action} completed successfully` });
+      } else {
+        // Handle actions for remote tenancies via God Registry
+        console.log(`Cross-tenancy action ${action} on ${tenancy} for bot ${botId}`);
+        
+        // Log the cross-tenancy action attempt
+        await storage.createActivity({
+          botInstanceId: null,
+          type: 'master_cross_tenancy',
+          description: `Cross-tenancy action ${action} attempted on ${tenancy}`,
+          metadata: { action, tenancy, botId, initiatedBy: 'master_admin' },
+          serverName: getServerName()
+        });
+        
+        res.json({ 
+          success: true, 
+          message: `Cross-tenancy action ${action} logged for ${tenancy}`,
+          note: "Cross-tenancy actions are logged in God Registry" 
+        });
+      }
+    } catch (error) {
+      console.error('Failed to perform bot action:', error);
+      res.status(500).json({ message: "Failed to perform action" });
+    }
+  });
+
   return httpServer;
 }
