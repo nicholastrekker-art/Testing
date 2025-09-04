@@ -3,9 +3,9 @@ schemaVersion: "1.2"
 endpoints:
   - name: websocket-service
     displayName: WebSocket Service
+    type: WS                # <-- required here
     service:
       basePath: /your-websocket-context
       port: 8080
-      type: WS
       networkVisibilities:
         - Public
