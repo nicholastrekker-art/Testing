@@ -1,5 +1,4 @@
-apiVersion: core.choreo.dev/v1beta1
-kind: ComponentConfig
+schemaVersion: "1.2"
 spec:
   inbound:
     - name: Your WebSocket Service
