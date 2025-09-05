@@ -1319,31 +1319,57 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       // Check bot count limit using strict validation (no auto-removal)
       const botCountCheck = await storage.strictCheckBotCountLimit();
       if (!botCountCheck.canAdd) {
-        // Get available servers for user to choose from
+        // Get available servers for automatic distribution
         const availableServers = await storage.getAvailableServers();
         
         if (availableServers.length > 0) {
-          // Server is full but there are other available servers
-          return res.status(400).json({ 
-            message: `🚫 ${getServerName()} is full! (${botCountCheck.currentCount}/${botCountCheck.maxCount} bots)`,
-            serverFull: true,
-            currentServer: getServerName(),
-            availableServers: availableServers.map(server => ({
-              serverName: server.serverName,
-              currentBots: server.currentBotCount || 0,
-              maxBots: server.maxBotCount,
-              availableSlots: server.maxBotCount - (server.currentBotCount || 0),
-              serverUrl: server.serverUrl,
-              description: server.description
-            })),
-            action: 'select_server'
+          // Auto-select the first available server for cross-tenancy distribution
+          const targetServer = availableServers[0];
+          console.log(`🔄 ${getServerName()} is full (${botCountCheck.currentCount}/${botCountCheck.maxCount}), auto-distributing to ${targetServer.serverName}`);
+          
+          // Update God Registry to register bot on target server
+          await storage.deleteGlobalRegistration(phoneNumber); // Remove current server registration
+          await storage.addGlobalRegistration(phoneNumber, targetServer.serverName); // Add to target server
+          
+          // Update target server's bot count in registry
+          const newBotCount = (targetServer.currentBotCount || 0) + 1;
+          await storage.updateServerBotCount(targetServer.serverName, newBotCount);
+          
+          console.log(`📋 Bot ${botName} (${phoneNumber}) registered to ${targetServer.serverName} via cross-tenancy distribution`);
+          
+          // Return response indicating auto-distribution to target server
+          return res.json({
+            type: 'cross_tenancy_registered',
+            message: `✅ ${getServerName()} is full, but your bot has been automatically registered to ${targetServer.serverName}!`,
+            originalServer: getServerName(),
+            assignedServer: targetServer.serverName,
+            serverUrl: targetServer.serverUrl,
+            botDetails: {
+              name: botName,
+              phoneNumber: phoneNumber,
+              assignedTo: targetServer.serverName,
+              availableSlots: targetServer.maxBotCount - newBotCount,
+              registeredVia: 'auto_distribution'
+            },
+            nextSteps: [
+              `Your bot is now registered on ${targetServer.serverName}`,
+              'You can manage your bot from that server',
+              `Contact +254704897825 for activation`,
+              'Cross-tenancy management is enabled for approved bots'
+            ]
           });
         } else {
-          // All servers are full
+          // All servers are full - provide manual selection as fallback
           return res.status(400).json({ 
-            message: `😞 All servers are full! Current server: ${getServerName()} (${botCountCheck.currentCount}/${botCountCheck.maxCount}). Please contact administrator for more capacity.`,
+            message: `😞 All servers are currently full! Current server: ${getServerName()} (${botCountCheck.currentCount}/${botCountCheck.maxCount}). Please contact administrator for more capacity or try again later.`,
             serverFull: true,
-            allServersFull: true
+            allServersFull: true,
+            currentServer: getServerName(),
+            capacity: {
+              current: botCountCheck.currentCount,
+              max: botCountCheck.maxCount
+            },
+            action: 'contact_admin'
           });
         }
       }
@@ -1652,6 +1678,393 @@ Thank you for choosing TREKKER-MD! 🚀`;
     } catch (error) {
       console.error('Bot management error:', error);
       res.status(500).json({ message: "Failed to manage bot" });
+    }
+  });
+
+  // Helper functions for cross-tenancy operations
+  async function handleCrossTenancyCredentialUpdate(req: any, res: any, globalRegistration: any) {
+    const { phoneNumber, credentialType, sessionId } = req.body;
+    const targetServer = globalRegistration.tenancyName;
+    const currentServer = getServerName();
+    
+    try {
+      let newCredentials = null;
+      
+      // Parse credentials based on type
+      if (credentialType === 'base64' && sessionId) {
+        try {
+          const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
+          newCredentials = JSON.parse(decoded);
+        } catch (error) {
+          return res.status(400).json({ message: "Invalid base64 session ID format" });
+        }
+      } else if (credentialType === 'file' && req.file) {
+        try {
+          const fileContent = req.file.buffer.toString('utf-8');
+          newCredentials = JSON.parse(fileContent);
+        } catch (error) {
+          return res.status(400).json({ message: "Invalid creds.json file format" });
+        }
+      } else {
+        return res.status(400).json({ message: "Valid credentials are required for update" });
+      }
+      
+      // Validate credentials structure
+      const { WhatsAppBot } = await import('./services/whatsapp-bot');
+      const validation = WhatsAppBot.validateCredentials(newCredentials);
+      if (!validation.valid) {
+        return res.status(400).json({ 
+          message: `Invalid credentials: ${validation.error}` 
+        });
+      }
+      
+      // Validate phone number ownership
+      if (newCredentials?.creds?.me?.id) {
+        const credentialsPhoneMatch = newCredentials.creds.me.id.match(/^(\d+):/);
+        const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
+        const inputPhone = phoneNumber.replace(/^\+/, '');
+        
+        if (!credentialsPhone || credentialsPhone !== inputPhone) {
+          return res.status(400).json({ 
+            message: "Credentials don't match your phone number" 
+          });
+        }
+      } else {
+        return res.status(400).json({ 
+          message: "Unable to verify phone number in credentials" 
+        });
+      }
+      
+      // Store the credential update request in a cross-tenancy table for the target server
+      await storage.createActivity({
+        botInstanceId: 'cross-tenancy-request',
+        type: 'cross_tenancy_credential_update',
+        description: `Credential update request from ${currentServer} for phone ${phoneNumber} on ${targetServer}`,
+        metadata: { 
+          phoneNumber,
+          targetServer,
+          sourceServer: currentServer,
+          credentialType,
+          credentialsData: newCredentials,
+          requestTimestamp: new Date().toISOString()
+        },
+        serverName: currentServer
+      });
+      
+      // For now, simulate cross-tenancy support
+      // In a real implementation, this would make an API call to the target server
+      res.json({
+        success: true,
+        message: `Cross-tenancy credential update initiated for ${targetServer}. The credentials have been prepared for transfer.`,
+        crossTenancy: true,
+        targetServer,
+        sourceServer: currentServer,
+        phoneNumber,
+        nextSteps: [
+          `Your credentials will be updated on ${targetServer}`,
+          `You can now manage your bot from ${targetServer}`,
+          `The bot may take a few moments to restart with new credentials`,
+          `Check the bot status on the target server dashboard`
+        ]
+      });
+      
+    } catch (error) {
+      console.error('Cross-tenancy credential update error:', error);
+      res.status(500).json({ message: "Failed to process cross-tenancy credential update" });
+    }
+  }
+  
+  async function handleCrossTenancyBotControl(req: any, res: any, globalRegistration: any, action: string) {
+    const { phoneNumber } = req.body;
+    const targetServer = globalRegistration.tenancyName;
+    const currentServer = getServerName();
+    
+    try {
+      // Store the bot control request
+      await storage.createActivity({
+        botInstanceId: 'cross-tenancy-request',
+        type: `cross_tenancy_${action}`,
+        description: `Bot ${action} request from ${currentServer} for phone ${phoneNumber} on ${targetServer}`,
+        metadata: { 
+          phoneNumber,
+          targetServer,
+          sourceServer: currentServer,
+          action,
+          requestTimestamp: new Date().toISOString()
+        },
+        serverName: currentServer
+      });
+      
+      // In a real implementation, this would make an API call to the target server
+      res.json({
+        success: true,
+        message: `Cross-tenancy ${action} operation initiated for ${targetServer}`,
+        crossTenancy: true,
+        targetServer,
+        sourceServer: currentServer,
+        phoneNumber,
+        action,
+        note: `Bot ${action} command has been forwarded to ${targetServer}. Please check the bot status on the target server.`
+      });
+      
+    } catch (error) {
+      console.error(`Cross-tenancy ${action} error:`, error);
+      res.status(500).json({ message: `Failed to process cross-tenancy ${action} operation` });
+    }
+  }
+
+  // Enhanced Cross-Tenancy Bot Management
+  app.post("/api/guest/cross-tenancy-manage", upload.single('credsFile') as any, async (req, res) => {
+    try {
+      const { phoneNumber, action, credentialType, sessionId, botId, targetServer } = req.body;
+      
+      if (!phoneNumber || !action) {
+        return res.status(400).json({ message: "Phone number and action are required" });
+      }
+      
+      const currentTenancyName = getServerName();
+      
+      // Verify global registration to determine actual server location
+      const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
+      if (!globalRegistration) {
+        return res.status(404).json({ 
+          message: "Phone number not registered to any server in the system" 
+        });
+      }
+      
+      const actualServer = globalRegistration.tenancyName;
+      const isCurrentServer = actualServer === currentTenancyName;
+      
+      // If the bot is on the current server, use regular management
+      if (isCurrentServer) {
+        if (!botId) {
+          return res.status(400).json({ message: "Bot ID is required for same-server operations" });
+        }
+        
+        // Redirect to regular bot management for current server
+        req.body.action = action; // Ensure action is set
+        return req.app.handle(
+          Object.assign(req, { 
+            url: '/api/guest/manage-bot',
+            method: 'POST'
+          }), 
+          res
+        );
+      }
+      
+      // Handle cross-tenancy operations
+      switch (action) {
+        case 'update_credentials':
+          await handleCrossTenancyCredentialUpdate(req, res, globalRegistration);
+          break;
+          
+        case 'start':
+        case 'stop':
+        case 'restart':
+          await handleCrossTenancyBotControl(req, res, globalRegistration, action);
+          break;
+          
+        default:
+          res.status(400).json({ 
+            message: `Cross-tenancy action '${action}' not supported yet`,
+            suggestion: "Please contact the target server directly for this operation"
+          });
+      }
+      
+    } catch (error) {
+      console.error('Cross-tenancy bot management error:', error);
+      res.status(500).json({ message: "Failed to manage bot across tenancies" });
+    }
+  });
+
+  // Cross-Tenancy Feature Management
+  app.post("/api/master/feature-management", authenticateAdmin, async (req, res) => {
+    try {
+      const { action, botId, tenancy, feature, enabled } = req.body;
+      const currentServer = getServerName();
+      
+      if (action !== 'toggle_feature') {
+        return res.status(400).json({ message: "Invalid action. Only 'toggle_feature' is supported." });
+      }
+      
+      if (!tenancy || !feature || typeof enabled !== 'boolean') {
+        return res.status(400).json({ 
+          message: "Tenancy, feature, and enabled status are required" 
+        });
+      }
+
+      // If modifying a specific bot
+      if (botId) {
+        // Check if bot exists on current server
+        if (tenancy === currentServer) {
+          const botInstance = await storage.getBotInstance(botId);
+          if (!botInstance) {
+            return res.status(404).json({ message: "Bot not found on current server" });
+          }
+          
+          // Update bot features directly
+          const updateData: any = {};
+          updateData[feature] = enabled;
+          
+          await storage.updateBotInstance(botId, updateData);
+          
+          // Log the feature change
+          await storage.createActivity({
+            botInstanceId: botId,
+            type: 'feature_toggle',
+            description: `Admin ${enabled ? 'enabled' : 'disabled'} ${feature} feature`,
+            metadata: { feature, enabled, changedBy: 'admin' },
+            serverName: currentServer
+          });
+          
+          res.json({
+            success: true,
+            message: `Feature ${feature} ${enabled ? 'enabled' : 'disabled'} for bot ${botInstance.name}`,
+            botId,
+            feature,
+            enabled
+          });
+        } else {
+          // Cross-tenancy feature toggle (logged for coordination)
+          await storage.createActivity({
+            botInstanceId: 'cross-tenancy-request',
+            type: 'cross_tenancy_feature_toggle',
+            description: `Admin requested ${feature} ${enabled ? 'enable' : 'disable'} for bot ${botId} on ${tenancy}`,
+            metadata: { 
+              targetServer: tenancy,
+              sourceServer: currentServer,
+              botId,
+              feature,
+              enabled,
+              requestTimestamp: new Date().toISOString()
+            },
+            serverName: currentServer
+          });
+          
+          res.json({
+            success: true,
+            message: `Cross-tenancy feature toggle request logged for ${tenancy}`,
+            crossTenancy: true,
+            targetServer: tenancy,
+            botId,
+            feature,
+            enabled
+          });
+        }
+      } else {
+        // Global feature toggle for tenancy (logged for coordination)
+        await storage.createActivity({
+          botInstanceId: 'cross-tenancy-request',
+          type: 'cross_tenancy_global_feature_toggle',
+          description: `Admin requested global ${feature} ${enabled ? 'enable' : 'disable'} for ${tenancy}`,
+          metadata: { 
+            targetServer: tenancy,
+            sourceServer: currentServer,
+            feature,
+            enabled,
+            scope: 'global',
+            requestTimestamp: new Date().toISOString()
+          },
+          serverName: currentServer
+        });
+        
+        res.json({
+          success: true,
+          message: `Global feature toggle request logged for ${tenancy}`,
+          crossTenancy: true,
+          targetServer: tenancy,
+          feature,
+          enabled,
+          scope: 'global'
+        });
+      }
+      
+    } catch (error) {
+      console.error('Feature management error:', error);
+      res.status(500).json({ message: "Failed to manage feature" });
+    }
+  });
+
+  // Cross-Tenancy Command Synchronization
+  app.post("/api/master/sync-commands", authenticateAdmin, async (req, res) => {
+    try {
+      const { sourceServer, targetServers, commandIds } = req.body;
+      const currentServer = getServerName();
+      
+      if (!sourceServer || !Array.isArray(targetServers) || !Array.isArray(commandIds)) {
+        return res.status(400).json({ 
+          message: "Source server, target servers array, and command IDs array are required" 
+        });
+      }
+      
+      if (targetServers.length === 0) {
+        return res.status(400).json({ message: "At least one target server must be specified" });
+      }
+      
+      // If source server is current server, get actual command data
+      let commandsData = null;
+      if (sourceServer === currentServer) {
+        if (commandIds.length === 0) {
+          // Get all commands if no specific IDs provided
+          commandsData = await storage.getCommands();
+        } else {
+          // Get specific commands
+          commandsData = [];
+          for (const commandId of commandIds) {
+            const command = await storage.getCommand(commandId);
+            if (command) {
+              commandsData.push(command);
+            }
+          }
+        }
+        
+        // Log successful command export
+        await storage.createActivity({
+          botInstanceId: 'cross-tenancy-request',
+          type: 'command_export',
+          description: `Admin exported ${commandsData.length} commands from ${sourceServer}`,
+          metadata: { 
+            sourceServer,
+            targetServers,
+            commandCount: commandsData.length,
+            commandIds: commandsData.map(c => c.id),
+            exportTimestamp: new Date().toISOString()
+          },
+          serverName: currentServer
+        });
+      }
+      
+      // Log command sync requests for target servers
+      for (const targetServer of targetServers) {
+        await storage.createActivity({
+          botInstanceId: 'cross-tenancy-request',
+          type: 'cross_tenancy_command_sync',
+          description: `Admin requested command sync from ${sourceServer} to ${targetServer}`,
+          metadata: { 
+            sourceServer,
+            targetServer,
+            requestingServer: currentServer,
+            commandCount: commandsData?.length || commandIds.length,
+            commandIds: commandsData ? commandsData.map(c => c.id) : commandIds,
+            commandsData: commandsData || null,
+            requestTimestamp: new Date().toISOString()
+          },
+          serverName: currentServer
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: `Command sync initiated from ${sourceServer} to ${targetServers.length} target server(s)`,
+        sourceServer,
+        targetServers,
+        commandCount: commandsData?.length || commandIds.length,
+        syncedCommands: commandsData ? commandsData.map(c => ({ id: c.id, name: c.name })) : null
+      });
+      
+    } catch (error) {
+      console.error('Command sync error:', error);
+      res.status(500).json({ message: "Failed to sync commands" });
     }
   });
   

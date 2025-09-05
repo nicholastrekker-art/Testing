@@ -109,6 +109,63 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
     }
   });
 
+  // Cross-tenancy feature management mutation
+  const featureManagementMutation = useMutation({
+    mutationFn: async ({ action, botId, tenancy, feature, enabled }: { 
+      action: 'toggle_feature'; 
+      botId?: string; 
+      tenancy: string; 
+      feature: string;
+      enabled: boolean;
+    }) => {
+      const response = await apiRequest('POST', '/api/master/feature-management', { 
+        action, botId, tenancy, feature, enabled 
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Feature Updated",
+        description: "Bot feature settings updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/master/cross-tenancy-bots'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Feature Update Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Command sync across tenancies mutation
+  const commandSyncMutation = useMutation({
+    mutationFn: async ({ sourceServer, targetServers, commandIds }: { 
+      sourceServer: string;
+      targetServers: string[];
+      commandIds: string[];
+    }) => {
+      const response = await apiRequest('POST', '/api/master/sync-commands', { 
+        sourceServer, targetServers, commandIds 
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Commands Synced",
+        description: "Commands successfully synced across selected tenancies",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Command Sync Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleConnectTenancy = () => {
     if (!selectedTenancy || !tenancyCredentials.serverUrl || !tenancyCredentials.adminToken) {
       toast({
@@ -128,6 +185,20 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
 
   const handleBotAction = (action: string, botId: string, tenancy: string, data?: any) => {
     botActionMutation.mutate({ action, botId, tenancy, data });
+  };
+
+  const handleFeatureToggle = (botId: string, tenancy: string, feature: string, enabled: boolean) => {
+    featureManagementMutation.mutate({ 
+      action: 'toggle_feature', 
+      botId, 
+      tenancy, 
+      feature, 
+      enabled 
+    });
+  };
+
+  const handleCommandSync = (sourceServer: string, targetServers: string[], commandIds: string[]) => {
+    commandSyncMutation.mutate({ sourceServer, targetServers, commandIds });
   };
 
   const getStatusBadge = (status: string) => {
@@ -157,10 +228,11 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="tenancies">Tenancies</TabsTrigger>
             <TabsTrigger value="bots">Cross-Tenancy Bots</TabsTrigger>
+            <TabsTrigger value="features">Feature Control</TabsTrigger>
             <TabsTrigger value="connect">Connect New</TabsTrigger>
           </TabsList>
 
@@ -398,6 +470,140 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                     </TableBody>
                   </Table>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="features" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-purple-600">🎛️ Cross-Tenancy Feature Control</CardTitle>
+                <CardDescription>
+                  Manage bot features across all tenancies from this central panel
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Global Feature Controls */}
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 dark:bg-purple-900/20 dark:border-purple-800">
+                  <h4 className="font-medium text-purple-800 dark:text-purple-200 mb-3 flex items-center gap-2">
+                    🌐 Global Feature Management
+                  </h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { key: 'autoLike', label: 'Auto Like', icon: '👍', description: 'Automatically like status updates' },
+                      { key: 'autoReact', label: 'Auto React', icon: '😄', description: 'Automatically react to messages' },
+                      { key: 'autoView', label: 'Auto View', icon: '👁️', description: 'Automatically view status updates' },
+                      { key: 'chatGPT', label: 'ChatGPT', icon: '🤖', description: 'Enable AI chat responses' },
+                      { key: 'typingIndicator', label: 'Typing', icon: '⌨️', description: 'Show typing indicators' },
+                      { key: 'readReceipts', label: 'Read Receipts', icon: '✓✓', description: 'Send read receipts' }
+                    ].map((feature) => (
+                      <div key={feature.key} className="bg-white dark:bg-gray-800 rounded-lg p-3 border shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-lg">{feature.icon}</span>
+                          <span className="font-medium text-sm">{feature.label}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">{feature.description}</p>
+                        <div className="space-y-2">
+                          {(connectedTenancies as TenancyServer[]).map((tenancy) => (
+                            <div key={tenancy.name} className="flex items-center justify-between">
+                              <span className="text-xs">{tenancy.name}</span>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleFeatureToggle('', tenancy.name, feature.key, true)}
+                                className="h-6 px-2 text-xs"
+                                disabled={featureManagementMutation.isPending}
+                              >
+                                Toggle
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Individual Bot Feature Controls */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
+                  <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-3 flex items-center gap-2">
+                    🤖 Individual Bot Feature Control
+                  </h4>
+                  <div className="space-y-4">
+                    {(crossTenancyBots as CrossTenancyBot[]).filter(bot => bot.approvalStatus === 'approved').map((bot) => (
+                      <div key={`${bot.tenancy}-${bot.id}`} className="bg-white dark:bg-gray-800 rounded-lg p-4 border">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <h5 className="font-medium">{bot.name}</h5>
+                            <p className="text-sm text-muted-foreground">{bot.phoneNumber} • {bot.tenancy}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {getStatusBadge(bot.status)}
+                            <Badge variant="outline">{bot.tenancy}</Badge>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                          {[
+                            { key: 'autoLike', label: 'Like', icon: '👍' },
+                            { key: 'autoReact', label: 'React', icon: '😄' },
+                            { key: 'autoView', label: 'View', icon: '👁️' },
+                            { key: 'chatGPT', label: 'AI', icon: '🤖' },
+                            { key: 'typing', label: 'Type', icon: '⌨️' },
+                            { key: 'receipts', label: 'Read', icon: '✓✓' }
+                          ].map((feature) => (
+                            <Button
+                              key={feature.key}
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleFeatureToggle(bot.id, bot.tenancy, feature.key, true)}
+                              className="flex flex-col items-center gap-1 h-auto py-2"
+                              disabled={featureManagementMutation.isPending}
+                            >
+                              <span className="text-sm">{feature.icon}</span>
+                              <span className="text-xs">{feature.label}</span>
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Command Sync Panel */}
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 dark:bg-emerald-900/20 dark:border-emerald-800">
+                  <h4 className="font-medium text-emerald-800 dark:text-emerald-200 mb-3 flex items-center gap-2">
+                    📡 Command Sync Across Tenancies
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Source Server</label>
+                      <select className="w-full p-2 border rounded-md bg-white dark:bg-gray-800">
+                        <option value="">Select source server...</option>
+                        {(connectedTenancies as TenancyServer[]).map((tenancy) => (
+                          <option key={tenancy.name} value={tenancy.name}>{tenancy.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Target Servers</label>
+                      <div className="space-y-2">
+                        {(connectedTenancies as TenancyServer[]).map((tenancy) => (
+                          <div key={tenancy.name} className="flex items-center gap-2">
+                            <input type="checkbox" id={`target-${tenancy.name}`} className="rounded" />
+                            <label htmlFor={`target-${tenancy.name}`} className="text-sm">{tenancy.name}</label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <Button 
+                    className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700"
+                    disabled={commandSyncMutation.isPending}
+                  >
+                    🔄 Sync Selected Commands
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

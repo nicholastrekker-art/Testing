@@ -34,10 +34,11 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     }
   });
 
-  const [step, setStep] = useState(1); // 1: form, 2: validation, 3: success, 4: existing_bot_management, 5: wrong_server, 6: server_full
+  const [step, setStep] = useState(1); // 1: form, 2: validation, 3: success, 4: existing_bot_management, 5: wrong_server, 6: server_full, 7: cross_tenancy_success
   const [existingBotData, setExistingBotData] = useState<any>(null);
   const [serverMismatch, setServerMismatch] = useState<any>(null);
   const [serverFullData, setServerFullData] = useState<any>(null);
+  const [crossTenancyData, setCrossTenancyData] = useState<any>(null);
   const [showServerSelection, setShowServerSelection] = useState(false);
   const [showCredentialUpdate, setShowCredentialUpdate] = useState(false);
   const [managingBot, setManagingBot] = useState<string | null>(null); // Track which action is in progress
@@ -76,6 +77,13 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
         toast({ 
           title: "Existing Bot Found", 
           description: data.message || "Welcome back! You have a bot on this server."
+        });
+      } else if (data.type === 'cross_tenancy_registered') {
+        setCrossTenancyData(data);
+        setStep(7); // Show cross-tenancy registration success
+        toast({ 
+          title: "Auto-Distributed to Available Server", 
+          description: data.message || "Your bot has been registered on an available server!"
         });
       } else {
         setStep(3); // New registration success
@@ -235,6 +243,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     resetForm();
     setExistingBotData(null);
     setServerMismatch(null);
+    setCrossTenancyData(null);
     setShowCredentialUpdate(false);
     setManagingBot(null);
     onClose();
@@ -250,209 +259,287 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
         </DialogHeader>
 
         {step === 1 && (
-          <div className="space-y-4 pb-4">
-            {/* TREKKER-MD Info Card */}
-            <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-none">
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <h3 className="text-lg font-bold mb-2">TREKKER-MD LIFETIME BOT</h3>
-                  <p className="text-sm text-blue-100 mb-3">Ultra fast WhatsApp automation - No expiry</p>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>📞 WhatsApp: +254704897825</div>
-                    <div>📱 Telegram: @trekkermd_</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="botName">Bot Name *</Label>
-                  <Input
-                    id="botName"
-                    placeholder="My WhatsApp Bot"
-                    value={formData.botName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, botName: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phoneNumber">Phone Number (with country code) *</Label>
-                  <Input
-                    id="phoneNumber"
-                    placeholder="+254700000000"
-                    value={formData.phoneNumber}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Enter your phone number with country code (+ will be removed automatically)
-                  </p>
+          <div className="space-y-6 pb-4">
+            {/* Quick Action Section - Register Button at Top */}
+            <div className="text-center p-6 bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xl">
+                  🚀
                 </div>
               </div>
-
-              <div>
-                <Label className="text-base font-medium">Choose Credential Type *</Label>
-                <RadioGroup 
-                  value={formData.credentialType} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, credentialType: value }))}
-                  className="mt-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="base64" id="base64" />
-                    <Label htmlFor="base64">Paste Base64 Session ID</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="file" id="file" />
-                    <Label htmlFor="file">Upload creds.json File</Label>
-                  </div>
-                </RadioGroup>
+              <h3 className="text-xl font-bold mb-2 text-emerald-700 dark:text-emerald-400">Register Your Bot Now</h3>
+              <p className="text-sm text-muted-foreground mb-4">Join thousands of users with TREKKER-MD WhatsApp automation</p>
+              <div className="flex flex-col sm:flex-row gap-2 items-center justify-center text-xs text-emerald-600 dark:text-emerald-400">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full"></span>Free Registration</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 bg-blue-500 rounded-full"></span>Multi-Server Support</span>
+                <span className="flex items-center gap-1"><span className="w-2 h-2 bg-purple-500 rounded-full"></span>Lifetime Access</span>
               </div>
+            </div>
 
-              {formData.credentialType === 'base64' ? (
-                <div>
-                  <Label htmlFor="sessionId">Base64 Session ID *</Label>
-                  <Textarea
-                    id="sessionId"
-                    placeholder="Paste your base64 encoded session ID here..."
-                    value={formData.sessionId}
-                    onChange={(e) => setFormData(prev => ({ ...prev, sessionId: e.target.value }))}
-                    className="min-h-[100px] font-mono text-sm"
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Get your session ID from the pairing site
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <Label htmlFor="credsFile">Upload creds.json File *</Label>
-                  <Input
-                    id="credsFile"
-                    type="file"
-                    accept=".json"
-                    onChange={handleFileChange}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Upload the creds.json file from your WhatsApp session
-                  </p>
-                </div>
-              )}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Bot Basic Info */}
+              <Card className="border-l-4 border-l-blue-500">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Bot Information</CardTitle>
+                  <CardDescription>Provide basic details for your bot</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="botName" className="text-sm font-medium">Bot Name *</Label>
+                      <Input
+                        id="botName"
+                        data-testid="input-bot-name"
+                        placeholder="My WhatsApp Bot"
+                        value={formData.botName}
+                        onChange={(e) => setFormData(prev => ({ ...prev, botName: e.target.value }))}
+                        required
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phoneNumber" className="text-sm font-medium">Phone Number (with country code) *</Label>
+                      <Input
+                        id="phoneNumber"
+                        data-testid="input-phone-number"
+                        placeholder="+254700000000"
+                        value={formData.phoneNumber}
+                        onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                        required
+                        className="mt-1"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Enter your phone number with country code (+ will be removed automatically)
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-              {/* Bot Features Selection */}
-              <div className="space-y-4">
-                <Label className="text-base font-medium">Bot Features (Optional)</Label>
-                <p className="text-sm text-muted-foreground">Select the automation features you want for your bot</p>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="autoLike"
-                      checked={formData.features.autoLike}
-                      onCheckedChange={(checked) => 
-                        setFormData(prev => ({ 
-                          ...prev, 
-                          features: { ...prev.features, autoLike: !!checked } 
-                        }))
-                      }
-                    />
-                    <Label htmlFor="autoLike" className="text-sm">
-                      <span className="font-medium">Auto Like Status</span>
-                      <br />
-                      <span className="text-xs text-muted-foreground">Automatically like WhatsApp status updates</span>
-                    </Label>
+              {/* Credentials Section */}
+              <Card className="border-l-4 border-l-purple-500">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Authentication Credentials</CardTitle>
+                  <CardDescription>Choose how to provide your WhatsApp session</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium">Choose Credential Type *</Label>
+                    <RadioGroup 
+                      value={formData.credentialType} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, credentialType: value }))}
+                      className="mt-2"
+                    >
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50">
+                        <RadioGroupItem value="base64" id="base64" />
+                        <Label htmlFor="base64" className="cursor-pointer">Paste Base64 Session ID</Label>
+                      </div>
+                      <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50">
+                        <RadioGroupItem value="file" id="file" />
+                        <Label htmlFor="file" className="cursor-pointer">Upload creds.json File</Label>
+                      </div>
+                    </RadioGroup>
                   </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="autoReact"
-                      checked={formData.features.autoReact}
-                      onCheckedChange={(checked) => 
-                        setFormData(prev => ({ 
-                          ...prev, 
-                          features: { ...prev.features, autoReact: !!checked } 
-                        }))
-                      }
-                    />
-                    <Label htmlFor="autoReact" className="text-sm">
-                      <span className="font-medium">Auto React</span>
-                      <br />
-                      <span className="text-xs text-muted-foreground">Automatically react to messages</span>
-                    </Label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="autoView"
-                      checked={formData.features.autoView}
-                      onCheckedChange={(checked) => 
-                        setFormData(prev => ({ 
-                          ...prev, 
-                          features: { ...prev.features, autoView: !!checked } 
-                        }))
-                      }
-                    />
-                    <Label htmlFor="autoView" className="text-sm">
-                      <span className="font-medium">Auto View Status</span>
-                      <br />
-                      <span className="text-xs text-muted-foreground">Automatically view WhatsApp status</span>
-                    </Label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="typingIndicator"
-                      checked={formData.features.typingIndicator}
-                      onCheckedChange={(checked) => 
-                        setFormData(prev => ({ 
-                          ...prev, 
-                          features: { ...prev.features, typingIndicator: !!checked } 
-                        }))
-                      }
-                    />
-                    <Label htmlFor="typingIndicator" className="text-sm">
-                      <span className="font-medium">Typing Indicator</span>
-                      <br />
-                      <span className="text-xs text-muted-foreground">Show typing indicator for responses</span>
-                    </Label>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2 col-span-2">
-                    <Checkbox 
-                      id="chatGPT"
-                      checked={formData.features.chatGPT}
-                      onCheckedChange={(checked) => 
-                        setFormData(prev => ({ 
-                          ...prev, 
-                          features: { ...prev.features, chatGPT: !!checked } 
-                        }))
-                      }
-                    />
-                    <Label htmlFor="chatGPT" className="text-sm">
-                      <span className="font-medium">ChatGPT Integration</span>
-                      <br />
-                      <span className="text-xs text-muted-foreground">Enable AI responses for conversations</span>
-                    </Label>
-                  </div>
-                </div>
-              </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h4 className="font-medium text-yellow-800 mb-2">📝 Important Notes:</h4>
-                <ul className="text-sm text-yellow-700 space-y-1">
-                  <li>• Your bot will be validated before activation</li>
-                  <li>• Admin approval is required for bot activation</li>
-                  <li>• Contact +254704897825 for activation after registration</li>
-                  <li>• Invalid credentials will be rejected automatically</li>
-                </ul>
-              </div>
+                  {formData.credentialType === 'base64' ? (
+                    <div>
+                      <Label htmlFor="sessionId" className="text-sm font-medium">Base64 Session ID *</Label>
+                      <Textarea
+                        id="sessionId"
+                        data-testid="textarea-session-id"
+                        placeholder="Paste your base64 encoded session ID here..."
+                        value={formData.sessionId}
+                        onChange={(e) => setFormData(prev => ({ ...prev, sessionId: e.target.value }))}
+                        className="min-h-[100px] font-mono text-sm mt-1"
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Get your session ID from the pairing site
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <Label htmlFor="credsFile" className="text-sm font-medium">Upload creds.json File *</Label>
+                      <Input
+                        id="credsFile"
+                        data-testid="input-creds-file"
+                        type="file"
+                        accept=".json"
+                        onChange={handleFileChange}
+                        required
+                        className="mt-1"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Upload the creds.json file from your WhatsApp session
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                Register Bot
+              {/* Bot Features Section */}
+              <Card className="border-l-4 border-l-green-500">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Bot Features (Optional)</CardTitle>
+                  <CardDescription>Select the automation features you want for your bot</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
+                      <Checkbox 
+                        id="autoLike"
+                        data-testid="checkbox-auto-like"
+                        checked={formData.features.autoLike}
+                        onCheckedChange={(checked) => 
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            features: { ...prev.features, autoLike: !!checked } 
+                          }))
+                        }
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor="autoLike" className="text-sm font-medium cursor-pointer">Auto Like Status</Label>
+                        <p className="text-xs text-muted-foreground mt-1">Automatically like WhatsApp status updates</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
+                      <Checkbox 
+                        id="autoReact"
+                        data-testid="checkbox-auto-react"
+                        checked={formData.features.autoReact}
+                        onCheckedChange={(checked) => 
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            features: { ...prev.features, autoReact: !!checked } 
+                          }))
+                        }
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor="autoReact" className="text-sm font-medium cursor-pointer">Auto React</Label>
+                        <p className="text-xs text-muted-foreground mt-1">Automatically react to messages</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
+                      <Checkbox 
+                        id="autoView"
+                        data-testid="checkbox-auto-view"
+                        checked={formData.features.autoView}
+                        onCheckedChange={(checked) => 
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            features: { ...prev.features, autoView: !!checked } 
+                          }))
+                        }
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor="autoView" className="text-sm font-medium cursor-pointer">Auto View Status</Label>
+                        <p className="text-xs text-muted-foreground mt-1">Automatically view WhatsApp status</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
+                      <Checkbox 
+                        id="typingIndicator"
+                        data-testid="checkbox-typing-indicator"
+                        checked={formData.features.typingIndicator}
+                        onCheckedChange={(checked) => 
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            features: { ...prev.features, typingIndicator: !!checked } 
+                          }))
+                        }
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor="typingIndicator" className="text-sm font-medium cursor-pointer">Typing Indicator</Label>
+                        <p className="text-xs text-muted-foreground mt-1">Show typing indicator for responses</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 md:col-span-2">
+                      <Checkbox 
+                        id="chatGPT"
+                        data-testid="checkbox-chatgpt"
+                        checked={formData.features.chatGPT}
+                        onCheckedChange={(checked) => 
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            features: { ...prev.features, chatGPT: !!checked } 
+                          }))
+                        }
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <Label htmlFor="chatGPT" className="text-sm font-medium cursor-pointer">ChatGPT Integration</Label>
+                        <p className="text-xs text-muted-foreground mt-1">Enable AI responses for conversations</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Register Button */}
+              <Button 
+                type="submit" 
+                data-testid="button-register-bot"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 text-lg rounded-lg shadow-lg transform transition hover:scale-[1.02]"
+              >
+                🚀 Register Bot Now
               </Button>
             </form>
+
+            {/* Information Section - Moved Below Registration Form */}
+            <div className="space-y-4">
+              {/* TREKKER-MD Info Card */}
+              <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-none">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <h3 className="text-lg font-bold mb-2">TREKKER-MD LIFETIME BOT</h3>
+                    <p className="text-sm text-blue-100 mb-3">Ultra fast WhatsApp automation - No expiry</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      <div className="flex items-center justify-center gap-1">📞 WhatsApp: +254704897825</div>
+                      <div className="flex items-center justify-center gap-1">📱 Telegram: @trekkermd_</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Important Notes */}
+              <Card className="border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800">
+                <CardContent className="p-4">
+                  <h4 className="font-medium text-amber-800 dark:text-amber-200 mb-3 flex items-center gap-2">
+                    📝 Important Information
+                  </h4>
+                  <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-0.5">•</span>
+                      Your bot will be validated before activation
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-0.5">•</span>
+                      Admin approval is required for bot activation
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-0.5">•</span>
+                      Contact +254704897825 for activation after registration
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-0.5">•</span>
+                      Invalid credentials will be rejected automatically
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-amber-500 mt-0.5">•</span>
+                      Multi-server support for automatic load balancing
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         )}
 
@@ -645,6 +732,108 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
             </Button>
           </div>
         )}
+
+        {step === 7 && crossTenancyData && (
+          <div className="space-y-6 py-4">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl text-white">🔄</span>
+              </div>
+              <h3 className="text-xl font-bold mb-2 text-emerald-700 dark:text-emerald-400">Auto-Distributed Successfully!</h3>
+              <p className="text-muted-foreground">
+                {crossTenancyData.message}
+              </p>
+            </div>
+
+            <Card className="border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                  <span>🤖</span>
+                  {crossTenancyData.botDetails?.name}
+                </CardTitle>
+                <CardDescription>
+                  Phone: {crossTenancyData.botDetails?.phoneNumber}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Original Server:</span>
+                    <div className="text-muted-foreground">{crossTenancyData.originalServer}</div>
+                  </div>
+                  <div>
+                    <span className="font-medium">Assigned To:</span>
+                    <div className="text-emerald-600 dark:text-emerald-400 font-medium">{crossTenancyData.assignedServer}</div>
+                  </div>
+                  <div>
+                    <span className="font-medium">Available Slots:</span>
+                    <div className="text-blue-600 dark:text-blue-400">{crossTenancyData.botDetails?.availableSlots} remaining</div>
+                  </div>
+                  <div>
+                    <span className="font-medium">Registration Type:</span>
+                    <div className="text-purple-600 dark:text-purple-400">Auto-Distribution</div>
+                  </div>
+                </div>
+
+                {crossTenancyData.serverUrl && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 dark:bg-blue-900/20 dark:border-blue-800">
+                    <p className="text-sm text-blue-800 dark:text-blue-200">
+                      🌐 <strong>Server URL:</strong> {crossTenancyData.serverUrl}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+              <CardContent className="p-4">
+                <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-3 flex items-center gap-2">
+                  🎯 Next Steps
+                </h4>
+                <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-2">
+                  {crossTenancyData.nextSteps?.map((step: string, index: number) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-0.5">•</span>
+                      {step}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 dark:bg-emerald-900/20 dark:border-emerald-800">
+              <h4 className="font-medium text-emerald-800 dark:text-emerald-200 mb-2 flex items-center gap-2">
+                ✨ Cross-Tenancy Benefits
+              </h4>
+              <ul className="text-sm text-emerald-700 dark:text-emerald-300 space-y-1">
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                  Automatic load balancing across servers
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                  Seamless bot management from any approved server
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                  Enhanced reliability and availability
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                  Global bot registry synchronization
+                </li>
+              </ul>
+            </div>
+
+            <Button 
+              onClick={handleClose} 
+              className="w-full bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700"
+              data-testid="button-close-cross-tenancy"
+            >
+              🚀 Awesome! Let's Go
+            </Button>
+          </div>
+        )}
       </DialogContent>
       
       {/* Credential Update Modal */}
@@ -654,6 +843,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
           onClose={() => setShowCredentialUpdate(false)}
           botId={existingBotData.id}
           phoneNumber={existingBotData.phoneNumber}
+          crossTenancyMode={!!serverMismatch}
+          targetServer={serverMismatch?.details?.registeredTo}
           onSuccess={() => {
             // Could refresh bot status here if needed
             refreshBotStatus();

@@ -150,6 +150,11 @@ export class DatabaseStorage implements IStorage {
       .insert(botInstances)
       .values({ ...insertBotInstance, serverName })
       .returning();
+    
+    // Auto-update server bot count in registry after bot creation
+    await this.updateBotCountAfterChange(serverName);
+    console.log(`📊 Updated bot count for ${serverName} after creating bot ${botInstance.name}`);
+    
     return botInstance;
   }
 
@@ -164,7 +169,15 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBotInstance(id: string): Promise<void> {
     const serverName = getServerName();
+    
+    // Get bot info before deletion for logging
+    const botInstance = await this.getBotInstance(id);
+    
     await db.delete(botInstances).where(and(eq(botInstances.id, id), eq(botInstances.serverName, serverName)));
+    
+    // Auto-update server bot count in registry after bot deletion
+    await this.updateBotCountAfterChange(serverName);
+    console.log(`📊 Updated bot count for ${serverName} after deleting bot ${botInstance?.name || id}`);
   }
 
   // Delete all related data when a bot is deleted
@@ -582,6 +595,18 @@ export class DatabaseStorage implements IStorage {
     // Update current bot count to reflect actual database state
     const actualBotCount = await db.select().from(botInstances).where(eq(botInstances.serverName, currentServerName));
     await this.updateServerBotCount(currentServerName, actualBotCount.length);
+  }
+
+  // Helper method to automatically update server bot count based on actual database count
+  async updateBotCountAfterChange(serverName?: string): Promise<void> {
+    const targetServer = serverName || getServerName();
+    
+    // Get actual bot count from database
+    const actualBots = await db.select().from(botInstances).where(eq(botInstances.serverName, targetServer));
+    const currentCount = actualBots.length;
+    
+    // Update the server registry with the current count
+    await this.updateServerBotCount(targetServer, currentCount);
   }
 
   async strictCheckBotCountLimit(serverName?: string): Promise<{ canAdd: boolean; currentCount: number; maxCount: number; }> {
