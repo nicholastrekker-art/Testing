@@ -1107,6 +1107,46 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     }
   });
 
+  // Sync registered commands with database
+  app.post("/api/commands/sync", async (req, res) => {
+    try {
+      const { commandRegistry } = await import('./services/command-registry.js');
+      const registeredCommands = commandRegistry.getAllCommands();
+      const existingCommands = await storage.getCommands();
+      const existingCommandNames = new Set(existingCommands.map(cmd => cmd.name));
+      
+      let addedCount = 0;
+      
+      for (const command of registeredCommands) {
+        if (!existingCommandNames.has(command.name)) {
+          try {
+            await storage.createCommand({
+              name: command.name,
+              description: command.description,
+              response: `Executing ${command.name}...`,
+              isActive: true,
+              useChatGPT: false,
+              serverName: getServerName()
+            });
+            addedCount++;
+          } catch (error: any) {
+            console.log(`Error adding ${command.name}:`, error?.message);
+          }
+        }
+      }
+      
+      console.log(`✅ Command sync completed: ${addedCount} new commands added`);
+      res.json({ 
+        success: true, 
+        message: `Sync completed: ${addedCount} new commands added`,
+        addedCount 
+      });
+    } catch (error) {
+      console.error("Command sync error:", error);
+      res.status(500).json({ message: "Failed to sync commands" });
+    }
+  });
+
   // Custom Command Code Execution - Admin Only
   app.post("/api/commands/custom", authenticateAdmin, async (req: AuthRequest, res) => {
     try {

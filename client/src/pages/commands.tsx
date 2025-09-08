@@ -69,6 +69,24 @@ export default function Commands() {
     },
   });
 
+  const syncCommandsMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/commands/sync"),
+    onSuccess: (data: any) => {
+      toast({ 
+        title: "Commands synced successfully", 
+        description: `${data.addedCount} new commands added`
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/commands"] });
+    },
+    onError: (error) => {
+      toast({ 
+        title: "Failed to sync commands", 
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "destructive" 
+      });
+    },
+  });
+
   const deleteCommandMutation = useMutation({
     mutationFn: (id: string) => apiRequest("DELETE", `/api/commands/${id}`),
     onSuccess: () => {
@@ -111,6 +129,17 @@ export default function Commands() {
                 ))}
               </SelectContent>
             </Select>
+            
+            <Button 
+              onClick={() => syncCommandsMutation.mutate()} 
+              disabled={syncCommandsMutation.isPending}
+              variant="outline" 
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/90" 
+              data-testid="button-sync-commands"
+            >
+              <i className="fas fa-sync mr-2"></i>
+              {syncCommandsMutation.isPending ? "Syncing..." : "Sync Commands"}
+            </Button>
             
             <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
               <DialogTrigger asChild>
