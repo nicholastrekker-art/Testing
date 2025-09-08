@@ -1,4 +1,5 @@
 import { commandRegistry, type CommandContext } from './command-registry.js';
+import { antideleteService } from './antidelete.js';
 import moment from 'moment-timezone';
 import os from 'os';
 import axios from 'axios';
@@ -681,5 +682,22 @@ const categoryCommands = {
 
 // Plugin system completely removed - using clean TREKKER-MD command system
 console.log('🧹 Plugin system disabled - Clean TREKKER-MD commands only');
+
+// Register antidelete command
+commandRegistry.register({
+  name: 'antidelete',
+  aliases: ['antidel', 'savedeleted'],
+  description: 'Configure antidelete functionality (Owner only)',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, args } = context;
+    
+    // Extract match from args
+    const match = args.length > 0 ? args[0].toLowerCase() : undefined;
+    
+    // Call antidelete service handler
+    await antideleteService.handleAntideleteCommand(client, message.key.remoteJid!, message, match);
+  }
+});
 
 export { commandRegistry };

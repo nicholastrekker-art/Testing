@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { downloadContentFromMessage } from '@whiskeysockets/baileys';
 import { writeFile } from 'fs/promises';
 import type { WASocket, WAMessage } from '@whiskeysockets/baileys';
@@ -23,6 +24,9 @@ export class AntideleteService {
   private tempMediaDir: string;
 
   constructor() {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    
     this.configPath = path.join(__dirname, '../data/antidelete.json');
     this.tempMediaDir = path.join(__dirname, '../tmp');
     

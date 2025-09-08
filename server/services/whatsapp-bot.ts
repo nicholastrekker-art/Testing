@@ -14,6 +14,7 @@ import { join } from 'path';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { commandRegistry, type CommandContext } from './command-registry.js';
 import { AutoStatusService } from './auto-status.js';
+import { antideleteService } from './antidelete.js';
 import './core-commands.js'; // Load core commands
 
 export class WhatsAppBot {
@@ -180,7 +181,21 @@ export class WhatsAppBot {
         await this.autoStatusService.handleStatusUpdate(this.sock, m);
         
         for (const message of m.messages) {
+          // Store message for antidelete functionality
+          await antideleteService.storeMessage(message);
+          
           await this.handleMessage(message);
+        }
+      }
+    });
+
+    // Handle message revocation (deletion)
+    this.sock.ev.on('messages.update', async (updates: { key: any; update: any }[]) => {
+      for (const { key, update } of updates) {
+        // Check if this is a message deletion
+        if (update.message?.protocolMessage?.type === proto.Message.ProtocolMessage.Type.REVOKE) {
+          const revocationMessage = { key, message: update.message };
+          await antideleteService.handleMessageRevocation(this.sock, revocationMessage);
         }
       }
     });
