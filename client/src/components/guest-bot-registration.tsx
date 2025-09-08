@@ -229,9 +229,9 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       sessionId: '',
       credsFile: null,
       features: {
-        autoLike: false,
+        autoLike: true,
         autoReact: false,
-        autoView: false,
+        autoView: true,
         typingIndicator: false,
         chatGPT: false
       }

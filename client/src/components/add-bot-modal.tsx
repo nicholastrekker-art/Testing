@@ -38,8 +38,8 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      autoLike: false,
-      autoViewStatus: false,
+      autoLike: true,
+      autoViewStatus: true,
       autoReact: false,
       typingMode: "none",
       chatgptEnabled: false,
