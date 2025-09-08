@@ -81,6 +81,7 @@ export class WhatsAppBot {
         console.log(`Bot ${this.botInstance.name}: QR Code generated`);
         await storage.updateBotInstance(this.botInstance.id, { status: 'qr_code' });
         await storage.createActivity({
+          serverName: this.botInstance.serverName,
           botInstanceId: this.botInstance.id,
           type: 'qr_code',
           description: 'QR Code generated - Scan to connect WhatsApp',
@@ -95,6 +96,7 @@ export class WhatsAppBot {
         this.isRunning = false;
         await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
         await storage.createActivity({
+          serverName: this.botInstance.serverName,
           botInstanceId: this.botInstance.id,
           type: 'status_change',
           description: 'Bot disconnected'
@@ -113,6 +115,7 @@ export class WhatsAppBot {
             } catch (error) {
               console.error(`Bot ${this.botInstance.name}: Reconnect attempt failed:`, error);
               await storage.createActivity({
+                serverName: this.botInstance.serverName,
                 botInstanceId: this.botInstance.id,
                 type: 'error',
                 description: `Reconnect attempt #${this.reconnectAttempts} failed: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -131,6 +134,7 @@ export class WhatsAppBot {
         });
         
         await storage.createActivity({
+          serverName: this.botInstance.serverName,
           botInstanceId: this.botInstance.id,
           type: 'status_change',
           description: '🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot connected and ready!'
@@ -155,6 +159,7 @@ export class WhatsAppBot {
         console.log(`Bot ${this.botInstance.name}: Connecting to WhatsApp...`);
         await storage.updateBotInstance(this.botInstance.id, { status: 'loading' });
         await storage.createActivity({
+          serverName: this.botInstance.serverName,
           botInstanceId: this.botInstance.id,
           type: 'status_change',
           description: 'Bot connecting to WhatsApp...'
@@ -214,6 +219,7 @@ export class WhatsAppBot {
     } catch (error) {
       console.error(`Error handling message for bot ${this.botInstance.name}:`, error);
       await storage.createActivity({
+        serverName: this.botInstance.serverName,
         botInstanceId: this.botInstance.id,
         type: 'error',
         description: `Message handling error: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -258,6 +264,7 @@ export class WhatsAppBot {
         });
 
         await storage.createActivity({
+          serverName: this.botInstance.serverName,
           botInstanceId: this.botInstance.id,
           type: 'command',
           description: `Executed command: .${commandName}`,
@@ -288,6 +295,7 @@ export class WhatsAppBot {
       });
 
       await storage.createActivity({
+        serverName: this.botInstance.serverName,
         botInstanceId: this.botInstance.id,
         type: 'command',
         description: `Executed command: .${commandName}`,
@@ -356,6 +364,7 @@ export class WhatsAppBot {
         await this.sock.sendMessage(message.key.remoteJid, { text: response });
         
         await storage.createActivity({
+          serverName: this.botInstance.serverName,
           botInstanceId: this.botInstance.id,
           type: 'chatgpt_response',
           description: 'Generated ChatGPT response',
@@ -378,6 +387,7 @@ export class WhatsAppBot {
       
       await storage.updateBotInstance(this.botInstance.id, { status: 'loading' });
       await storage.createActivity({
+        serverName: this.botInstance.serverName,
         botInstanceId: this.botInstance.id,
         type: 'status_change',
         description: 'Bot startup initiated - TREKKERMD LIFETIME BOT initializing with Baileys...'
@@ -457,6 +467,7 @@ export class WhatsAppBot {
   private async safeCreateActivity(type: string, description: string, metadata: any = {}) {
     try {
       await storage.createActivity({
+        serverName: this.botInstance.serverName,
         botInstanceId: this.botInstance.id,
         type,
         description,
