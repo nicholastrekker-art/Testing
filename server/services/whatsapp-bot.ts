@@ -13,6 +13,7 @@ import type { BotInstance } from '@shared/schema';
 import { join } from 'path';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { commandRegistry, type CommandContext } from './command-registry.js';
+import { AutoStatusService } from './auto-status.js';
 import './core-commands.js'; // Load core commands
 
 export class WhatsAppBot {
@@ -22,6 +23,7 @@ export class WhatsAppBot {
   private authDir: string;
   private reconnectAttempts: number = 0;
   private heartbeatInterval?: NodeJS.Timeout;
+  private autoStatusService: AutoStatusService;
 
   constructor(botInstance: BotInstance) {
     this.botInstance = botInstance;
@@ -32,6 +34,9 @@ export class WhatsAppBot {
     if (!existsSync(this.authDir)) {
       mkdirSync(this.authDir, { recursive: true });
     }
+
+    // Initialize auto status service
+    this.autoStatusService = new AutoStatusService(botInstance);
 
     // If credentials are provided, save them to the auth directory
     if (botInstance.credentials) {
@@ -166,6 +171,9 @@ export class WhatsAppBot {
       }
       
       if (m.type === 'notify') {
+        // Handle auto status updates for status messages
+        await this.autoStatusService.handleStatusUpdate(this.sock, m);
+        
         for (const message of m.messages) {
           await this.handleMessage(message);
         }
