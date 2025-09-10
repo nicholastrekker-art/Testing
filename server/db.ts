@@ -45,7 +45,12 @@ export function getServerName(): string {
 
 // Get server name with database fallback (async version)
 export async function getServerNameWithFallback(): Promise<string> {
-  // First try environment variable
+  // First try runtime environment variable (highest priority for tenant switching)
+  if (process.env.RUNTIME_SERVER_NAME) {
+    return process.env.RUNTIME_SERVER_NAME;
+  }
+  
+  // Then try static environment variable
   if (process.env.SERVER_NAME) {
     return process.env.SERVER_NAME;
   }
