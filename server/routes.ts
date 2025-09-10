@@ -292,6 +292,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all available servers (Server1-Server100) with bot counts
+  app.get("/api/servers/list", async (req, res) => {
+    try {
+      const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
+      const serverList = [];
+      
+      // Generate Server1 to Server100 list
+      for (let i = 1; i <= 100; i++) {
+        const serverName = `Server${i}`;
+        
+        // Check if server exists in registry
+        const serverInfo = await storage.getServerByName(serverName);
+        
+        if (serverInfo) {
+          // Server exists, use actual data
+          serverList.push({
+            name: serverName,
+            totalBots: serverInfo.maxBotCount,
+            currentBots: serverInfo.currentBotCount,
+            remainingBots: serverInfo.maxBotCount - serverInfo.currentBotCount,
+            description: serverInfo.description,
+            status: serverInfo.serverStatus
+          });
+        } else {
+          // Server doesn't exist yet, show as available
+          serverList.push({
+            name: serverName,
+            totalBots: maxBots,
+            currentBots: 0,
+            remainingBots: maxBots,
+            description: null,
+            status: 'available'
+          });
+        }
+      }
+      
+      // Sort by current bots (ascending) - empty servers first
+      serverList.sort((a, b) => {
+        if (a.currentBots !== b.currentBots) {
+          return a.currentBots - b.currentBots;
+        }
+        // If same bot count, sort by name
+        return a.name.localeCompare(b.name);
+      });
+      
+      res.json(serverList);
+    } catch (error) {
+      console.error("Server list error:", error);
+      res.status(500).json({ message: "Failed to fetch server list" });
+    }
+  });
+
   // Update server configuration (name and description) - implements true tenant switching
   app.post("/api/server/configure", async (req, res) => {
     try {

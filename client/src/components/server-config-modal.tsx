@@ -1,14 +1,26 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Server, AlertTriangle } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Server, AlertTriangle, ChevronDown, Search, Database } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+
+interface ServerInfo {
+  name: string;
+  totalBots: number;
+  currentBots: number;
+  remainingBots: number;
+  description: string | null;
+  status: string;
+}
 
 interface ServerConfigModalProps {
   open: boolean;
@@ -25,12 +37,20 @@ export default function ServerConfigModal({
 }: ServerConfigModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [serverName, setServerName] = useState(currentServerName || "");
+  const [selectedServer, setSelectedServer] = useState(currentServerName || "");
   const [description, setDescription] = useState("");
+  const [isComboboxOpen, setIsComboboxOpen] = useState(false);
+
+  // Fetch all available servers with bot counts
+  const { data: serverList = [], isLoading: isLoadingServers } = useQuery<ServerInfo[]>({
+    queryKey: ["/api/servers/list"],
+    enabled: open && !hasSecretConfig, // Only fetch when modal is open and not using secrets
+  });
 
   const configureServerMutation = useMutation({
     mutationFn: async (data: { serverName: string; description?: string }) => {
-      return apiRequest("POST", "/api/server/configure", data);
+      const response = await apiRequest("POST", "/api/server/configure", data);
+      return await response.json();
     },
     onSuccess: (data) => {
       toast({
@@ -67,19 +87,22 @@ export default function ServerConfigModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!serverName.trim()) {
+    if (!selectedServer.trim()) {
       toast({
-        title: "Server name required",
-        description: "Please enter a server name",
+        title: "Server required",
+        description: "Please select a server",
         variant: "destructive",
       });
       return;
     }
     configureServerMutation.mutate({
-      serverName: serverName.trim(),
+      serverName: selectedServer.trim(),
       description: description.trim() || undefined,
     });
   };
+
+  // Get selected server info for display
+  const selectedServerInfo = serverList.find(server => server.name === selectedServer);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -106,20 +129,102 @@ export default function ServerConfigModal({
         {!hasSecretConfig && (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="serverName" data-testid="label-server-name">
-                Server Name *
+              <Label data-testid="label-server-name">
+                Select Server *
               </Label>
-              <Input
-                id="serverName"
-                data-testid="input-server-name"
-                value={serverName}
-                onChange={(e) => setServerName(e.target.value)}
-                placeholder="e.g., SERVER1, PRODUCTION, TESTING"
-                disabled={configureServerMutation.isPending}
-                required
-              />
+              
+              {isLoadingServers ? (
+                <div className="flex items-center justify-center p-4 border rounded-md">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <span className="text-sm text-muted-foreground">Loading servers...</span>
+                </div>
+              ) : (
+                <Popover open={isComboboxOpen} onOpenChange={setIsComboboxOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={isComboboxOpen}
+                      className="w-full justify-between"
+                      disabled={configureServerMutation.isPending}
+                      data-testid="button-server-select"
+                    >
+                      {selectedServer ? (
+                        <div className="flex items-center gap-2">
+                          <Database className="h-4 w-4" />
+                          <span>{selectedServer}</span>
+                          {selectedServerInfo && (
+                            <Badge variant="secondary" className="ml-auto">
+                              {selectedServerInfo.currentBots}/{selectedServerInfo.totalBots}
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">Select a server...</span>
+                      )}
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput 
+                        placeholder="Search servers..." 
+                        className="h-9"
+                      />
+                      <CommandEmpty>No servers found.</CommandEmpty>
+                      <CommandList className="max-h-[200px]">
+                        <CommandGroup>
+                          {serverList.map((server) => (
+                            <CommandItem
+                              key={server.name}
+                              value={server.name}
+                              onSelect={() => {
+                                setSelectedServer(server.name);
+                                setIsComboboxOpen(false);
+                              }}
+                              className="flex items-center justify-between"
+                              data-testid={`option-${server.name}`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <Database className="h-4 w-4" />
+                                <span>{server.name}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge 
+                                  variant={server.currentBots === 0 ? "secondary" : 
+                                          server.remainingBots === 0 ? "destructive" : "default"}
+                                  className="text-xs"
+                                >
+                                  {server.currentBots}/{server.totalBots}
+                                </Badge>
+                                {server.remainingBots > 0 && (
+                                  <span className="text-xs text-green-600">
+                                    {server.remainingBots} free
+                                  </span>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              )}
+              
+              {selectedServerInfo && (
+                <div className="text-sm text-muted-foreground p-2 bg-muted rounded">
+                  <div className="flex items-center justify-between">
+                    <span>Bot Usage: {selectedServerInfo.currentBots}/{selectedServerInfo.totalBots}</span>
+                    <span className={selectedServerInfo.remainingBots > 0 ? "text-green-600" : "text-red-600"}>
+                      {selectedServerInfo.remainingBots} slots available
+                    </span>
+                  </div>
+                </div>
+              )}
+              
               <p className="text-sm text-muted-foreground">
-                Choose a unique name to identify this server instance.
+                Choose from Server1 to Server100. Servers with fewer bots are shown first.
               </p>
             </div>
 
@@ -150,13 +255,13 @@ export default function ServerConfigModal({
               </Button>
               <Button
                 type="submit"
-                disabled={configureServerMutation.isPending || !serverName.trim()}
+                disabled={configureServerMutation.isPending || !selectedServer.trim()}
                 data-testid="button-save-config"
               >
                 {configureServerMutation.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 )}
-                Save Configuration
+                Switch to {selectedServer}
               </Button>
             </div>
           </form>
