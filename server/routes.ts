@@ -310,21 +310,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const { getServerName } = await import('./db');
       const currentServerName = getServerName();
+      const newServerName = serverName.trim();
       
-      // Check if server already exists in registry
-      const existingServer = await storage.getServerByName(currentServerName);
+      // Check if the new server name already exists
+      const existingServerWithNewName = await storage.getServerByName(newServerName);
+      const currentServer = await storage.getServerByName(currentServerName);
       
-      if (existingServer) {
+      if (existingServerWithNewName && currentServerName !== newServerName) {
+        return res.status(400).json({ message: "Server name already exists. Please choose a different name." });
+      }
+      
+      if (currentServer) {
         // Update existing server
         await storage.updateServerInfo(currentServerName, {
-          serverName: serverName.trim(),
+          serverName: newServerName,
           description: description?.trim() || null
         });
       } else {
         // Create new server entry
         const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
         await storage.createServer({
-          serverName: serverName.trim(),
+          serverName: newServerName,
           maxBotCount: maxBots,
           currentBotCount: 0,
           serverStatus: 'active',
