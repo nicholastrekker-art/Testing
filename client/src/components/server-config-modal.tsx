@@ -30,11 +30,7 @@ export default function ServerConfigModal({
 
   const configureServerMutation = useMutation({
     mutationFn: async (data: { serverName: string; description?: string }) => {
-      return apiRequest("/api/server/configure", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" },
-      });
+      return apiRequest("POST", "/api/server/configure", data);
     },
     onSuccess: () => {
       toast({
