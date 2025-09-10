@@ -95,6 +95,7 @@ export interface IStorage {
   getServerByName(serverName: string): Promise<ServerRegistry | undefined>;
   createServer(server: InsertServerRegistry): Promise<ServerRegistry>;
   updateServerBotCount(serverName: string, currentBotCount: number): Promise<ServerRegistry>;
+  updateServerInfo(currentServerName: string, updates: { serverName: string; description?: string | null }): Promise<ServerRegistry>;
   getAvailableServers(): Promise<ServerRegistry[]>;
   initializeCurrentServer(): Promise<void>;
   strictCheckBotCountLimit(serverName?: string): Promise<{ canAdd: boolean; currentCount: number; maxCount: number; }>;
@@ -545,6 +546,19 @@ export class DatabaseStorage implements IStorage {
         updatedAt: sql`CURRENT_TIMESTAMP`
       })
       .where(eq(serverRegistry.serverName, serverName))
+      .returning();
+    return server;
+  }
+
+  async updateServerInfo(currentServerName: string, updates: { serverName: string; description?: string | null }): Promise<ServerRegistry> {
+    const [server] = await db
+      .update(serverRegistry)
+      .set({ 
+        serverName: updates.serverName,
+        description: updates.description,
+        updatedAt: sql`CURRENT_TIMESTAMP`
+      })
+      .where(eq(serverRegistry.serverName, currentServerName))
       .returning();
     return server;
   }

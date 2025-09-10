@@ -274,18 +274,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Server info
   app.get("/api/server/info", async (req, res) => {
     try {
-      const serverName = process.env.SERVER_NAME || 'Unknown';
+      const { getServerNameWithFallback } = await import('./db');
+      const serverName = await getServerNameWithFallback();
       const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
       const currentBots = await storage.getAllBotInstances();
+      const hasSecretConfig = !!process.env.SERVER_NAME;
       
       res.json({
         serverName,
         maxBots,
         currentBots: currentBots.length,
-        availableSlots: maxBots - currentBots.length
+        availableSlots: maxBots - currentBots.length,
+        hasSecretConfig
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch server info" });
+    }
+  });
+
+  // Update server configuration (name and description)
+  app.post("/api/server/configure", async (req, res) => {
+    try {
+      // Only allow configuration if SERVER_NAME is not set via secrets
+      if (process.env.SERVER_NAME) {
+        return res.status(400).json({ 
+          message: "Server name is configured via secrets and cannot be changed through UI" 
+        });
+      }
+      
+      const { serverName, description } = req.body;
+      
+      if (!serverName || serverName.trim().length === 0) {
+        return res.status(400).json({ message: "Server name is required" });
+      }
+      
+      const { getServerName } = await import('./db');
+      const currentServerName = getServerName();
+      
+      // Check if server already exists in registry
+      const existingServer = await storage.getServerByName(currentServerName);
+      
+      if (existingServer) {
+        // Update existing server
+        await storage.updateServerInfo(currentServerName, {
+          serverName: serverName.trim(),
+          description: description?.trim() || null
+        });
+      } else {
+        // Create new server entry
+        const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
+        await storage.createServer({
+          serverName: serverName.trim(),
+          maxBotCount: maxBots,
+          currentBotCount: 0,
+          serverStatus: 'active',
+          description: description?.trim() || null
+        });
+      }
+      
+      res.json({ message: "Server configuration updated successfully" });
+    } catch (error) {
+      console.error("Server configuration error:", error);
+      res.status(500).json({ message: "Failed to update server configuration" });
     }
   });
 

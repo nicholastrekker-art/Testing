@@ -43,6 +43,29 @@ export function getServerName(): string {
   return process.env.SERVER_NAME || 'default-server';
 }
 
+// Get server name with database fallback (async version)
+export async function getServerNameWithFallback(): Promise<string> {
+  // First try environment variable
+  if (process.env.SERVER_NAME) {
+    return process.env.SERVER_NAME;
+  }
+  
+  // Then try database
+  try {
+    const { storage } = await import('./storage');
+    const servers = await storage.getAllServers();
+    if (servers.length > 0) {
+      // Return the first server's name if any exists
+      return servers[0].serverName;
+    }
+  } catch (error) {
+    console.warn('Failed to get server name from database:', error);
+  }
+  
+  // Finally fallback to default
+  return 'default-server';
+}
+
 // Function to initialize database (create tables if they don't exist)
 export async function initializeDatabase() {
   try {
