@@ -4,7 +4,16 @@
 
 This is a WhatsApp Bot Management application built as a full-stack web application for creating, managing, and monitoring WhatsApp bot instances. The system provides a comprehensive dashboard for controlling multiple bot instances, managing commands, and tracking activities in real-time. Each bot can be configured with automation features like auto-like, auto-react, and ChatGPT integration for intelligent responses.
 
-## Recent Changes (September 2, 2025)
+## Recent Changes (September 10, 2025)
+
+- **Tenant Switching System**: Implemented true tenant switching where changing server names completely switches server context
+- **Environment Variable Change**: Changed from NAME to SERVER_NAME environment variable with UI fallback
+- **Dynamic Server Context**: Server configuration now restarts entire server context when switching tenants
+- **Isolated Tenant Data**: Each server/tenant maintains completely separate bot instances, commands, activities, and groups
+- **Runtime Server Management**: Added RUNTIME_SERVER_NAME environment variable for dynamic context switching
+- **Bot Manager Tenant Support**: Enhanced bot manager to support stopping/starting all bots and resuming specific server tenants
+
+## Previous Changes (September 2, 2025)
 
 - **Multi-Tenancy System**: Implemented server isolation with bot count limits per tenant
 - **Bot Approval Workflow**: Complete workflow with pending bots requiring admin approval
