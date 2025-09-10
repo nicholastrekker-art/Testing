@@ -40,7 +40,7 @@ export const db = drizzle(client, { schema });
 
 // Get server name from environment variable or default
 export function getServerName(): string {
-  return process.env.NAME || 'default-server';
+  return process.env.SERVER_NAME || 'default-server';
 }
 
 // Function to initialize database (create tables if they don't exist)

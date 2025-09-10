@@ -274,7 +274,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Server info
   app.get("/api/server/info", async (req, res) => {
     try {
-      const serverName = process.env.NAME || 'Unknown';
+      const serverName = process.env.SERVER_NAME || 'Unknown';
       const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
       const currentBots = await storage.getAllBotInstances();
       

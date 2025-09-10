@@ -632,7 +632,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h4 className="font-medium text-blue-800 mb-2">📋 Current Setup:</h4>
                   <ul className="text-sm text-blue-700 space-y-1">
-                    <li>• Current Server: {import.meta.env.VITE_NAME || 'SERVER1'}</li>
+                    <li>• Current Server: {import.meta.env.VITE_SERVER_NAME || 'SERVER1'}</li>
                     <li>• God Registry: Active and monitoring all tenancies</li>
                     <li>• Cross-tenancy actions: Logged and tracked</li>
                     <li>• Data isolation: Each tenancy maintains its own bot data</li>
