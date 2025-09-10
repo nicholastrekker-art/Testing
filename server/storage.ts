@@ -42,6 +42,7 @@ export interface IStorage {
   // Bot Instance methods
   getBotInstance(id: string): Promise<BotInstance | undefined>;
   getAllBotInstances(): Promise<BotInstance[]>;
+  getBotInstancesForServer(serverName: string): Promise<BotInstance[]>;
   createBotInstance(botInstance: InsertBotInstance): Promise<BotInstance>;
   updateBotInstance(id: string, updates: Partial<BotInstance>): Promise<BotInstance>;
   deleteBotInstance(id: string): Promise<void>;
@@ -132,6 +133,10 @@ export class DatabaseStorage implements IStorage {
 
   async getAllBotInstances(): Promise<BotInstance[]> {
     const serverName = getServerName();
+    return await db.select().from(botInstances).where(eq(botInstances.serverName, serverName)).orderBy(desc(botInstances.createdAt));
+  }
+
+  async getBotInstancesForServer(serverName: string): Promise<BotInstance[]> {
     return await db.select().from(botInstances).where(eq(botInstances.serverName, serverName)).orderBy(desc(botInstances.createdAt));
   }
 

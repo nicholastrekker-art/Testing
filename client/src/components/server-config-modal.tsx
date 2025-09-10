@@ -32,12 +32,28 @@ export default function ServerConfigModal({
     mutationFn: async (data: { serverName: string; description?: string }) => {
       return apiRequest("POST", "/api/server/configure", data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Server configured successfully",
         description: "Your server name has been saved.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/server/info"] });
+      
+      // If server context switched, refresh entire application
+      if (data && data.requiresRefresh) {
+        toast({
+          title: "Server context switched",
+          description: "Refreshing to load new server data...",
+        });
+        // Invalidate all queries and refresh the page to load new server context
+        queryClient.clear();
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      } else {
+        // Just refresh server info for description updates
+        queryClient.invalidateQueries({ queryKey: ["/api/server/info"] });
+      }
+      
       onOpenChange(false);
     },
     onError: (error: any) => {

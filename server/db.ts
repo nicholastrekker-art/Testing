@@ -38,9 +38,9 @@ const client = postgres(connectionString, {
 
 export const db = drizzle(client, { schema });
 
-// Get server name from environment variable or default
+// Get server name from runtime environment, SERVER_NAME environment variable, or default
 export function getServerName(): string {
-  return process.env.SERVER_NAME || 'default-server';
+  return process.env.RUNTIME_SERVER_NAME || process.env.SERVER_NAME || 'default-server';
 }
 
 // Get server name with database fallback (async version)

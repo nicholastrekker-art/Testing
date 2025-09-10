@@ -142,6 +142,39 @@ class BotManager {
     return statuses;
   }
 
+  async stopAllBots() {
+    console.log('BotManager: Stopping all bot instances...');
+    const stopPromises = Array.from(this.bots.values()).map(bot => bot.stop());
+    await Promise.all(stopPromises);
+    this.bots.clear();
+    console.log('BotManager: All bots stopped');
+  }
+
+  async resumeBotsForServer(serverName: string) {
+    console.log(`BotManager: Resuming bots for server: ${serverName}`);
+    try {
+      // Get all approved bots for this server from database
+      const serverBots = await storage.getBotInstancesForServer(serverName);
+      const approvedBots = serverBots.filter(bot => bot.approvalStatus === 'approved');
+      
+      console.log(`BotManager: Found ${approvedBots.length} approved bots for server ${serverName}`);
+      
+      // Start each approved bot
+      for (const bot of approvedBots) {
+        try {
+          await this.startBot(bot.id);
+          console.log(`BotManager: Resumed bot ${bot.name} (${bot.id})`);
+        } catch (error) {
+          console.error(`BotManager: Failed to resume bot ${bot.name} (${bot.id}):`, error);
+        }
+      }
+      
+      console.log(`BotManager: Finished resuming bots for server ${serverName}`);
+    } catch (error) {
+      console.error(`BotManager: Error resuming bots for server ${serverName}:`, error);
+    }
+  }
+
   async sendMessageThroughBot(botId: string, phoneNumber: string, message: string): Promise<boolean> {
     const bot = this.bots.get(botId);
     if (!bot || bot.getStatus() !== 'online') {
@@ -463,9 +496,15 @@ class BotManager {
       { name: 'memory', description: 'Memory usage', response: '', isActive: true, useChatGPT: true }
     ];
 
+    const { getServerName } = await import('../db');
+    const serverName = getServerName();
+    
     for (const commandData of defaultCommands) {
       try {
-        await storage.createCommand(commandData);
+        await storage.createCommand({
+          ...commandData,
+          serverName: serverName
+        });
       } catch (error) {
         // Command might already exist, skip
         console.log(`Command ${commandData.name} already exists or failed to create`);
