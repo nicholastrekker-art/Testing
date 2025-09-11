@@ -110,6 +110,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
             setStep(8); // Go to existing bot management
           } else {
             // Registered to this server but no bot found - proceed to create bot
+            // Fetch available servers first
+            fetchAvailableServers();
             setStep(3); // Go to server selection (will show current server)
           }
         } else {
