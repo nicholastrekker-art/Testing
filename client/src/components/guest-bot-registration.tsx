@@ -85,6 +85,19 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
         let errorMessage = 'Failed to check phone number';
         try {
           const error = await response.json();
+          
+          // Check if this is a server mismatch (not a real error)
+          if (error.registeredTo && error.message) {
+            // This is a server mismatch - treat as success with mismatch data
+            return {
+              registered: true,
+              currentServer: false,
+              registeredTo: error.registeredTo,
+              message: error.message,
+              serverMismatch: true
+            };
+          }
+          
           errorMessage = error.message || errorMessage;
         } catch (e) {
           // If response is not JSON, use status text
@@ -102,8 +115,17 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     },
     onSuccess: (data) => {
       setPhoneCheckResult(data);
-      if (data.registered) {
-        if (data.currentServer) {
+      if (data.registered || data.serverMismatch) {
+        if (data.serverMismatch || (!data.currentServer && data.registeredTo)) {
+          // Phone number exists on different server - enhanced handling
+          setServerMismatch({
+            details: { registeredTo: data.registeredTo },
+            message: data.message,
+            currentServer: selectedServer,
+            botDetails: data.botDetails || null
+          });
+          setStep(9); // Show server mismatch with enhanced switching options
+        } else if (data.currentServer) {
           // Phone number exists on current server
           if (data.hasBot) {
             setExistingBotData(data.bot);
@@ -114,13 +136,6 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
             fetchAvailableServers();
             setStep(3); // Go to server selection (will show current server)
           }
-        } else {
-          // Phone number exists on different server
-          setServerMismatch({
-            details: { registeredTo: data.registeredTo },
-            message: data.message
-          });
-          setStep(9); // Show server mismatch with switching option
         }
       } else {
         // Phone number not found in any server, show server selection
@@ -1072,7 +1087,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                   </div>
                   <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-900">
                     <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-2">Registered Server</h4>
-                    <p className="text-lg font-bold text-blue-600">{serverMismatch.registeredServer}</p>
+                    <p className="text-lg font-bold text-blue-600">{serverMismatch.details?.registeredTo}</p>
                     <p className="text-sm text-blue-600 dark:text-blue-400">Where your bot exists</p>
                   </div>
                 </div>
@@ -1083,8 +1098,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                     <Button 
                       onClick={() => {
                         // Switch to the registered server and show existing bot management
-                        setSelectedServer(serverMismatch.registeredServer);
-                        setExistingBotData(serverMismatch.botDetails);
+                        setSelectedServer(serverMismatch.details?.registeredTo);
+                        setExistingBotData(serverMismatch.botDetails || null);
                         setStep(8); // Go to existing bot management
                       }}
                       className="justify-start text-left h-auto p-4"
@@ -1092,7 +1107,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                     >
                       <div>
                         <div className="font-medium">🔄 Switch to Registered Server</div>
-                        <div className="text-sm opacity-80 mt-1">Manage your existing bot on {serverMismatch.registeredServer}</div>
+                        <div className="text-sm opacity-80 mt-1">Manage your existing bot on {serverMismatch.details?.registeredTo}</div>
                       </div>
                     </Button>
                     
@@ -1177,32 +1192,6 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
           </div>
         )}
 
-        {/* Step 9: Server Mismatch - Wrong Server */}
-        {step === 9 && serverMismatch && (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <i className="fas fa-exclamation-triangle text-2xl text-red-600"></i>
-            </div>
-            <h3 className="text-xl font-bold mb-2 text-red-600">Wrong Server!</h3>
-            <p className="text-muted-foreground mb-4">
-              {serverMismatch.message}
-            </p>
-            
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <h4 className="font-medium text-red-800 mb-2">⚠️ Important:</h4>
-              <ul className="text-sm text-red-700 space-y-1 text-left">
-                <li>• This phone number is registered to a different server</li>
-                <li>• You can only manage your bot from the correct server</li>
-                <li>• Please go to the correct server to manage your bot</li>
-                <li>• Each phone number can only be registered to one server</li>
-              </ul>
-            </div>
-
-            <Button onClick={handleClose} variant="outline" className="w-full">
-              I Understand
-            </Button>
-          </div>
-        )}
 
         {step === 7 && crossTenancyData && (
           <div className="space-y-6 py-4">
