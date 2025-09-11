@@ -50,39 +50,80 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
   const [selectedServer, setSelectedServer] = useState<string>('');
   const [availableServers, setAvailableServers] = useState<any[]>([]);
 
+  // Function to fetch available servers
+  const fetchAvailableServers = async () => {
+    try {
+      const response = await fetch('/api/servers/available');
+      if (response.ok) {
+        const data = await response.json();
+        setAvailableServers(data.servers || []);
+      } else {
+        console.error('Failed to fetch available servers');
+        setAvailableServers([]);
+      }
+    } catch (error) {
+      console.error('Error fetching servers:', error);
+      setAvailableServers([]);
+    }
+  };
+
   // Phone number check against God registry
   const phoneCheckMutation = useMutation({
     mutationFn: async (phoneNumber: string) => {
-      const response = await fetch('/api/guest/check-phone', {
+      // Clean phone number - remove spaces, dashes, parentheses, and leading +
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      const response = await fetch('/api/guest/check-registration', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ phoneNumber: phoneNumber.replace(/^\+/, '') }),
+        body: JSON.stringify({ phoneNumber: cleanedPhone }),
       });
       
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to check phone number');
+        let errorMessage = 'Failed to check phone number';
+        try {
+          const error = await response.json();
+          errorMessage = error.message || errorMessage;
+        } catch (e) {
+          // If response is not JSON, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Invalid response format from server');
       }
       
       return response.json();
     },
     onSuccess: (data) => {
       setPhoneCheckResult(data);
-      if (data.exists) {
-        if (data.sameServer) {
+      if (data.registered) {
+        if (data.currentServer) {
           // Phone number exists on current server
-          setExistingBotData(data.botDetails);
-          setStep(8); // Go to existing bot management
+          if (data.hasBot) {
+            setExistingBotData(data.bot);
+            setStep(8); // Go to existing bot management
+          } else {
+            // Registered to this server but no bot found - proceed to create bot
+            setStep(3); // Go to server selection (will show current server)
+          }
         } else {
           // Phone number exists on different server
-          setServerMismatch(data);
+          setServerMismatch({
+            details: { registeredTo: data.registeredTo },
+            message: data.message
+          });
           setStep(9); // Show server mismatch with switching option
         }
       } else {
-        // Phone number not found, show server selection
-        setAvailableServers(data.availableServers || []);
+        // Phone number not found in any server, show server selection
+        // Fetch available servers
+        fetchAvailableServers();
         setStep(3); // Go to server selection
       }
     },
@@ -402,7 +443,18 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                       data-testid="input-phone-number"
                       placeholder="+254700000000"
                       value={formData.phoneNumber}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                      onChange={(e) => {
+                        // Clean phone number in real-time - remove spaces, dashes, parentheses
+                        const cleaned = e.target.value.replace(/[\s\-\(\)]/g, '');
+                        setFormData(prev => ({ ...prev, phoneNumber: cleaned }));
+                      }}
+                      onPaste={(e) => {
+                        // Handle paste event to clean the pasted content
+                        e.preventDefault();
+                        const paste = e.clipboardData.getData('text');
+                        const cleaned = paste.replace(/[\s\-\(\)]/g, '');
+                        setFormData(prev => ({ ...prev, phoneNumber: cleaned }));
+                      }}
                       required
                       className="mt-1 text-lg"
                       autoFocus
