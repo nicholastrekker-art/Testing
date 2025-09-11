@@ -40,7 +40,7 @@ export const db = drizzle(client, { schema });
 
 // Get server name from runtime environment, SERVER_NAME environment variable, or default
 export function getServerName(): string {
-  return process.env.RUNTIME_SERVER_NAME || process.env.SERVER_NAME || 'default-server';
+  return process.env.RUNTIME_SERVER_NAME || process.env.SERVER_NAME || 'server1';
 }
 
 // Get server name with database fallback (async version)
@@ -68,7 +68,7 @@ export async function getServerNameWithFallback(): Promise<string> {
   }
   
   // Finally fallback to default
-  return 'default-server';
+  return 'server1';
 }
 
 // Function to initialize database (create tables if they don't exist)

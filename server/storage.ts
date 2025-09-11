@@ -24,13 +24,17 @@ import {
 import { db, getServerName } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
 
-// Get maximum bot count from environment variables
+// Get maximum bot count from environment variables with default fallback
 function getMaxBotCount(): number {
-  const botCount = process.env.BOTCOUNT;
-  if (!botCount) {
-    throw new Error('BOTCOUNT environment variable is required');
+  const botCount = process.env.BOTCOUNT || '20';
+  const parsed = parseInt(botCount, 10);
+  
+  if (isNaN(parsed) || parsed <= 0) {
+    console.warn(`Invalid BOTCOUNT value "${botCount}", using default value 20`);
+    return 20;
   }
-  return parseInt(botCount, 10);
+  
+  return parsed;
 }
 
 export interface IStorage {
