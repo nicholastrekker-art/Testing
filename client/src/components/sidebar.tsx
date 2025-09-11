@@ -5,6 +5,7 @@ import { useState } from "react";
 import { LoginModal } from "./login-modal";
 import { ValidateCredentialsModal } from "./validate-credentials-modal";
 import { Button } from "./ui/button";
+import GuestBotRegistration from "./guest-bot-registration";
 
 // Guest mode navigation - only Dashboard
 const guestNavigationItems = [
@@ -32,6 +33,7 @@ export default function Sidebar() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showValidateModal, setShowValidateModal] = useState(false);
+  const [showGuestRegistration, setShowGuestRegistration] = useState(false);
 
   return (
     <aside className="w-64 bg-card border-r border-border flex flex-col" data-testid="sidebar">
@@ -110,15 +112,15 @@ export default function Sidebar() {
         )}
       </nav>
       
-      {/* Validate Credentials Button (always available) */}
+      {/* Register Bot Shortcut (always available) */}
       <div className="p-4 border-t border-border">
         <Button 
-          onClick={() => setShowValidateModal(true)}
-          variant="outline" 
-          className="w-full mb-3"
+          onClick={() => setShowGuestRegistration(true)}
+          className="w-full mb-3 bg-green-600 hover:bg-green-700 text-white"
+          data-testid="sidebar-register-bot"
         >
-          <i className="fas fa-check-circle mr-2"></i>
-          Validate Credentials
+          <i className="fas fa-plus mr-2"></i>
+          Register Bot
         </Button>
       </div>
       
@@ -164,6 +166,11 @@ export default function Sidebar() {
       <ValidateCredentialsModal 
         isOpen={showValidateModal} 
         onClose={() => setShowValidateModal(false)}
+      />
+      
+      <GuestBotRegistration 
+        open={showGuestRegistration} 
+        onClose={() => setShowGuestRegistration(false)} 
       />
     </aside>
   );
