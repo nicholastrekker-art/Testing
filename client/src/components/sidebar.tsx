@@ -68,10 +68,23 @@ export default function Sidebar() {
           </Link>
         ))}
         
-        {/* Validate Session ID Button */}
+        {/* Session ID Tools */}
         {!isAdmin && !isAuthenticated && (
           <>
             <div className="border-t border-border my-4"></div>
+            
+            {/* Generate Session ID Button */}
+            <Button 
+              onClick={() => window.open('https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/', '_blank')}
+              variant="outline"
+              className="w-full mx-3 mb-3"
+              data-testid="button-generate-session"
+            >
+              <i className="fas fa-key mr-2"></i>
+              Generate Session ID
+            </Button>
+            
+            {/* Validate Session ID Button */}
             <Button 
               onClick={() => setShowValidateModal(true)}
               variant="outline"
@@ -82,7 +95,7 @@ export default function Sidebar() {
               Validate Session ID
             </Button>
             
-            {/* Register Bot Button - third position */}
+            {/* Register Bot Button */}
             <Button 
               onClick={() => setShowGuestRegistration(true)}
               className="w-full mx-3 bg-green-600 hover:bg-green-700 text-white"
