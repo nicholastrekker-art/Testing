@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as React from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useWebSocket } from "@/hooks/use-websocket";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -19,6 +19,7 @@ import AdminBotManagement from "@/components/admin-bot-management";
 export default function Dashboard() {
   const { isAdmin } = useAuth();
   const { toast } = useToast();
+  const [location, setLocation] = useLocation();
   const [showAddBotModal, setShowAddBotModal] = useState(false);
   const [showCommandManagement, setShowCommandManagement] = useState(false);
   const [showGuestRegistration, setShowGuestRegistration] = useState(false);
@@ -72,6 +73,16 @@ export default function Dashboard() {
 
   // WebSocket for real-time updates
   useWebSocket();
+
+  // Check for registration parameter in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('register') === 'true') {
+      setShowGuestRegistration(true);
+      // Clean up URL parameter using wouter navigation
+      setLocation('/', { replace: true });
+    }
+  }, [location, setLocation]);
 
   // Mutations for bot approval
   const approveBotMutation = useMutation({

@@ -70,14 +70,15 @@ export default function Sidebar() {
         {!isAdmin && !isAuthenticated && (
           <>
             <div className="border-t border-border my-4"></div>
-            <Button 
-              onClick={() => setShowValidateModal(true)}
-              className="w-full mx-3 bg-green-600 hover:bg-green-700 text-white"
-              data-testid="button-register"
-            >
-              <i className="fas fa-user-plus mr-2"></i>
-              Register Bot
-            </Button>
+            <Link href="/?register=true">
+              <Button 
+                className="w-full mx-3 bg-green-600 hover:bg-green-700 text-white"
+                data-testid="button-register"
+              >
+                <i className="fas fa-user-plus mr-2"></i>
+                Register Bot
+              </Button>
+            </Link>
           </>
         )}
         
