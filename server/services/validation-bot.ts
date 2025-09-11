@@ -69,7 +69,7 @@ export class ValidationBot {
         auth: state,
         printQRInTerminal: false,
         logger: this.createLogger(),
-        browser: [`VALIDATION-BOT-${Date.now()}`, 'Chrome', '110.0.0.0'],
+        browser: [`VALIDATION-BOT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, 'Chrome', '110.0.0.0'],
         connectTimeoutMs: 30000, // Shorter timeout for validation
         defaultQueryTimeoutMs: 30000,
         generateHighQualityLinkPreview: false,

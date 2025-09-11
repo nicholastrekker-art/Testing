@@ -434,8 +434,8 @@ export class WhatsAppBot {
         auth: state,
         printQRInTerminal: false, // Disable QR printing to avoid conflicts
         logger: this.createLogger(),
-        // Add unique user agent to prevent conflicts
-        browser: [`TREKKERMD-${this.botInstance.id}`, 'Chrome', '110.0.0.0'],
+        // Add dynamic device fingerprint that changes each connection
+        browser: [`TREKKERMD-${this.botInstance.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, 'Chrome', '110.0.0.0'],
         // Ensure each bot has isolated connection settings
         connectTimeoutMs: 60000,
         defaultQueryTimeoutMs: 60000,
