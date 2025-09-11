@@ -4,3 +4,12 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# CRITICAL SECURITY - WhatsApp credentials and sessions
+auth/
+bot_*/
+**/creds.json
+**/session*.json
+*.session
+auth/bot_*/**
+/auth/**

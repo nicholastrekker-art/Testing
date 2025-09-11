@@ -2815,8 +2815,14 @@ Thank you for choosing TREKKER-MD! 🚀`;
       const { action, botId, tenancy, data } = req.body;
       const currentTenancy = getServerName();
       
+      // Validate required fields - botId is required for most actions except bulk operations
       if (!action || !tenancy) {
-        return res.status(400).json({ message: "Missing required fields" });
+        return res.status(400).json({ message: "Missing required fields: action and tenancy are required" });
+      }
+      
+      // botId is required for individual bot actions
+      if (!botId && !['sync', 'disconnect', 'bulk_start', 'bulk_stop'].includes(action)) {
+        return res.status(400).json({ message: "Missing required fields: botId is required for this action" });
       }
       
       // Handle actions for local tenancy
