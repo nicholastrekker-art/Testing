@@ -38,6 +38,17 @@ function getMaxBotCount(): number {
 }
 
 export interface IStorage {
+  getAllApprovedBots(): Promise<BotInstance[]>;
+  createCrossTenancyActivity(params: {
+    type: string;
+    description: string;
+    metadata?: any;
+    serverName: string;
+    botInstanceId?: string;
+    remoteTenancy?: string;
+    remoteBotId?: string;
+    phoneNumber?: string;
+  }): Promise<Activity>;
   // User methods
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -243,6 +254,13 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(botInstances).where(and(eq(botInstances.approvalStatus, 'approved'), eq(botInstances.serverName, serverName))).orderBy(desc(botInstances.createdAt));
   }
 
+  // Cross-tenancy approved bots - shows approved bots from ALL servers
+  async getAllApprovedBots(): Promise<BotInstance[]> {
+    return await db.select().from(botInstances)
+      .where(eq(botInstances.approvalStatus, 'approved'))
+      .orderBy(desc(botInstances.createdAt));
+  }
+
   async checkAndExpireBots(): Promise<void> {
     console.log('🔄 Checking for expired bots...');
     const approvedBots = await this.getApprovedBots();
@@ -399,6 +417,31 @@ export class DatabaseStorage implements IStorage {
       .values({ ...insertActivity, serverName })
       .returning();
     return activity;
+  }
+
+  // Cross-tenancy activity logging - supports remote bot activities
+  async createCrossTenancyActivity(params: {
+    type: string;
+    description: string;
+    metadata?: any;
+    serverName: string;
+    // Either local bot or cross-tenancy identification
+    botInstanceId?: string;
+    remoteTenancy?: string;
+    remoteBotId?: string;
+    phoneNumber?: string;
+  }): Promise<Activity> {
+    const [newActivity] = await db.insert(activities).values({
+      botInstanceId: params.botInstanceId || null,
+      type: params.type,
+      description: params.description,
+      metadata: params.metadata || {},
+      serverName: params.serverName,
+      remoteTenancy: params.remoteTenancy || null,
+      remoteBotId: params.remoteBotId || null,
+      phoneNumber: params.phoneNumber || null,
+    }).returning();
+    return newActivity;
   }
   
   // Group methods

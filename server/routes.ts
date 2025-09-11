@@ -2663,13 +2663,14 @@ Thank you for choosing TREKKER-MD! 🚀`;
         return res.status(404).json({ message: "Registration not found" });
       }
 
-      // Log activity
-      await storage.createActivity({
-        botInstanceId: null,
+      // Log activity using cross-tenancy method
+      await storage.createCrossTenancyActivity({
         type: 'god_registry_update',
         description: `Admin updated god registry: ${phoneNumber} moved to ${tenancyName}`,
         metadata: { phoneNumber, newTenancy: tenancyName, adminAction: 'update_registry' },
-        serverName: getServerName()
+        serverName: getServerName(),
+        phoneNumber: phoneNumber,
+        remoteTenancy: tenancyName
       });
 
       res.json({ message: "Registration updated successfully", registration: updated });
@@ -2691,19 +2692,48 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
       await storage.deleteGlobalRegistration(phoneNumber);
 
-      // Log activity
-      await storage.createActivity({
-        botInstanceId: null,
+      // Log activity using cross-tenancy method
+      await storage.createCrossTenancyActivity({
         type: 'god_registry_delete',
         description: `Admin deleted god registry entry: ${phoneNumber} (was on ${existing.tenancyName})`,
         metadata: { phoneNumber, previousTenancy: existing.tenancyName, adminAction: 'delete_registry' },
-        serverName: getServerName()
+        serverName: getServerName(),
+        phoneNumber: phoneNumber,
+        remoteTenancy: existing.tenancyName
       });
 
       res.json({ message: "Registration deleted successfully" });
     } catch (error) {
       console.error("Delete god registry error:", error);
       res.status(500).json({ message: "Failed to delete registration" });
+    }
+  });
+
+  // Cross-tenancy approved bots endpoint for master control
+  app.get("/api/master/approved-bots", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const allApprovedBots = await storage.getAllApprovedBots();
+      
+      // Sanitize response - remove credentials and sensitive data
+      const sanitizedBots = allApprovedBots.map(bot => ({
+        id: bot.id,
+        name: bot.name,
+        phoneNumber: bot.phoneNumber,
+        status: bot.status,
+        approvalStatus: bot.approvalStatus,
+        serverName: bot.serverName,
+        approvalDate: bot.approvalDate,
+        expirationMonths: bot.expirationMonths,
+        createdAt: bot.createdAt,
+        updatedAt: bot.updatedAt,
+        isGuest: bot.isGuest
+        // Explicitly exclude credentials, settings, and other sensitive data
+      }));
+      
+      res.json(sanitizedBots);
+    } catch (error) {
+      console.error('Failed to fetch cross-tenancy approved bots:', error);
+      res.status(500).json({ message: "Failed to fetch approved bots" });
     }
   });
 

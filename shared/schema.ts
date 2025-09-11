@@ -71,11 +71,15 @@ export const commands = pgTable("commands", {
 
 export const activities = pgTable("activities", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  botInstanceId: varchar("bot_instance_id"), // nullable for system activities
+  botInstanceId: varchar("bot_instance_id"), // nullable for local bot activities
   type: text("type").notNull(), // command, message, auto_like, auto_react, error, etc.
   description: text("description").notNull(),
   metadata: jsonb("metadata").default({}),
   serverName: text("server_name").notNull(), // isolate by server instance
+  // Cross-tenancy fields for remote bot activities
+  remoteTenancy: text("remote_tenancy"), // Tenancy/server name for cross-server activities
+  remoteBotId: text("remote_bot_id"), // Bot ID on remote server
+  phoneNumber: text("phone_number"), // Phone number for cross-tenancy identification
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 

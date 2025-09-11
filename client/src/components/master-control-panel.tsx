@@ -33,6 +33,7 @@ interface CrossTenancyBot {
   status: string;
   approvalStatus: string;
   tenancy: string;
+  serverName?: string; // Added for compatibility with BotInstance data
   lastActivity: string;
   isLocal: boolean;
   settings?: any;
@@ -45,6 +46,8 @@ interface CrossTenancyBot {
   commandsCount?: number;
   approvalDate?: string;
   expirationMonths?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export default function MasterControlPanel({ open, onClose }: MasterControlPanelProps) {
@@ -80,6 +83,13 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
     queryKey: ['/api/servers/list'],
     enabled: open,
     refetchInterval: 15000 // Refresh every 15 seconds
+  });
+
+  // Fetch approved bots from all servers for cross-tenancy management
+  const { data: allApprovedBots = [], isLoading: approvedBotsLoading } = useQuery({
+    queryKey: ['/api/master/approved-bots'],
+    enabled: open,
+    refetchInterval: 10000 // Refresh every 10 seconds
   });
 
   // Connect to tenancy mutation (for logging purposes, as connections are via God Registry)
@@ -640,7 +650,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                                 onClick={() => handleBotAction(
                                   bot.status === 'online' ? 'stop' : 'start', 
                                   bot.id, 
-                                  bot.tenancy
+                                  bot.serverName || bot.tenancy || 'default-server'
                                 )}
                                 disabled={botActionMutation.isPending}
                                 data-testid={`button-${bot.status === 'online' ? 'stop' : 'start'}-${bot.id}`}
@@ -700,7 +710,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {botsLoading ? (
+                {approvedBotsLoading ? (
                   <div className="text-center py-8">Loading approved bots...</div>
                 ) : (
                   <Table>
@@ -716,19 +726,19 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {(crossTenancyBots as CrossTenancyBot[]).filter(bot => bot.approvalStatus === 'approved').map((bot) => (
-                        <TableRow key={`approved-${bot.tenancy}-${bot.id}`}>
+                      {(allApprovedBots as any[]).map((bot) => (
+                        <TableRow key={`approved-${bot.serverName}-${bot.id}`}>
                           <TableCell className="font-medium">{bot.name}</TableCell>
                           <TableCell>{bot.phoneNumber}</TableCell>
                           <TableCell>
-                            <Badge variant="outline">{bot.tenancy}</Badge>
+                            <Badge variant="outline">{bot.serverName}</Badge>
                           </TableCell>
                           <TableCell>{getStatusBadge(bot.status)}</TableCell>
                           <TableCell className="text-sm text-muted-foreground">
-                            {new Date().toLocaleDateString()}
+                            {bot.approvalDate ? new Date(bot.approvalDate).toLocaleDateString() : 'N/A'}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
-                            {bot.lastActivity}
+                            {new Date(bot.updatedAt || bot.createdAt).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
@@ -738,7 +748,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                                 onClick={() => handleBotAction(
                                   bot.status === 'online' ? 'stop' : 'start', 
                                   bot.id, 
-                                  bot.tenancy
+                                  bot.serverName || bot.tenancy || 'default-server'
                                 )}
                                 disabled={botActionMutation.isPending}
                                 data-testid={`button-${bot.status === 'online' ? 'stop' : 'start'}-${bot.id}`}
