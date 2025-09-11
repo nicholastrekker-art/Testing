@@ -121,7 +121,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
           setServerMismatch({
             details: { registeredTo: data.registeredTo },
             message: data.message,
-            currentServer: selectedServer,
+            registeredTo: data.registeredTo,
             botDetails: data.botDetails || null
           });
           setStep(9); // Show server mismatch with enhanced switching options
@@ -1082,12 +1082,12 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
                     <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">Current Server</h4>
-                    <p className="text-lg font-bold">{serverMismatch.currentServer || 'default-server'}</p>
+                    <p className="text-lg font-bold">default-server</p>
                     <p className="text-sm text-muted-foreground">Where you're trying to register</p>
                   </div>
                   <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-900">
                     <h4 className="font-medium text-blue-700 dark:text-blue-300 mb-2">Registered Server</h4>
-                    <p className="text-lg font-bold text-blue-600">{serverMismatch.details?.registeredTo}</p>
+                    <p className="text-lg font-bold text-blue-600">{serverMismatch.registeredTo}</p>
                     <p className="text-sm text-blue-600 dark:text-blue-400">Where your bot exists</p>
                   </div>
                 </div>
@@ -1098,7 +1098,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                     <Button 
                       onClick={() => {
                         // Switch to the registered server and show existing bot management
-                        setSelectedServer(serverMismatch.details?.registeredTo);
+                        setSelectedServer(serverMismatch.registeredTo);
                         setExistingBotData(serverMismatch.botDetails || null);
                         setStep(8); // Go to existing bot management
                       }}
@@ -1107,7 +1107,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                     >
                       <div>
                         <div className="font-medium">🔄 Switch to Registered Server</div>
-                        <div className="text-sm opacity-80 mt-1">Manage your existing bot on {serverMismatch.details?.registeredTo}</div>
+                        <div className="text-sm opacity-80 mt-1">Manage your existing bot on {serverMismatch.registeredTo}</div>
                       </div>
                     </Button>
                     
