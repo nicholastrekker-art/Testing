@@ -176,7 +176,7 @@ export class WhatsAppBot {
         return;
       }
       
-      if (m.type === 'notify') {
+      if (m.type === 'notify' || m.type === 'append') {
         // Handle auto status updates for status messages
         await this.autoStatusService.handleStatusUpdate(this.sock, m);
         
@@ -201,12 +201,29 @@ export class WhatsAppBot {
     });
   }
 
+  private extractMessageText(messageObj: any): string {
+    // Unwrap common message wrappers
+    const inner = messageObj.ephemeralMessage?.message || 
+                  messageObj.viewOnceMessage?.message || 
+                  messageObj.documentWithCaptionMessage?.message || 
+                  messageObj;
+
+    // Extract text from various message types
+    return inner.conversation || 
+           inner.extendedTextMessage?.text || 
+           inner.imageMessage?.caption || 
+           inner.videoMessage?.caption || 
+           inner.buttonsResponseMessage?.selectedButtonId || 
+           inner.listResponseMessage?.singleSelectReply?.selectedRowId || 
+           inner.templateButtonReplyMessage?.selectedId || 
+           '';
+  }
+
   private async handleMessage(message: WAMessage) {
     try {
       if (!message.message) return;
       
-      const messageText = message.message.conversation || 
-                         message.message.extendedTextMessage?.text || '';
+      const messageText = this.extractMessageText(message.message);
       
       if (!messageText) return;
 
@@ -221,6 +238,7 @@ export class WhatsAppBot {
 
       // Handle commands (only respond to messages with the configured prefix)
       if (messageText.startsWith(commandPrefix)) {
+        console.log(`Bot ${this.botInstance.name}: Detected command: "${messageText.trim()}"`);
         await this.handleCommand(message, messageText);
         return;
       }
