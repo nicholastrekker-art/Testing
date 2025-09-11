@@ -40,6 +40,11 @@ export function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
           title: "Login successful",
           description: data.message,
         });
+        
+        // Refresh page immediately for admin users to load all admin features
+        if (data.user?.isAdmin) {
+          window.location.reload();
+        }
       } else {
         const error = await response.json();
         toast({
