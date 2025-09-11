@@ -2856,7 +2856,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
               await storage.deleteBotInstance(botId);
               
               await storage.createActivity({
-                botInstanceId: null,
+                botInstanceId: 'system-master-control',
                 type: 'master_deletion',
                 description: `Bot ${botToDelete.name} deleted via master control panel`,
                 metadata: { action: 'delete', phoneNumber: botToDelete.phoneNumber, deletedBy: 'master_admin' },
@@ -2874,9 +2874,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
         // Handle actions for remote tenancies via God Registry
         console.log(`Cross-tenancy action ${action} on ${tenancy} for bot ${botId}`);
         
-        // Log the cross-tenancy action attempt
+        // Log the cross-tenancy action attempt (using system placeholder for bot_instance_id)
         await storage.createActivity({
-          botInstanceId: null,
+          botInstanceId: 'system-master-control',
           type: 'master_cross_tenancy',
           description: `Cross-tenancy action ${action} attempted on ${tenancy}`,
           metadata: { action, tenancy, botId, initiatedBy: 'master_admin' },
