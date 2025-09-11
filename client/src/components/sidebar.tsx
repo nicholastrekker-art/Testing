@@ -68,17 +68,18 @@ export default function Sidebar() {
           </Link>
         ))}
         
-        {/* Guest Register Button */}
+        {/* Validate Session ID Button */}
         {!isAdmin && !isAuthenticated && (
           <>
             <div className="border-t border-border my-4"></div>
             <Button 
               onClick={() => setShowValidateModal(true)}
-              className="w-full mx-3 bg-green-600 hover:bg-green-700 text-white"
-              data-testid="button-register"
+              variant="outline"
+              className="w-full mx-3"
+              data-testid="button-validate-session"
             >
-              <i className="fas fa-user-plus mr-2"></i>
-              Register Bot
+              <i className="fas fa-check-circle mr-2"></i>
+              Validate Session ID
             </Button>
           </>
         )}
@@ -112,8 +113,8 @@ export default function Sidebar() {
         )}
       </nav>
       
-      {/* Register Bot Shortcut (always available) */}
       <div className="p-4 border-t border-border">
+        {/* Register Bot Button - moved to top */}
         <Button 
           onClick={() => setShowGuestRegistration(true)}
           className="w-full mb-3 bg-green-600 hover:bg-green-700 text-white"
@@ -122,9 +123,7 @@ export default function Sidebar() {
           <i className="fas fa-plus mr-2"></i>
           Register Bot
         </Button>
-      </div>
-      
-      <div className="p-4 border-t border-border">
+        
         {isAuthenticated ? (
           <div className="flex items-center space-x-3 px-3 py-2">
             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">

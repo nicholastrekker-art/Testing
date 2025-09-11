@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { Textarea } from './ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { useToast } from '../hooks/use-toast';
 
 interface ValidateCredentialsModalProps {
@@ -12,6 +14,8 @@ interface ValidateCredentialsModalProps {
 
 export function ValidateCredentialsModal({ isOpen, onClose }: ValidateCredentialsModalProps) {
   const [file, setFile] = useState<File | null>(null);
+  const [base64Data, setBase64Data] = useState('');
+  const [validationMethod, setValidationMethod] = useState('file');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -33,10 +37,20 @@ export function ValidateCredentialsModal({ isOpen, onClose }: ValidateCredential
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!file) {
+    // Validate input based on selected method
+    if (validationMethod === 'file' && !file) {
       toast({
         title: "No file selected",
         description: "Please select a credentials.json file",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (validationMethod === 'base64' && !base64Data.trim()) {
+      toast({
+        title: "No session ID provided",
+        description: "Please paste your base64 session ID",
         variant: "destructive",
       });
       return;
@@ -45,13 +59,27 @@ export function ValidateCredentialsModal({ isOpen, onClose }: ValidateCredential
     setIsLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('credentials', file);
-
-      const response = await fetch('/api/validate-credentials', {
-        method: 'POST',
-        body: formData,
-      });
+      let response;
+      
+      if (validationMethod === 'file') {
+        // File upload method
+        const formData = new FormData();
+        formData.append('credentials', file!);
+        
+        response = await fetch('/api/validate-credentials', {
+          method: 'POST',
+          body: formData,
+        });
+      } else {
+        // Base64 method
+        response = await fetch('/api/validate-credentials', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ sessionData: base64Data.trim() }),
+        });
+      }
 
       const result = await response.json();
 
@@ -76,42 +104,77 @@ export function ValidateCredentialsModal({ isOpen, onClose }: ValidateCredential
     } finally {
       setIsLoading(false);
       setFile(null);
+      setBase64Data('');
       onClose();
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>🔍 Validate WhatsApp Credentials</DialogTitle>
+          <DialogTitle>🔍 Validate Session ID</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="credentials">Upload credentials.json</Label>
-            <Input
-              id="credentials"
-              type="file"
-              accept=".json"
-              onChange={handleFileChange}
-              required
-            />
-            <p className="text-sm text-muted-foreground">
-              Upload your WhatsApp session credentials.json file to test if it's valid
-            </p>
-          </div>
-          
-          {file && (
-            <div className="text-sm text-green-600">
-              ✓ Selected: {file.name}
-            </div>
-          )}
+          <Tabs value={validationMethod} onValueChange={setValidationMethod} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="file">Upload File</TabsTrigger>
+              <TabsTrigger value="base64">Paste Session ID</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="file" className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="credentials">Upload credentials.json</Label>
+                <Input
+                  id="credentials"
+                  type="file"
+                  accept=".json"
+                  onChange={handleFileChange}
+                />
+                <p className="text-sm text-muted-foreground">
+                  Upload your WhatsApp session credentials.json file to test if it's valid
+                </p>
+              </div>
+              
+              {file && (
+                <div className="text-sm text-green-600">
+                  ✓ Selected: {file.name}
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="base64" className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="sessionData">Paste Base64 Session ID</Label>
+                <Textarea
+                  id="sessionData"
+                  placeholder="Paste your base64 encoded session data here..."
+                  value={base64Data}
+                  onChange={(e) => setBase64Data(e.target.value)}
+                  className="min-h-[120px] font-mono text-xs"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Paste your base64 encoded credentials.json data (session ID)
+                </p>
+              </div>
+              
+              {base64Data.trim() && (
+                <div className="text-sm text-green-600">
+                  ✓ Session data pasted ({base64Data.length} characters)
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
           
           <div className="flex gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading || !file} className="flex-1">
+            <Button 
+              type="submit" 
+              disabled={isLoading || (validationMethod === 'file' && !file) || (validationMethod === 'base64' && !base64Data.trim())} 
+              className="flex-1"
+            >
               {isLoading ? "Validating..." : "Validate"}
             </Button>
           </div>
