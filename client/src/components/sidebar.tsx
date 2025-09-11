@@ -6,7 +6,13 @@ import { LoginModal } from "./login-modal";
 import { ValidateCredentialsModal } from "./validate-credentials-modal";
 import { Button } from "./ui/button";
 
-const navigationItems = [
+// Guest mode navigation - only Dashboard
+const guestNavigationItems = [
+  { href: "/", label: "Dashboard", icon: "fas fa-tachometer-alt" },
+];
+
+// Admin mode navigation - full access
+const adminNavigationItems = [
   { href: "/", label: "Dashboard", icon: "fas fa-tachometer-alt" },
   { href: "/bot-instances", label: "Bot Instances", icon: "fas fa-robot" },
   { href: "/commands", label: "Commands", icon: "fas fa-terminal" },
@@ -16,7 +22,8 @@ const navigationItems = [
   { href: "/settings", label: "Settings", icon: "fas fa-cog" },
 ];
 
-const adminNavigationItems = [
+// Admin console items
+const adminConsoleItems = [
   { href: "/admin", label: "Admin Console", icon: "fas fa-shield-alt" },
 ];
 
@@ -41,7 +48,8 @@ export default function Sidebar() {
       </div>
       
       <nav className="flex-1 p-4 space-y-2">
-        {navigationItems.map((item) => (
+        {/* Show different navigation items based on user role */}
+        {(isAdmin ? adminNavigationItems : guestNavigationItems).map((item) => (
           <Link key={item.href} href={item.href}>
             <div
               className={cn(
@@ -58,7 +66,22 @@ export default function Sidebar() {
           </Link>
         ))}
         
-        {/* Admin-only navigation */}
+        {/* Guest Register Button */}
+        {!isAdmin && !isAuthenticated && (
+          <>
+            <div className="border-t border-border my-4"></div>
+            <Button 
+              onClick={() => setShowValidateModal(true)}
+              className="w-full mx-3 bg-green-600 hover:bg-green-700 text-white"
+              data-testid="button-register"
+            >
+              <i className="fas fa-user-plus mr-2"></i>
+              Register Bot
+            </Button>
+          </>
+        )}
+        
+        {/* Admin Console navigation */}
         {isAdmin && (
           <>
             <div className="border-t border-border my-4"></div>
@@ -67,7 +90,7 @@ export default function Sidebar() {
                 Administration
               </p>
             </div>
-            {adminNavigationItems.map((item) => (
+            {adminConsoleItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <div
                   className={cn(
