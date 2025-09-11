@@ -1096,11 +1096,73 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                   <h4 className="font-medium">Choose Your Action:</h4>
                   <div className="grid gap-3">
                     <Button 
-                      onClick={() => {
-                        // Switch to the registered server and show existing bot management
-                        setSelectedServer(serverMismatch.registeredTo);
-                        setExistingBotData(serverMismatch.botDetails || null);
-                        setStep(8); // Go to existing bot management
+                      onClick={async () => {
+                        try {
+                          // Switch to the registered server on the backend
+                          toast({
+                            title: "Switching Server",
+                            description: `Switching to ${serverMismatch.registeredTo}...`,
+                          });
+                          
+                          const response = await fetch('/api/server/configure', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              serverName: serverMismatch.registeredTo,
+                              description: `Switched to ${serverMismatch.registeredTo} for bot management`
+                            }),
+                          });
+                          
+                          if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.message || 'Failed to switch server');
+                          }
+                          
+                          const result = await response.json();
+                          
+                          toast({
+                            title: "Server Switched",
+                            description: `Successfully switched to ${serverMismatch.registeredTo}`,
+                          });
+                          
+                          // Now make a call to get the bot data on the new server
+                          const checkResponse = await fetch('/api/guest/check-registration', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ phoneNumber: formData.phoneNumber }),
+                          });
+                          
+                          if (checkResponse.ok) {
+                            const checkData = await checkResponse.json();
+                            if (checkData.hasBot && checkData.bot) {
+                              setExistingBotData(checkData.bot);
+                              setSelectedServer(serverMismatch.registeredTo);
+                              setStep(8); // Go to existing bot management
+                            } else {
+                              toast({
+                                title: "Bot Not Found",
+                                description: "Could not find your bot on the registered server",
+                                variant: "destructive"
+                              });
+                            }
+                          } else {
+                            toast({
+                              title: "Error",
+                              description: "Failed to verify bot on registered server",
+                              variant: "destructive"
+                            });
+                          }
+                        } catch (error) {
+                          toast({
+                            title: "Server Switch Failed",
+                            description: error instanceof Error ? error.message : "Unknown error",
+                            variant: "destructive"
+                          });
+                        }
                       }}
                       className="justify-start text-left h-auto p-4"
                       data-testid="button-switch-to-registered-server"
