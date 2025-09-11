@@ -1096,7 +1096,13 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                   <h4 className="font-medium">Choose Your Action:</h4>
                   <div className="grid gap-3">
                     <Button 
-                      onClick={async () => {
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        console.log('Server switch button clicked!');
+                        console.log('ServerMismatch data:', serverMismatch);
+                        
                         try {
                           // Switch to the registered server on the backend
                           toast({
@@ -1104,6 +1110,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                             description: `Switching to ${serverMismatch.registeredTo}...`,
                           });
                           
+                          console.log('Making server configure call...');
                           const response = await fetch('/api/server/configure', {
                             method: 'POST',
                             headers: {
@@ -1115,19 +1122,27 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                             }),
                           });
                           
+                          console.log('Server configure response:', response.status);
+                          
                           if (!response.ok) {
                             const error = await response.json();
+                            console.error('Server configure error:', error);
                             throw new Error(error.message || 'Failed to switch server');
                           }
                           
                           const result = await response.json();
+                          console.log('Server configure result:', result);
                           
                           toast({
                             title: "Server Switched",
                             description: `Successfully switched to ${serverMismatch.registeredTo}`,
                           });
                           
+                          // Wait a moment for server to fully switch
+                          await new Promise(resolve => setTimeout(resolve, 1000));
+                          
                           // Now make a call to get the bot data on the new server
+                          console.log('Checking registration on new server...');
                           const checkResponse = await fetch('/api/guest/check-registration', {
                             method: 'POST',
                             headers: {
@@ -1136,13 +1151,19 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                             body: JSON.stringify({ phoneNumber: formData.phoneNumber }),
                           });
                           
+                          console.log('Check registration response:', checkResponse.status);
+                          
                           if (checkResponse.ok) {
                             const checkData = await checkResponse.json();
+                            console.log('Check registration data:', checkData);
+                            
                             if (checkData.hasBot && checkData.bot) {
                               setExistingBotData(checkData.bot);
                               setSelectedServer(serverMismatch.registeredTo);
                               setStep(8); // Go to existing bot management
+                              console.log('Successfully switched to existing bot management');
                             } else {
+                              console.log('No bot found on registered server');
                               toast({
                                 title: "Bot Not Found",
                                 description: "Could not find your bot on the registered server",
@@ -1150,6 +1171,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                               });
                             }
                           } else {
+                            const errorText = await checkResponse.text();
+                            console.error('Check registration failed:', errorText);
                             toast({
                               title: "Error",
                               description: "Failed to verify bot on registered server",
@@ -1157,6 +1180,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                             });
                           }
                         } catch (error) {
+                          console.error('Server switch error:', error);
                           toast({
                             title: "Server Switch Failed",
                             description: error instanceof Error ? error.message : "Unknown error",
