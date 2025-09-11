@@ -15,7 +15,6 @@ import AddBotModal from "@/components/add-bot-modal";
 import CommandManagement from "@/components/command-management";
 import GuestBotRegistration from "@/components/guest-bot-registration";
 import AdminBotManagement from "@/components/admin-bot-management";
-import ServerConfigModal from "@/components/server-config-modal";
 
 export default function Dashboard() {
   const { isAdmin } = useAuth();
@@ -27,7 +26,6 @@ export default function Dashboard() {
   const [showGodRegistry, setShowGodRegistry] = useState(false);
   const [selectedBotForFeatures, setSelectedBotForFeatures] = useState<any>(null);
   const [editingRegistration, setEditingRegistration] = useState<any>(null);
-  const [showServerConfig, setShowServerConfig] = useState(false);
 
   // Fetch dashboard stats
   const { data: stats = {}, isLoading: statsLoading } = useQuery({
@@ -190,17 +188,6 @@ export default function Dashboard() {
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-bold text-foreground">🤖 {serverInfo.serverName || 'TREKKER-MD'} Dashboard</h2>
-              {!serverInfo.hasSecretConfig && (
-                <Button
-                  onClick={() => setShowServerConfig(true)}
-                  variant="outline"
-                  size="sm"
-                  className="text-xs"
-                  data-testid="button-configure-server"
-                >
-                  ⚙️ Configure Server
-                </Button>
-              )}
             </div>
             <p className="text-muted-foreground">
               Ultra fast lifetime WhatsApp bot automation
@@ -889,13 +876,6 @@ export default function Dashboard() {
         </Dialog>
       )}
 
-      {/* Server Configuration Modal */}
-      <ServerConfigModal
-        open={showServerConfig}
-        onOpenChange={setShowServerConfig}
-        currentServerName={serverInfo.serverName || ""}
-        hasSecretConfig={serverInfo.hasSecretConfig || false}
-      />
     </div>
   );
 }

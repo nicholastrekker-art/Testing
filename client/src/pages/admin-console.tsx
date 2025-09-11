@@ -13,12 +13,14 @@ import { Play, Square, Trash2, Shield, Activity, Bot, Users, BarChart3, LogOut }
 import { useAuth } from "@/hooks/use-auth";
 import type { BotInstance, Activity as ActivityType } from "@shared/schema";
 import MasterControlPanel from "@/components/master-control-panel";
+import ServerConfigModal from "@/components/server-config-modal";
 
 export default function AdminConsole() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { logout } = useAuth();
   const [showMasterControl, setShowMasterControl] = useState(false);
+  const [showServerConfig, setShowServerConfig] = useState(false);
 
   // Fetch all bot instances
   const { data: botInstances = [], isLoading: loadingBots } = useQuery({
@@ -60,6 +62,11 @@ export default function AdminConsole() {
       if (!response.ok) throw new Error("Failed to fetch stats");
       return response.json();
     },
+  });
+
+  // Fetch server info for configuration
+  const { data: serverInfo = {} } = useQuery({
+    queryKey: ["/api/server/info"],
   });
 
   // Bot control mutations
@@ -227,6 +234,7 @@ export default function AdminConsole() {
         <TabsList>
           <TabsTrigger value="bots" data-testid="tab-bots">Bot Management</TabsTrigger>
           <TabsTrigger value="activities" data-testid="tab-activities">Recent Activity</TabsTrigger>
+          <TabsTrigger value="server" data-testid="tab-server">Server Config</TabsTrigger>
           <TabsTrigger value="master" data-testid="tab-master">Master Control</TabsTrigger>
         </TabsList>
 
@@ -388,6 +396,51 @@ export default function AdminConsole() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="server" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Server Configuration</CardTitle>
+              <CardDescription>
+                Configure server settings and tenancy management
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Current Server</h4>
+                    <p className="text-2xl font-bold text-primary">{(serverInfo as any)?.serverName || 'default-server'}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Bot Slots: {(serverInfo as any)?.currentBots || 0}/{(serverInfo as any)?.maxBots || 0}
+                    </p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Configuration Status</h4>
+                    <p className="text-sm">
+                      {(serverInfo as any)?.hasSecretConfig ? (
+                        <span className="text-green-600">✅ Environment Configured</span>
+                      ) : (
+                        <span className="text-yellow-600">⚠️ Manual Configuration</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={() => setShowServerConfig(true)}
+                  className="w-full"
+                  data-testid="button-configure-server-admin"
+                >
+                  ⚙️ Configure Server Settings
+                </Button>
+                <p className="text-sm text-muted-foreground text-center">
+                  Switch between server instances and manage tenancy settings
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="master" className="space-y-4">
           <Card>
             <CardHeader>
@@ -415,6 +468,13 @@ export default function AdminConsole() {
       <MasterControlPanel 
         open={showMasterControl} 
         onClose={() => setShowMasterControl(false)} 
+      />
+
+      <ServerConfigModal
+        open={showServerConfig}
+        onOpenChange={setShowServerConfig}
+        currentServerName={(serverInfo as any)?.serverName || ""}
+        hasSecretConfig={(serverInfo as any)?.hasSecretConfig || false}
       />
     </div>
   );
