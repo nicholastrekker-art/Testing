@@ -24,6 +24,33 @@ const upload = multer({
   limits: { fileSize: 1024 * 1024 } // 1MB limit
 });
 
+// Helper function to reset to default server after guest registration
+async function resetToDefaultServerAfterRegistration(): Promise<void> {
+  try {
+    const currentServer = getServerName();
+    const defaultServer = process.env.SERVER_NAME || 'default-server';
+    
+    // Only reset if we're not already on the default server
+    if (currentServer !== defaultServer) {
+      console.log(`🔄 Resetting to default server from ${currentServer} to ${defaultServer} after guest registration`);
+      
+      // Switch back to default server context
+      const { botManager } = await import('./services/bot-manager');
+      await botManager.stopAllBots();
+      
+      process.env.RUNTIME_SERVER_NAME = defaultServer;
+      
+      // Resume bots for default server
+      await botManager.resumeBotsForServer(defaultServer);
+      
+      console.log(`✅ Successfully reset to default server: ${defaultServer}`);
+    }
+  } catch (error) {
+    console.warn('⚠️ Failed to reset to default server after registration:', error);
+    // Don't throw error as this shouldn't fail the registration
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   
@@ -310,8 +337,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           serverList.push({
             name: serverName,
             totalBots: serverInfo.maxBotCount,
-            currentBots: serverInfo.currentBotCount,
-            remainingBots: serverInfo.maxBotCount - serverInfo.currentBotCount,
+            currentBots: serverInfo.currentBotCount || 0,
+            remainingBots: serverInfo.maxBotCount - (serverInfo.currentBotCount || 0),
             description: serverInfo.description,
             status: serverInfo.serverStatus
           });
@@ -330,8 +357,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Sort by current bots (ascending) - empty servers first
       serverList.sort((a, b) => {
-        if (a.currentBots !== b.currentBots) {
-          return a.currentBots - b.currentBots;
+        const aCurrent = a.currentBots || 0;
+        const bCurrent = b.currentBots || 0;
+        if (aCurrent !== bCurrent) {
+          return aCurrent - bCurrent;
         }
         // If same bot count, sort by name
         return a.name.localeCompare(b.name);
@@ -1644,6 +1673,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
           botId: botInstance.id
         });
 
+        // Reset to default server after successful guest registration
+        await resetToDefaultServerAfterRegistration();
+
       } catch (error) {
         console.error('Failed to validate WhatsApp connection:', error);
         
@@ -1792,9 +1824,37 @@ Thank you for choosing TREKKER-MD! 🚀`;
             serverName: getServerName()
           });
           
+          // Send success message to user via WhatsApp if bot is running
+          let messageSent = false;
+          try {
+            const successMessage = `✅ *TREKKER-MD Bot Credentials Updated Successfully!*\n\n` +
+              `🔑 Your bot credentials have been updated and verified.\n` +
+              `🤖 Bot ID: ${botInstance.name}\n` +
+              `📞 Phone: ${phoneNumber}\n` +
+              `🌐 Server: ${getServerName()}\n\n` +
+              `Your bot is now ready to be restarted. Visit your management panel to start your bot.\n\n` +
+              `💫 *TREKKER-MD - Advanced WhatsApp Bot*`;
+            
+            // Try to send message through existing bot manager if bot is running
+            messageSent = await botManager.sendMessageThroughBot(botId, phoneNumber, successMessage);
+            
+            if (messageSent) {
+              console.log(`✅ Success message sent to ${phoneNumber} after credential update`);
+            } else {
+              console.log(`ℹ️ Bot not running, success message not sent to ${phoneNumber}`);
+            }
+          } catch (messageError) {
+            console.warn(`⚠️ Failed to send success message to ${phoneNumber}:`, messageError);
+            // Don't fail the credential update if message sending fails
+          }
+          
+          const responseMessage = messageSent 
+            ? "Credentials updated successfully. Bot can now be restarted. A confirmation message has been sent to your WhatsApp."
+            : "Credentials updated successfully. Bot can now be restarted.";
+            
           res.json({ 
             success: true, 
-            message: "Credentials updated successfully. Bot can now be restarted."
+            message: responseMessage
           });
           break;
           
