@@ -5,6 +5,9 @@ import type { BotInstance } from '@shared/schema';
 interface AutoStatusConfig {
   enabled: boolean;
   reactOn: boolean;
+  lastStatusView?: number;
+  lastStatusReact?: number;
+  throttleDelay: number; // milliseconds between status actions
 }
 
 export class AutoStatusService {
@@ -25,8 +28,9 @@ export class AutoStatusService {
   private initializeConfig(): void {
     if (!existsSync(this.configPath)) {
       const defaultConfig: AutoStatusConfig = {
-        enabled: this.botInstance.autoViewStatus || false,
-        reactOn: this.botInstance.autoLike || false
+        enabled: this.botInstance.autoViewStatus ?? true,
+        reactOn: this.botInstance.autoLike ?? true,
+        throttleDelay: 3000 // 3 seconds between status actions
       };
       writeFileSync(this.configPath, JSON.stringify(defaultConfig, null, 2));
     }
@@ -35,10 +39,16 @@ export class AutoStatusService {
   private getConfig(): AutoStatusConfig {
     try {
       const configData = readFileSync(this.configPath, 'utf8');
-      return JSON.parse(configData);
+      const config = JSON.parse(configData);
+      // Ensure throttleDelay exists for backward compatibility
+      if (!config.throttleDelay) {
+        config.throttleDelay = 3000;
+        this.saveConfig(config);
+      }
+      return config;
     } catch (error) {
       console.error('Error reading auto status config:', error);
-      return { enabled: false, reactOn: false };
+      return { enabled: true, reactOn: true, throttleDelay: 3000 };
     }
   }
 
@@ -76,6 +86,15 @@ export class AutoStatusService {
         return;
       }
 
+      const config = this.getConfig();
+      const now = Date.now();
+      
+      // Check throttling
+      if (config.lastStatusReact && (now - config.lastStatusReact) < config.throttleDelay) {
+        console.log(`⏳ Status reaction throttled - waiting ${config.throttleDelay}ms between reactions`);
+        return;
+      }
+
       // Use the proper relayMessage method for status reactions
       await sock.relayMessage(
         'status@broadcast',
@@ -95,6 +114,12 @@ export class AutoStatusService {
           statusJidList: [statusKey.remoteJid, statusKey.participant || statusKey.remoteJid]
         }
       );
+
+      // Update last reaction time
+      config.lastStatusReact = now;
+      this.saveConfig(config);
+      
+      console.log(`✅ Reacted to status from ${statusKey.participant || statusKey.remoteJid}`);
     } catch (error: any) {
       console.error('❌ Error reacting to status:', error.message);
     }
@@ -103,6 +128,15 @@ export class AutoStatusService {
   public async handleStatusUpdate(sock: any, status: any): Promise<void> {
     try {
       if (!this.isAutoStatusEnabled()) {
+        return;
+      }
+
+      const config = this.getConfig();
+      const now = Date.now();
+      
+      // Check throttling for status viewing
+      if (config.lastStatusView && (now - config.lastStatusView) < config.throttleDelay) {
+        console.log(`⏳ Status viewing throttled - waiting ${config.throttleDelay}ms between views`);
         return;
       }
 
@@ -115,6 +149,11 @@ export class AutoStatusService {
         if (msg.key && msg.key.remoteJid === 'status@broadcast') {
           try {
             await sock.readMessages([msg.key]);
+            
+            // Update last status view time
+            config.lastStatusView = Date.now();
+            this.saveConfig(config);
+            console.log(`👁️ Viewed status from ${msg.key.participant || msg.key.remoteJid}`);
             
             // React to status if enabled
             await this.reactToStatus(sock, msg.key);

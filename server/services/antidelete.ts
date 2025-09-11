@@ -87,11 +87,11 @@ export class AntideleteService {
   private loadAntideleteConfig(): AntideleteConfig {
     try {
       if (!fs.existsSync(this.configPath)) {
-        return { enabled: false };
+        return { enabled: true };
       }
       return JSON.parse(fs.readFileSync(this.configPath, 'utf8'));
     } catch {
-      return { enabled: false };
+      return { enabled: true };
     }
   }
 
