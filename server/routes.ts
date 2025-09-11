@@ -2606,6 +2606,8 @@ Thank you for choosing TREKKER-MD! 🚀`;
   app.delete("/api/admin/bot-instances/:id", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const botId = req.params.id;
+      
+      // Get bot instance to retrieve phone number before deletion
       const botInstance = await storage.getBotInstance(botId);
       
       if (!botInstance) {
@@ -2615,13 +2617,23 @@ Thank you for choosing TREKKER-MD! 🚀`;
       // Stop the bot first
       await botManager.destroyBot(botId);
       
-      // Delete from database
+      // Delete all related data (commands, activities, groups) - CRITICAL MISSING STEP
+      await storage.deleteBotRelatedData(botId);
+      
+      // Delete the bot instance itself
       await storage.deleteBotInstance(botId);
       
-      broadcast({ type: 'BOT_DELETED', data: { botId } });
+      // Remove from god register table if bot instance was found - CRITICAL MISSING STEP  
+      if (botInstance.phoneNumber) {
+        await storage.deleteGlobalRegistration(botInstance.phoneNumber);
+        console.log(`🗑️ Removed ${botInstance.phoneNumber} from god register table`);
+      }
+      
+      broadcast({ type: 'BOT_DELETED', data: { id: botId } });
       
       res.json({ success: true, message: "Bot deleted successfully" });
     } catch (error) {
+      console.error('Delete bot error:', error);
       res.status(500).json({ message: "Failed to delete bot" });
     }
   });
