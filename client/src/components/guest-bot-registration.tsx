@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import CredentialUpdateModal from "./credential-update-modal"; import ServerSelectionPanel from "./server-selection-panel";
@@ -29,7 +30,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       autoLike: false,
       autoReact: false,
       autoView: false,
-      typingIndicator: false,
+      presenceMode: 'none' as 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch',
+      intervalSeconds: 30, // for auto_switch mode
       chatGPT: false
     }
   });
@@ -332,7 +334,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
         autoLike: true,
         autoReact: false,
         autoView: true,
-        typingIndicator: false,
+        presenceMode: 'none' as 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch',
+        intervalSeconds: 30,
         chatGPT: false
       }
     });
@@ -716,23 +719,49 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                       </div>
                     </div>
                     
-                    <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
-                      <Checkbox 
-                        id="typingIndicator"
-                        data-testid="checkbox-typing-indicator"
-                        checked={formData.features.typingIndicator}
-                        onCheckedChange={(checked) => 
+                    <div className="p-3 border rounded-lg hover:bg-muted/50">
+                      <div className="mb-3">
+                        <Label className="text-sm font-medium">Presence Configuration</Label>
+                        <p className="text-xs text-muted-foreground mt-1">Configure how the bot appears online to other users</p>
+                      </div>
+                      <Select
+                        value={formData.features.presenceMode}
+                        onValueChange={(value: 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch') => 
                           setFormData(prev => ({ 
                             ...prev, 
-                            features: { ...prev.features, typingIndicator: !!checked } 
+                            features: { ...prev.features, presenceMode: value } 
                           }))
                         }
-                        className="mt-1"
-                      />
-                      <div className="flex-1">
-                        <Label htmlFor="typingIndicator" className="text-sm font-medium cursor-pointer">Presence Configuration</Label>
-                        <p className="text-xs text-muted-foreground mt-1">Configure bot presence (always online, typing, recording, etc.)</p>
-                      </div>
+                      >
+                        <SelectTrigger data-testid="select-presence-mode">
+                          <SelectValue placeholder="Select presence mode" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None - Appear as normal</SelectItem>
+                          <SelectItem value="always_online">Always Online</SelectItem>
+                          <SelectItem value="always_typing">Always Typing</SelectItem>
+                          <SelectItem value="always_recording">Always Recording</SelectItem>
+                          <SelectItem value="auto_switch">Auto Switch (Recording & Typing)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      {formData.features.presenceMode === 'auto_switch' && (
+                        <div className="mt-3">
+                          <Label className="text-xs text-muted-foreground">Switch Interval (seconds)</Label>
+                          <Input
+                            type="number"
+                            min="5"
+                            max="120"
+                            value={formData.features.intervalSeconds}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              features: { ...prev.features, intervalSeconds: parseInt(e.target.value) || 30 }
+                            }))}
+                            className="mt-1"
+                            data-testid="input-interval-seconds"
+                          />
+                        </div>
+                      )}
                     </div>
                     
                     <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 md:col-span-2">
