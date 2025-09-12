@@ -35,5 +35,5 @@ externalPort = 80
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["yarn", "start"]
-build = ["yarn", "--frozen-lockfile", "install", ";", "yarn", "build"]
+run = ["npm", "run", "start"]
+build = ["npm", "run", "build"]
