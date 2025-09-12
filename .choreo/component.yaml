@@ -2,11 +2,11 @@ schemaVersion: "1.2"
 
 build:
   commands:
-    - npm ci
-    - npm install
-    - npm run build
+    - yarn --frozen-lockfile install; yarn build
 start:
-  command: npm run dev
+  command:
+   - yarn install
+   - yarn dev
 
 endpoints:
   # REST Endpoint
@@ -18,15 +18,13 @@ endpoints:
       port: 8080
       networkVisibilities:
         - Public
-      schemaFilePath: openapi.yaml
 
   # WebSocket Endpoint
   - name: websocket-service
     displayName: WebSocket Service
     type: WS
     service:
-      basePath: /your-websocket-context
+      basePath: /
       port: 5000
       networkVisibilities:
         - Public
-      schemaFilePath: chat_asyncapi.yaml
