@@ -148,7 +148,7 @@ export const cleanupDuplicateCreds = async (): Promise<{
     console.error('Error cleaning up duplicate creds:', error);
     return {
       removed: 0,
-      errors: [error.message]
+      errors: [error instanceof Error ? error.message : 'Unknown error occurred']
     };
   }
 };

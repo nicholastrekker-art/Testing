@@ -16,6 +16,42 @@ import CommandManagement from "@/components/command-management";
 import GuestBotRegistration from "@/components/guest-bot-registration";
 import AdminBotManagement from "@/components/admin-bot-management";
 
+// Type definitions
+interface ServerInfo {
+  serverName?: string;
+  currentBots?: number;
+  maxBots?: number;
+  hasSecretConfig?: boolean;
+}
+
+interface GodRegistryEntry {
+  phoneNumber: string;
+  tenancyName: string;
+  registeredAt: string;
+}
+
+interface BotFeatures {
+  autoLike?: boolean;
+  autoReact?: boolean;
+  autoView?: boolean;
+  typingIndicator?: boolean;
+  chatGPT?: boolean;
+  [key: string]: boolean | undefined;
+}
+
+interface BotSettings {
+  features?: BotFeatures;
+}
+
+interface BotInstance {
+  id: string;
+  name: string;
+  phoneNumber?: string;
+  status: string;
+  expirationMonths?: number;
+  settings?: BotSettings;
+}
+
 export default function Dashboard() {
   const { isAdmin } = useAuth();
   const { toast } = useToast();
@@ -24,8 +60,8 @@ export default function Dashboard() {
   const [showGuestRegistration, setShowGuestRegistration] = useState(false);
   const [showAdminBotManagement, setShowAdminBotManagement] = useState(false);
   const [showGodRegistry, setShowGodRegistry] = useState(false);
-  const [selectedBotForFeatures, setSelectedBotForFeatures] = useState<any>(null);
-  const [editingRegistration, setEditingRegistration] = useState<any>(null);
+  const [selectedBotForFeatures, setSelectedBotForFeatures] = useState<BotInstance | null>(null);
+  const [editingRegistration, setEditingRegistration] = useState<GodRegistryEntry | null>(null);
 
   // Fetch dashboard stats
   const { data: stats = {}, isLoading: statsLoading } = useQuery({
@@ -33,7 +69,7 @@ export default function Dashboard() {
   });
 
   // Fetch server info
-  const { data: serverInfo = {}, isLoading: serverLoading } = useQuery({
+  const { data: serverInfo = {} as ServerInfo, isLoading: serverLoading } = useQuery<ServerInfo>({
     queryKey: ["/api/server/info"],
   });
 
@@ -65,7 +101,7 @@ export default function Dashboard() {
   });
 
   // Fetch God registry for admin
-  const { data: godRegistry = [], isLoading: registryLoading } = useQuery({
+  const { data: godRegistry = [] as GodRegistryEntry[], isLoading: registryLoading } = useQuery<GodRegistryEntry[]>({
     queryKey: ["/api/admin/god-registry"],
     enabled: isAdmin
   });
@@ -696,7 +732,7 @@ export default function Dashboard() {
                             enabled: !!checked
                           });
                           // Update local state immediately for UI responsiveness
-                          setSelectedBotForFeatures(prev => ({
+                          setSelectedBotForFeatures((prev: BotInstance | null) => prev ? ({
                             ...prev,
                             settings: {
                               ...prev.settings,
@@ -705,7 +741,7 @@ export default function Dashboard() {
                                 [feature.key]: !!checked
                               }
                             }
-                          }));
+                          }) : null);
                         }}
                         disabled={toggleFeatureMutation.isPending}
                       />
@@ -749,7 +785,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {godRegistry.map((registration: any) => (
+                  {godRegistry.map((registration: GodRegistryEntry) => (
                     <div key={registration.phoneNumber} className="border border-border rounded-lg p-4">
                       <div className="flex items-center justify-between">
                         <div>
