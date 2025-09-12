@@ -212,77 +212,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Credentials validation endpoint (accessible to everyone)
   app.post("/api/validate-credentials", upload.single('credentials') as any, async (req, res) => {
     try {
-      if (!req.file) {
-        return res.status(400).json({ 
-          message: "Please upload a credentials.json file" 
-        });
-      }
-      
       let credentials;
-      try {
-        credentials = JSON.parse(req.file.buffer.toString());
-      } catch (error) {
+      let credentialType = 'file'; // Default to file
+      
+      // Handle Base64 session data
+      if (req.body.sessionData) {
+        credentialType = 'base64';
+        try {
+          const decoded = Buffer.from(req.body.sessionData, 'base64').toString('utf-8');
+          credentials = JSON.parse(decoded);
+        } catch (error) {
+          return res.status(400).json({ 
+            message: "❌ Invalid Base64 session data. Please ensure it's properly encoded WhatsApp session data." 
+          });
+        }
+      }
+      // Handle file upload
+      else if (req.file) {
+        try {
+          credentials = JSON.parse(req.file.buffer.toString());
+        } catch (error) {
+          return res.status(400).json({ 
+            message: "❌ Invalid JSON file. Please ensure you're uploading a valid credentials.json file." 
+          });
+        }
+      } else {
         return res.status(400).json({ 
-          message: "❌ Invalid JSON file. Please ensure you're uploading a valid credentials.json file." 
+          message: "Please provide credentials either as a file upload or Base64 session data" 
         });
       }
       
       // Basic validation of credentials structure
-      if (!credentials || typeof credentials !== 'object') {
+      if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
         return res.status(400).json({ 
-          message: "❌ Invalid credentials file format. Please upload a valid WhatsApp session file." 
+          message: "❌ Invalid credentials format. Please upload a valid WhatsApp session file." 
         });
       }
       
-      // Try to test the credentials by creating a temporary bot instance
-      const testBotData = {
-        name: `Test_${Date.now()}`,
-        credentials,
-        autoLike: false,
-        autoViewStatus: false,
-        autoReact: false,
-        chatgptEnabled: false,
-        typingMode: 'none'
-      };
+      // Check required fields for WhatsApp credentials
+      const requiredFields = ['creds', 'noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
+      const missingFields = requiredFields.filter(field => !credentials[field]);
       
-      try {
-        const validatedData = insertBotInstanceSchema.parse(testBotData);
-        const testBot = await storage.createBotInstance(validatedData);
-        
-        // Try to initialize the bot to test credentials
-        await botManager.createBot(testBot.id, testBot);
-        
-        // If we get here, credentials are valid
-        // Clean up the test bot immediately
-        await botManager.destroyBot(testBot.id);
-        await storage.deleteBotInstance(testBot.id);
-        
-        res.json({ 
-          valid: true,
-          message: "✅ Your credentials.json is valid! Checking admin approval...",
-          status: "pending_approval"
+      if (missingFields.length > 0) {
+        return res.status(400).json({ 
+          message: `❌ Missing required fields in credentials: ${missingFields.join(', ')}. Please ensure you're using a complete WhatsApp session file.` 
         });
+      }
+      
+      // Validate phone number ownership if provided
+      const phoneNumber = req.body.phoneNumber;
+      if (phoneNumber && credentials.creds?.me?.id) {
+        const credentialsPhone = credentials.creds.me.id.match(/^(\d+):/)?.[1];
+        const providedPhoneNormalized = phoneNumber.replace(/\D/g, '');
         
-      } catch (botError) {
-        // Clean up if bot creation failed
-        try {
-          // testBot is defined in the try block above, cleanup if needed
-          console.error('Bot creation failed, cleaning up...');
-        } catch (cleanupError) {
-          console.error('Cleanup error:', cleanupError);
+        if (credentialsPhone && providedPhoneNormalized) {
+          if (credentialsPhone !== providedPhoneNormalized) {
+            return res.status(400).json({ 
+              message: `❌ Phone number mismatch. The credentials belong to +${credentialsPhone} but you provided +${providedPhoneNormalized}. Please use the correct credentials for your phone number.` 
+            });
+          }
         }
-        
-        res.status(400).json({ 
+      }
+      
+      // Check file size (for file uploads)
+      if (credentialType === 'file' && req.file) {
+        const fileSizeKB = req.file.buffer.length / 1024;
+        if (fileSizeKB < 0.01 || fileSizeKB > 5120) { // 10 bytes to 5MB
+          return res.status(400).json({ 
+            message: `❌ Invalid file size (${fileSizeKB.toFixed(2)} KB). Credentials file should be between 10 bytes and 5MB.` 
+          });
+        }
+      }
+      
+      // Check for duplicate credentials using checksum
+      const { validateCredsUniqueness } = await import('./services/creds-validator');
+      const uniquenessCheck = await validateCredsUniqueness(credentials);
+      
+      if (uniquenessCheck.exists) {
+        return res.status(400).json({ 
           valid: false,
-          message: "❌ Invalid credentials.json file. Please ensure it's a valid WhatsApp session file.",
-          error: botError instanceof Error ? botError.message : 'Unknown error'
+          message: uniquenessCheck.message,
+          isDuplicate: true
         });
       }
+      
+      // All validations passed
+      res.json({ 
+        valid: true,
+        message: "✅ Your credentials are valid and ready for registration!",
+        credentialType,
+        phoneNumber: credentials.creds?.me?.id?.match(/^(\d+):/)?.[1] || null,
+        isUnique: true
+      });
       
     } catch (error) {
       console.error('Credentials validation error:', error);
       res.status(500).json({ 
-        message: "Failed to validate credentials",
+        valid: false,
+        message: "Failed to validate credentials. Please try again.",
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
