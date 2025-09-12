@@ -3,7 +3,8 @@ schemaVersion: "1.2"
 build:
   commands:
     - npm ci
-    -npm run build
+    - npm install
+    - npm run build
 start:
   command: npm run dev
 
