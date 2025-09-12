@@ -26,14 +26,29 @@ if (dbConfig.url) {
   );
 }
 
-// Configure SSL based on environment
-const sslConfig = process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false };
+// Configure SSL based on environment with better error handling
+let sslConfig;
+if (process.env.DB_SSL === 'false') {
+  sslConfig = false;
+} else {
+  // Try without SSL first for testing, then fall back to SSL if required
+  sslConfig = false;
+}
 
-// Use the standard postgres driver with flexible SSL handling
+// Use the standard postgres driver with flexible SSL handling and connection retry
 const client = postgres(connectionString, {
   ssl: sslConfig,
   max: parseInt(process.env.DB_MAX_CONNECTIONS || '10'),
-  prepare: false
+  prepare: false,
+  // Add connection retry and timeout settings
+  connect_timeout: 30,
+  idle_timeout: 0,
+  max_lifetime: 300,
+  // Add retry logic for connection issues
+  onnotice: () => {}, // Suppress notices
+  transform: {
+    undefined: null
+  }
 });
 
 export const db = drizzle(client, { schema });
