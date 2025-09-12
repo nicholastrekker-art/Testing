@@ -3,9 +3,9 @@ import makeWASocket, {
   ConnectionState, 
   useMultiFileAuthState,
   WAMessage,
-  BaileysEventMap,
-  proto
+  BaileysEventMap
 } from '@whiskeysockets/baileys';
+import * as Baileys from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import { storage } from '../storage';
 import { generateChatGPTResponse } from './openai';
@@ -193,7 +193,7 @@ export class WhatsAppBot {
     this.sock.ev.on('messages.update', async (updates: { key: any; update: any }[]) => {
       for (const { key, update } of updates) {
         // Check if this is a message deletion
-        if (update.message?.protocolMessage?.type === proto.Message.ProtocolMessage.Type.REVOKE) {
+        if (update.message?.protocolMessage?.type === Baileys.proto.Message.ProtocolMessage.Type.REVOKE) {
           const revocationMessage = { key, message: update.message };
           await antideleteService.handleMessageRevocation(this.sock, revocationMessage);
         }

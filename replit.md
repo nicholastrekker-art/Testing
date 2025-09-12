@@ -66,7 +66,7 @@ Bots support various automation modes including auto-like for status updates, au
 - **Auto-Migration**: Automatic table creation and schema management on startup
 
 ### WhatsApp Integration
-- **whatsapp-web.js**: Primary library for WhatsApp Web automation
+- **@whiskeysockets/baileys**: Primary library for WhatsApp Web automation
 - **puppeteer**: Headless browser automation for WhatsApp Web interface
 
 ### AI Integration
