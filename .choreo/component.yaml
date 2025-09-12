@@ -4,9 +4,7 @@ build:
   commands:
     - yarn --frozen-lockfile install; yarn build
 start:
-  command:
-   - yarn install
-   - yarn run dev
+  command: yarn run dev
 
 endpoints:
   # REST Endpoint
