@@ -1,0 +1,32 @@
+schemaVersion: "1.2"
+
+build:
+  commands:
+    - npm ci
+    - npm install
+    - npm run build
+start:
+  command: npm run dev
+
+endpoints:
+  # REST Endpoint
+  - name: rest-service
+    displayName: REST Service
+    type: REST
+    service:
+      basePath: /api
+      port: 8080
+      networkVisibilities:
+        - Public
+      schemaFilePath: openapi.yaml
+
+  # WebSocket Endpoint
+  - name: websocket-service
+    displayName: WebSocket Service
+    type: WS
+    service:
+      basePath: /your-websocket-context
+      port: 5000
+      networkVisibilities:
+        - Public
+      schemaFilePath: chat_asyncapi.yaml
