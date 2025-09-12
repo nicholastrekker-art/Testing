@@ -193,11 +193,14 @@ export async function initializeDatabase() {
         await client`
           CREATE TABLE IF NOT EXISTS activities (
             id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
-            bot_instance_id VARCHAR NOT NULL,
+            bot_instance_id VARCHAR,
             type TEXT NOT NULL,
             description TEXT NOT NULL,
             metadata JSONB DEFAULT '{}',
             server_name TEXT NOT NULL,
+            remote_tenancy TEXT,
+            remote_bot_id TEXT,
+            phone_number TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
