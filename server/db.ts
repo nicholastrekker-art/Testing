@@ -34,10 +34,16 @@ if (dbSslEnv === 'disable' || dbSslEnv === 'false') {
   // In Replit development environment, the TLS handshake consistently fails
   // even with rejectUnauthorized: false. Since we confirmed the connection
   // works without SSL, use that for development but require explicit config for production
-  if (process.env.NODE_ENV === 'development') {
+  const isReplitLocalDB = dbConfig.host === 'helium' || dbConfig.host === 'localhost' || dbConfig.host?.includes('127.0.0.1');
+  
+  if (process.env.NODE_ENV === 'development' && isReplitLocalDB) {
     sslConfig = false;
     sslMode = '';
-    console.log('🔓 Database SSL disabled for development (Replit compatibility). Set DB_SSL=require for production.');
+    console.log('🔓 Database SSL disabled for development (Replit local database). Set DB_SSL=require for external databases.');
+  } else if (process.env.NODE_ENV === 'development') {
+    sslConfig = { rejectUnauthorized: false };
+    sslMode = '?sslmode=require';
+    console.log('🔒 Database SSL enabled (development with external DB)');
   } else {
     // Production should use secure SSL required
     sslConfig = true;
@@ -61,7 +67,18 @@ if (sslConfig === false && dbConfig.host && !dbConfig.host.includes('localhost')
 // Determine database URL from available environment variables with proper encoding
 let connectionString: string;
 
-if (dbConfig.url) {
+// In Replit, prefer individual PG* variables over external DATABASE_URL for local development
+// This allows us to use the local Replit database without SSL issues
+if (dbConfig.host && dbConfig.database && dbConfig.username && dbConfig.password && 
+    (process.env.NODE_ENV === 'development' || !dbConfig.url)) {
+  // Properly encode credentials to handle special characters
+  const encodedUser = encodeURIComponent(dbConfig.username);
+  const encodedPass = encodeURIComponent(dbConfig.password);
+  const encodedDb = encodeURIComponent(dbConfig.database);
+  
+  connectionString = `postgresql://${encodedUser}:${encodedPass}@${dbConfig.host}:${dbConfig.port}/${encodedDb}${sslMode}`;
+  console.log(`🔗 Constructed DATABASE_URL with host: ${dbConfig.host}, SSL mode: ${sslMode || 'disabled'}`);
+} else if (dbConfig.url) {
   connectionString = dbConfig.url;
   // Add sslmode if not already present and SSL is enabled
   if (sslConfig !== false && !dbConfig.url.includes('sslmode=')) {
