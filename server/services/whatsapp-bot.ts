@@ -430,7 +430,7 @@ export class WhatsAppBot {
       const { state, saveCreds } = await useMultiFileAuthState(this.authDir);
       
       // Create isolated socket connection with unique configuration
-      this.sock = makeWASocket({
+      this.sock = Baileys.makeWASocket({
         auth: state,
         printQRInTerminal: false, // Disable QR printing to avoid conflicts
         logger: this.createLogger(),
