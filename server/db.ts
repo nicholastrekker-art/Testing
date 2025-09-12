@@ -13,26 +13,73 @@ const dbConfig = {
   password: process.env.PGPASSWORD || process.env.DB_PASSWORD,
 };
 
-// Determine database URL from available environment variables
+// Configure SSL mode before constructing connection string
+const dbSslEnv = process.env.DB_SSL;
+let sslConfig: boolean | object | "require" | "allow" | "prefer" | "verify-full" | undefined;
+let sslMode = '';
+
+if (dbSslEnv === 'disable' || dbSslEnv === 'false') {
+  sslConfig = false;
+  sslMode = '';
+  console.log('🔓 Database SSL disabled by environment configuration');
+} else if (dbSslEnv === 'require') {
+  sslConfig = true;
+  sslMode = '?sslmode=require';
+  console.log('🔒 Database SSL required (strict mode)');
+} else if (dbSslEnv === 'no-verify') {
+  sslConfig = { rejectUnauthorized: false };
+  sslMode = '?sslmode=require';
+  console.log('🔒 Database SSL enabled with certificate verification disabled');
+} else {
+  // In Replit development environment, the TLS handshake consistently fails
+  // even with rejectUnauthorized: false. Since we confirmed the connection
+  // works without SSL, use that for development but require explicit config for production
+  if (process.env.NODE_ENV === 'development') {
+    sslConfig = false;
+    sslMode = '';
+    console.log('🔓 Database SSL disabled for development (Replit compatibility). Set DB_SSL=require for production.');
+  } else {
+    // Production should use secure SSL required
+    sslConfig = true;
+    sslMode = '?sslmode=require';
+    console.log('🔒 Database SSL required (secure default)');
+  }
+}
+
+// Production safety guard: prevent running without SSL in production
+if (process.env.NODE_ENV !== 'development' && sslConfig === false) {
+  console.error('❌ SECURITY ERROR: SSL is disabled in non-development environment!');
+  console.error('   Set DB_SSL=require for production or DB_SSL=no-verify if necessary.');
+  process.exit(1);
+}
+
+// Development warning for non-localhost without SSL
+if (sslConfig === false && dbConfig.host && !dbConfig.host.includes('localhost') && !dbConfig.host.includes('127.0.0.1')) {
+  console.warn('⚠️  WARNING: SSL disabled for non-localhost database connection');
+}
+
+// Determine database URL from available environment variables with proper encoding
 let connectionString: string;
 
 if (dbConfig.url) {
   connectionString = dbConfig.url;
+  // Add sslmode if not already present and SSL is enabled
+  if (sslConfig !== false && !dbConfig.url.includes('sslmode=')) {
+    connectionString += (dbConfig.url.includes('?') ? '&' : '?') + 'sslmode=require';
+  }
+  console.log(`🔗 Using provided DATABASE_URL with host: ${new URL(dbConfig.url).hostname}`);
 } else if (dbConfig.host && dbConfig.database && dbConfig.username && dbConfig.password) {
-  connectionString = `postgresql://${dbConfig.username}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`;
+  // Properly encode credentials to handle special characters
+  const encodedUser = encodeURIComponent(dbConfig.username);
+  const encodedPass = encodeURIComponent(dbConfig.password);
+  const encodedDb = encodeURIComponent(dbConfig.database);
+  
+  connectionString = `postgresql://${encodedUser}:${encodedPass}@${dbConfig.host}:${dbConfig.port}/${encodedDb}${sslMode}`;
+  console.log(`🔗 Constructed DATABASE_URL with host: ${dbConfig.host}, SSL mode: ${sslMode || 'disabled'}`);
 } else {
   throw new Error(
     "Database connection not configured. Please set either DATABASE_URL or individual database environment variables (DB_HOST, DB_NAME, DB_USER, DB_PASSWORD)"
   );
-}
-
-// Configure SSL based on environment with better error handling
-let sslConfig;
-if (process.env.DB_SSL === 'false') {
-  sslConfig = false;
-} else {
-  // Try without SSL first for testing, then fall back to SSL if required
-  sslConfig = false;
 }
 
 // Use the standard postgres driver with flexible SSL handling and connection retry
