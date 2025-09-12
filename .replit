@@ -15,15 +15,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Production Server"
+args = "Development Server"
 
 [[workflows.workflow]]
-name = "Production Server"
+name = "Development Server"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "yarn start"
+args = "yarn dev"
 waitForPort = 5000
 
 [workflows.workflow.metadata]

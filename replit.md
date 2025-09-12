@@ -6,10 +6,12 @@ This is a WhatsApp Bot Management application built as a full-stack web applicat
 
 ## Recent Changes (September 12, 2025)
 
+- **DEVELOPMENT MODE ONLY**: Removed all production mode configurations and build processes - application only runs in development mode
 - **DATABASE_URL ONLY RULE**: Implemented strict database configuration that ONLY works with DATABASE_URL from Replit secrets
 - **Removed Replit Built-in Database Support**: Application no longer supports PG* environment variables or local Replit database
 - **Enhanced SSL Security**: Automatic SSL requirement for all database connections with proper certificate verification
 - **Import Configuration**: Updated for consistent behavior across GitHub imports to Replit
+- **Simplified Build**: Removed TypeScript compilation, import fixing scripts, and Docker configurations - uses tsx directly
 
 ## Previous Changes (September 10, 2025)
 

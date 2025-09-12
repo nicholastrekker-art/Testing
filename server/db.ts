@@ -27,27 +27,13 @@ if (dbSslEnv === 'disable' || dbSslEnv === 'false') {
   sslMode = '?sslmode=require';
   console.log('🔒 Database SSL enabled with certificate verification disabled');
 } else {
-  // Since we only use DATABASE_URL from secrets, SSL is required by default
-  // for security unless explicitly disabled for development
-  if (process.env.NODE_ENV === 'development') {
-    // In development, allow no-verify SSL for external databases
-    sslConfig = { rejectUnauthorized: false };
-    sslMode = '?sslmode=require';
-    console.log('🔒 Database SSL enabled with certificate verification disabled (development mode)');
-  } else {
-    // Production should use secure SSL required
-    sslConfig = true;
-    sslMode = '?sslmode=require';
-    console.log('🔒 Database SSL required (production mode)');
-  }
+  // Development mode SSL - allow no-verify SSL for external databases
+  sslConfig = { rejectUnauthorized: false };
+  sslMode = '?sslmode=require';
+  console.log('🔒 Database SSL enabled with certificate verification disabled (development mode)');
 }
 
-// Production safety guard: prevent running without SSL in production
-if (process.env.NODE_ENV !== 'development' && sslConfig === false) {
-  console.error('❌ SECURITY ERROR: SSL is disabled in non-development environment!');
-  console.error('   Set DB_SSL=require for production or DB_SSL=no-verify if necessary.');
-  process.exit(1);
-}
+// Development mode - SSL configuration is flexible
 
 // ENFORCE DATABASE_URL ONLY RULE: Check if DATABASE_URL is set in secrets
 if (!dbConfig.url) {
