@@ -3,14 +3,10 @@ import postgres from 'postgres';
 import * as schema from "@shared/schema";
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
 
-// Database configuration from environment variables
+// STRICT DATABASE_URL ONLY RULE: This application only works with DATABASE_URL from secrets
+// No other database configuration is supported (no PG* variables, no Replit built-in database)
 const dbConfig = {
   url: process.env.DATABASE_URL,
-  host: process.env.PGHOST || process.env.DB_HOST,
-  port: parseInt(process.env.PGPORT || process.env.DB_PORT || '5432'),
-  database: process.env.PGDATABASE || process.env.DB_NAME,
-  username: process.env.PGUSER || process.env.DB_USER,
-  password: process.env.PGPASSWORD || process.env.DB_PASSWORD,
 };
 
 // Configure SSL mode before constructing connection string
@@ -31,24 +27,18 @@ if (dbSslEnv === 'disable' || dbSslEnv === 'false') {
   sslMode = '?sslmode=require';
   console.log('🔒 Database SSL enabled with certificate verification disabled');
 } else {
-  // In Replit development environment, the TLS handshake consistently fails
-  // even with rejectUnauthorized: false. Since we confirmed the connection
-  // works without SSL, use that for development but require explicit config for production
-  const isReplitLocalDB = dbConfig.host === 'helium' || dbConfig.host === 'localhost' || dbConfig.host?.includes('127.0.0.1');
-  
-  if (process.env.NODE_ENV === 'development' && isReplitLocalDB) {
-    sslConfig = false;
-    sslMode = '';
-    console.log('🔓 Database SSL disabled for development (Replit local database). Set DB_SSL=require for external databases.');
-  } else if (process.env.NODE_ENV === 'development') {
+  // Since we only use DATABASE_URL from secrets, SSL is required by default
+  // for security unless explicitly disabled for development
+  if (process.env.NODE_ENV === 'development') {
+    // In development, allow no-verify SSL for external databases
     sslConfig = { rejectUnauthorized: false };
     sslMode = '?sslmode=require';
-    console.log('🔒 Database SSL enabled (development with external DB)');
+    console.log('🔒 Database SSL enabled with certificate verification disabled (development mode)');
   } else {
     // Production should use secure SSL required
     sslConfig = true;
     sslMode = '?sslmode=require';
-    console.log('🔒 Database SSL required (secure default)');
+    console.log('🔒 Database SSL required (production mode)');
   }
 }
 
@@ -59,44 +49,28 @@ if (process.env.NODE_ENV !== 'development' && sslConfig === false) {
   process.exit(1);
 }
 
-// Development warning for non-localhost without SSL
-if (sslConfig === false && dbConfig.host && !dbConfig.host.includes('localhost') && !dbConfig.host.includes('127.0.0.1')) {
-  console.warn('⚠️  WARNING: SSL disabled for non-localhost database connection');
+// ENFORCE DATABASE_URL ONLY RULE: Check if DATABASE_URL is set in secrets
+if (!dbConfig.url) {
+  console.error('❌ DATABASE_URL is required but not found in secrets!');
+  console.error('   Please set DATABASE_URL in Replit secrets before starting the application.');
+  console.error('   This application only works with DATABASE_URL from secrets, no other database configuration is supported.');
+  process.exit(1);
 }
 
-// Determine database URL from available environment variables with proper encoding
-let connectionString: string;
+// Use the DATABASE_URL from secrets exclusively
+let connectionString: string = dbConfig.url;
 
-// In Replit, prefer individual PG* variables over external DATABASE_URL for local development
-// This allows us to use the local Replit database without SSL issues
-if (dbConfig.host && dbConfig.database && dbConfig.username && dbConfig.password && 
-    (process.env.NODE_ENV === 'development' || !dbConfig.url)) {
-  // Properly encode credentials to handle special characters
-  const encodedUser = encodeURIComponent(dbConfig.username);
-  const encodedPass = encodeURIComponent(dbConfig.password);
-  const encodedDb = encodeURIComponent(dbConfig.database);
-  
-  connectionString = `postgresql://${encodedUser}:${encodedPass}@${dbConfig.host}:${dbConfig.port}/${encodedDb}${sslMode}`;
-  console.log(`🔗 Constructed DATABASE_URL with host: ${dbConfig.host}, SSL mode: ${sslMode || 'disabled'}`);
-} else if (dbConfig.url) {
-  connectionString = dbConfig.url;
-  // Add sslmode if not already present and SSL is enabled
-  if (sslConfig !== false && !dbConfig.url.includes('sslmode=')) {
-    connectionString += (dbConfig.url.includes('?') ? '&' : '?') + 'sslmode=require';
-  }
-  console.log(`🔗 Using provided DATABASE_URL with host: ${new URL(dbConfig.url).hostname}`);
-} else if (dbConfig.host && dbConfig.database && dbConfig.username && dbConfig.password) {
-  // Properly encode credentials to handle special characters
-  const encodedUser = encodeURIComponent(dbConfig.username);
-  const encodedPass = encodeURIComponent(dbConfig.password);
-  const encodedDb = encodeURIComponent(dbConfig.database);
-  
-  connectionString = `postgresql://${encodedUser}:${encodedPass}@${dbConfig.host}:${dbConfig.port}/${encodedDb}${sslMode}`;
-  console.log(`🔗 Constructed DATABASE_URL with host: ${dbConfig.host}, SSL mode: ${sslMode || 'disabled'}`);
-} else {
-  throw new Error(
-    "Database connection not configured. Please set either DATABASE_URL or individual database environment variables (DB_HOST, DB_NAME, DB_USER, DB_PASSWORD)"
-  );
+// Add SSL mode to connection string if not already present and SSL is enabled
+if (sslConfig !== false && !connectionString.includes('sslmode=')) {
+  connectionString += (connectionString.includes('?') ? '&' : '?') + 'sslmode=require';
+}
+
+// Log connection info (host only, never credentials)
+try {
+  const dbUrl = new URL(dbConfig.url);
+  console.log(`🔗 Using DATABASE_URL from secrets with host: ${dbUrl.hostname}`);
+} catch (urlError) {
+  console.log('🔗 Using DATABASE_URL from secrets (invalid URL format for logging)');
 }
 
 // Use the standard postgres driver with flexible SSL handling and connection retry

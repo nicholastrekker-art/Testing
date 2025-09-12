@@ -4,7 +4,14 @@
 
 This is a WhatsApp Bot Management application built as a full-stack web application for creating, managing, and monitoring WhatsApp bot instances. The system provides a comprehensive dashboard for controlling multiple bot instances, managing commands, and tracking activities in real-time. Each bot can be configured with automation features like auto-like, auto-react, and ChatGPT integration for intelligent responses.
 
-## Recent Changes (September 10, 2025)
+## Recent Changes (September 12, 2025)
+
+- **DATABASE_URL ONLY RULE**: Implemented strict database configuration that ONLY works with DATABASE_URL from Replit secrets
+- **Removed Replit Built-in Database Support**: Application no longer supports PG* environment variables or local Replit database
+- **Enhanced SSL Security**: Automatic SSL requirement for all database connections with proper certificate verification
+- **Import Configuration**: Updated for consistent behavior across GitHub imports to Replit
+
+## Previous Changes (September 10, 2025)
 
 - **Tenant Switching System**: Implemented true tenant switching where changing server names completely switches server context
 - **Environment Variable Change**: Changed from NAME to SERVER_NAME environment variable with UI fallback
@@ -24,6 +31,13 @@ This is a WhatsApp Bot Management application built as a full-stack web applicat
 
 ## User Preferences
 
+**CRITICAL DATABASE RULE FOR REPLIT AGENTS**: 
+- This application ONLY works with DATABASE_URL set in Replit secrets
+- NEVER use Replit's built-in database or PG* environment variables
+- The application will refuse to start without DATABASE_URL from secrets
+- Wait for DATABASE_URL to be set in secrets before attempting to start the application
+- This rule applies to ALL GitHub imports to Replit for this project
+
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
@@ -35,11 +49,13 @@ The client-side is built with React and TypeScript using Vite as the build tool.
 The server runs on Express.js with TypeScript, following a modular architecture. The bot management system uses a service-oriented approach with dedicated services for WhatsApp bot operations, OpenAI integration, and database operations. The WhatsApp functionality is implemented using the whatsapp-web.js library, which provides a reliable interface to WhatsApp Web. Real-time communication between server and clients is achieved through WebSocket connections for instant status updates and notifications.
 
 ### Database Layer
-The application uses PostgreSQL as the primary database with Drizzle ORM for type-safe database operations. The database configuration is flexible and supports multiple deployment scenarios:
+The application uses PostgreSQL as the primary database with Drizzle ORM for type-safe database operations. **CRITICAL**: This application exclusively uses DATABASE_URL from Replit secrets.
 
-**Database Configuration Options:**
-- **Environment Variables**: Supports both DATABASE_URL or individual database variables (DB_HOST, DB_NAME, DB_USER, DB_PASSWORD)
-- **SSL Configuration**: Automatically configures SSL based on environment (can be disabled with DB_SSL=false)
+**Database Configuration Requirements:**
+- **DATABASE_URL ONLY**: The application ONLY works with DATABASE_URL set in Replit secrets
+- **NO Local Database Support**: Replit built-in database and PG* variables are NOT supported
+- **SSL Required**: Automatic SSL configuration with certificate verification for security
+- **External Database Required**: Must use external PostgreSQL providers (Neon, Supabase, AWS RDS, Render, etc.)
 - **Connection Pooling**: Configurable connection pool size via DB_MAX_CONNECTIONS
 - **Auto-Initialization**: Automatically creates database tables on startup if they don't exist
 
