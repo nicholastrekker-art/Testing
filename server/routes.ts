@@ -77,6 +77,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set broadcast function in bot manager
   botManager.setBroadcastFunction(broadcast);
   
+  // Health check endpoints for container orchestration (Kubernetes, etc.)
+  app.get("/health", (req, res) => {
+    res.status(200).json({ 
+      status: "healthy", 
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
+    });
+  });
+  
+  app.get("/ready", async (req, res) => {
+    try {
+      // Simple database ping to check connectivity
+      await storage.getAllServers();
+      res.status(200).json({ 
+        status: "ready", 
+        timestamp: new Date().toISOString(),
+        database: "connected"
+      });
+    } catch (error) {
+      res.status(503).json({ 
+        status: "not ready", 
+        timestamp: new Date().toISOString(),
+        database: "disconnected",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+  
   // Function to resume all saved bots from database on startup
   async function resumeSavedBots() {
     try {

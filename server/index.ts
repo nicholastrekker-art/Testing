@@ -75,4 +75,31 @@ app.use((req, res, next) => {
   }, () => {
     log(`serving on port ${port}`);
   });
-})();
+
+  // Graceful shutdown handling for containerized environments
+  const gracefulShutdown = (signal: string) => {
+    log(`${signal} received, shutting down gracefully`);
+    server.close((err) => {
+      if (err) {
+        log(`Error during server shutdown: ${err.message}`);
+        process.exit(1);
+      }
+      log('Server closed successfully');
+      process.exit(0);
+    });
+    
+    // Force shutdown after 10 seconds
+    setTimeout(() => {
+      log('Force shutdown after timeout');
+      process.exit(1);
+    }, 10000);
+  };
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  process.on('SIGHUP', () => gracefulShutdown('SIGHUP'));
+
+})().catch(error => {
+  console.error('Failed to start server:', error);
+  process.exit(1);
+});
