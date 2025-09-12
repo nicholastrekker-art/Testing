@@ -21,7 +21,7 @@ const upload = multer({
       cb(new Error('Only JSON files are allowed'));
     }
   },
-  limits: { fileSize: 1024 * 1024 } // 1MB limit
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
 // Helper function to reset to default server after guest registration
@@ -209,8 +209,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ user: req.user });
   });
   
-  // Credentials validation endpoint (accessible to everyone)
-  app.post("/api/validate-credentials", upload.single('credentials') as any, async (req, res) => {
+  // Credentials validation endpoint (accessible to everyone) - handles both JSON and multipart
+  const multipartOnly = (req: any, res: any, next: any) => {
+    return req.is('multipart/form-data') ? upload.single('credentials')(req, res, next) : next();
+  };
+  
+  app.post("/api/validate-credentials", multipartOnly, async (req, res) => {
     try {
       let credentials;
       let credentialType = 'file'; // Default to file
@@ -219,7 +223,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.body.sessionData) {
         credentialType = 'base64';
         try {
-          const decoded = Buffer.from(req.body.sessionData, 'base64').toString('utf-8');
+          const base64Data = req.body.sessionData.trim();
+          
+          // Check Base64 size limit (5MB when decoded)
+          const estimatedSize = (base64Data.length * 3) / 4; // Rough estimate of decoded size
+          const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+          
+          if (estimatedSize > maxSizeBytes) {
+            return res.status(400).json({ 
+              message: `❌ Base64 session data too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
+            });
+          }
+          
+          const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
+          
+          // Check actual decoded size
+          if (decoded.length > maxSizeBytes) {
+            return res.status(400).json({ 
+              message: `❌ Decoded session data too large (${(decoded.length / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
+            });
+          }
+          
           credentials = JSON.parse(decoded);
         } catch (error) {
           return res.status(400).json({ 
@@ -250,12 +274,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check required fields for WhatsApp credentials
-      const requiredFields = ['creds', 'noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
-      const missingFields = requiredFields.filter(field => !credentials[field]);
+      const missingFields = [];
+      
+      // Check top-level creds object
+      if (!credentials.creds || typeof credentials.creds !== 'object') {
+        missingFields.push('creds');
+      } else {
+        // Check nested fields inside credentials.creds
+        const requiredNestedFields = ['noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
+        for (const field of requiredNestedFields) {
+          if (!credentials.creds[field]) {
+            missingFields.push(`creds.${field}`);
+          }
+        }
+      }
       
       if (missingFields.length > 0) {
         return res.status(400).json({ 
-          message: `❌ Missing required fields in credentials: ${missingFields.join(', ')}. Please ensure you're using a complete WhatsApp session file.` 
+          message: `❌ Missing required fields in credentials: ${missingFields.join(', ')}. Please ensure you're using a complete WhatsApp session file with proper nested structure.` 
         });
       }
       
@@ -1572,44 +1608,33 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       // Check bot count limit using strict validation (no auto-removal)
       const botCountCheck = await storage.strictCheckBotCountLimit();
       if (!botCountCheck.canAdd) {
-        // Get available servers for automatic distribution
+        // Get available servers for user selection instead of auto-assignment
         const availableServers = await storage.getAvailableServers();
         
         if (availableServers.length > 0) {
-          // Auto-select the first available server for cross-tenancy distribution
-          const targetServer = availableServers[0];
-          console.log(`🔄 ${getServerName()} is full (${botCountCheck.currentCount}/${botCountCheck.maxCount}), auto-distributing to ${targetServer.serverName}`);
+          // Return server full response with available server options for user to choose
+          console.log(`🔄 ${getServerName()} is full (${botCountCheck.currentCount}/${botCountCheck.maxCount}), providing server selection to user`);
           
-          // Update God Registry to register bot on target server
-          await storage.deleteGlobalRegistration(phoneNumber); // Remove current server registration
-          await storage.addGlobalRegistration(phoneNumber, targetServer.serverName); // Add to target server
-          
-          // Update target server's bot count in registry
-          const newBotCount = (targetServer.currentBotCount || 0) + 1;
-          await storage.updateServerBotCount(targetServer.serverName, newBotCount);
-          
-          console.log(`📋 Bot ${botName} (${phoneNumber}) registered to ${targetServer.serverName} via cross-tenancy distribution`);
-          
-          // Return response indicating auto-distribution to target server
-          return res.json({
-            type: 'cross_tenancy_registered',
-            message: `✅ ${getServerName()} is full, but your bot has been automatically registered to ${targetServer.serverName}!`,
-            originalServer: getServerName(),
-            assignedServer: targetServer.serverName,
-            serverUrl: targetServer.serverUrl,
-            botDetails: {
-              name: botName,
-              phoneNumber: phoneNumber,
-              assignedTo: targetServer.serverName,
-              availableSlots: targetServer.maxBotCount - newBotCount,
-              registeredVia: 'auto_distribution'
-            },
-            nextSteps: [
-              `Your bot is now registered on ${targetServer.serverName}`,
-              'You can manage your bot from that server',
-              `Contact +254704897825 for activation`,
-              'Cross-tenancy management is enabled for approved bots'
-            ]
+          return res.status(400).json({
+            type: 'server_full_selection',
+            message: `🚫 ${getServerName()} is full! (${botCountCheck.currentCount}/${botCountCheck.maxCount} bots)`,
+            serverFull: true,
+            currentServer: getServerName(),
+            availableServers: availableServers.map(server => ({
+              serverName: server.serverName,
+              currentBots: server.currentBotCount || 0,
+              maxBots: server.maxBotCount,
+              availableSlots: server.maxBotCount - (server.currentBotCount || 0),
+              serverUrl: server.serverUrl,
+              description: server.description,
+              status: server.serverStatus
+            })),
+            instructions: [
+              "Please select a different server from the list above",
+              "Your bot will be registered on the selected server",
+              "Each server maintains separate bot instances and data"
+            ],
+            action: 'select_server'
           });
         } else {
           // All servers are full - provide manual selection as fallback
