@@ -6,7 +6,7 @@ build:
 start:
   command:
    - yarn install
-   - yarn dev
+   - npm run dev
 
 endpoints:
   # REST Endpoint
