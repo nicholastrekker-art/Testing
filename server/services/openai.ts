@@ -1,11 +1,23 @@
 import OpenAI from "openai";
 
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+const API_KEY = process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR;
+
+if (!API_KEY) {
+  console.error('❌ OPENAI_API_KEY environment variable is required but not found!');
+  console.error('   Please set OPENAI_API_KEY in Replit secrets to enable AI features.');
+  console.error('   The application will continue but AI features will be disabled.');
+}
+
 const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key"
+  apiKey: API_KEY || "invalid_key"
 });
 
 export async function generateChatGPTResponse(message: string, context?: string): Promise<string> {
+  if (!API_KEY || API_KEY === "invalid_key") {
+    return "AI features are currently disabled. Please contact the administrator to configure OpenAI API key.";
+  }
+
   try {
     const systemPrompt = `You are a helpful WhatsApp bot assistant. Respond naturally and helpfully to user messages. ${context ? `Additional context: ${context}` : ''}`;
     
@@ -31,6 +43,14 @@ export async function analyzeMessage(message: string): Promise<{
   sentiment: 'positive' | 'negative' | 'neutral';
   confidence: number;
 }> {
+  if (!API_KEY || API_KEY === "invalid_key") {
+    return {
+      intent: 'unknown',
+      sentiment: 'neutral',
+      confidence: 0,
+    };
+  }
+
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-5",

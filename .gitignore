@@ -1,0 +1,87 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# WhatsApp Authentication & Session Data (CRITICAL SECURITY)
+# All WhatsApp credential patterns - NEVER commit these files
+auth/
+temp_auth/
+*.creds.json
+**/creds.json
+creds.json
+session-*.json
+session_*.json
+**/session*.json
+pre-key-*.json
+pre_key_*.json
+**/pre-key*.json
+sender-key-*.json
+sender_key_*.json
+**/sender-key*.json
+app-state-*.json
+app_state_*.json
+**/app-state*.json
+**/baileys_store*.json
+baileys_store*.json
+*.baileys.json
+**/auth_info*.json
+auth_info*.json
+qr-*.png
+qr_*.png
+**/qr*.png
+
+# Additional WhatsApp Security Patterns
+*credential*
+*session*
+*auth-state*
+*multi-device*
+*signal-identities*
+*registration-tokens*
+
+# Database
+*.db
+*.sqlite
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+tmp/
+temp/

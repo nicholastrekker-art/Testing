@@ -2,7 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { storage } from '../storage';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  console.error('❌ CRITICAL SECURITY ERROR: JWT_SECRET environment variable is required but not found!');
+  console.error('   Please set JWT_SECRET in Replit secrets before starting the application.');
+  console.error('   This application cannot run securely without a proper JWT secret.');
+  process.exit(1);
+}
 
 // In-memory guest session storage (phone: { otp, expires, verified, botId })
 const guestSessions = new Map<string, {
