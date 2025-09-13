@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,7 @@ interface CredentialUpdateModalProps {
   onClose: () => void;
   botId: string;
   phoneNumber: string;
+  guestToken?: string | null; // Added guest token for authentication
   onSuccess?: () => void;
   crossTenancyMode?: boolean;
   targetServer?: string;
@@ -29,18 +30,87 @@ export default function CredentialUpdateModal({
   onClose, 
   botId, 
   phoneNumber,
+  guestToken,
   onSuccess,
   crossTenancyMode = false,
   targetServer
 }: CredentialUpdateModalProps) {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const [credentialType, setCredentialType] = useState<'base64' | 'file'>('base64');
   const [sessionId, setSessionId] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [crossTenancyResult, setCrossTenancyResult] = useState<any>(null);
+  const [validationState, setValidationState] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
+  const [validationMessage, setValidationMessage] = useState('');
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Enhanced base64 validation for WhatsApp credentials
+  const validateBase64Credentials = async (base64Input: string) => {
+    if (!base64Input.trim()) {
+      setValidationState('idle');
+      setValidationMessage('');
+      return;
+    }
+
+    setValidationState('validating');
+    setValidationMessage('Validating credentials format...');
+
+    try {
+      // Check if it's valid base64
+      const decoded = atob(base64Input.trim());
+      
+      // Try to parse as JSON
+      const credentials = JSON.parse(decoded);
+      
+      // Basic validation for WhatsApp credentials structure
+      if (!credentials || typeof credentials !== 'object') {
+        throw new Error('Invalid credentials format');
+      }
+
+      // Check for essential WhatsApp credential fields
+      if (!credentials.me || !credentials.me.id) {
+        throw new Error('Missing essential WhatsApp session data');
+      }
+
+      // Extract and validate phone number from credentials
+      const phoneMatch = credentials.me.id.match(/^(\d+):/);
+      if (!phoneMatch) {
+        throw new Error('Unable to extract phone number from credentials');
+      }
+
+      const credentialsPhone = phoneMatch[1];
+      const cleanedInputPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+
+      if (credentialsPhone !== cleanedInputPhone) {
+        setValidationState('invalid');
+        setValidationMessage(`⚠️ Phone number mismatch. Credentials are for ${credentialsPhone}, but you're updating ${phoneNumber}`);
+        return;
+      }
+
+      setValidationState('valid');
+      setValidationMessage('✅ Credentials format is valid and phone number matches');
+      
+    } catch (error) {
+      setValidationState('invalid');
+      if (error instanceof Error) {
+        setValidationMessage(`❌ ${error.message}`);
+      } else {
+        setValidationMessage('❌ Invalid base64 credentials format');
+      }
+    }
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -60,19 +130,59 @@ export default function CredentialUpdateModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (credentialType === 'base64' && !sessionId.trim()) {
-      toast({
-        title: "Missing Credentials",
-        description: "Please provide a Base64 session ID",
-        variant: "destructive"
-      });
-      return;
+    if (credentialType === 'base64') {
+      if (!sessionId.trim()) {
+        toast({
+          title: "Missing Credentials",
+          description: "Please provide a Base64 session ID",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Enhanced validation for base64 credentials
+      if (validationState === 'invalid') {
+        toast({
+          title: "Invalid Credentials",
+          description: "Please fix the credential validation errors before submitting",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (validationState === 'validating') {
+        toast({
+          title: "Validation in Progress",
+          description: "Please wait for credential validation to complete",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (validationState !== 'valid' && sessionId.trim()) {
+        toast({
+          title: "Unvalidated Credentials",
+          description: "Please wait for credential validation to complete",
+          variant: "destructive"
+        });
+        return;
+      }
     }
     
     if (credentialType === 'file' && !selectedFile) {
       toast({
         title: "Missing File", 
         description: "Please select a credentials file",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Additional security check for guest token if required
+    if (!crossTenancyMode && !guestToken) {
+      toast({
+        title: "Authentication Required",
+        description: "Please authenticate before updating credentials",
         variant: "destructive"
       });
       return;
@@ -104,8 +214,16 @@ export default function CredentialUpdateModal({
 
       // Use cross-tenancy endpoint if in cross-tenancy mode
       const endpoint = crossTenancyMode ? '/api/guest/cross-tenancy-manage' : '/api/guest/manage-bot';
+      
+      // Prepare request headers with guest token authentication if available
+      const headers: Record<string, string> = {};
+      if (guestToken) {
+        headers['Authorization'] = `Bearer ${guestToken}`;
+      }
+      
       const response = await fetch(endpoint, {
         method: 'POST',
+        headers,
         body: formData
       });
 
@@ -279,12 +397,40 @@ export default function CredentialUpdateModal({
                 id="sessionId"
                 placeholder="Paste your Base64 encoded session here..."
                 value={sessionId}
-                onChange={(e) => setSessionId(e.target.value)}
-                className="min-h-[100px] text-xs"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSessionId(value);
+                  // Debounced validation - validate after user stops typing
+                  if (validationTimeoutRef.current) {
+                    clearTimeout(validationTimeoutRef.current);
+                  }
+                  validationTimeoutRef.current = setTimeout(() => {
+                    validateBase64Credentials(value);
+                  }, 1000);
+                }}
+                className={`min-h-[100px] text-xs ${
+                  validationState === 'valid' ? 'border-green-500 bg-green-50/50' :
+                  validationState === 'invalid' ? 'border-red-500 bg-red-50/50' :
+                  validationState === 'validating' ? 'border-yellow-500 bg-yellow-50/50' :
+                  ''
+                }`}
                 required
               />
+              
+              {/* Enhanced validation feedback */}
+              {validationMessage && (
+                <div className={`text-xs mt-2 p-2 rounded border ${
+                  validationState === 'valid' ? 'text-green-700 bg-green-50 border-green-200' :
+                  validationState === 'invalid' ? 'text-red-700 bg-red-50 border-red-200' :
+                  validationState === 'validating' ? 'text-yellow-700 bg-yellow-50 border-yellow-200' :
+                  'text-gray-700 bg-gray-50 border-gray-200'
+                }`}>
+                  {validationMessage}
+                </div>
+              )}
+              
               <p className="text-xs text-muted-foreground mt-1">
-                Get this from your WhatsApp session backup
+                Get this from your WhatsApp session backup. The system will validate the format and phone number match in real-time.
               </p>
             </div>
           ) : (
