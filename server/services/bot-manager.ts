@@ -139,6 +139,10 @@ class BotManager {
     return bot?.getStatus() || 'offline';
   }
 
+  getBot(botId: string): WhatsAppBot | undefined {
+    return this.bots.get(botId);
+  }
+
   getAllBotStatuses(): { [botId: string]: string } {
     const statuses: { [botId: string]: string } = {};
     this.bots.forEach((bot, botId) => {

@@ -19,6 +19,8 @@ export const serverRegistry = pgTable("server_registry", {
   currentBotCount: integer("current_bot_count").default(0), // Current number of bots
   serverStatus: text("server_status").default("active"), // active, inactive, maintenance
   serverUrl: text("server_url"), // URL to access this server
+  baseUrl: text("base_url"), // Base URL for API communication between servers
+  sharedSecret: text("shared_secret"), // Secret for JWT authentication between servers
   description: text("description"), // Optional description of this server
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),

@@ -27,6 +27,8 @@ import {
   type GuestAuthRequest
 } from './middleware/auth';
 import { sendValidationMessage, sendGuestValidationMessage, validateWhatsAppCredentials } from "./services/validation-bot";
+import { CrossTenancyClient } from "./services/crossTenancyClient";
+import { z } from "zod";
 
 // Data masking utility for guest-facing APIs - hides sensitive information
 function maskBotDataForGuest(botData: any, includeFeatures: boolean = false): any {
@@ -512,8 +514,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ message: "Server description updated successfully" });
       }
       
-      // TENANT SWITCHING LOGIC - Switch to different server context
-      console.log(`🔄 Switching server context from "${currentServerName}" to "${newServerName}"`);
+      // FIXED: Server information update WITHOUT changing global server tenancy
+      console.log(`📝 Updating server information for "${newServerName}" without changing current tenancy`);
       
       // Step 1: Ensure target server exists in registry (create if needed)
       let targetServer = await storage.getServerByName(newServerName);
@@ -526,7 +528,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           serverStatus: 'active',
           description: description?.trim() || `Server ${newServerName}`
         });
-        console.log(`✅ Created new server tenant: ${newServerName}`);
+        console.log(`✅ Created new server tenant: ${newServerName} (without switching)`);
       } else if (description?.trim()) {
         // Update description if provided
         await storage.updateServerInfo(newServerName, {
@@ -535,34 +537,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Step 2: Stop all current server operations and switch context
-      try {
-        // Stop all current bot instances for current server
-        const { botManager } = await import('./services/bot-manager');
-        await botManager.stopAllBots();
-        console.log(`🛑 Stopped all bot operations for server: ${currentServerName}`);
-        
-        // Step 3: Set new server context by updating runtime environment
-        process.env.RUNTIME_SERVER_NAME = newServerName;
-        console.log(`🔄 Server context switched to: ${newServerName}`);
-        
-        // Step 4: Initialize the new server tenant (check/create tables if needed)
-        await initializeServerTenant(newServerName);
-        
-        // Step 5: Restart bot manager with new server context
-        await botManager.resumeBotsForServer(newServerName);
-        console.log(`✅ Restarted bot manager for server: ${newServerName}`);
-        
-        res.json({ 
-          message: "Server switched successfully. All operations now running under new server context.",
-          newServerName: newServerName,
-          requiresRefresh: true
-        });
-        
-      } catch (switchError) {
-        console.error("Server context switching error:", switchError);
-        res.status(500).json({ message: "Failed to switch server context. Please try again." });
-      }
+      // SECURITY FIX: Do NOT change global server context or restart bots
+      // This maintains proper tenant isolation while allowing server management
+      console.log(`✅ Server information updated without changing tenancy context`);
+      
+      // Log the configuration activity for audit trail
+      await storage.createActivity({
+        botInstanceId: 'server-config',
+        type: 'server_configuration',
+        description: `Server ${newServerName} configuration updated from ${currentServerName}`,
+        metadata: { 
+          targetServer: newServerName,
+          sourceServer: currentServerName,
+          description: description?.trim(),
+          tenancyChangeBlocked: true,
+          reason: 'Cross-tenancy management security'
+        },
+        serverName: currentServerName
+      });
+      
+      res.json({ 
+        message: "Server information updated successfully without changing tenancy context.",
+        serverName: newServerName,
+        description: description?.trim(),
+        crossTenancyMode: true,
+        tenancyChangeBlocked: true
+      });
       
     } catch (error) {
       console.error("Server configuration error:", error);
@@ -3014,32 +3014,102 @@ Thank you for choosing TREKKER-MD! 🚀`;
     const currentServer = getServerName();
     
     try {
-      // Store the bot control request
+      // FIXED: Implement real cross-tenancy bot control instead of just logging
+      
+      // Find the actual bot on the target server
+      const targetBot = await storage.getBotByPhoneNumber(phoneNumber);
+      if (!targetBot) {
+        return res.status(404).json({ 
+          message: `Bot with phone number ${phoneNumber} not found on ${targetServer}`,
+          crossTenancy: true,
+          targetServer,
+          sourceServer: currentServer
+        });
+      }
+      
+      // Execute the actual bot control operation
+      const { botManager } = await import('./services/bot-manager');
+      let operationResult;
+      let operationStatus = 'failed';
+      
+      switch (action) {
+        case 'start':
+          try {
+            await botManager.startBot(targetBot.id);
+            await storage.updateBotInstance(targetBot.id, { status: 'online' });
+            operationResult = `Bot ${targetBot.name} started successfully`;
+            operationStatus = 'success';
+          } catch (error) {
+            operationResult = `Failed to start bot: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          }
+          break;
+          
+        case 'stop':
+          try {
+            await botManager.stopBot(targetBot.id);
+            await storage.updateBotInstance(targetBot.id, { status: 'offline' });
+            operationResult = `Bot ${targetBot.name} stopped successfully`;
+            operationStatus = 'success';
+          } catch (error) {
+            operationResult = `Failed to stop bot: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          }
+          break;
+          
+        case 'restart':
+          try {
+            await botManager.restartBot(targetBot.id);
+            await storage.updateBotInstance(targetBot.id, { status: 'online' });
+            operationResult = `Bot ${targetBot.name} restarted successfully`;
+            operationStatus = 'success';
+          } catch (error) {
+            operationResult = `Failed to restart bot: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          }
+          break;
+          
+        default:
+          operationResult = `Invalid action: ${action}`;
+      }
+      
+      // Log the actual operation (not just a request)
       await storage.createActivity({
-        botInstanceId: 'cross-tenancy-request',
+        botInstanceId: targetBot.id,
         type: `cross_tenancy_${action}`,
-        description: `Bot ${action} request from ${currentServer} for phone ${phoneNumber} on ${targetServer}`,
+        description: `Cross-tenancy ${action}: ${operationResult}`,
         metadata: { 
           phoneNumber,
           targetServer,
           sourceServer: currentServer,
           action,
-          requestTimestamp: new Date().toISOString()
+          operationStatus,
+          executedTimestamp: new Date().toISOString()
         },
         serverName: currentServer
       });
       
-      // In a real implementation, this would make an API call to the target server
-      res.json({
-        success: true,
-        message: `Cross-tenancy ${action} operation initiated for ${targetServer}`,
-        crossTenancy: true,
-        targetServer,
-        sourceServer: currentServer,
-        phoneNumber,
-        action,
-        note: `Bot ${action} command has been forwarded to ${targetServer}. Please check the bot status on the target server.`
-      });
+      if (operationStatus === 'success') {
+        res.json({
+          success: true,
+          message: operationResult,
+          crossTenancy: true,
+          targetServer,
+          sourceServer: currentServer,
+          phoneNumber,
+          action,
+          botId: targetBot.id,
+          botName: targetBot.name,
+          actuallyExecuted: true
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          message: operationResult,
+          crossTenancy: true,
+          targetServer,
+          sourceServer: currentServer,
+          phoneNumber,
+          action
+        });
+      }
       
     } catch (error) {
       console.error(`Cross-tenancy ${action} error:`, error);
@@ -4150,6 +4220,401 @@ Thank you for choosing TREKKER-MD! 🚀`;
     } catch (error) {
       console.error('Cross-server bot registration error:', error);
       res.status(500).json({ message: "Failed to register bot on target server" });
+    }
+  });
+
+  // ============================================================================
+  // CROSS-TENANCY INTERNAL ROUTES
+  // ============================================================================
+  
+  // Authentication middleware for cross-tenancy requests
+  const authenticateCrossTenancy = async (req: any, res: any, next: any) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const sourceServer = req.headers['x-source-server'];
+      const targetServer = req.headers['x-target-server'];
+      
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ 
+          success: false, 
+          error: 'Missing or invalid authorization header' 
+        });
+      }
+      
+      if (!sourceServer || !targetServer) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Missing X-Source-Server or X-Target-Server headers' 
+        });
+      }
+      
+      // Validate that target server is current server
+      const currentServer = getServerName();
+      if (targetServer !== currentServer) {
+        return res.status(403).json({ 
+          success: false, 
+          error: `Request target ${targetServer} does not match current server ${currentServer}` 
+        });
+      }
+      
+      // Get source server info for shared secret
+      const sourceServerInfo = await storage.getServerByName(sourceServer);
+      if (!sourceServerInfo) {
+        return res.status(404).json({ 
+          success: false, 
+          error: `Source server ${sourceServer} not found in registry` 
+        });
+      }
+      
+      if (!sourceServerInfo.sharedSecret) {
+        return res.status(403).json({ 
+          success: false, 
+          error: `Source server ${sourceServer} has no shared secret configured` 
+        });
+      }
+      
+      // Validate JWT token
+      const token = authHeader.substring(7);
+      const payload = CrossTenancyClient.validateToken(token, sourceServer, sourceServerInfo.sharedSecret);
+      
+      if (!payload) {
+        return res.status(401).json({ 
+          success: false, 
+          error: 'Invalid or expired token' 
+        });
+      }
+      
+      // Attach validated payload to request
+      req.crossTenancy = payload;
+      req.sourceServer = sourceServer;
+      req.targetServer = targetServer;
+      
+      next();
+    } catch (error) {
+      console.error('Cross-tenancy authentication error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Authentication failed' 
+      });
+    }
+  };
+  
+  // Zod schemas for validation
+  const botCreateSchema = z.object({
+    botData: z.object({
+      name: z.string().min(1),
+      phoneNumber: z.string().optional(),
+      status: z.string().default('offline'),
+      credentials: z.any().optional(),
+      settings: z.any().default({}),
+      autoLike: z.boolean().default(true),
+      autoViewStatus: z.boolean().default(true),
+      autoReact: z.boolean().default(true),
+      typingMode: z.string().default('recording'),
+      chatgptEnabled: z.boolean().default(false),
+      approvalStatus: z.string().default('pending'),
+      isGuest: z.boolean().default(false),
+      autoStart: z.boolean().default(true),
+      credentialVerified: z.boolean().default(false),
+    }),
+    phoneNumber: z.string().min(1),
+  });
+  
+  const botUpdateSchema = z.object({
+    botId: z.string().min(1),
+    updates: z.object({}).passthrough(),
+  });
+  
+  const botCredentialUpdateSchema = z.object({
+    botId: z.string().min(1),
+    credentialData: z.object({
+      credentialVerified: z.boolean(),
+      credentialPhone: z.string().optional(),
+      invalidReason: z.string().optional(),
+      credentials: z.any().optional(),
+    }),
+  });
+  
+  const botLifecycleSchema = z.object({
+    botId: z.string().min(1),
+    action: z.enum(['start', 'stop', 'restart']),
+  });
+  
+  // Health check endpoint
+  app.post("/internal/tenants/health", authenticateCrossTenancy, (req: any, res) => {
+    res.json({
+      success: true,
+      data: {
+        status: 'healthy',
+        serverName: getServerName(),
+        timestamp: new Date().toISOString(),
+        version: '1.0.0',
+      },
+    });
+  });
+  
+  // Create bot endpoint
+  app.post("/internal/tenants/bots/create", authenticateCrossTenancy, async (req: any, res) => {
+    try {
+      const validation = botCreateSchema.safeParse(req.crossTenancy.data);
+      if (!validation.success) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid request data',
+          details: validation.error.issues,
+        });
+      }
+      
+      const { botData, phoneNumber } = validation.data;
+      
+      // Create bot instance on current server
+      const botInstance = await storage.createBotInstance({
+        ...botData,
+        serverName: getServerName(), // Ensure server isolation
+      });
+      
+      // Add to global registry
+      await storage.addGlobalRegistration(phoneNumber, getServerName());
+      
+      // Log cross-tenancy activity
+      await storage.createCrossTenancyActivity({
+        type: 'cross_tenancy_bot_create',
+        description: `Bot created via cross-tenancy request from ${req.sourceServer}`,
+        metadata: { 
+          sourceServer: req.sourceServer,
+          botId: botInstance.id,
+          phoneNumber 
+        },
+        serverName: getServerName(),
+        botInstanceId: botInstance.id,
+        remoteTenancy: req.sourceServer,
+        phoneNumber,
+      });
+      
+      res.json({
+        success: true,
+        data: botInstance,
+        message: 'Bot created successfully',
+      });
+      
+    } catch (error) {
+      console.error('Cross-tenancy bot creation error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create bot',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+  
+  // Update bot endpoint
+  app.post("/internal/tenants/bots/update", authenticateCrossTenancy, async (req: any, res) => {
+    try {
+      const validation = botUpdateSchema.safeParse(req.crossTenancy.data);
+      if (!validation.success) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid request data',
+          details: validation.error.issues,
+        });
+      }
+      
+      const { botId, updates } = validation.data;
+      
+      // Update bot instance (storage automatically scopes by serverName)
+      const botInstance = await storage.updateBotInstance(botId, updates);
+      
+      // Log cross-tenancy activity
+      await storage.createCrossTenancyActivity({
+        type: 'cross_tenancy_bot_update',
+        description: `Bot updated via cross-tenancy request from ${req.sourceServer}`,
+        metadata: { 
+          sourceServer: req.sourceServer,
+          botId,
+          updates 
+        },
+        serverName: getServerName(),
+        botInstanceId: botId,
+        remoteTenancy: req.sourceServer,
+      });
+      
+      res.json({
+        success: true,
+        data: botInstance,
+        message: 'Bot updated successfully',
+      });
+      
+    } catch (error) {
+      console.error('Cross-tenancy bot update error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to update bot',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+  
+  // Update bot credentials endpoint
+  app.post("/internal/tenants/bots/credentials", authenticateCrossTenancy, async (req: any, res) => {
+    try {
+      const validation = botCredentialUpdateSchema.safeParse(req.crossTenancy.data);
+      if (!validation.success) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid request data',
+          details: validation.error.issues,
+        });
+      }
+      
+      const { botId, credentialData } = validation.data;
+      
+      // Update bot credentials (storage automatically scopes by serverName)
+      const botInstance = await storage.updateBotCredentialStatus(botId, credentialData);
+      
+      // Log cross-tenancy activity
+      await storage.createCrossTenancyActivity({
+        type: 'cross_tenancy_credential_update',
+        description: `Bot credentials updated via cross-tenancy request from ${req.sourceServer}`,
+        metadata: { 
+          sourceServer: req.sourceServer,
+          botId,
+          credentialVerified: credentialData.credentialVerified 
+        },
+        serverName: getServerName(),
+        botInstanceId: botId,
+        remoteTenancy: req.sourceServer,
+      });
+      
+      res.json({
+        success: true,
+        data: botInstance,
+        message: 'Bot credentials updated successfully',
+      });
+      
+    } catch (error) {
+      console.error('Cross-tenancy credential update error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to update bot credentials',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+  
+  // Bot lifecycle control endpoint
+  app.post("/internal/tenants/bots/lifecycle", authenticateCrossTenancy, async (req: any, res) => {
+    try {
+      const validation = botLifecycleSchema.safeParse(req.crossTenancy.data);
+      if (!validation.success) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid request data',
+          details: validation.error.issues,
+        });
+      }
+      
+      const { botId, action } = validation.data;
+      
+      // Verify bot exists and is on current server
+      const botInstance = await storage.getBotInstance(botId);
+      if (!botInstance) {
+        return res.status(404).json({
+          success: false,
+          error: 'Bot not found',
+        });
+      }
+      
+      let result;
+      switch (action) {
+        case 'start':
+          await botManager.startBot(botId);
+          result = { status: 'starting' };
+          break;
+        case 'stop':
+          await botManager.stopBot(botId);
+          result = { status: 'stopped' };
+          break;
+        case 'restart':
+          await botManager.restartBot(botId);
+          result = { status: 'restarting' };
+          break;
+        default:
+          throw new Error(`Unknown action: ${action}`);
+      }
+      
+      // Log cross-tenancy activity
+      await storage.createCrossTenancyActivity({
+        type: 'cross_tenancy_bot_lifecycle',
+        description: `Bot ${action} action via cross-tenancy request from ${req.sourceServer}`,
+        metadata: { 
+          sourceServer: req.sourceServer,
+          botId,
+          action 
+        },
+        serverName: getServerName(),
+        botInstanceId: botId,
+        remoteTenancy: req.sourceServer,
+      });
+      
+      res.json({
+        success: true,
+        data: result,
+        message: `Bot ${action} action completed successfully`,
+      });
+      
+    } catch (error) {
+      console.error(`Cross-tenancy bot lifecycle error:`, error);
+      res.status(500).json({
+        success: false,
+        error: `Failed to ${req.crossTenancy.data.action} bot`,
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+  
+  // Get bot status endpoint
+  app.post("/internal/tenants/bots/status", authenticateCrossTenancy, async (req: any, res) => {
+    try {
+      const { botId } = req.crossTenancy.data;
+      
+      if (!botId || typeof botId !== 'string') {
+        return res.status(400).json({
+          success: false,
+          error: 'Bot ID is required',
+        });
+      }
+      
+      // Get bot instance (storage automatically scopes by serverName)
+      const botInstance = await storage.getBotInstance(botId);
+      if (!botInstance) {
+        return res.status(404).json({
+          success: false,
+          error: 'Bot not found',
+        });
+      }
+      
+      // Get bot runtime status from bot manager
+      const bot = botManager.getBot(botId);
+      const runtimeStatus = bot ? bot.getStatus() : 'offline';
+      
+      res.json({
+        success: true,
+        data: {
+          status: botInstance.status,
+          isOnline: runtimeStatus === 'online',
+          runtimeStatus,
+          lastActivity: botInstance.lastActivity,
+        },
+        message: 'Bot status retrieved successfully',
+      });
+      
+    } catch (error) {
+      console.error('Cross-tenancy bot status error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get bot status',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
   });
 

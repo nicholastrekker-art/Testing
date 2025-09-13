@@ -220,11 +220,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateBotInstance(id: string, updates: Partial<BotInstance>): Promise<BotInstance> {
+    // CRITICAL SECURITY FIX: Scope by serverName to prevent cross-tenant data writes
+    const serverName = getServerName();
     const [botInstance] = await db
       .update(botInstances)
       .set({ ...updates, updatedAt: sql`CURRENT_TIMESTAMP` })
-      .where(eq(botInstances.id, id))
+      .where(and(eq(botInstances.id, id), eq(botInstances.serverName, serverName)))
       .returning();
+    
+    if (!botInstance) {
+      throw new Error(`Bot ${id} not found on server ${serverName} or access denied`);
+    }
+    
     return botInstance;
   }
 
