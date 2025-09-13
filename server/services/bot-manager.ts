@@ -1,6 +1,8 @@
 import { WhatsAppBot } from './whatsapp-bot';
 import { storage } from '../storage';
 import type { BotInstance } from '@shared/schema';
+import { existsSync, rmSync } from 'fs';
+import { join } from 'path';
 
 class BotManager {
   private bots: Map<string, WhatsAppBot> = new Map();
@@ -8,6 +10,23 @@ class BotManager {
 
   setBroadcastFunction(broadcast: (data: any) => void) {
     this.broadcastFunction = broadcast;
+  }
+
+  // Clear session files for a bot before starting
+  private clearBotSessionFiles(botId: string) {
+    const authDir = join(process.cwd(), 'auth', `bot_${botId}`);
+    
+    if (existsSync(authDir)) {
+      try {
+        console.log(`🧹 Clearing session files for bot ${botId}...`);
+        rmSync(authDir, { recursive: true, force: true });
+        console.log(`✅ Session files cleared for bot ${botId}`);
+      } catch (error) {
+        console.warn(`⚠️ Failed to clear session files for bot ${botId}:`, error);
+      }
+    } else {
+      console.log(`📂 No existing session files found for bot ${botId}`);
+    }
   }
 
   private broadcast(data: any) {
@@ -54,6 +73,9 @@ class BotManager {
 
       // Create new isolated bot instance only if none exists or if it was offline
       if (!existingBot || currentStatus === 'offline') {
+        // Clear any existing session files for fresh start
+        this.clearBotSessionFiles(botId);
+        
         console.log(`BotManager: Creating new isolated bot instance for ${botId}`);
         const newBot = new WhatsAppBot(botInstance);
         this.bots.set(botId, newBot);
