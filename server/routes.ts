@@ -99,24 +99,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('🔄 Starting bot resume process...');
       
-      const savedBots = await storage.getAllBotInstances();
+      // Run analysis to mark inactive bots as non-auto-start
+      await storage.analyzeInactiveBots();
       
-      if (savedBots.length === 0) {
-        console.log('📋 No saved bots found in database');
-        return;
-      }
-
-      console.log(`📱 Found ${savedBots.length} saved bot(s) in database`);
-      
-      // Filter bots that have credentials AND are approved (can be resumed)
-      const resumableBots = savedBots.filter(bot => bot.credentials && bot.approvalStatus === 'approved');
+      // Get only bots that are approved, verified, and marked for auto-start
+      const resumableBots = await storage.getBotInstancesForAutoStart();
       
       if (resumableBots.length === 0) {
-        console.log('⚠️ No approved bots with credentials found to resume');
+        console.log('📋 No bots eligible for auto-start found');
         return;
       }
 
-      console.log(`🚀 Resuming ${resumableBots.length} bot(s) with credentials...`);
+      console.log(`🚀 Resuming ${resumableBots.length} auto-start bot(s) with verified credentials...`);
       
       // Set all bots to loading status initially
       for (const bot of resumableBots) {
