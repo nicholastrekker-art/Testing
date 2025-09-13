@@ -1,10 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
+import { db, getServerName } from '../db';
+import { botInstances, godRegister } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
 const readFile = promisify(fs.readFile);
-const writeFile = promisify(fs.writeFile);
-const exists = promisify(fs.exists);
 
 interface CredsInfo {
   path: string;
@@ -59,7 +60,72 @@ const scanExistingCreds = async (): Promise<CredsInfo[]> => {
   return credsFiles;
 };
 
-// Check if a creds.json already exists with the same content
+// Check if credentials already exist in database by phone number (cross-server search)
+export const validateCredentialsByPhoneNumber = async (credentials: any): Promise<{
+  isValid: boolean;
+  message?: string;
+  phoneNumber?: string;
+  alreadyRegistered?: boolean;
+}> => {
+  try {
+    // Extract phone number from credentials
+    const phoneNumber = credentials.creds?.me?.id?.match(/^(\d+):/)?.[1];
+    
+    if (!phoneNumber) {
+      return {
+        isValid: false,
+        message: "❌ Cannot extract phone number from credentials. Invalid credential format."
+      };
+    }
+
+    const currentServerName = getServerName();
+
+    // First check global registration
+    const [globalRegistration] = await db.select().from(godRegister).where(eq(godRegister.phoneNumber, phoneNumber));
+    
+    if (globalRegistration) {
+      // Phone number is globally registered - block registration regardless of bot existence
+      const isCurrentServer = globalRegistration.tenancyName === currentServerName;
+      
+      return {
+        isValid: false,
+        message: isCurrentServer 
+          ? "❌ This phone number is already registered on this server. You can update your bot credentials if you own this bot."
+          : "❌ This phone number is already registered on another server. Please use that server to manage your bot.",
+        phoneNumber,
+        alreadyRegistered: true
+      };
+    }
+
+    // Fallback: Check if bot exists in current database without global registration (catch inconsistent data)
+    const [existingBot] = await db.select().from(botInstances).where(eq(botInstances.phoneNumber, phoneNumber));
+    
+    if (existingBot) {
+      return {
+        isValid: false,
+        message: "❌ This phone number is already registered in the system. Please contact support if you need assistance.",
+        phoneNumber,
+        alreadyRegistered: true
+      };
+    }
+
+    // Phone number is available for new registration
+    return {
+      isValid: true,
+      message: `✅ Phone number ${phoneNumber} is available for registration.`,
+      phoneNumber
+    };
+
+  } catch (error) {
+    console.error('Error validating credentials by phone number:', error);
+    return {
+      isValid: false,
+      message: '⚠️ Could not validate credentials. Please try again.'
+    };
+  }
+};
+
+// Legacy function - Check if a creds.json already exists with the same content (file-based)
 export const validateCredsUniqueness = async (newCredsContent: any): Promise<{
   exists: boolean;
   existingPath?: string;

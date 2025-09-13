@@ -383,14 +383,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Check for duplicate credentials using checksum
-      const { validateCredsUniqueness } = await import('./services/creds-validator');
-      const uniquenessCheck = await validateCredsUniqueness(credentials);
+      // Check if phone number from credentials already exists in database (cross-server search)
+      const { validateCredentialsByPhoneNumber } = await import('./services/creds-validator');
+      const phoneValidation = await validateCredentialsByPhoneNumber(credentials);
       
-      if (uniquenessCheck.exists) {
+      if (!phoneValidation.isValid) {
         return res.status(400).json({ 
           valid: false,
-          message: uniquenessCheck.message,
+          message: phoneValidation.message,
+          phoneNumber: phoneValidation.phoneNumber,
+          alreadyRegistered: phoneValidation.alreadyRegistered,
           isDuplicate: true
         });
       }
@@ -398,9 +400,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // All validations passed
       res.json({ 
         valid: true,
-        message: "✅ Your credentials are valid and ready for registration!",
+        message: phoneValidation.message || "✅ Your credentials are valid and ready for registration!",
         credentialType,
-        phoneNumber: credentials.creds?.me?.id?.match(/^(\d+):/)?.[1] || null,
+        phoneNumber: phoneValidation.phoneNumber,
         isUnique: true
       });
       
