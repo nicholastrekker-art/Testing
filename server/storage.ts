@@ -29,7 +29,7 @@ function getMaxBotCount(): number {
   const botCount = process.env.BOTCOUNT || '20';
   const parsed = parseInt(botCount, 10);
   
-  if (isNaN(parsed) || parsed <= 0) {
+  if (isNaN(parsed) || parsed < 0) {
     console.warn(`Invalid BOTCOUNT value "${botCount}", using default value 20`);
     return 20;
   }
