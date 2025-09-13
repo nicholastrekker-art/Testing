@@ -17,7 +17,7 @@ endpoints:
     displayName: WebSocket Service
     type: WS
     service:
-      basePath: /your-websocket-context
+      basePath: /
       port: 5000
       networkVisibilities:
         - Public
