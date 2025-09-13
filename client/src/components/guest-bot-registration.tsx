@@ -441,43 +441,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     setStep(1);
   };
 
-  const handleClose = async () => {
-    try {
-      // Check if we're currently on a non-default server
-      const currentServerResponse = await fetch('/api/server/info');
-      if (currentServerResponse.ok) {
-        const serverInfo = await currentServerResponse.json();
-        
-        if (serverInfo.serverName !== 'default-server') {
-          // Switch back to default server before closing
-          toast({
-            title: "Returning to Default Server",
-            description: "Switching back to default server...",
-          });
-          
-          const switchResponse = await fetch('/api/server/configure', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              serverName: 'default-server',
-              description: 'Returned to default server after bot management'
-            }),
-          });
-          
-          if (switchResponse.ok) {
-            toast({
-              title: "Server Switched",
-              description: "Successfully returned to default server",
-            });
-          }
-        }
-      }
-    } catch (error) {
-      console.log('Could not switch to default server on close:', error);
-    }
-    
+  const handleClose = () => {
     resetForm();
     setExistingBotData(null);
     setServerMismatch(null);
