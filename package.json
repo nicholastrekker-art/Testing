@@ -4,11 +4,11 @@
   "type": "module",
   "license": "MIT",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.6.0"
   },
   "scripts": {
     "dev": "npm install && NODE_ENV=development npx tsx server/index.ts",
-    "start": "NODE_ENV=production node --loader tsx/esm server/index.ts",
+    "start": "NODE_ENV=production node --import tsx/esm server/index.ts",
     "build": "vite build",
     "postbuild": "echo 'Build completed successfully'",
     "check": "tsc --noEmit",
