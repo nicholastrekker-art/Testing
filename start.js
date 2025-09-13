@@ -7,7 +7,7 @@ import { spawn } from 'child_process';
 process.env.NODE_ENV = 'development';
 
 console.log('Starting development server...');
-const child = spawn('npm', ['run', 'dev'], {
+const child = spawn('yarn', ['dev'], {
   stdio: 'inherit',
   env: process.env
 });

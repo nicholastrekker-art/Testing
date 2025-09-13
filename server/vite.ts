@@ -30,12 +30,17 @@ export async function setupVite(app: Express, server: Server) {
   
   // Dynamic imports to avoid loading vite in production
   const { createServer: createViteServer, createLogger } = await import("vite");
-  const viteConfig = (await import("../vite.config")).default;
+  const userCfgExport = (await import("../vite.config")).default;
+  
+  // Resolve the config function to get the actual configuration
+  const userCfg = typeof userCfgExport === "function"
+    ? userCfgExport({ mode: process.env.NODE_ENV === "production" ? "production" : "development", command: "serve" })
+    : userCfgExport;
   
   const viteLogger = createLogger();
   
   const vite = await createViteServer({
-    ...viteConfig,
+    ...userCfg,
     configFile: false,
     customLogger: {
       ...viteLogger,
@@ -45,6 +50,7 @@ export async function setupVite(app: Express, server: Server) {
       },
     },
     server: {
+      ...userCfg.server,
       middlewareMode: true,
       hmr: { 
         server,

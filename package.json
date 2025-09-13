@@ -7,14 +7,14 @@
     "node": ">=20.6.0"
   },
   "scripts": {
-    "dev": "npm install && NODE_ENV=development npx tsx server/index.ts",
+    "dev": "NODE_ENV=development yarn tsx server/index.ts",
     "start": "NODE_ENV=production node --import tsx/esm server/index.ts",
     "build": "vite build",
     "postbuild": "echo 'Build completed successfully'",
     "check": "tsc --noEmit",
-    "typecheck": "npm run check",
+    "typecheck": "yarn check",
     "db:push": "drizzle-kit push",
-    "install:clean": "npm ci --only=production"
+    "install:clean": "yarn --frozen-lockfile --production"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

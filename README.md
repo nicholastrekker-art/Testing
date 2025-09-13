@@ -33,7 +33,7 @@ git status --ignored | grep -E "(auth|session|creds)" || echo "No credential fil
 
 ### 3. Start Application
 ```bash
-npm run dev
+yarn dev
 ```
 
 ## Security Features
