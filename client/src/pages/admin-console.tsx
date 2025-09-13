@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/use-auth";
 import type { BotInstance, Activity as ActivityType } from "@shared/schema";
 import MasterControlPanel from "@/components/master-control-panel";
 import ServerConfigModal from "@/components/server-config-modal";
+import ServerOverviewDashboard from "@/components/server-overview-dashboard";
 
 export default function AdminConsole() {
   const { toast } = useToast();
@@ -230,13 +231,19 @@ export default function AdminConsole() {
         </Card>
       </div>
 
-      <Tabs defaultValue="bots" className="space-y-4">
+      <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="overview" data-testid="tab-overview">Server Overview</TabsTrigger>
           <TabsTrigger value="bots" data-testid="tab-bots">Bot Management</TabsTrigger>
           <TabsTrigger value="activities" data-testid="tab-activities">Recent Activity</TabsTrigger>
           <TabsTrigger value="server" data-testid="tab-server">Server Config</TabsTrigger>
           <TabsTrigger value="master" data-testid="tab-master">Master Control</TabsTrigger>
         </TabsList>
+
+        {/* Server Overview Tab */}
+        <TabsContent value="overview" className="space-y-4">
+          <ServerOverviewDashboard />
+        </TabsContent>
 
         <TabsContent value="bots" className="space-y-4">
           <Card>

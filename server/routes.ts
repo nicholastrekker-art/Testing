@@ -437,8 +437,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+
   // Update server configuration (name and description) - implements true tenant switching
-  app.post("/api/server/configure", async (req, res) => {
+  app.post("/api/server/configure", authenticateAdmin, async (req, res) => {
     try {
       // Only allow configuration if SERVER_NAME is not set via secrets
       if (process.env.SERVER_NAME) {
@@ -1465,7 +1466,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   // Guest Bot Registration
   app.post("/api/guest/register-bot", upload.single('credsFile') as any, async (req, res) => {
     try {
-      const { botName, phoneNumber, credentialType, sessionId, features } = req.body;
+      const { botName, phoneNumber, credentialType, sessionId, features, selectedServer } = req.body;
       
       if (!botName || !phoneNumber) {
         return res.status(400).json({ message: "Bot name and phone number are required" });
@@ -1667,7 +1668,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         autoReact: (botFeatures as any).autoReact || false,
         typingMode: (botFeatures as any).typingIndicator ? 'typing' : 'none',
         chatgptEnabled: (botFeatures as any).chatGPT || false,
-        serverName: getServerName()
+        serverName: selectedServer || getServerName()
       });
 
       // Test WhatsApp connection and send validation message
