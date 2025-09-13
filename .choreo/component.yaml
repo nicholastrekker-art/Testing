@@ -7,7 +7,7 @@ endpoints:
     type: REST
     service:
       basePath: /
-      port: 5000
+      port: 8080
       networkVisibilities:
         - Public
       schemaFilePath: openapi.yaml
@@ -18,7 +18,7 @@ endpoints:
     type: WS
     service:
       basePath: /
-      port: 5000
+      port: 8080
       networkVisibilities:
         - Public
       schemaFilePath: chat_asyncapi.yaml
