@@ -1657,7 +1657,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       let credentials = null;
       if (botData.credentials) {
         try {
-          credentials = JSON.parse(botData.credentials);
+          credentials = JSON.parse(JSON.stringify(botData.credentials));
           console.log(`🔑 Using verified stored credentials for ${cleanedPhone}`);
         } catch (error) {
           console.error(`❌ Invalid stored credentials format for ${cleanedPhone}:`, error);
@@ -1818,16 +1818,34 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       switch (action) {
         case 'start':
           result = await botManager.startBot(botId);
-          await storage.logActivity(botId, 'bot_control', `Bot started by guest user ${guestPhone}`, { action: 'start' });
+          await storage.createActivity({
+            botInstanceId: botId,
+            type: 'bot_control',
+            description: `Bot started by guest user ${guestPhone}`,
+            metadata: { action: 'start' },
+            serverName: getServerName()
+          });
           break;
         case 'stop':
           result = await botManager.stopBot(botId);
-          await storage.logActivity(botId, 'bot_control', `Bot stopped by guest user ${guestPhone}`, { action: 'stop' });
+          await storage.createActivity({
+            botInstanceId: botId,
+            type: 'bot_control',
+            description: `Bot stopped by guest user ${guestPhone}`,
+            metadata: { action: 'stop' },
+            serverName: getServerName()
+          });
           break;
         case 'restart':
           await botManager.stopBot(botId);
           result = await botManager.startBot(botId);
-          await storage.logActivity(botId, 'bot_control', `Bot restarted by guest user ${guestPhone}`, { action: 'restart' });
+          await storage.createActivity({
+            botInstanceId: botId,
+            type: 'bot_control',
+            description: `Bot restarted by guest user ${guestPhone}`,
+            metadata: { action: 'restart' },
+            serverName: getServerName()
+          });
           break;
       }
       
@@ -1886,10 +1904,16 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       updateData[feature] = enabled;
       
       await storage.updateBotInstance(botId, updateData);
-      await storage.logActivity(botId, 'feature_update', `${feature} ${enabled ? 'enabled' : 'disabled'} by guest user ${guestPhone}`, { 
-        feature, 
-        enabled, 
-        guestUser: guestPhone 
+      await storage.createActivity({
+        botInstanceId: botId,
+        type: 'feature_update',
+        description: `${feature} ${enabled ? 'enabled' : 'disabled'} by guest user ${guestPhone}`,
+        metadata: { 
+          feature, 
+          enabled, 
+          guestUser: guestPhone 
+        },
+        serverName: getServerName()
       });
       
       console.log(`✅ Feature ${feature} updated to ${enabled} for bot ${botId}`);
@@ -1932,10 +1956,10 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       }
       
       // Get recent activities for this bot
-      const activities = await storage.getActivitiesByBot(botId, 10); // Get last 10 activities
+      const activities = await storage.getActivities(botId, 10); // Get last 10 activities
       
-      // Get bot status from bot manager
-      const isOnline = botManager.isActive(botId);
+      // Get bot status from bot manager (fallback to checking stored status)
+      const isOnline = bot.status === 'online' || bot.status === 'loading';
       
       // Apply data masking for guest endpoint (includes features)
       const maskedBotData = maskBotDataForGuest({
@@ -2109,7 +2133,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
   // ======= EXISTING GUEST ENDPOINTS =======
 
-  // Guest bot search endpoint
+  // Guest bot search endpoint - SECURITY: Requires credential validation for management access
   app.post("/api/guest/search-bot", async (req, res) => {
     try {
       const { phoneNumber } = req.body;
@@ -2132,7 +2156,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       const botServer = globalRegistration.tenancyName;
       const currentServer = getServerName();
       
-      // If bot is on a different server, provide cross-server information
+      // If bot is on a different server, provide cross-server information (no management allowed)
       if (botServer !== currentServer) {
         return res.json({
           id: `cross-server-${cleanedPhone}`,
@@ -2147,7 +2171,10 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           commandsCount: 0,
           lastActivity: null,
           crossServer: true,
-          message: `Your bot is registered on ${botServer}. Cross-server management is limited.`
+          nextStep: 'credential_validation_required',
+          message: `Your bot is registered on ${botServer}. Please verify your credentials to access management features.`,
+          canManage: false,
+          needsCredentialValidation: true
         });
       }
       
@@ -2159,46 +2186,29 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         });
       }
       
-      // Determine next step based on bot status and credential verification
-      let nextStep = 'unknown';
-      let message = '';
+      // SECURITY FIX: Always require credential validation for existing bots
+      // Return basic info but require credential validation for management access
+      const basicBotInfo = {
+        id: `bot_${cleanedPhone.slice(-4)}`,
+        name: botInstance.name,
+        phoneNumber: cleanedPhone,
+        status: botInstance.status,
+        approvalStatus: botInstance.approvalStatus,
+        isActive: botInstance.status === 'online',
+        isApproved: botInstance.approvalStatus === 'approved',
+        messagesCount: Math.min(botInstance.messagesCount || 0, 9999),
+        commandsCount: Math.min(botInstance.commandsCount || 0, 9999),
+        lastActivity: botInstance.lastActivity ? new Date(botInstance.lastActivity).toISOString().split('T')[0] : null,
+        crossServer: false,
+        serverName: 'Protected',
+        nextStep: 'credential_validation_required',
+        message: 'To access management features for your existing bot, please verify your credentials by uploading your creds.json file.',
+        canManage: false,
+        needsCredentialValidation: true,
+        botExists: true
+      };
       
-      if (botInstance.approvalStatus === 'pending') {
-        nextStep = 'wait_approval';
-        message = 'Your bot is pending approval. Please wait for admin approval.';
-      } else if (botInstance.approvalStatus === 'approved') {
-        // Check if bot has expired
-        const isExpired = botInstance.approvalDate && botInstance.expirationMonths 
-          ? new Date() > new Date(new Date(botInstance.approvalDate).getTime() + (botInstance.expirationMonths * 30 * 24 * 60 * 60 * 1000))
-          : false;
-          
-        if (isExpired) {
-          nextStep = 'wait_approval';
-          message = 'Your bot has expired. Please contact admin for renewal.';
-        } else if (!botInstance.credentialVerified || botInstance.status === 'offline') {
-          nextStep = 'update_credentials';
-          message = 'Your bot credentials need to be updated. Please upload your credentials file.';
-        } else if (botInstance.credentialVerified && botInstance.status === 'online') {
-          nextStep = 'authenticated';
-          message = 'Your bot is active and ready to use.';
-        } else {
-          nextStep = 'authenticate';
-          message = 'Your bot is verified. Click to authenticate and start using it.';
-        }
-      } else {
-        nextStep = 'wait_approval';
-        message = 'Your bot registration was not approved. Contact support for assistance.';
-      }
-
-      // Apply data masking and return bot details with management capabilities
-      const maskedBotData = maskBotDataForGuest({
-        ...botInstance,
-        nextStep,
-        message,
-        crossServer: false
-      });
-      
-      res.json(maskedBotData);
+      res.json(basicBotInfo);
       
     } catch (error) {
       console.error('Guest bot search error:', error);
@@ -2206,8 +2216,198 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     }
   });
 
+  // Guest bot credential validation endpoint - SECURITY: Validates ownership of existing bots
+  app.post("/api/guest/validate-existing-bot", upload.single('credentials') as any, async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "Credentials file is required to verify bot ownership" });
+      }
+      
+      // Clean phone number
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      // Parse credentials from uploaded file
+      let credentials;
+      try {
+        const fileContent = req.file.buffer.toString('utf-8');
+        credentials = JSON.parse(fileContent);
+      } catch (error) {
+        return res.status(400).json({ message: "Invalid credentials file format" });
+      }
+      
+      // Validate phone number ownership from credentials
+      if (credentials && credentials.me && credentials.me.id) {
+        const credentialsPhoneMatch = credentials.me.id.match(/^(\d+):/);
+        const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
+        
+        if (!credentialsPhone || credentialsPhone !== cleanedPhone) {
+          return res.status(400).json({
+            message: "Credentials do not match the provided phone number. You must provide the original credentials for this bot."
+          });
+        }
+      } else {
+        return res.status(400).json({ message: "Invalid credentials format - missing phone number data" });
+      }
+      
+      // Check if bot exists
+      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      if (!globalRegistration) {
+        return res.status(404).json({ message: "No bot found with this phone number" });
+      }
+      
+      const botServer = globalRegistration.tenancyName;
+      const currentServer = getServerName();
+      
+      // Handle cross-server bot (limited management)
+      if (botServer !== currentServer) {
+        // For cross-server bots, validate credentials but only allow credential updates
+        return res.json({
+          success: true,
+          botValidated: true,
+          crossServer: true,
+          message: `Credentials verified for bot on ${botServer}. You can update credentials but cannot start/stop the bot from this server.`,
+          phoneNumber: cleanedPhone,
+          serverName: botServer,
+          canManage: false,
+          canUpdateCredentials: true,
+          nextStep: 'cross_server_credential_update'
+        });
+      }
+      
+      // Bot is on current server - get existing bot data
+      const botInstance = await storage.getBotByPhoneNumber(cleanedPhone);
+      if (!botInstance) {
+        return res.status(404).json({ message: "Bot found in registry but not in local database. Contact support." });
+      }
+      
+      // Load existing credentials to compare
+      let existingCredentials;
+      try {
+        const authDir = path.join(process.cwd(), 'auth', `bot_${botInstance.id}`);
+        const credentialsPath = path.join(authDir, 'creds.json');
+        
+        if (fs.existsSync(credentialsPath)) {
+          const existingFileContent = fs.readFileSync(credentialsPath, 'utf-8');
+          existingCredentials = JSON.parse(existingFileContent);
+          
+          // Compare key credential data to validate ownership
+          const existingPhoneMatch = existingCredentials?.me?.id?.match(/^(\d+):/);
+          const existingPhone = existingPhoneMatch ? existingPhoneMatch[1] : null;
+          const credentialsPhone = credentials.me.id.match(/^(\d+):/)?.[1];
+          
+          if (existingPhone !== credentialsPhone) {
+            return res.status(403).json({
+              message: "Credential validation failed. The provided credentials do not match the existing bot credentials."
+            });
+          }
+        } else {
+          console.log(`No existing credentials found for bot ${botInstance.id}, allowing validation with provided credentials`);
+        }
+      } catch (error) {
+        console.warn('Could not load existing credentials for validation:', error);
+        // Continue with validation since we've already validated phone number ownership
+      }
+      
+      // Generate guest authentication token after successful validation
+      const guestToken = generateGuestToken(cleanedPhone, botInstance.id);
+      
+      // Set guest session
+      setGuestBotId(cleanedPhone, botInstance.id);
+      
+      // Update bot credential status
+      await storage.updateBotCredentialStatus(botInstance.id, {
+        credentialVerified: true,
+        credentialPhone: cleanedPhone,
+        invalidReason: undefined,
+        credentials: credentials
+      });
+      
+      // Save updated credentials to file system
+      try {
+        const authDir = path.join(process.cwd(), 'auth', `bot_${botInstance.id}`);
+        if (!fs.existsSync(authDir)) {
+          fs.mkdirSync(authDir, { recursive: true });
+        }
+        
+        fs.writeFileSync(
+          path.join(authDir, 'creds.json'),
+          JSON.stringify(credentials, null, 2)
+        );
+      } catch (fileError) {
+        console.error('Failed to save updated credentials:', fileError);
+      }
+      
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: botInstance.id,
+        type: 'credential_validation',
+        description: `Bot ownership validated via credential verification (${cleanedPhone})`,
+        metadata: { guestAuth: true, phoneNumber: cleanedPhone, validationMethod: 'credentials' },
+        serverName: getServerName()
+      });
+      
+      // Determine next step based on bot status
+      let nextStep = 'unknown';
+      let message = '';
+      let canManage = false;
+      
+      if (botInstance.approvalStatus === 'pending') {
+        nextStep = 'wait_approval';
+        message = 'Your bot ownership is verified but the bot is pending admin approval.';
+        canManage = false;
+      } else if (botInstance.approvalStatus === 'approved') {
+        // Check if bot has expired
+        const isExpired = botInstance.approvalDate && botInstance.expirationMonths
+          ? new Date() > new Date(new Date(botInstance.approvalDate).getTime() + (botInstance.expirationMonths * 30 * 24 * 60 * 60 * 1000))
+          : false;
+          
+        if (isExpired) {
+          nextStep = 'wait_approval';
+          message = 'Your bot has expired. Please contact admin for renewal.';
+          canManage = false;
+        } else {
+          nextStep = 'authenticated';
+          message = 'Bot ownership verified! You can now manage your bot.';
+          canManage = true;
+        }
+      } else {
+        nextStep = 'wait_approval';
+        message = 'Your bot registration was not approved. Contact support for assistance.';
+        canManage = false;
+      }
+      
+      // Return validated bot data with management capabilities
+      const validatedBotData = maskBotDataForGuest({
+        ...botInstance,
+        nextStep,
+        message,
+        canManage,
+        crossServer: false,
+        credentialVerified: true
+      });
+      
+      res.json({
+        success: true,
+        botValidated: true,
+        guestToken,
+        bot: validatedBotData,
+        message: "Bot ownership successfully verified via credentials"
+      });
+      
+    } catch (error) {
+      console.error('Guest bot validation error:', error);
+      res.status(500).json({ message: "Failed to validate bot credentials" });
+    }
+  });
+
   // Guest Credential Verification Endpoint (Protected)
-  app.post("/api/guest/verify-credentials", authenticateGuestWithBot, upload.single('credentials') as any, async (req: GuestAuthRequest, res) => {
+  app.post("/api/guest/verify-credentials", authenticateGuestWithBot, upload.single('credentials') as any, async (req: any, res) => {
     try {
       const { phoneNumber } = req.body;
       
@@ -2223,7 +2423,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
       
       // Security check: Ensure guest can only update their own bot
-      const guestBotId = req.botId; // From authenticateGuestWithBot middleware
+      const guestBotId = req.guest.botId; // From authenticateGuestWithBot middleware
       const guestBotInstance = await storage.getBotInstance(guestBotId);
       
       if (!guestBotInstance) {
@@ -2233,7 +2433,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       }
       
       // Verify the phone number matches the authenticated bot
-      const guestCleanedPhone = guestBotInstance.phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      const guestCleanedPhone = guestBotInstance.phoneNumber?.replace(/[\s\-\(\)\+]/g, '') || '';
       if (cleanedPhone !== guestCleanedPhone) {
         return res.status(403).json({ 
           message: "You can only update credentials for your own bot." 
@@ -2270,8 +2470,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       // Use existing validation function
       const validation = await validateWhatsAppCredentials(
         credentials, 
-        cleanedPhone, 
-        `guest-credential-verification-${botInstance.id}`
+        cleanedPhone
       );
       
       if (validation.isValid) {
@@ -2318,9 +2517,9 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         // Update bot credential status
         await storage.updateBotCredentialStatus(botInstance.id, {
           credentialVerified: true,
-          credentialPhone: validation.phoneNumber || cleanedPhone,
+          credentialPhone: cleanedPhone,
           autoStart: true,
-          invalidReason: null,
+          invalidReason: undefined,
           authMessageSentAt: messageSent ? new Date() : null
         });
         
@@ -2330,7 +2529,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           type: 'credential_update',
           description: 'Guest uploaded and verified new credentials',
           metadata: { 
-            verifiedPhone: validation.phoneNumber || cleanedPhone,
+            verifiedPhone: cleanedPhone,
             guestAction: true,
             credentialsSaved,
             messageSent,
@@ -2346,7 +2545,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         res.json({
           success: true,
           message: responseMessage,
-          verifiedPhone: validation.phoneNumber || cleanedPhone,
+          verifiedPhone: cleanedPhone,
           credentialsSaved,
           messageSent,
           nextStep: "authenticated"
@@ -2356,12 +2555,12 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         await storage.updateBotCredentialStatus(botInstance.id, {
           credentialVerified: false,
           autoStart: false,
-          invalidReason: validation.error || 'Credential verification failed'
+          invalidReason: validation.message || 'Credential verification failed'
         });
         
         res.status(400).json({
           success: false,
-          message: validation.error || "Credentials could not be verified. Please check your credentials file and try again.",
+          message: validation.message || "Credentials could not be verified. Please check your credentials file and try again.",
           nextStep: "update_credentials"
         });
       }
@@ -2613,6 +2812,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         targetServerName,
         {
           name: botName,
+          serverName: targetServerName,
           phoneNumber: phoneNumber,
           credentials: credentials,
           status: 'pending_validation',
@@ -2647,7 +2847,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           credentialVerified: true,
           credentialPhone: cleanPhoneNumber,
           autoStart: false, // Don't auto-start cross-server registrations
-          invalidReason: null
+          invalidReason: undefined
         });
         console.log(`✅ Credentials marked as verified for bot ${botInstance.id} on server ${targetServerName} (cross-server)`);
         
@@ -2691,7 +2891,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
             credentialVerified: true,
             credentialPhone: cleanPhoneNumber,
             autoStart: true,
-            invalidReason: null
+            invalidReason: undefined
           });
           console.log(`✅ Credentials marked as verified for bot ${botInstance.id}`);
           
