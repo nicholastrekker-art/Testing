@@ -52,6 +52,11 @@ export const botInstances = pgTable("bot_instances", {
   isGuest: boolean("is_guest").default(false),
   approvalDate: text("approval_date"), // Date when bot was approved
   expirationMonths: integer("expiration_months"), // Duration in months
+  autoStart: boolean("auto_start").default(true), // whether bot should auto-start on server restart
+  credentialVerified: boolean("credential_verified").default(false), // whether credentials are verified
+  credentialPhone: text("credential_phone"), // phone number extracted from verified credentials
+  invalidReason: text("invalid_reason"), // reason why bot is considered invalid
+  authMessageSentAt: timestamp("auth_message_sent_at"), // timestamp when auth message was sent
   serverName: text("server_name").notNull(), // isolate by server instance
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
