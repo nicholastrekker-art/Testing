@@ -9,7 +9,22 @@ import { storage } from "./storage";
 import { insertBotInstanceSchema, insertCommandSchema, insertActivitySchema } from "@shared/schema";
 import { botManager } from "./services/bot-manager";
 import { getServerName } from "./db";
-import { authenticateAdmin, authenticateUser, validateAdminCredentials, generateToken, type AuthRequest } from './middleware/auth';
+import { 
+  authenticateAdmin, 
+  authenticateUser, 
+  authenticateGuest,
+  authenticateGuestWithBot,
+  validateAdminCredentials, 
+  generateToken,
+  generateGuestOTP,
+  createGuestSession,
+  verifyGuestOTP,
+  generateGuestToken,
+  setGuestBotId,
+  clearGuestSession,
+  type AuthRequest,
+  type GuestAuthRequest
+} from './middleware/auth';
 import { sendValidationMessage, sendGuestValidationMessage } from "./services/validation-bot";
 
 const upload = multer({ 
@@ -1460,6 +1475,371 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     } catch (error) {
       console.error('Custom command creation error:', error);
       res.status(500).json({ message: "Failed to create custom command" });
+    }
+  });
+
+  // ======= GUEST AUTHENTICATION ENDPOINTS =======
+  
+  // Guest OTP Request - Send verification code via WhatsApp
+  app.post("/api/guest/auth/send-otp", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      // Clean phone number
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      // Validate phone number format (basic check)
+      if (!/^\d{10,15}$/.test(cleanedPhone)) {
+        return res.status(400).json({ message: "Invalid phone number format" });
+      }
+      
+      // Check if phone number has a registered bot
+      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      if (!globalRegistration) {
+        return res.status(404).json({ 
+          message: "No bot found with this phone number. Register a bot first to access guest features." 
+        });
+      }
+      
+      // Generate OTP and create session
+      const otp = generateGuestOTP();
+      createGuestSession(cleanedPhone, otp);
+      
+      // Try to send OTP via WhatsApp if bot is on current server
+      const currentServer = getServerName();
+      let otpSent = false;
+      let otpMethod = 'display';
+      
+      if (globalRegistration.tenancyName === currentServer) {
+        // Bot is on current server - try to get bot and send WhatsApp OTP
+        const botInstance = await storage.getBotByPhoneNumber(cleanedPhone);
+        if (botInstance && botInstance.credentials && botInstance.approvalStatus === 'approved') {
+          try {
+            const message = `🔐 Your verification code for bot management: ${otp}\n\nThis code expires in 10 minutes. Keep it secure!`;
+            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(botInstance.credentials), message);
+            otpSent = true;
+            otpMethod = 'whatsapp';
+            console.log(`📱 OTP sent via WhatsApp to ${cleanedPhone}: ${otp}`);
+          } catch (error) {
+            console.log(`⚠️ Failed to send WhatsApp OTP to ${cleanedPhone}, falling back to display: ${error.message}`);
+          }
+        }
+      }
+      
+      // Log OTP for development/fallback
+      if (!otpSent) {
+        console.log(`🔑 Guest OTP for ${cleanedPhone}: ${otp} (Display method)`);
+      }
+      
+      res.json({
+        success: true,
+        message: otpSent 
+          ? "Verification code sent to your WhatsApp" 
+          : "Verification code generated. Check server logs for development.",
+        method: otpMethod,
+        expiresIn: 600, // 10 minutes
+        // For development/demo - remove in production
+        ...(process.env.NODE_ENV === 'development' && { otp })
+      });
+      
+    } catch (error) {
+      console.error('Guest OTP send error:', error);
+      res.status(500).json({ message: "Failed to send verification code" });
+    }
+  });
+  
+  // Guest OTP Verification - Verify code and get guest token
+  app.post("/api/guest/auth/verify-otp", async (req, res) => {
+    try {
+      const { phoneNumber, otp } = req.body;
+      
+      if (!phoneNumber || !otp) {
+        return res.status(400).json({ message: "Phone number and OTP are required" });
+      }
+      
+      // Clean phone number
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      // Verify OTP
+      const isValid = verifyGuestOTP(cleanedPhone, otp);
+      if (!isValid) {
+        return res.status(400).json({ 
+          message: "Invalid or expired verification code. Please request a new one." 
+        });
+      }
+      
+      // Check if bot exists and get bot ID
+      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      if (!globalRegistration) {
+        clearGuestSession(cleanedPhone);
+        return res.status(404).json({ message: "Bot registration not found" });
+      }
+      
+      let botId = undefined;
+      const currentServer = getServerName();
+      
+      if (globalRegistration.tenancyName === currentServer) {
+        const botInstance = await storage.getBotByPhoneNumber(cleanedPhone);
+        if (botInstance) {
+          botId = botInstance.id;
+          setGuestBotId(cleanedPhone, botId);
+        }
+      }
+      
+      // Generate guest token
+      const token = generateGuestToken(cleanedPhone, botId);
+      
+      console.log(`✅ Guest authentication successful for ${cleanedPhone}`);
+      
+      res.json({
+        success: true,
+        token,
+        phoneNumber: cleanedPhone,
+        botId,
+        serverMatch: globalRegistration.tenancyName === currentServer,
+        registeredServer: globalRegistration.tenancyName,
+        expiresIn: 7200, // 2 hours
+        message: "Authentication successful"
+      });
+      
+    } catch (error) {
+      console.error('Guest OTP verify error:', error);
+      res.status(500).json({ message: "Failed to verify code" });
+    }
+  });
+  
+  // ======= GUEST BOT ACTION ENDPOINTS =======
+  
+  // Guest bot start - requires authentication and ownership verification
+  app.post("/api/guest/bot/start", authenticateGuestWithBot, async (req: GuestAuthRequest, res) => {
+    try {
+      const { phoneNumber, botId } = req.guest;
+      
+      // Additional ownership check
+      const botInstance = await storage.getBotInstance(botId);
+      if (!botInstance) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+      
+      if (botInstance.phoneNumber !== phoneNumber) {
+        return res.status(403).json({ message: "Access denied - you do not own this bot" });
+      }
+      
+      if (botInstance.approvalStatus !== 'approved') {
+        return res.status(403).json({ message: "Bot is not approved for starting" });
+      }
+      
+      // Start the bot
+      await botManager.createBot(botId, botInstance);
+      await botManager.startBot(botId);
+      
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: botId,
+        type: 'startup',
+        description: `Bot started by guest user via phone verification (${phoneNumber})`,
+        metadata: { guestAuth: true, phoneNumber },
+        serverName: getServerName()
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "Bot started successfully",
+        botId,
+        status: 'starting'
+      });
+      
+    } catch (error) {
+      console.error('Guest bot start error:', error);
+      res.status(500).json({ message: "Failed to start bot" });
+    }
+  });
+  
+  // Guest bot stop - requires authentication and ownership verification  
+  app.post("/api/guest/bot/stop", authenticateGuestWithBot, async (req: GuestAuthRequest, res) => {
+    try {
+      const { phoneNumber, botId } = req.guest;
+      
+      // Additional ownership check
+      const botInstance = await storage.getBotInstance(botId);
+      if (!botInstance) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+      
+      if (botInstance.phoneNumber !== phoneNumber) {
+        return res.status(403).json({ message: "Access denied - you do not own this bot" });
+      }
+      
+      // Stop the bot
+      await botManager.stopBot(botId);
+      
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: botId,
+        type: 'shutdown',
+        description: `Bot stopped by guest user via phone verification (${phoneNumber})`,
+        metadata: { guestAuth: true, phoneNumber },
+        serverName: getServerName()
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "Bot stopped successfully",
+        botId,
+        status: 'stopping'
+      });
+      
+    } catch (error) {
+      console.error('Guest bot stop error:', error);
+      res.status(500).json({ message: "Failed to stop bot" });
+    }
+  });
+  
+  // Guest bot delete - requires authentication and ownership verification
+  app.delete("/api/guest/bot/delete", authenticateGuestWithBot, async (req: GuestAuthRequest, res) => {
+    try {
+      const { phoneNumber, botId } = req.guest;
+      
+      // Additional ownership check
+      const botInstance = await storage.getBotInstance(botId);
+      if (!botInstance) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+      
+      if (botInstance.phoneNumber !== phoneNumber) {
+        return res.status(403).json({ message: "Access denied - you do not own this bot" });
+      }
+      
+      // Stop the bot first if running
+      try {
+        await botManager.stopBot(botId);
+      } catch (error) {
+        console.log(`Bot ${botId} was not running, proceeding with deletion`);
+      }
+      
+      // Delete bot from bot manager
+      try {
+        await botManager.deleteBot(botId);
+      } catch (error) {
+        console.log(`Bot ${botId} not in bot manager, proceeding with database deletion`);
+      }
+      
+      // Delete related data
+      await storage.deleteBotRelatedData(botId);
+      
+      // Delete bot instance
+      await storage.deleteBotInstance(botId);
+      
+      // Remove from global registration
+      await storage.deleteGlobalRegistration(phoneNumber);
+      
+      // Clear guest session
+      clearGuestSession(phoneNumber);
+      
+      // Log final activity (cross-tenancy for record keeping)
+      await storage.createCrossTenancyActivity({
+        type: 'deletion',
+        description: `Bot deleted by guest user via phone verification (${phoneNumber})`,
+        metadata: { 
+          guestAuth: true, 
+          phoneNumber,
+          botName: botInstance.name,
+          deletedBotId: botId
+        },
+        serverName: getServerName(),
+        phoneNumber
+      });
+      
+      console.log(`🗑️ Guest user ${phoneNumber} deleted bot ${botInstance.name} (${botId})`);
+      
+      res.json({ 
+        success: true, 
+        message: "Bot deleted successfully",
+        botId
+      });
+      
+    } catch (error) {
+      console.error('Guest bot delete error:', error);
+      res.status(500).json({ message: "Failed to delete bot" });
+    }
+  });
+
+  // ======= EXISTING GUEST ENDPOINTS =======
+
+  // Guest bot search endpoint
+  app.post("/api/guest/search-bot", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      // Clean phone number
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      // Check God Registry first to see which server the bot is on
+      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      if (!globalRegistration) {
+        return res.status(404).json({ 
+          message: "No bot found with this phone number. You may need to register a new bot." 
+        });
+      }
+      
+      const botServer = globalRegistration.tenancyName;
+      const currentServer = getServerName();
+      
+      // If bot is on a different server, provide cross-server information
+      if (botServer !== currentServer) {
+        return res.json({
+          id: `cross-server-${cleanedPhone}`,
+          name: `Bot (${cleanedPhone})`,
+          phoneNumber: cleanedPhone,
+          status: "cross-server",
+          approvalStatus: "unknown",
+          isActive: false,
+          isApproved: false,
+          serverName: botServer,
+          messagesCount: 0,
+          commandsCount: 0,
+          lastActivity: null,
+          crossServer: true,
+          message: `Your bot is registered on ${botServer}. Cross-server management is limited.`
+        });
+      }
+      
+      // Bot is on current server - get full details
+      const botInstance = await storage.getBotByPhoneNumber(cleanedPhone);
+      if (!botInstance) {
+        return res.status(404).json({ 
+          message: "Bot found in registry but not in local database. Contact support." 
+        });
+      }
+      
+      // Return bot details with management capabilities
+      res.json({
+        id: botInstance.id,
+        name: botInstance.name,
+        phoneNumber: botInstance.phoneNumber,
+        status: botInstance.status,
+        approvalStatus: botInstance.approvalStatus,
+        isActive: botInstance.status === 'online',
+        isApproved: botInstance.approvalStatus === 'approved',
+        serverName: botInstance.serverName,
+        messagesCount: botInstance.messagesCount,
+        commandsCount: botInstance.commandsCount,
+        lastActivity: botInstance.lastActivity,
+        expirationMonths: botInstance.expirationMonths,
+        crossServer: false
+      });
+      
+    } catch (error) {
+      console.error('Guest bot search error:', error);
+      res.status(500).json({ message: "Failed to search for bot" });
     }
   });
 

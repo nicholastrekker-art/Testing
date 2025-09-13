@@ -6,6 +6,7 @@ import { LoginModal } from "./login-modal";
 import { ValidateCredentialsModal } from "./validate-credentials-modal";
 import { Button } from "./ui/button";
 import GuestBotRegistration from "./guest-bot-registration";
+import GuestBotSearch from "./guest-bot-search";
 
 // Guest mode navigation - only Dashboard
 const guestNavigationItems = [
@@ -68,6 +69,19 @@ export default function Sidebar() {
           </Link>
         ))}
         
+        {/* Guest Bot Management */}
+        {!isAdmin && (
+          <>
+            <div className="border-t border-border my-4"></div>
+            <div className="space-y-3">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3">
+                My Bots
+              </h3>
+              <GuestBotSearch />
+            </div>
+          </>
+        )}
+
         {/* Session ID Tools */}
         {!isAdmin && !isAuthenticated && (
           <>
