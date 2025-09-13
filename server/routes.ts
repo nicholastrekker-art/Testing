@@ -1584,181 +1584,118 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       
       console.log(`📊 Bot Status - Active: ${isActive}, Approved: ${isApproved}`);
       
-      // Step 2: Handle different bot status combinations
-      if (isActive && !isApproved) {
-        console.log(`⚠️ Bot is active but not approved by admin`);
+      // Step 2: Enhanced bot status checking with credential verification
+      console.log(`📊 Enhanced Status - Active: ${isActive}, Approved: ${isApproved}, CredVerified: ${botData.credentialVerified || false}`);
+      
+      // Check if bot is not approved (priority check)
+      if (!isApproved) {
+        console.log(`⚠️ Bot not approved by admin`);
         return res.status(403).json({
-          message: "Your bot is active but not approved by admin. Please wait for admin approval.",
-          botStatus: "active_not_approved",
+          message: "Your bot is not approved by admin. Please wait for admin approval.",
+          botStatus: "not_approved",
+          nextStep: "wait_approval",
           canManage: false
         });
       }
       
-      if (!isActive && !isApproved) {
-        console.log(`❌ Bot is inactive and not approved`);
+      // Check if bot has expired (for approved bots)
+      const isExpired = botData.approvalDate && botData.expirationMonths 
+        ? new Date() > new Date(new Date(botData.approvalDate).getTime() + (botData.expirationMonths * 30 * 24 * 60 * 60 * 1000))
+        : false;
+        
+      if (isExpired) {
+        console.log(`⏰ Bot has expired`);
+        return res.status(403).json({
+          message: "Your bot has expired. Please contact admin for renewal.",
+          botStatus: "expired",
+          nextStep: "wait_approval",
+          canManage: false
+        });
+      }
+      
+      // Check credential verification status (key enhancement)
+      const invalidStatuses = ['offline', 'error', 'loading', 'connecting'];
+      if (!botData.credentialVerified || invalidStatuses.includes(botData.status)) {
+        const reason = botData.invalidReason || 'Credentials need verification';
+        console.log(`🔐 Bot needs credential verification - Status: ${botData.status}, CredVerified: ${botData.credentialVerified}, Reason: ${reason}`);
         return res.status(400).json({
-          message: "Your bot is inactive and not approved. Please update your credentials and wait for admin approval.",
-          botStatus: "inactive_not_approved",
+          message: "Your bot credentials need to be updated before you can authenticate.",
+          botStatus: "needs_credentials",
+          nextStep: "update_credentials",
+          invalidReason: reason,
           needsCredentials: true,
-          canManage: false
+          canManage: false,
+          credentialUploadEndpoint: "/api/guest/verify-credentials"
         });
       }
       
-      if (!isActive && isApproved) {
-        console.log(`🔄 Bot is approved but inactive - requesting credential update`);
-        return res.status(400).json({
-          message: "Your bot is approved but currently inactive. Please update your credentials to reactivate it.",
-          botStatus: "inactive_approved",
-          needsCredentials: true,
-          canManage: false
-        });
-      }
+      // Step 3: For verified bots, send OTP using stored credentials
+      console.log(`✅ Bot is verified and approved - proceeding with OTP generation`);
       
-      // Step 3: For active + approved bots, use stored credentials or validate new ones
-      if (isActive && isApproved) {
-        console.log(`✅ Bot is active and approved - checking for stored credentials`);
-      }
-      
-      // Initialize credentials for validation (accessible in wider scope)
+      // Use stored credentials (already validated via credential verification system)
       let credentials = null;
-      
-      if (isActive && isApproved) {
-        
-        // FIRST: Try to use stored credentials from the bot
-        if (botData.credentials) {
-          console.log(`🔑 Found stored credentials for ${cleanedPhone} - using them for authentication`);
-          try {
-            credentials = JSON.parse(botData.credentials);
-            console.log(`✅ Successfully loaded stored credentials for ${cleanedPhone}`);
-          } catch (error) {
-            console.error(`❌ Invalid stored credentials for ${cleanedPhone}:`, error);
-            credentials = null;
-          }
-        }
-        
-        // SECOND: If no stored credentials or they're invalid, require fresh ones
-        if (!credentials && !sessionData) {
-          console.log(`🔒 No valid stored credentials - requesting fresh credentials for ${cleanedPhone}`);
-          return res.status(400).json({
-            message: "Credentials required for validation",
-            needsCredentials: true,
-            botStatus: "active_approved",
-            instructions: "Please provide your WhatsApp session data (base64 encoded creds.json) to verify your identity before sending OTP."
-          });
-        }
-        
-        // If we still don't have credentials, validate the provided sessionData
-        if (!credentials && sessionData) {
-          console.log(`🔍 Validating fresh credentials for ${cleanedPhone}`);
-          try {
-            const base64Data = sessionData.trim();
-            
-            // Check Base64 size limit (5MB when decoded)
-            const estimatedSize = (base64Data.length * 3) / 4;
-            const maxSizeBytes = 5 * 1024 * 1024; // 5MB
-            
-            if (estimatedSize > maxSizeBytes) {
-              return res.status(400).json({ 
-                message: `Session data too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
-              });
-            }
-            
-            const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
-            credentials = JSON.parse(decoded);
-            console.log(`✅ Fresh credentials validated for ${cleanedPhone}`);
-          
-            // Validate credentials structure
-            if (!credentials || typeof credentials !== 'object' || !credentials.creds) {
-              return res.status(400).json({ 
-                message: "Invalid credentials format. Please provide valid WhatsApp session data." 
-              });
-            }
-          
-          } catch (error) {
-            return res.status(400).json({ 
-              message: "Invalid session data format. Please ensure you're providing valid base64 encoded WhatsApp session data." 
-            });
-          }
-        }
-      }
-      
-      // Validate credentials by establishing WhatsApp connection
-      if (credentials) {
+      if (botData.credentials) {
         try {
-          console.log(`🔄 Validating credentials for phone ${cleanedPhone}`);
-          
-          // Use the validation function to test connection
-          const validationResult = await validateWhatsAppCredentials(cleanedPhone, credentials);
-          
-          if (!validationResult.isValid) {
-            return res.status(400).json({ 
-              message: "Invalid credentials. Unable to establish WhatsApp connection with provided credentials." 
-            });
-          }
-          
-          // Verify phone number ownership
-          const credentialsPhone = credentials.creds?.me?.id?.match(/^(\d+):/)?.[1];
-          if (credentialsPhone !== cleanedPhone) {
-            return res.status(403).json({ 
-              message: `Invalid credentials or you're not the owner. The credentials belong to +${credentialsPhone} but you provided +${cleanedPhone}.` 
-            });
-          }
-          
-          console.log(`✅ Credentials validated successfully for ${cleanedPhone}`);
-          
-          // Generate and send OTP via WhatsApp using validated credentials  
-          const otp = generateGuestOTP();
-          createGuestSession(cleanedPhone, otp);
-          
-          const message = `🔐 Your verification code for bot management: ${otp}\n\nThis code expires in 10 minutes. Keep it secure!`;
-          
-          try {
-            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), message, true); // true = preserve credentials
-            
-            console.log(`📱 OTP sent via WhatsApp to ${cleanedPhone}: ${otp}`);
-            
-            res.json({
-              success: true,
-              message: "Verification code sent to your WhatsApp",
-              method: 'whatsapp',
-              expiresIn: 600, // 10 minutes
-              credentialsValidated: true,
-              botStatus: "active_approved",
-              botId: botData.id,
-              // For development/demo - remove in production
-              ...(process.env.NODE_ENV === 'development' && { otp })
-            });
-            
-          } catch (error) {
-            console.log(`⚠️ Failed to send WhatsApp OTP to ${cleanedPhone}: ${(error as Error).message}`);
-            
-            // Log OTP for development/fallback
-            console.log(`🔑 Guest OTP for ${cleanedPhone}: ${otp} (Display method - WhatsApp failed)`);
-            
-            res.json({
-              success: true,
-              message: "Credentials validated but failed to send WhatsApp message. Check server logs for verification code.",
-              method: 'display',
-              expiresIn: 600, // 10 minutes
-              credentialsValidated: true,
-              botStatus: "active_approved",
-              botId: botData.id,
-              // For development/demo - remove in production
-              ...(process.env.NODE_ENV === 'development' && { otp })
-            });
-          }
-          
+          credentials = JSON.parse(botData.credentials);
+          console.log(`🔑 Using verified stored credentials for ${cleanedPhone}`);
         } catch (error) {
-          console.error(`❌ Credential validation failed for ${cleanedPhone}:`, error);
-          return res.status(400).json({ 
-            message: "Failed to validate credentials. Please ensure your session data is valid and active.",
-            botStatus: "active_approved"
+          console.error(`❌ Invalid stored credentials format for ${cleanedPhone}:`, error);
+          return res.status(500).json({
+            message: "Stored credentials are corrupted. Please update your credentials.",
+            botStatus: "needs_credentials",
+            nextStep: "update_credentials",
+            credentialUploadEndpoint: "/api/guest/verify-credentials"
           });
         }
       } else {
-        return res.status(400).json({ 
-          message: "Unable to proceed without valid credentials",
-          botStatus: "active_approved"
+        console.error(`❌ No stored credentials found for verified bot ${cleanedPhone}`);
+        return res.status(500).json({
+          message: "No credentials found for verified bot. Please update your credentials.",
+          botStatus: "needs_credentials", 
+          nextStep: "update_credentials",
+          credentialUploadEndpoint: "/api/guest/verify-credentials"
+        });
+      }
+      
+      // Generate and send OTP via WhatsApp
+      const otp = generateGuestOTP();
+      createGuestSession(cleanedPhone, otp);
+      
+      const message = `🔐 Your verification code for bot management: ${otp}\n\nThis code expires in 10 minutes. Keep it secure!`;
+      
+      try {
+        await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), message, true);
+        
+        console.log(`📱 OTP sent via WhatsApp to ${cleanedPhone}: ${otp}`);
+        
+        res.json({
+          success: true,
+          message: "Verification code sent to your WhatsApp",
+          method: 'whatsapp',
+          expiresIn: 600, // 10 minutes
+          botStatus: "verified_approved",
+          botId: botData.id,
+          nextStep: "verify_otp",
+          // For development/demo - remove in production
+          ...(process.env.NODE_ENV === 'development' && { otp })
+        });
+        
+      } catch (error) {
+        console.error(`⚠️ Failed to send WhatsApp OTP to ${cleanedPhone}:`, error);
+        
+        // Log OTP for development/fallback
+        console.log(`🔑 Guest OTP for ${cleanedPhone}: ${otp} (Display method - WhatsApp failed)`);
+        
+        res.json({
+          success: true,
+          message: "OTP generated but failed to send WhatsApp message. Check server logs for verification code.",
+          method: 'display',
+          expiresIn: 600, // 10 minutes
+          botStatus: "verified_approved",
+          botId: botData.id,
+          nextStep: "verify_otp",
+          // For development/demo - remove in production
+          ...(process.env.NODE_ENV === 'development' && { otp })
         });
       }
       
