@@ -2381,6 +2381,9 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         return res.status(400).json({ message: "Bot name and phone number are required" });
       }
 
+      // Clean the phone number early - remove + prefix and ensure we only use the numeric part
+      const cleanPhoneNumber = phoneNumber.replace(/^\+/, '').replace(/[^\d]/g, '');
+
       // Parse credentials first (before any phone number checks)
       let credentials = null;
       
@@ -2405,16 +2408,13 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         return res.status(400).json({ message: "Valid credentials are required" });
       }
 
-      // Validate phone number ownership
+      // Validate phone number ownership - extract clean phone number from credentials
       if (credentials && credentials.me && credentials.me.id) {
-        // Extract phone number from credentials (format: "254704897825:33@s.whatsapp.net")
+        // Extract clean phone number from credentials (format: "254704897825:33@s.whatsapp.net")
         const credentialsPhoneMatch = credentials.me.id.match(/^(\d+):/); 
         const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
         
-        // Clean the input phone number (remove + if present)
-        const inputPhone = phoneNumber.replace(/^\+/, '');
-        
-        if (!credentialsPhone || credentialsPhone !== inputPhone) {
+        if (!credentialsPhone || credentialsPhone !== cleanPhoneNumber) {
           return res.status(400).json({ 
             message: "You are not the owner of this credentials file. The phone number in the session does not match your input." 
           });
@@ -2436,8 +2436,8 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       // Get current tenant name
       const currentTenancyName = getServerName();
       
-      // Check global registration first
-      const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
+      // Check global registration first using clean phone number
+      const globalRegistration = await storage.checkGlobalRegistration(cleanPhoneNumber);
       if (globalRegistration) {
         // Phone number is already registered to another tenant
         if (globalRegistration.tenancyName !== currentTenancyName) {
@@ -2447,11 +2447,11 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           });
         }
         
-        // Phone number belongs to this tenant - check for existing bot
-        const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
+        // Phone number belongs to this tenant - check for existing bot using clean phone number
+        const existingBot = await storage.getBotByPhoneNumber(cleanPhoneNumber);
         if (existingBot) {
           // User has a bot on this server - automatically update credentials instead of blocking
-          console.log(`📱 Phone number ${phoneNumber} already registered, updating credentials for bot ${existingBot.id}`);
+          console.log(`📱 Phone number ${cleanPhoneNumber} already registered, updating credentials for bot ${existingBot.id}`);
           
           // Update the existing bot's credentials automatically
           let credentialsSaved = false;
@@ -2485,9 +2485,9 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           try {
             // Convert credentials to base64 for sending message
             const credentialsBase64 = Buffer.from(JSON.stringify(credentials)).toString('base64');
-            await sendGuestValidationMessage(phoneNumber, credentialsBase64, authMessage, true);
+            await sendGuestValidationMessage(cleanPhoneNumber, credentialsBase64, authMessage, true);
             messageSent = true;
-            console.log(`✅ Updated authentication message sent to ${phoneNumber}`);
+            console.log(`✅ Updated authentication message sent to ${cleanPhoneNumber}`);
           } catch (messageError) {
             console.error('Failed to send authentication message:', messageError);
             messageSent = false;
@@ -2496,16 +2496,15 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           // Update bot credential status
           await storage.updateBotCredentialStatus(existingBot.id, {
             credentialVerified: true,
-            credentialPhone: phoneNumber,
-            autoStart: true,
-            invalidReason: null,
-            authMessageSentAt: messageSent ? new Date() : null
+            credentialPhone: cleanPhoneNumber,
+            invalidReason: undefined,
+            credentials: credentials
           });
           
           // Update bot features if provided
           if (botFeatures && Object.keys(botFeatures).length > 0) {
             await storage.updateBotInstance(existingBot.id, {
-              features: JSON.stringify(botFeatures)
+              settings: JSON.stringify({ features: botFeatures })
             });
           }
           
@@ -2515,7 +2514,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
             type: 'credential_update',
             description: 'Guest automatically updated credentials for existing bot registration',
             metadata: { 
-              verifiedPhone: phoneNumber,
+              verifiedPhone: cleanPhoneNumber,
               guestAction: true,
               credentialsSaved,
               messageSent,
@@ -2536,7 +2535,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
             botDetails: {
               id: existingBot.id,
               name: existingBot.name,
-              phoneNumber: existingBot.phoneNumber,
+              phoneNumber: cleanPhoneNumber,
               status: existingBot.status,
               updated: true
             },
@@ -2546,11 +2545,11 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         }
       } else {
         // This is a new registration - global registration will be handled by createCrossServerRegistration
-        console.log(`📝 New registration for ${phoneNumber} will be handled by cross-server registration method`);
+        console.log(`📝 New registration for ${cleanPhoneNumber} will be handled by cross-server registration method`);
       }
 
       // Check if phone number already exists locally (redundant check but for safety)
-      const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
+      const existingBot = await storage.getBotByPhoneNumber(cleanPhoneNumber);
       if (existingBot) {
         // Check if existing bot is active and has valid session
         if (existingBot.approvalStatus === 'approved' && existingBot.status === 'online') {
