@@ -2664,6 +2664,15 @@ Thank you for choosing TREKKER-MD! 🚀`;
         await sendGuestValidationMessage(phoneNumber, credentialsBase64, validationMessage);
         console.log(`✅ Validation message sent successfully to ${phoneNumber}`);
         
+        // Mark credentials as verified since validation message was sent successfully
+        await storage.updateBotCredentialStatus(botInstance.id, {
+          credentialVerified: true,
+          credentialPhone: cleanPhoneNumber,
+          autoStart: true,
+          invalidReason: null
+        });
+        console.log(`✅ Credentials marked as verified for bot ${botInstance.id}`);
+        
         // Update bot status to pending (awaiting approval)
         await storage.updateBotInstance(botInstance.id, { 
           status: 'dormant',
