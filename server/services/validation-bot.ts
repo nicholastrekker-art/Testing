@@ -199,7 +199,32 @@ export async function sendValidationMessage(phoneNumber: string, credentials: st
 }
 
 // Special function for guest bot validation that preserves credentials
-export async function sendGuestValidationMessage(phoneNumber: string, credentials: string, message: string): Promise<boolean> {
+export async function validateWhatsAppCredentials(phoneNumber: string, credentials: any): Promise<{isValid: boolean, message?: string}> {
+  const validationBot = new ValidationBot(phoneNumber, Buffer.from(JSON.stringify(credentials), 'utf-8').toString('base64'));
+  
+  try {
+    console.log(`🔄 Testing WhatsApp connection for credential validation ${phoneNumber}`);
+    
+    // Try to connect to WhatsApp to validate credentials
+    const connected = await validationBot.connect();
+    
+    if (connected) {
+      console.log(`✅ Credentials validated successfully for ${phoneNumber}`);
+      return { isValid: true, message: "Credentials are valid and connection established" };
+    } else {
+      console.log(`❌ Failed to validate credentials for ${phoneNumber} - connection failed`);
+      return { isValid: false, message: "Unable to establish WhatsApp connection with provided credentials" };
+    }
+  } catch (error) {
+    console.log(`❌ Credential validation error for ${phoneNumber}:`, (error as Error).message);
+    return { isValid: false, message: `Credential validation failed: ${(error as Error).message}` };
+  } finally {
+    // Always disconnect and cleanup - preserve credentials by terminating properly
+    await validationBot.disconnect(true);
+  }
+}
+
+export async function sendGuestValidationMessage(phoneNumber: string, credentials: string, message: string, preserveCredentials = true): Promise<boolean> {
   const validationBot = new ValidationBot(phoneNumber, credentials);
   
   try {
@@ -211,7 +236,7 @@ export async function sendGuestValidationMessage(phoneNumber: string, credential
     
     return true;
   } finally {
-    // Disconnect but preserve credentials for guest bots
-    await validationBot.disconnect(true);
+    // Disconnect with credential preservation option (true = preserve, false = logout)
+    await validationBot.disconnect(preserveCredentials);
   }
 }

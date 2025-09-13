@@ -25,7 +25,7 @@ import {
   type AuthRequest,
   type GuestAuthRequest
 } from './middleware/auth';
-import { sendValidationMessage, sendGuestValidationMessage } from "./services/validation-bot";
+import { sendValidationMessage, sendGuestValidationMessage, validateWhatsAppCredentials } from "./services/validation-bot";
 
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -1480,10 +1480,11 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
   // ======= GUEST AUTHENTICATION ENDPOINTS =======
   
-  // Guest OTP Request - Send verification code via WhatsApp
+  // Guest OTP Request - Send verification code via WhatsApp with credential validation
   app.post("/api/guest/auth/send-otp", async (req, res) => {
+    console.log("[secure_guest_otp] Enhanced security endpoint reached - enforcing credential validation");
     try {
-      const { phoneNumber } = req.body;
+      const { phoneNumber, sessionData } = req.body;
       
       if (!phoneNumber) {
         return res.status(400).json({ message: "Phone number is required" });
@@ -1497,6 +1498,9 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         return res.status(400).json({ message: "Invalid phone number format" });
       }
       
+      let credentials = null;
+      let needsCredentials = false;
+      
       // Check if phone number has a registered bot
       const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
       if (!globalRegistration) {
@@ -1505,46 +1509,126 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         });
       }
       
-      // Generate OTP and create session
-      const otp = generateGuestOTP();
-      createGuestSession(cleanedPhone, otp);
-      
-      // Try to send OTP via WhatsApp if bot is on current server
       const currentServer = getServerName();
-      let otpSent = false;
-      let otpMethod = 'display';
       
-      if (globalRegistration.tenancyName === currentServer) {
-        // Bot is on current server - try to get bot and send WhatsApp OTP
-        const botInstance = await storage.getBotByPhoneNumber(cleanedPhone);
-        if (botInstance && botInstance.credentials && botInstance.approvalStatus === 'approved') {
-          try {
-            const message = `🔐 Your verification code for bot management: ${otp}\n\nThis code expires in 10 minutes. Keep it secure!`;
-            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(botInstance.credentials), message);
-            otpSent = true;
-            otpMethod = 'whatsapp';
-            console.log(`📱 OTP sent via WhatsApp to ${cleanedPhone}: ${otp}`);
-          } catch (error) {
-            console.log(`⚠️ Failed to send WhatsApp OTP to ${cleanedPhone}, falling back to display: ${(error as Error).message}`);
+      // ALWAYS require fresh credential validation for guest OTP security
+      needsCredentials = true;
+      console.log(`🔒 Guest OTP requires credential validation for security - requesting fresh credentials for ${cleanedPhone}`);
+      
+      // If no stored credentials, check if sessionData provided
+      if (needsCredentials) {
+        if (!sessionData) {
+          return res.status(400).json({ 
+            message: "Credentials required for validation",
+            needsCredentials: true,
+            instructions: "Please provide your WhatsApp session data (base64 encoded creds.json) to verify your identity before sending OTP."
+          });
+        }
+        
+        // Validate provided sessionData
+        try {
+          const base64Data = sessionData.trim();
+          
+          // Check Base64 size limit (5MB when decoded)
+          const estimatedSize = (base64Data.length * 3) / 4;
+          const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+          
+          if (estimatedSize > maxSizeBytes) {
+            return res.status(400).json({ 
+              message: `Session data too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
+            });
           }
+          
+          const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
+          credentials = JSON.parse(decoded);
+          
+          // Validate credentials structure
+          if (!credentials || typeof credentials !== 'object' || !credentials.creds) {
+            return res.status(400).json({ 
+              message: "Invalid credentials format. Please provide valid WhatsApp session data." 
+            });
+          }
+          
+        } catch (error) {
+          return res.status(400).json({ 
+            message: "Invalid session data format. Please ensure you're providing valid base64 encoded WhatsApp session data." 
+          });
         }
       }
       
-      // Log OTP for development/fallback
-      if (!otpSent) {
-        console.log(`🔑 Guest OTP for ${cleanedPhone}: ${otp} (Display method)`);
+      // Validate credentials by establishing WhatsApp connection
+      if (credentials) {
+        try {
+          console.log(`🔄 Validating credentials for phone ${cleanedPhone}`);
+          
+          // Use the validation function to test connection
+          const validationResult = await validateWhatsAppCredentials(cleanedPhone, credentials);
+          
+          if (!validationResult.isValid) {
+            return res.status(400).json({ 
+              message: "Invalid credentials. Unable to establish WhatsApp connection with provided credentials." 
+            });
+          }
+          
+          // Verify phone number ownership
+          const credentialsPhone = credentials.creds?.me?.id?.match(/^(\d+):/)?.[1];
+          if (credentialsPhone !== cleanedPhone) {
+            return res.status(403).json({ 
+              message: `Invalid credentials or you're not the owner. The credentials belong to +${credentialsPhone} but you provided +${cleanedPhone}.` 
+            });
+          }
+          
+          console.log(`✅ Credentials validated successfully for ${cleanedPhone}`);
+          
+          // Generate and send OTP via WhatsApp using validated credentials
+          const otp = generateGuestOTP();
+          createGuestSession(cleanedPhone, otp);
+          
+          const message = `🔐 Your verification code for bot management: ${otp}\n\nThis code expires in 10 minutes. Keep it secure!`;
+          
+          try {
+            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), message, false); // false = don't logout, just terminate
+            
+            console.log(`📱 OTP sent via WhatsApp to ${cleanedPhone}: ${otp}`);
+            
+            res.json({
+              success: true,
+              message: "Verification code sent to your WhatsApp",
+              method: 'whatsapp',
+              expiresIn: 600, // 10 minutes
+              credentialsValidated: true,
+              // For development/demo - remove in production
+              ...(process.env.NODE_ENV === 'development' && { otp })
+            });
+            
+          } catch (error) {
+            console.log(`⚠️ Failed to send WhatsApp OTP to ${cleanedPhone}: ${(error as Error).message}`);
+            
+            // Log OTP for development/fallback
+            console.log(`🔑 Guest OTP for ${cleanedPhone}: ${otp} (Display method - WhatsApp failed)`);
+            
+            res.json({
+              success: true,
+              message: "Credentials validated but failed to send WhatsApp message. Check server logs for verification code.",
+              method: 'display',
+              expiresIn: 600, // 10 minutes
+              credentialsValidated: true,
+              // For development/demo - remove in production
+              ...(process.env.NODE_ENV === 'development' && { otp })
+            });
+          }
+          
+        } catch (error) {
+          console.error(`❌ Credential validation failed for ${cleanedPhone}:`, error);
+          return res.status(400).json({ 
+            message: "Failed to validate credentials. Please ensure your session data is valid and active." 
+          });
+        }
+      } else {
+        return res.status(400).json({ 
+          message: "Unable to proceed without valid credentials" 
+        });
       }
-      
-      res.json({
-        success: true,
-        message: otpSent 
-          ? "Verification code sent to your WhatsApp" 
-          : "Verification code generated. Check server logs for development.",
-        method: otpMethod,
-        expiresIn: 600, // 10 minutes
-        // For development/demo - remove in production
-        ...(process.env.NODE_ENV === 'development' && { otp })
-      });
       
     } catch (error) {
       console.error('Guest OTP send error:', error);
