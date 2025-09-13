@@ -2216,7 +2216,38 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         });
       }
       
-      // Return bot details with management capabilities
+      // Determine next step based on bot status and credential verification
+      let nextStep = 'unknown';
+      let message = '';
+      
+      if (botInstance.approvalStatus === 'pending') {
+        nextStep = 'wait_approval';
+        message = 'Your bot is pending approval. Please wait for admin approval.';
+      } else if (botInstance.approvalStatus === 'approved') {
+        // Check if bot has expired
+        const isExpired = botInstance.approvalDate && botInstance.expirationMonths 
+          ? new Date() > new Date(new Date(botInstance.approvalDate).getTime() + (botInstance.expirationMonths * 30 * 24 * 60 * 60 * 1000))
+          : false;
+          
+        if (isExpired) {
+          nextStep = 'wait_approval';
+          message = 'Your bot has expired. Please contact admin for renewal.';
+        } else if (!botInstance.credentialVerified || botInstance.status === 'offline') {
+          nextStep = 'update_credentials';
+          message = 'Your bot credentials need to be updated. Please upload your credentials file.';
+        } else if (botInstance.credentialVerified && botInstance.status === 'online') {
+          nextStep = 'authenticated';
+          message = 'Your bot is active and ready to use.';
+        } else {
+          nextStep = 'authenticate';
+          message = 'Your bot is verified. Click to authenticate and start using it.';
+        }
+      } else {
+        nextStep = 'wait_approval';
+        message = 'Your bot registration was not approved. Contact support for assistance.';
+      }
+
+      // Return bot details with management capabilities and enhanced status
       res.json({
         id: botInstance.id,
         name: botInstance.name,
@@ -2225,12 +2256,17 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         approvalStatus: botInstance.approvalStatus,
         isActive: botInstance.status === 'online',
         isApproved: botInstance.approvalStatus === 'approved',
+        credentialVerified: botInstance.credentialVerified || false,
+        autoStart: botInstance.autoStart ?? true,
+        invalidReason: botInstance.invalidReason,
         serverName: botInstance.serverName,
         messagesCount: botInstance.messagesCount,
         commandsCount: botInstance.commandsCount,
         lastActivity: botInstance.lastActivity,
         expirationMonths: botInstance.expirationMonths,
-        crossServer: false
+        crossServer: false,
+        nextStep,
+        message
       });
       
     } catch (error) {
