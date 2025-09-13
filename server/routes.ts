@@ -2217,42 +2217,70 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   });
 
   // Guest bot credential validation endpoint - SECURITY: Validates ownership of existing bots
-  app.post("/api/guest/validate-existing-bot", upload.single('credentials') as any, async (req, res) => {
+  app.post("/api/guest/validate-existing-bot", async (req, res) => {
     try {
-      const { phoneNumber } = req.body;
+      const { phoneNumber, sessionId } = req.body;
       
       if (!phoneNumber) {
         return res.status(400).json({ message: "Phone number is required" });
       }
       
-      if (!req.file) {
-        return res.status(400).json({ message: "Credentials file is required to verify bot ownership" });
+      if (!sessionId || typeof sessionId !== 'string' || sessionId.trim().length === 0) {
+        return res.status(400).json({ message: "Session ID is required to verify bot ownership" });
       }
       
       // Clean phone number
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
       
-      // Parse credentials from uploaded file
+      // Parse credentials from base64 encoded session ID
       let credentials;
       try {
-        const fileContent = req.file.buffer.toString('utf-8');
-        credentials = JSON.parse(fileContent);
+        const base64Data = sessionId.trim();
+        
+        // Check Base64 size limit (5MB when decoded)
+        const estimatedSize = (base64Data.length * 3) / 4; // Rough estimate of decoded size
+        const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+        
+        if (estimatedSize > maxSizeBytes) {
+          return res.status(400).json({ 
+            message: `❌ Session ID too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
+          });
+        }
+        
+        const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
+        
+        // Check actual decoded size
+        if (decoded.length > maxSizeBytes) {
+          return res.status(400).json({ 
+            message: `❌ Decoded session data too large (${(decoded.length / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
+          });
+        }
+        
+        credentials = JSON.parse(decoded);
       } catch (error) {
-        return res.status(400).json({ message: "Invalid credentials file format" });
+        return res.status(400).json({ message: "Invalid session ID format. Please ensure it's properly encoded WhatsApp session data." });
       }
       
       // Validate phone number ownership from credentials
-      if (credentials && credentials.me && credentials.me.id) {
+      let credentialsPhone = null;
+      
+      // Handle both credentials.creds.me.id and credentials.me.id for phone extraction
+      if (credentials && credentials.creds && credentials.creds.me && credentials.creds.me.id) {
+        const credentialsPhoneMatch = credentials.creds.me.id.match(/^(\d+):/);
+        credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
+      } else if (credentials && credentials.me && credentials.me.id) {
         const credentialsPhoneMatch = credentials.me.id.match(/^(\d+):/);
-        const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
-        
-        if (!credentialsPhone || credentialsPhone !== cleanedPhone) {
-          return res.status(400).json({
-            message: "Credentials do not match the provided phone number. You must provide the original credentials for this bot."
-          });
-        }
-      } else {
-        return res.status(400).json({ message: "Invalid credentials format - missing phone number data" });
+        credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
+      }
+      
+      if (!credentialsPhone) {
+        return res.status(400).json({ message: "Invalid session ID format - missing phone number data" });
+      }
+      
+      if (credentialsPhone !== cleanedPhone) {
+        return res.status(400).json({
+          message: "Session ID does not match the provided phone number. You must provide the original session ID for this bot."
+        });
       }
       
       // Check if bot exists
@@ -2271,7 +2299,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           success: true,
           botValidated: true,
           crossServer: true,
-          message: `Credentials verified for bot on ${botServer}. You can update credentials but cannot start/stop the bot from this server.`,
+          message: `Session ID verified for bot on ${botServer}. You can update credentials but cannot start/stop the bot from this server.`,
           phoneNumber: cleanedPhone,
           serverName: botServer,
           canManage: false,
@@ -2297,13 +2325,20 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           existingCredentials = JSON.parse(existingFileContent);
           
           // Compare key credential data to validate ownership
-          const existingPhoneMatch = existingCredentials?.me?.id?.match(/^(\d+):/);
-          const existingPhone = existingPhoneMatch ? existingPhoneMatch[1] : null;
-          const credentialsPhone = credentials.me.id.match(/^(\d+):/)?.[1];
+          let existingPhone = null;
+          
+          // Handle both credential formats for existing data
+          if (existingCredentials?.creds?.me?.id) {
+            const existingPhoneMatch = existingCredentials.creds.me.id.match(/^(\d+):/);
+            existingPhone = existingPhoneMatch ? existingPhoneMatch[1] : null;
+          } else if (existingCredentials?.me?.id) {
+            const existingPhoneMatch = existingCredentials.me.id.match(/^(\d+):/);
+            existingPhone = existingPhoneMatch ? existingPhoneMatch[1] : null;
+          }
           
           if (existingPhone !== credentialsPhone) {
             return res.status(403).json({
-              message: "Credential validation failed. The provided credentials do not match the existing bot credentials."
+              message: "Credential validation failed. The provided session ID does not match the existing bot credentials."
             });
           }
         } else {
@@ -2347,8 +2382,8 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       await storage.createActivity({
         botInstanceId: botInstance.id,
         type: 'credential_validation',
-        description: `Bot ownership validated via credential verification (${cleanedPhone})`,
-        metadata: { guestAuth: true, phoneNumber: cleanedPhone, validationMethod: 'credentials' },
+        description: `Bot ownership validated via session ID verification (${cleanedPhone})`,
+        metadata: { guestAuth: true, phoneNumber: cleanedPhone, validationMethod: 'session_id' },
         serverName: getServerName()
       });
       
@@ -2397,12 +2432,12 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         botValidated: true,
         guestToken,
         bot: validatedBotData,
-        message: "Bot ownership successfully verified via credentials"
+        message: "Bot ownership successfully verified via session ID"
       });
       
     } catch (error) {
       console.error('Guest bot validation error:', error);
-      res.status(500).json({ message: "Failed to validate bot credentials" });
+      res.status(500).json({ message: "Failed to validate bot session ID" });
     }
   });
 

@@ -77,8 +77,7 @@ export default function GuestBotSearch() {
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authenticatedPhone, setAuthenticatedPhone] = useState<string | null>(null); // Track which phone was authenticated
-  const [showCredentialUpload, setShowCredentialUpload] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [sessionId, setSessionId] = useState<string>("");
   
   // UI modals state
   const [showCredentialUpdate, setShowCredentialUpdate] = useState(false);
@@ -108,22 +107,25 @@ export default function GuestBotSearch() {
     enabled: searchTriggered && !!phoneNumber.trim(),
   });
 
-  // Credential validation mutation
-  const validateCredentialsMutation = useMutation({
-    mutationFn: async ({ phoneNumber, file }: { phoneNumber: string, file: File }) => {
+  // Session ID validation mutation
+  const validateSessionMutation = useMutation({
+    mutationFn: async ({ phoneNumber, sessionId }: { phoneNumber: string, sessionId: string }) => {
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      const formData = new FormData();
-      formData.append('phoneNumber', cleanedPhone);
-      formData.append('credentials', file);
       
       const response = await fetch('/api/guest/validate-existing-bot', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          phoneNumber: cleanedPhone, 
+          sessionId: sessionId.trim()
+        }),
       });
       
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to validate credentials');
+        throw new Error(error.message || 'Failed to validate session ID');
       }
       
       return response.json();
@@ -133,11 +135,10 @@ export default function GuestBotSearch() {
       setGuestToken(data.guestToken);
       setIsAuthenticated(true);
       setAuthenticatedPhone(cleanedPhone);
-      setShowCredentialUpload(false);
-      setUploadedFile(null);
+      setSessionId("");
       
       toast({ 
-        title: "Credentials validated successfully", 
+        title: "Session validated successfully", 
         description: data.message || "You can now manage your bot" 
       });
       
@@ -146,7 +147,7 @@ export default function GuestBotSearch() {
     },
     onError: (error: any) => {
       toast({ 
-        title: "Credential validation failed", 
+        title: "Session validation failed", 
         description: error.message,
         variant: "destructive"
       });
@@ -276,7 +277,7 @@ export default function GuestBotSearch() {
     setSearchTriggered(true);
   }, [phoneNumber, toast]);
 
-  const handleCredentialUpload = useCallback((file: File) => {
+  const handleSessionValidation = useCallback(() => {
     if (!phoneNumber.trim()) {
       toast({
         title: "Phone number required",
@@ -286,25 +287,23 @@ export default function GuestBotSearch() {
       return;
     }
     
-    if (!file) {
+    if (!sessionId.trim()) {
       toast({
-        title: "Credentials file required",
-        description: "Please select your credentials file",
+        title: "Session ID required",
+        description: "Please enter your session ID (base64 encoded credentials)",
         variant: "destructive"
       });
       return;
     }
     
-    setUploadedFile(file);
-    validateCredentialsMutation.mutate({ phoneNumber, file });
-  }, [phoneNumber, validateCredentialsMutation, toast]);
+    validateSessionMutation.mutate({ phoneNumber, sessionId });
+  }, [phoneNumber, sessionId, validateSessionMutation, toast]);
 
   const resetAuthentication = useCallback(() => {
     setGuestToken(null);
     setIsAuthenticated(false);
     setAuthenticatedPhone(null);
-    setShowCredentialUpload(false);
-    setUploadedFile(null);
+    setSessionId("");
   }, []);
 
   const canPerformActions = (bot: GuestBot) => {
@@ -369,59 +368,44 @@ export default function GuestBotSearch() {
             </Button>
           </div>
 
-          {/* Credential Upload Authentication */}
+          {/* Session ID Authentication */}
           {botData && needsAuthenticationForBot(botData) && (
             <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-800 space-y-3">
               <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
                 <Shield className="h-4 w-4" />
-                Credential Verification Required
+                Session ID Verification Required
               </div>
               <p className="text-xs text-blue-600 dark:text-blue-400">
-                To manage "{botData.name}" ({botData.phoneNumber}), please upload your credentials file to verify ownership.
+                To manage "{botData.name}" ({botData.phoneNumber}), please enter your session ID (base64 encoded credentials).
               </p>
               
               <div className="space-y-3">
-                <div className="flex items-center justify-center w-full">
-                  <label htmlFor="credentials-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-blue-300 dark:border-blue-600 rounded-lg cursor-pointer bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-6 h-6 mb-2 text-blue-500" />
-                      <p className="mb-2 text-xs text-blue-500">
-                        <span className="font-semibold">Click to upload</span> credentials file
-                      </p>
-                      <p className="text-xs text-blue-400">
-                        creds.json or session file
-                      </p>
-                      {uploadedFile && (
-                        <p className="text-xs text-green-600 mt-1">
-                          ✓ {uploadedFile.name}
-                        </p>
-                      )}
-                    </div>
-                    <input
-                      id="credentials-upload"
-                      type="file"
-                      className="hidden"
-                      accept=".json,.txt"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          handleCredentialUpload(file);
-                        }
-                      }}
-                      data-testid="input-credentials-file"
-                    />
-                  </label>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-blue-700 dark:text-blue-300">Session ID (Base64 Credentials)</label>
+                  <textarea
+                    placeholder="Paste your base64 encoded credentials here..."
+                    value={sessionId}
+                    onChange={(e) => setSessionId(e.target.value)}
+                    className="w-full h-24 text-xs p-2 border border-blue-300 dark:border-blue-600 rounded resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    data-testid="input-session-id"
+                  />
                 </div>
                 
-                {validateCredentialsMutation.isPending && (
-                  <div className="flex items-center justify-center gap-2 text-xs text-blue-600">
-                    <RefreshCw className="h-3 w-3 animate-spin" />
-                    Validating credentials...
-                  </div>
-                )}
+                <Button 
+                  onClick={handleSessionValidation}
+                  disabled={validateSessionMutation.isPending || !sessionId.trim()}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  data-testid="button-validate-session"
+                >
+                  {validateSessionMutation.isPending ? (
+                    <><RefreshCw className="h-3 w-3 mr-2 animate-spin" /> Validating...</>
+                  ) : (
+                    <><Shield className="h-3 w-3 mr-2" /> Validate Session ID</>
+                  )}
+                </Button>
                 
                 <div className="text-xs text-blue-600 dark:text-blue-400 text-center bg-blue-100 dark:bg-blue-900/30 p-2 rounded">
-                  💡 Upload your original bot credentials file (creds.json) to verify ownership and access management features.
+                  💡 Enter your base64 encoded credentials (creds.json converted to base64) to verify bot ownership.
                 </div>
               </div>
             </div>
