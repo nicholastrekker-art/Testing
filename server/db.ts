@@ -78,20 +78,23 @@ const client = postgres(connectionString, {
 export const db = drizzle(client, { schema });
 
 // Get server name from runtime environment, SERVER_NAME environment variable, or default
+// Always returns uppercase for case-insensitive server name handling
 export function getServerName(): string {
-  return process.env.RUNTIME_SERVER_NAME || process.env.SERVER_NAME || 'server1';
+  const serverName = process.env.RUNTIME_SERVER_NAME || process.env.SERVER_NAME || 'server1';
+  return serverName.toUpperCase();
 }
 
 // Get server name with database fallback (async version)
+// Always returns uppercase for case-insensitive server name handling
 export async function getServerNameWithFallback(): Promise<string> {
   // First try runtime environment variable (highest priority for tenant switching)
   if (process.env.RUNTIME_SERVER_NAME) {
-    return process.env.RUNTIME_SERVER_NAME;
+    return process.env.RUNTIME_SERVER_NAME.toUpperCase();
   }
   
   // Then try static environment variable
   if (process.env.SERVER_NAME) {
-    return process.env.SERVER_NAME;
+    return process.env.SERVER_NAME.toUpperCase();
   }
   
   // Then try database
@@ -99,15 +102,15 @@ export async function getServerNameWithFallback(): Promise<string> {
     const { storage } = await import('./storage');
     const servers = await storage.getAllServers();
     if (servers.length > 0) {
-      // Return the first server's name if any exists
-      return servers[0].serverName;
+      // Return the first server's name if any exists (convert to uppercase)
+      return servers[0].serverName.toUpperCase();
     }
   } catch (error) {
     console.warn('Failed to get server name from database:', error);
   }
   
   // Finally fallback to default
-  return 'server1';
+  return 'SERVER1';
 }
 
 // Function to initialize database (create tables if they don't exist)
