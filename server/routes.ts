@@ -2380,90 +2380,8 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       if (!botName || !phoneNumber) {
         return res.status(400).json({ message: "Bot name and phone number are required" });
       }
-      
-      // Get current tenant name
-      const currentTenancyName = getServerName();
-      
-      // Check global registration first
-      const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
-      if (globalRegistration) {
-        // Phone number is already registered to another tenant
-        if (globalRegistration.tenancyName !== currentTenancyName) {
-          return res.status(400).json({ 
-            message: `This phone number is registered to ${globalRegistration.tenancyName}. Please go to ${globalRegistration.tenancyName} server to manage your bot.`,
-            registeredTo: globalRegistration.tenancyName
-          });
-        }
-        
-        // Phone number belongs to this tenant - check for existing bot
-        const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
-        if (existingBot) {
-          // User has a bot on this server - provide management options
-          const isActive = existingBot.status === 'online';
-          const isApproved = existingBot.approvalStatus === 'approved';
-          
-          // Check expiry if bot is approved
-          let timeRemaining = null;
-          let isExpired = false;
-          if (isApproved && existingBot.approvalDate && existingBot.expirationMonths) {
-            const approvalDate = new Date(existingBot.approvalDate);
-            const expirationDate = new Date(approvalDate);
-            expirationDate.setMonth(expirationDate.getMonth() + existingBot.expirationMonths);
-            const now = new Date();
-            
-            if (now > expirationDate) {
-              isExpired = true;
-            } else {
-              timeRemaining = Math.ceil((expirationDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)); // days
-            }
-          }
-          
-          return res.json({
-            type: 'existing_bot_found',
-            message: `Welcome back! You have a bot on this server.`,
-            botDetails: {
-              id: existingBot.id,
-              name: existingBot.name,
-              phoneNumber: existingBot.phoneNumber,
-              status: existingBot.status,
-              isActive,
-              isApproved,
-              approvalStatus: existingBot.approvalStatus,
-              isExpired,
-              timeRemaining,
-              expirationMonths: existingBot.expirationMonths
-            }
-          });
-        }
-      } else {
-        // This is a new registration - global registration will be handled by createCrossServerRegistration
-        console.log(`📝 New registration for ${phoneNumber} will be handled by cross-server registration method`);
-      }
 
-      // Check if phone number already exists locally (redundant check but for safety)
-      const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
-      if (existingBot) {
-        // Check if existing bot is active and has valid session
-        if (existingBot.approvalStatus === 'approved' && existingBot.status === 'online') {
-          return res.status(400).json({ 
-            message: "Your previous bot is active. Can't add new bot with same number." 
-          });
-        }
-        
-        // If bot is inactive, test connection and handle accordingly
-        if (existingBot.approvalStatus === 'approved' && existingBot.status !== 'online') {
-          // Try to test connection - if fails, delete old credentials
-          try {
-            // Test connection logic here
-            console.log(`Testing connection for existing bot ${existingBot.id}`);
-            // If connection test fails, we'll delete and allow new registration
-          } catch (error) {
-            console.log(`Connection test failed for ${existingBot.id}, allowing new registration`);
-            await storage.deleteBotInstance(existingBot.id);
-          }
-        }
-      }
-
+      // Parse credentials first (before any phone number checks)
       let credentials = null;
       
       // Handle credentials based on type
@@ -2512,6 +2430,146 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           botFeatures = JSON.parse(features);
         } catch (error) {
           console.warn('Invalid features JSON:', error);
+        }
+      }
+      
+      // Get current tenant name
+      const currentTenancyName = getServerName();
+      
+      // Check global registration first
+      const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
+      if (globalRegistration) {
+        // Phone number is already registered to another tenant
+        if (globalRegistration.tenancyName !== currentTenancyName) {
+          return res.status(400).json({ 
+            message: `This phone number is registered to ${globalRegistration.tenancyName}. Please go to ${globalRegistration.tenancyName} server to manage your bot.`,
+            registeredTo: globalRegistration.tenancyName
+          });
+        }
+        
+        // Phone number belongs to this tenant - check for existing bot
+        const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
+        if (existingBot) {
+          // User has a bot on this server - automatically update credentials instead of blocking
+          console.log(`📱 Phone number ${phoneNumber} already registered, updating credentials for bot ${existingBot.id}`);
+          
+          // Update the existing bot's credentials automatically
+          let credentialsSaved = false;
+          let messageSent = false;
+          
+          try {
+            // Save credentials to bot's auth directory
+            const authDir = path.join(process.cwd(), 'auth', `bot_${existingBot.id}`);
+            if (!fs.existsSync(authDir)) {
+              fs.mkdirSync(authDir, { recursive: true });
+            }
+            
+            // Save the new credentials to creds.json
+            fs.writeFileSync(
+              path.join(authDir, 'creds.json'), 
+              JSON.stringify(credentials, null, 2)
+            );
+            credentialsSaved = true;
+            console.log(`✅ Credentials updated for existing bot ${existingBot.id} (${phoneNumber})`);
+          } catch (fileError) {
+            console.error('Failed to save credentials to file:', fileError);
+            return res.status(500).json({
+              success: false,
+              message: "Failed to update credentials. Please try again later."
+            });
+          }
+          
+          // Send authentication message with updated credentials
+          const authMessage = `🔐 Your bot credentials have been successfully updated! Your bot "${existingBot.name}" is now ready to use with the new credentials.`;
+          
+          try {
+            // Convert credentials to base64 for sending message
+            const credentialsBase64 = Buffer.from(JSON.stringify(credentials)).toString('base64');
+            await sendGuestValidationMessage(phoneNumber, credentialsBase64, authMessage, true);
+            messageSent = true;
+            console.log(`✅ Updated authentication message sent to ${phoneNumber}`);
+          } catch (messageError) {
+            console.error('Failed to send authentication message:', messageError);
+            messageSent = false;
+          }
+          
+          // Update bot credential status
+          await storage.updateBotCredentialStatus(existingBot.id, {
+            credentialVerified: true,
+            credentialPhone: phoneNumber,
+            autoStart: true,
+            invalidReason: null,
+            authMessageSentAt: messageSent ? new Date() : null
+          });
+          
+          // Update bot features if provided
+          if (botFeatures && Object.keys(botFeatures).length > 0) {
+            await storage.updateBotInstance(existingBot.id, {
+              features: JSON.stringify(botFeatures)
+            });
+          }
+          
+          // Create comprehensive activity log
+          await storage.createActivity({
+            botInstanceId: existingBot.id,
+            type: 'credential_update',
+            description: 'Guest automatically updated credentials for existing bot registration',
+            metadata: { 
+              verifiedPhone: phoneNumber,
+              guestAction: true,
+              credentialsSaved,
+              messageSent,
+              autoUpdate: true,
+              failureReason: messageSent ? null : 'Message sending failed'
+            },
+            serverName: getServerName()
+          });
+          
+          const responseMessage = messageSent 
+            ? "Credentials automatically updated! Your existing bot now has new credentials. Check your WhatsApp for updated authentication instructions."
+            : "Credentials automatically updated! Your existing bot now has new credentials and is ready to use.";
+          
+          return res.json({
+            success: true,
+            type: 'credentials_updated',
+            message: responseMessage,
+            botDetails: {
+              id: existingBot.id,
+              name: existingBot.name,
+              phoneNumber: existingBot.phoneNumber,
+              status: existingBot.status,
+              updated: true
+            },
+            credentialsSaved,
+            messageSent
+          });
+        }
+      } else {
+        // This is a new registration - global registration will be handled by createCrossServerRegistration
+        console.log(`📝 New registration for ${phoneNumber} will be handled by cross-server registration method`);
+      }
+
+      // Check if phone number already exists locally (redundant check but for safety)
+      const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
+      if (existingBot) {
+        // Check if existing bot is active and has valid session
+        if (existingBot.approvalStatus === 'approved' && existingBot.status === 'online') {
+          return res.status(400).json({ 
+            message: "Your previous bot is active. Can't add new bot with same number." 
+          });
+        }
+        
+        // If bot is inactive, test connection and handle accordingly
+        if (existingBot.approvalStatus === 'approved' && existingBot.status !== 'online') {
+          // Try to test connection - if fails, delete old credentials
+          try {
+            // Test connection logic here
+            console.log(`Testing connection for existing bot ${existingBot.id}`);
+            // If connection test fails, we'll delete and allow new registration
+          } catch (error) {
+            console.log(`Connection test failed for ${existingBot.id}, allowing new registration`);
+            await storage.deleteBotInstance(existingBot.id);
+          }
         }
       }
 
