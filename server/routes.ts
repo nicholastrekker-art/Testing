@@ -2275,6 +2275,172 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     }
   });
 
+  // Guest Credential Verification Endpoint (Protected)
+  app.post("/api/guest/verify-credentials", authenticateGuestWithBot, upload.single('credentials') as any, async (req: GuestAuthRequest, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "Credentials file is required" });
+      }
+      
+      // Clean phone number
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      // Security check: Ensure guest can only update their own bot
+      const guestBotId = req.botId; // From authenticateGuestWithBot middleware
+      const guestBotInstance = await storage.getBotInstance(guestBotId);
+      
+      if (!guestBotInstance) {
+        return res.status(404).json({ 
+          message: "Your bot session is invalid. Please authenticate again." 
+        });
+      }
+      
+      // Verify the phone number matches the authenticated bot
+      const guestCleanedPhone = guestBotInstance.phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      if (cleanedPhone !== guestCleanedPhone) {
+        return res.status(403).json({ 
+          message: "You can only update credentials for your own bot." 
+        });
+      }
+      
+      // Check if bot is approved
+      if (guestBotInstance.approvalStatus !== 'approved') {
+        return res.status(403).json({ 
+          message: "Bot must be approved before credentials can be updated. Please wait for admin approval." 
+        });
+      }
+      
+      // Use the authenticated bot instance for all operations
+      const botInstance = guestBotInstance;
+      
+      // Parse uploaded credentials
+      let credentials;
+      try {
+        credentials = JSON.parse(req.file.buffer.toString());
+      } catch (error) {
+        return res.status(400).json({ 
+          message: "Invalid credentials file. Please ensure you're uploading a valid creds.json file." 
+        });
+      }
+      
+      // Basic validation of credentials structure
+      if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
+        return res.status(400).json({ 
+          message: "Invalid credentials format. Please upload a valid WhatsApp session file." 
+        });
+      }
+      
+      // Use existing validation function
+      const validation = await validateWhatsAppCredentials(
+        credentials, 
+        cleanedPhone, 
+        `guest-credential-verification-${botInstance.id}`
+      );
+      
+      if (validation.isValid) {
+        let credentialsSaved = false;
+        let messageSent = false;
+        
+        try {
+          // Save credentials to bot's auth directory
+          const authDir = path.join(process.cwd(), 'auth', `bot_${botInstance.id}`);
+          if (!fs.existsSync(authDir)) {
+            fs.mkdirSync(authDir, { recursive: true });
+          }
+          
+          // Save the validated credentials to creds.json
+          fs.writeFileSync(
+            path.join(authDir, 'creds.json'), 
+            JSON.stringify(credentials, null, 2)
+          );
+          credentialsSaved = true;
+          console.log(`✅ Credentials saved for guest bot ${botInstance.id} (${cleanedPhone})`);
+        } catch (fileError) {
+          console.error('Failed to save credentials to file:', fileError);
+          return res.status(500).json({
+            success: false,
+            message: "Failed to save credentials. Please try again later.",
+            nextStep: "update_credentials"
+          });
+        }
+        
+        // Send authentication message
+        const authMessage = `🔐 Your bot credentials have been successfully updated! Your bot "${botInstance.name}" is now ready to use. You can proceed with authentication to start using your bot.`;
+        
+        try {
+          // Convert credentials to base64 for sending message
+          const credentialsBase64 = Buffer.from(JSON.stringify(credentials)).toString('base64');
+          await sendGuestValidationMessage(cleanedPhone, credentialsBase64, authMessage, true);
+          messageSent = true;
+          console.log(`✅ Authentication message sent to ${cleanedPhone}`);
+        } catch (messageError) {
+          console.error('Failed to send authentication message:', messageError);
+          messageSent = false;
+        }
+        
+        // Update bot credential status
+        await storage.updateBotCredentialStatus(botInstance.id, {
+          credentialVerified: true,
+          credentialPhone: validation.phoneNumber || cleanedPhone,
+          autoStart: true,
+          invalidReason: null,
+          authMessageSentAt: messageSent ? new Date() : null
+        });
+        
+        // Create comprehensive activity log
+        await storage.createActivity({
+          botInstanceId: botInstance.id,
+          type: 'credential_update',
+          description: 'Guest uploaded and verified new credentials',
+          metadata: { 
+            verifiedPhone: validation.phoneNumber || cleanedPhone,
+            guestAction: true,
+            credentialsSaved,
+            messageSent,
+            failureReason: messageSent ? null : 'Message sending failed'
+          },
+          serverName: getServerName()
+        });
+        
+        const responseMessage = messageSent 
+          ? "Credentials verified and saved successfully! Check your WhatsApp for authentication instructions."
+          : "Credentials verified and saved successfully! However, we couldn't send the WhatsApp message. Your bot is ready to use.";
+        
+        res.json({
+          success: true,
+          message: responseMessage,
+          verifiedPhone: validation.phoneNumber || cleanedPhone,
+          credentialsSaved,
+          messageSent,
+          nextStep: "authenticated"
+        });
+      } else {
+        // Update bot with invalid credential info
+        await storage.updateBotCredentialStatus(botInstance.id, {
+          credentialVerified: false,
+          autoStart: false,
+          invalidReason: validation.error || 'Credential verification failed'
+        });
+        
+        res.status(400).json({
+          success: false,
+          message: validation.error || "Credentials could not be verified. Please check your credentials file and try again.",
+          nextStep: "update_credentials"
+        });
+      }
+      
+    } catch (error) {
+      console.error('Guest credential verification error:', error);
+      res.status(500).json({ message: "Failed to verify credentials" });
+    }
+  });
+
   // Guest Bot Registration
   app.post("/api/guest/register-bot", upload.single('credsFile') as any, async (req, res) => {
     try {
