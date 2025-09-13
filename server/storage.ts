@@ -115,6 +115,19 @@ export interface IStorage {
   getAvailableServers(): Promise<ServerRegistry[]>;
   initializeCurrentServer(): Promise<void>;
   strictCheckBotCountLimit(serverName?: string): Promise<{ canAdd: boolean; currentCount: number; maxCount: number; }>;
+  
+  // Enhanced credential management methods
+  getBotInstancesForAutoStart(): Promise<BotInstance[]>;
+  analyzeInactiveBots(): Promise<void>;
+  updateBotCredentialStatus(id: string, credentialData: {
+    credentialVerified: boolean;
+    credentialPhone?: string;
+    invalidReason?: string;
+    credentials?: any;
+  }): Promise<BotInstance>;
+  markBotAsInactive(id: string, reason: string): Promise<void>;
+  setBotAutoStart(id: string, autoStart: boolean): Promise<BotInstance>;
+  setAuthMessageSent(id: string): Promise<BotInstance>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -698,6 +711,134 @@ export class DatabaseStorage implements IStorage {
       currentCount,
       maxCount
     };
+  }
+
+  // Enhanced credential management methods
+  async getBotInstancesForAutoStart(): Promise<BotInstance[]> {
+    const serverName = getServerName();
+    return await db.select().from(botInstances).where(
+      and(
+        eq(botInstances.serverName, serverName),
+        eq(botInstances.approvalStatus, 'approved'),
+        eq(botInstances.autoStart, true),
+        eq(botInstances.credentialVerified, true)
+      )
+    ).orderBy(desc(botInstances.createdAt));
+  }
+
+  async analyzeInactiveBots(): Promise<void> {
+    console.log('🔍 Analyzing inactive bots...');
+    const serverName = getServerName();
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // Find bots that are offline and haven't been active for 7+ days
+    const inactiveBots = await db.select().from(botInstances).where(
+      and(
+        eq(botInstances.serverName, serverName),
+        eq(botInstances.status, 'offline'),
+        sql`${botInstances.lastActivity} < ${sevenDaysAgo.toISOString()} OR ${botInstances.lastActivity} IS NULL`
+      )
+    );
+
+    for (const bot of inactiveBots) {
+      if (bot.autoStart) {
+        console.log(`🔄 Marking inactive bot ${bot.name} (${bot.phoneNumber}) as non-auto-start`);
+        await this.markBotAsInactive(bot.id, 'Inactive for more than 7 days');
+      }
+    }
+
+    // Find bots with invalid credentials (status offline and recently tried to connect)
+    const recentlyFailedBots = await db.select().from(botInstances).where(
+      and(
+        eq(botInstances.serverName, serverName),
+        eq(botInstances.status, 'offline'),
+        sql`${botInstances.lastActivity} > ${sevenDaysAgo.toISOString()}`
+      )
+    );
+
+    for (const bot of recentlyFailedBots) {
+      if (bot.autoStart && !bot.credentialVerified) {
+        console.log(`🔄 Marking bot with invalid credentials ${bot.name} (${bot.phoneNumber}) as non-auto-start`);
+        await this.markBotAsInactive(bot.id, 'Invalid or expired credentials');
+      }
+    }
+  }
+
+  async updateBotCredentialStatus(id: string, credentialData: {
+    credentialVerified: boolean;
+    credentialPhone?: string;
+    invalidReason?: string;
+    credentials?: any;
+  }): Promise<BotInstance> {
+    const updateData: any = {
+      credentialVerified: credentialData.credentialVerified,
+      updatedAt: sql`CURRENT_TIMESTAMP`
+    };
+
+    if (credentialData.credentialPhone) {
+      updateData.credentialPhone = credentialData.credentialPhone;
+    }
+    if (credentialData.invalidReason !== undefined) {
+      updateData.invalidReason = credentialData.invalidReason;
+    }
+    if (credentialData.credentials) {
+      updateData.credentials = credentialData.credentials;
+    }
+
+    const [botInstance] = await db
+      .update(botInstances)
+      .set(updateData)
+      .where(eq(botInstances.id, id))
+      .returning();
+    
+    return botInstance;
+  }
+
+  async markBotAsInactive(id: string, reason: string): Promise<void> {
+    await db
+      .update(botInstances)
+      .set({
+        autoStart: false,
+        invalidReason: reason,
+        updatedAt: sql`CURRENT_TIMESTAMP`
+      })
+      .where(eq(botInstances.id, id));
+
+    // Create activity record
+    await this.createActivity({
+      botInstanceId: id,
+      type: 'inactivity',
+      description: `Bot marked as inactive: ${reason}`,
+      metadata: { reason, timestamp: new Date().toISOString() },
+      serverName: getServerName()
+    });
+  }
+
+  async setBotAutoStart(id: string, autoStart: boolean): Promise<BotInstance> {
+    const [botInstance] = await db
+      .update(botInstances)
+      .set({
+        autoStart,
+        updatedAt: sql`CURRENT_TIMESTAMP`
+      })
+      .where(eq(botInstances.id, id))
+      .returning();
+    
+    return botInstance;
+  }
+
+  async setAuthMessageSent(id: string): Promise<BotInstance> {
+    const [botInstance] = await db
+      .update(botInstances)
+      .set({
+        authMessageSentAt: sql`CURRENT_TIMESTAMP`,
+        updatedAt: sql`CURRENT_TIMESTAMP`
+      })
+      .where(eq(botInstances.id, id))
+      .returning();
+    
+    return botInstance;
   }
 }
 
