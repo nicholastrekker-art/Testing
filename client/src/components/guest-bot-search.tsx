@@ -552,42 +552,42 @@ export default function GuestBotSearch() {
                         Start
                       </Button>
                     )}
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="text-xs"
+                          data-testid={`button-delete-${botData.phoneNumber}`}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Bot</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{botData.name}"? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteBotMutation.mutate(botData.id)}
+                            data-testid={`confirm-delete-${botData.phoneNumber}`}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </>
-              
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    className="text-xs"
-                    data-testid={`button-delete-${botData.phoneNumber}`}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Bot</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete "{botData.name}"? This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => deleteBotMutation.mutate(botData.id)}
-                      data-testid={`confirm-delete-${botData.phoneNumber}`}
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-
-            {!botData.isApproved && (
-              <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
-                ⏳ Your bot is pending admin approval. Contact support for activation.
+                ) : (
+                  <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
+                    ⏳ Your bot is pending admin approval. Contact support for activation.
+                  </div>
+                )}
               </div>
             )}
           </CardContent>

@@ -27,10 +27,10 @@ if (dbSslEnv === 'disable' || dbSslEnv === 'false') {
   sslMode = '?sslmode=require';
   console.log('🔒 Database SSL enabled with certificate verification disabled');
 } else {
-  // Development mode SSL - allow no-verify SSL for external databases
-  sslConfig = { rejectUnauthorized: false };
-  sslMode = '?sslmode=require';
-  console.log('🔒 Database SSL enabled with certificate verification disabled (development mode)');
+  // Development mode SSL - prefer SSL but allow fallback to no SSL
+  sslConfig = 'prefer';
+  sslMode = '?sslmode=prefer';
+  console.log('🔒 Database SSL preferred (development mode - will fallback if needed)');
 }
 
 // Development mode - SSL configuration is flexible
@@ -48,7 +48,7 @@ let connectionString: string = dbConfig.url;
 
 // Add SSL mode to connection string if not already present and SSL is enabled
 if (sslConfig !== false && !connectionString.includes('sslmode=')) {
-  connectionString += (connectionString.includes('?') ? '&' : '?') + 'sslmode=require';
+  connectionString += (connectionString.includes('?') ? '&' : '?') + 'sslmode=prefer';
 }
 
 // Log connection info (host only, never credentials)
