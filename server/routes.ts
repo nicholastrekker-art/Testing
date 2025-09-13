@@ -1822,6 +1822,186 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   
   // ======= GUEST BOT ACTION ENDPOINTS =======
   
+  // Guest Bot Controls - Start/Stop/Restart bot (approved users only)
+  app.post("/api/guest/bot/control", authenticateGuestWithBot, async (req: any, res) => {
+    try {
+      const { action } = req.body; // start, stop, restart
+      const guestPhone = req.guest.phoneNumber;
+      const botId = req.guest.botId;
+      
+      if (!action || !['start', 'stop', 'restart'].includes(action)) {
+        return res.status(400).json({ message: "Invalid action. Must be 'start', 'stop', or 'restart'" });
+      }
+      
+      console.log(`🎮 Guest bot control: ${action} for bot ${botId} by ${guestPhone}`);
+      
+      // Get bot data to verify it's approved
+      const bot = await storage.getBotInstance(botId);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+      
+      if (bot.approvalStatus !== 'approved') {
+        return res.status(403).json({ 
+          message: "Bot management is only available for approved bots",
+          approvalStatus: bot.approvalStatus
+        });
+      }
+      
+      let result;
+      switch (action) {
+        case 'start':
+          result = await botManager.startBot(botId);
+          await storage.logActivity(botId, 'bot_control', `Bot started by guest user ${guestPhone}`, { action: 'start' });
+          break;
+        case 'stop':
+          result = await botManager.stopBot(botId);
+          await storage.logActivity(botId, 'bot_control', `Bot stopped by guest user ${guestPhone}`, { action: 'stop' });
+          break;
+        case 'restart':
+          await botManager.stopBot(botId);
+          result = await botManager.startBot(botId);
+          await storage.logActivity(botId, 'bot_control', `Bot restarted by guest user ${guestPhone}`, { action: 'restart' });
+          break;
+      }
+      
+      console.log(`✅ Bot ${action} completed for ${botId}`);
+      
+      res.json({
+        success: true,
+        message: `Bot ${action} completed successfully`,
+        action,
+        botId,
+        result
+      });
+      
+    } catch (error) {
+      console.error(`❌ Guest bot control error:`, error);
+      res.status(500).json({ message: "Failed to control bot" });
+    }
+  });
+  
+  // Guest Bot Features - Update bot features (approved users only)  
+  app.post("/api/guest/bot/features", authenticateGuestWithBot, async (req: any, res) => {
+    try {
+      const { feature, enabled } = req.body;
+      const guestPhone = req.guest.phoneNumber;
+      const botId = req.guest.botId;
+      
+      const validFeatures = ['autoLike', 'autoViewStatus', 'autoReact', 'chatgptEnabled'];
+      if (!feature || !validFeatures.includes(feature)) {
+        return res.status(400).json({ 
+          message: "Invalid feature", 
+          validFeatures 
+        });
+      }
+      
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({ message: "Enabled must be true or false" });
+      }
+      
+      console.log(`🎛️ Guest feature update: ${feature} = ${enabled} for bot ${botId} by ${guestPhone}`);
+      
+      // Get bot data to verify it's approved
+      const bot = await storage.getBotInstance(botId);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+      
+      if (bot.approvalStatus !== 'approved') {
+        return res.status(403).json({ 
+          message: "Feature management is only available for approved bots",
+          approvalStatus: bot.approvalStatus
+        });
+      }
+      
+      // Update the feature
+      const updateData: any = {};
+      updateData[feature] = enabled;
+      
+      await storage.updateBotInstance(botId, updateData);
+      await storage.logActivity(botId, 'feature_update', `${feature} ${enabled ? 'enabled' : 'disabled'} by guest user ${guestPhone}`, { 
+        feature, 
+        enabled, 
+        guestUser: guestPhone 
+      });
+      
+      console.log(`✅ Feature ${feature} updated to ${enabled} for bot ${botId}`);
+      
+      // Get updated bot data
+      const updatedBot = await storage.getBotInstance(botId);
+      
+      res.json({
+        success: true,
+        message: `${feature} ${enabled ? 'enabled' : 'disabled'} successfully`,
+        feature,
+        enabled,
+        botId,
+        features: {
+          autoLike: updatedBot?.autoLike || false,
+          autoViewStatus: updatedBot?.autoViewStatus || false,
+          autoReact: updatedBot?.autoReact || false,
+          chatgptEnabled: updatedBot?.chatgptEnabled || false,
+          typingMode: updatedBot?.typingMode || 'none'
+        }
+      });
+      
+    } catch (error) {
+      console.error(`❌ Guest feature update error:`, error);
+      res.status(500).json({ message: "Failed to update bot feature" });
+    }
+  });
+  
+  // Guest Bot Info - Get detailed bot information for authenticated guest
+  app.get("/api/guest/bot/info", authenticateGuestWithBot, async (req: any, res) => {
+    try {
+      const guestPhone = req.guest.phoneNumber;
+      const botId = req.guest.botId;
+      
+      console.log(`📋 Guest requesting bot info for ${botId} by ${guestPhone}`);
+      
+      const bot = await storage.getBotInstance(botId);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+      
+      // Get recent activities for this bot
+      const activities = await storage.getActivitiesByBot(botId, 10); // Get last 10 activities
+      
+      // Get bot status from bot manager
+      const isOnline = botManager.isActive(botId);
+      
+      res.json({
+        botId: bot.id,
+        name: bot.name,
+        phoneNumber: bot.phoneNumber,
+        status: bot.status,
+        isOnline,
+        approvalStatus: bot.approvalStatus,
+        isApproved: bot.approvalStatus === 'approved',
+        canManage: bot.approvalStatus === 'approved',
+        features: {
+          autoLike: bot.autoLike,
+          autoViewStatus: bot.autoViewStatus,
+          autoReact: bot.autoReact,
+          typingMode: bot.typingMode,
+          chatgptEnabled: bot.chatgptEnabled
+        },
+        stats: {
+          messagesCount: bot.messagesCount || 0,
+          commandsCount: bot.commandsCount || 0,
+          lastActivity: bot.lastActivity
+        },
+        recentActivities: activities,
+        serverName: bot.serverName
+      });
+      
+    } catch (error) {
+      console.error(`❌ Guest bot info error:`, error);
+      res.status(500).json({ message: "Failed to get bot information" });
+    }
+  });
+  
   // Guest bot start - requires authentication and ownership verification
   app.post("/api/guest/bot/start", authenticateGuestWithBot, async (req: any, res) => {
     try {
