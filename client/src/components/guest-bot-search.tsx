@@ -25,6 +25,45 @@ interface GuestBot {
   expirationMonths?: number;
   crossServer?: boolean;
   message?: string;
+  // Enhanced credential management fields
+  nextStep?: string;
+  credentialVerified?: boolean;
+  invalidReason?: string;
+  autoStart?: boolean;
+  needsCredentials?: boolean;
+  canManage?: boolean;
+  credentialUploadEndpoint?: string;
+}
+
+// Helper functions for nextStep UI
+function getNextStepStyling(nextStep: string): string {
+  switch (nextStep) {
+    case 'wait_approval': return 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800';
+    case 'update_credentials': return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
+    case 'authenticate': return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
+    case 'authenticated': return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
+    default: return 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800';
+  }
+}
+
+function getNextStepIcon(nextStep: string) {
+  switch (nextStep) {
+    case 'wait_approval': return <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />;
+    case 'update_credentials': return <Shield className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />;
+    case 'authenticate': return <Bot className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />;
+    case 'authenticated': return <Play className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />;
+    default: return <Bot className="h-4 w-4 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" />;
+  }
+}
+
+function getNextStepTitle(nextStep: string): string {
+  switch (nextStep) {
+    case 'wait_approval': return 'Pending Approval';
+    case 'update_credentials': return 'Credentials Required';
+    case 'authenticate': return 'Ready to Authenticate';
+    case 'authenticated': return 'Bot Ready';
+    default: return 'Status Unknown';
+  }
 }
 
 export default function GuestBotSearch() {
@@ -509,85 +548,126 @@ export default function GuestBotSearch() {
               </div>
             )}
 
-            {/* Bot Actions */}
+            {/* Enhanced Bot Status and Actions */}
             {!botData.crossServer && (
-              <div className="flex gap-2">
-                {!isAuthenticated ? (
-                  <div className="w-full bg-gray-50 dark:bg-gray-900/50 p-3 rounded border border-gray-200 dark:border-gray-700 text-center">
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Authentication required to manage bot actions
+              <div className="space-y-3">
+                {/* Status Message based on nextStep */}
+                {botData.nextStep && (
+                  <div className={`p-3 rounded border ${getNextStepStyling(botData.nextStep)}`}>
+                    <div className="flex items-start gap-2">
+                      {getNextStepIcon(botData.nextStep)}
+                      <div className="space-y-1 flex-1">
+                        <div className="text-sm font-medium">{getNextStepTitle(botData.nextStep)}</div>
+                        <p className="text-xs">{botData.message}</p>
+                        {botData.invalidReason && (
+                          <p className="text-xs opacity-75">Reason: {botData.invalidReason}</p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                ) : botData.isApproved ? (
-                  <>
-                    {botData.status === "online" ? (
+                )}
+
+                {/* Conditional Actions based on nextStep */}
+                <div className="flex gap-2">
+                  {!isAuthenticated && botData.nextStep !== 'wait_approval' ? (
+                    <div className="w-full bg-gray-50 dark:bg-gray-900/50 p-3 rounded border border-gray-200 dark:border-gray-700 text-center">
+                      <div className="text-xs text-gray-600 dark:text-gray-400">
+                        Authentication required to manage bot actions
+                      </div>
+                    </div>
+                  ) : botData.nextStep === 'wait_approval' ? (
+                    <div className="w-full bg-amber-50 dark:bg-amber-900/20 p-3 rounded border border-amber-200 dark:border-amber-800 text-center">
+                      <div className="text-xs text-amber-700 dark:text-amber-300">
+                        Waiting for admin approval - check back later
+                      </div>
+                    </div>
+                  ) : botData.nextStep === 'update_credentials' ? (
+                    <div className="w-full space-y-2">
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => stopBotMutation.mutate(botData.id)}
-                        disabled={stopBotMutation.isPending || !canPerformActions(botData)}
-                        className="flex-1 text-xs"
-                        data-testid={`button-stop-${botData.phoneNumber}`}
+                        className="w-full text-xs"
+                        onClick={() => {/* TODO: Add credential upload modal */}}
+                        data-testid={`button-upload-credentials-${botData.phoneNumber}`}
                       >
-                        {stopBotMutation.isPending ? (
-                          <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                        ) : (
-                          <Square className="h-3 w-3 mr-1" />
-                        )}
-                        Stop
+                        <Shield className="h-3 w-3 mr-1" />
+                        Upload New Credentials
                       </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => startBotMutation.mutate(botData.id)}
-                        disabled={startBotMutation.isPending || !canPerformActions(botData)}
-                        className="flex-1 text-xs"
-                        data-testid={`button-start-${botData.phoneNumber}`}
-                      >
-                        {startBotMutation.isPending ? (
-                          <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                        ) : (
-                          <Play className="h-3 w-3 mr-1" />
-                        )}
-                        Start
-                      </Button>
-                    )}
-                    
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+                      <div className="text-xs text-center text-muted-foreground">
+                        Upload your creds.json file to reactivate your bot
+                      </div>
+                    </div>
+                  ) : botData.nextStep === 'authenticated' && isAuthenticated ? (
+                    <>
+                      {botData.status === "online" ? (
                         <Button
                           size="sm"
-                          variant="destructive"
-                          className="text-xs"
-                          data-testid={`button-delete-${botData.phoneNumber}`}
+                          variant="outline"
+                          onClick={() => stopBotMutation.mutate(botData.id)}
+                          disabled={stopBotMutation.isPending || !canPerformActions(botData)}
+                          className="flex-1 text-xs"
+                          data-testid={`button-stop-${botData.phoneNumber}`}
                         >
-                          <Trash2 className="h-3 w-3" />
+                          {stopBotMutation.isPending ? (
+                            <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                          ) : (
+                            <Square className="h-3 w-3 mr-1" />
+                          )}
+                          Stop
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Bot</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete "{botData.name}"? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => deleteBotMutation.mutate(botData.id)}
-                            data-testid={`confirm-delete-${botData.phoneNumber}`}
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={() => startBotMutation.mutate(botData.id)}
+                          disabled={startBotMutation.isPending || !canPerformActions(botData)}
+                          className="flex-1 text-xs"
+                          data-testid={`button-start-${botData.phoneNumber}`}
+                        >
+                          {startBotMutation.isPending ? (
+                            <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                          ) : (
+                            <Play className="h-3 w-3 mr-1" />
+                          )}
+                          Start
+                        </Button>
+                      )}
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="text-xs"
+                            data-testid={`button-delete-${botData.phoneNumber}`}
                           >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </>
-                ) : (
-                  <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
-                    ⏳ Your bot is pending admin approval. Contact support for activation.
-                  </div>
-                )}
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Bot</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{botData.name}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deleteBotMutation.mutate(botData.id)}
+                              data-testid={`confirm-delete-${botData.phoneNumber}`}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </>
+                  ) : (
+                    <div className="w-full text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded border border-yellow-200 dark:border-yellow-800 text-center">
+                      ⏳ Your bot is pending admin approval. Contact support for activation.
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </CardContent>
