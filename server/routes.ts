@@ -1620,21 +1620,31 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         });
       }
       
-      // Step 3: For active + approved bots, validate credentials first
+      // Step 3: For active + approved bots, use stored credentials or validate new ones
       if (isActive && isApproved) {
-        console.log(`✅ Bot is active and approved - proceeding with credential validation`);
+        console.log(`✅ Bot is active and approved - checking for stored credentials`);
       }
       
       // Initialize credentials for validation (accessible in wider scope)
       let credentials = null;
-      let needsCredentials = true; // Always require credentials for enhanced security
       
       if (isActive && isApproved) {
         
-        console.log(`🔒 Enhanced security - requesting fresh credentials for ${cleanedPhone}`);
-      
-        // If no credentials provided, request them
-        if (needsCredentials && !sessionData) {
+        // FIRST: Try to use stored credentials from the bot
+        if (botData.credentials) {
+          console.log(`🔑 Found stored credentials for ${cleanedPhone} - using them for authentication`);
+          try {
+            credentials = JSON.parse(botData.credentials);
+            console.log(`✅ Successfully loaded stored credentials for ${cleanedPhone}`);
+          } catch (error) {
+            console.error(`❌ Invalid stored credentials for ${cleanedPhone}:`, error);
+            credentials = null;
+          }
+        }
+        
+        // SECOND: If no stored credentials or they're invalid, require fresh ones
+        if (!credentials && !sessionData) {
+          console.log(`🔒 No valid stored credentials - requesting fresh credentials for ${cleanedPhone}`);
           return res.status(400).json({
             message: "Credentials required for validation",
             needsCredentials: true,
@@ -1643,34 +1653,38 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           });
         }
         
-        // Validate provided sessionData
-        try {
-          const base64Data = sessionData.trim();
+        // If we still don't have credentials, validate the provided sessionData
+        if (!credentials && sessionData) {
+          console.log(`🔍 Validating fresh credentials for ${cleanedPhone}`);
+          try {
+            const base64Data = sessionData.trim();
+            
+            // Check Base64 size limit (5MB when decoded)
+            const estimatedSize = (base64Data.length * 3) / 4;
+            const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+            
+            if (estimatedSize > maxSizeBytes) {
+              return res.status(400).json({ 
+                message: `Session data too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
+              });
+            }
+            
+            const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
+            credentials = JSON.parse(decoded);
+            console.log(`✅ Fresh credentials validated for ${cleanedPhone}`);
           
-          // Check Base64 size limit (5MB when decoded)
-          const estimatedSize = (base64Data.length * 3) / 4;
-          const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+            // Validate credentials structure
+            if (!credentials || typeof credentials !== 'object' || !credentials.creds) {
+              return res.status(400).json({ 
+                message: "Invalid credentials format. Please provide valid WhatsApp session data." 
+              });
+            }
           
-          if (estimatedSize > maxSizeBytes) {
+          } catch (error) {
             return res.status(400).json({ 
-              message: `Session data too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
+              message: "Invalid session data format. Please ensure you're providing valid base64 encoded WhatsApp session data." 
             });
           }
-          
-          const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
-          credentials = JSON.parse(decoded);
-          
-          // Validate credentials structure
-          if (!credentials || typeof credentials !== 'object' || !credentials.creds) {
-            return res.status(400).json({ 
-              message: "Invalid credentials format. Please provide valid WhatsApp session data." 
-            });
-          }
-          
-        } catch (error) {
-          return res.status(400).json({ 
-            message: "Invalid session data format. Please ensure you're providing valid base64 encoded WhatsApp session data." 
-          });
         }
       }
       
