@@ -12,20 +12,20 @@ class BotManager {
     this.broadcastFunction = broadcast;
   }
 
-  // Clear session files for a bot before starting
+  // Clear all container data for a bot (like first deployment)
   private clearBotSessionFiles(botId: string) {
     const authDir = join(process.cwd(), 'auth', `bot_${botId}`);
     
     if (existsSync(authDir)) {
       try {
-        console.log(`🧹 Clearing session files for bot ${botId}...`);
+        console.log(`🧹 Clearing all container data for bot ${botId} (resetting to first deployment state)...`);
         rmSync(authDir, { recursive: true, force: true });
-        console.log(`✅ Session files cleared for bot ${botId}`);
+        console.log(`✅ Container data cleared for bot ${botId} - fresh start guaranteed`);
       } catch (error) {
-        console.warn(`⚠️ Failed to clear session files for bot ${botId}:`, error);
+        console.warn(`⚠️ Failed to clear container data for bot ${botId}:`, error);
       }
     } else {
-      console.log(`📂 No existing session files found for bot ${botId}`);
+      console.log(`📂 No existing container data found for bot ${botId} - starting fresh`);
     }
   }
 
@@ -73,7 +73,7 @@ class BotManager {
 
       // Create new isolated bot instance only if none exists or if it was offline
       if (!existingBot || currentStatus === 'offline') {
-        // Clear any existing session files for fresh start
+        // Always clear session files for fresh start (like first deployment)
         this.clearBotSessionFiles(botId);
         
         console.log(`BotManager: Creating new isolated bot instance for ${botId}`);
@@ -83,7 +83,7 @@ class BotManager {
         // Start bot in isolated container
         await newBot.start();
         
-        console.log(`BotManager: Bot ${botId} started successfully in isolated container`);
+        console.log(`BotManager: Bot ${botId} started successfully in isolated container with clean session`);
       } else {
         console.log(`BotManager: Bot ${botId} instance already exists and is healthy`);
       }
@@ -114,7 +114,7 @@ class BotManager {
 
   async restartBot(botId: string) {
     try {
-      console.log(`BotManager: Restarting bot ${botId}...`);
+      console.log(`BotManager: Restarting bot ${botId} with fresh container...`);
       
       const bot = this.bots.get(botId);
       if (bot) {
@@ -126,10 +126,13 @@ class BotManager {
         this.bots.delete(botId);
       }
       
+      // Clear all session files for fresh start (like first deployment)
+      this.clearBotSessionFiles(botId);
+      
       // Start fresh isolated instance
       await this.startBot(botId);
       
-      console.log(`BotManager: Bot ${botId} restarted successfully`);
+      console.log(`BotManager: Bot ${botId} restarted successfully with clean container`);
     } catch (error) {
       console.error(`BotManager: Failed to restart bot ${botId}:`, error);
       throw error;
@@ -141,6 +144,10 @@ class BotManager {
     if (bot) {
       await bot.stop();
       this.bots.delete(botId);
+      
+      // Clear all container data when destroying bot
+      this.clearBotSessionFiles(botId);
+      console.log(`BotManager: Bot ${botId} destroyed and container data cleared`);
     }
   }
 
