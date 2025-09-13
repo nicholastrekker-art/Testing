@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Phone, Bot, Play, Square, RefreshCw, Settings, Trash2, Shield, AlertTriangle, ExternalLink } from "lucide-react";
+import { Search, Phone, Bot, Play, Square, RefreshCw, Settings, Trash2, Shield, AlertTriangle, ExternalLink, Upload } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import CredentialUpdateModal from "./credential-update-modal";
@@ -77,10 +77,8 @@ export default function GuestBotSearch() {
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authenticatedPhone, setAuthenticatedPhone] = useState<string | null>(null); // Track which phone was authenticated
-  const [showOTPInput, setShowOTPInput] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpMethod, setOtpMethod] = useState<string>('');
+  const [showCredentialUpload, setShowCredentialUpload] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   
   // UI modals state
   const [showCredentialUpdate, setShowCredentialUpdate] = useState(false);
@@ -110,77 +108,45 @@ export default function GuestBotSearch() {
     enabled: searchTriggered && !!phoneNumber.trim(),
   });
 
-  // Guest authentication mutations
-  const sendOTPMutation = useMutation({
-    mutationFn: async (phoneNumber: string) => {
+  // Credential validation mutation
+  const validateCredentialsMutation = useMutation({
+    mutationFn: async ({ phoneNumber, file }: { phoneNumber: string, file: File }) => {
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      const response = await fetch('/api/guest/auth/send-otp', {
+      const formData = new FormData();
+      formData.append('phoneNumber', cleanedPhone);
+      formData.append('credentials', file);
+      
+      const response = await fetch('/api/guest/validate-existing-bot', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber: cleanedPhone }),
+        body: formData,
       });
       
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to send OTP');
-      }
-      
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setOtpSent(true);
-      setOtpMethod(data.method);
-      setShowOTPInput(true);
-      toast({ 
-        title: "Verification code sent", 
-        description: data.message 
-      });
-    },
-    onError: (error: any) => {
-      toast({ 
-        title: "Failed to send verification code", 
-        description: error.message,
-        variant: "destructive"
-      });
-    },
-  });
-
-  const verifyOTPMutation = useMutation({
-    mutationFn: async ({ phoneNumber, otp }: { phoneNumber: string, otp: string }) => {
-      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      const response = await fetch('/api/guest/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber: cleanedPhone, otp }),
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Invalid verification code');
+        throw new Error(error.message || 'Failed to validate credentials');
       }
       
       return response.json();
     },
     onSuccess: (data) => {
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      setGuestToken(data.token);
+      setGuestToken(data.guestToken);
       setIsAuthenticated(true);
-      setAuthenticatedPhone(cleanedPhone); // Track the authenticated phone
-      setShowOTPInput(false);
-      setOtp("");
+      setAuthenticatedPhone(cleanedPhone);
+      setShowCredentialUpload(false);
+      setUploadedFile(null);
+      
       toast({ 
-        title: "Authentication successful", 
-        description: "You can now manage your bot" 
+        title: "Credentials validated successfully", 
+        description: data.message || "You can now manage your bot" 
       });
       
-      // Trigger bot search after authentication
-      if (botData) {
-        queryClient.invalidateQueries({ queryKey: ["/api/guest/search-bot", phoneNumber] });
-      }
+      // Refresh bot data after authentication
+      queryClient.invalidateQueries({ queryKey: ["/api/guest/search-bot", phoneNumber] });
     },
     onError: (error: any) => {
       toast({ 
-        title: "Verification failed", 
+        title: "Credential validation failed", 
         description: error.message,
         variant: "destructive"
       });
@@ -288,9 +254,6 @@ export default function GuestBotSearch() {
       setGuestToken(null);
       setIsAuthenticated(false);
       setAuthenticatedPhone(null);
-      setShowOTPInput(false);
-      setOtp("");
-      setOtpSent(false);
     },
     onError: (error: any) => {
       toast({ 
@@ -313,7 +276,7 @@ export default function GuestBotSearch() {
     setSearchTriggered(true);
   }, [phoneNumber, toast]);
 
-  const handleSendOTP = useCallback(() => {
+  const handleCredentialUpload = useCallback((file: File) => {
     if (!phoneNumber.trim()) {
       toast({
         title: "Phone number required",
@@ -322,29 +285,26 @@ export default function GuestBotSearch() {
       });
       return;
     }
-    sendOTPMutation.mutate(phoneNumber);
-  }, [phoneNumber, sendOTPMutation, toast]);
-
-  const handleVerifyOTP = useCallback(() => {
-    if (!otp.trim()) {
+    
+    if (!file) {
       toast({
-        title: "Verification code required",
-        description: "Please enter the verification code",
+        title: "Credentials file required",
+        description: "Please select your credentials file",
         variant: "destructive"
       });
       return;
     }
-    verifyOTPMutation.mutate({ phoneNumber, otp });
-  }, [phoneNumber, otp, verifyOTPMutation, toast]);
+    
+    setUploadedFile(file);
+    validateCredentialsMutation.mutate({ phoneNumber, file });
+  }, [phoneNumber, validateCredentialsMutation, toast]);
 
   const resetAuthentication = useCallback(() => {
     setGuestToken(null);
     setIsAuthenticated(false);
     setAuthenticatedPhone(null);
-    setShowOTPInput(false);
-    setOtp("");
-    setOtpSent(false);
-    setOtpMethod('');
+    setShowCredentialUpload(false);
+    setUploadedFile(null);
   }, []);
 
   const canPerformActions = (bot: GuestBot) => {
@@ -409,71 +369,61 @@ export default function GuestBotSearch() {
             </Button>
           </div>
 
-          {/* Authentication Flow */}
+          {/* Credential Upload Authentication */}
           {botData && needsAuthenticationForBot(botData) && (
             <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-800 space-y-3">
               <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
                 <Shield className="h-4 w-4" />
-                Secure Authentication Required
+                Credential Verification Required
               </div>
               <p className="text-xs text-blue-600 dark:text-blue-400">
-                To manage "{botData.name}" ({botData.phoneNumber}), please verify your phone number ownership.
+                To manage "{botData.name}" ({botData.phoneNumber}), please upload your credentials file to verify ownership.
               </p>
               
-              {!showOTPInput ? (
-                <Button 
-                  size="sm" 
-                  onClick={handleSendOTP}
-                  disabled={sendOTPMutation.isPending}
-                  className="w-full"
-                  data-testid="button-send-otp"
-                >
-                  {sendOTPMutation.isPending ? (
-                    <><RefreshCw className="h-3 w-3 mr-1 animate-spin" /> Sending...</>
-                  ) : (
-                    <><Shield className="h-3 w-3 mr-1" /> Send Verification Code</>
-                  )}
-                </Button>
-              ) : (
-                <div className="space-y-2">
-                  <div className="text-xs text-green-600 dark:text-green-400">
-                    ✓ Verification code sent {otpMethod === 'whatsapp' ? 'to your WhatsApp' : '(check server logs)'}
-                  </div>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Enter 6-digit code"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      onKeyDown={(e) => e.key === 'Enter' && handleVerifyOTP()}
-                      className="text-sm text-center font-mono"
-                      data-testid="input-otp"
-                      maxLength={6}
-                    />
-                    <Button 
-                      size="sm" 
-                      onClick={handleVerifyOTP}
-                      disabled={verifyOTPMutation.isPending || otp.length !== 6}
-                      data-testid="button-verify-otp"
-                    >
-                      {verifyOTPMutation.isPending ? (
-                        <RefreshCw className="h-3 w-3 animate-spin" />
-                      ) : (
-                        'Verify'
+              <div className="space-y-3">
+                <div className="flex items-center justify-center w-full">
+                  <label htmlFor="credentials-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-blue-300 dark:border-blue-600 rounded-lg cursor-pointer bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="w-6 h-6 mb-2 text-blue-500" />
+                      <p className="mb-2 text-xs text-blue-500">
+                        <span className="font-semibold">Click to upload</span> credentials file
+                      </p>
+                      <p className="text-xs text-blue-400">
+                        creds.json or session file
+                      </p>
+                      {uploadedFile && (
+                        <p className="text-xs text-green-600 mt-1">
+                          ✓ {uploadedFile.name}
+                        </p>
                       )}
-                    </Button>
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={handleSendOTP}
-                    disabled={sendOTPMutation.isPending}
-                    className="w-full text-xs"
-                    data-testid="button-resend-otp"
-                  >
-                    Resend Code
-                  </Button>
+                    </div>
+                    <input
+                      id="credentials-upload"
+                      type="file"
+                      className="hidden"
+                      accept=".json,.txt"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          handleCredentialUpload(file);
+                        }
+                      }}
+                      data-testid="input-credentials-file"
+                    />
+                  </label>
                 </div>
-              )}
+                
+                {validateCredentialsMutation.isPending && (
+                  <div className="flex items-center justify-center gap-2 text-xs text-blue-600">
+                    <RefreshCw className="h-3 w-3 animate-spin" />
+                    Validating credentials...
+                  </div>
+                )}
+                
+                <div className="text-xs text-blue-600 dark:text-blue-400 text-center bg-blue-100 dark:bg-blue-900/30 p-2 rounded">
+                  💡 Upload your original bot credentials file (creds.json) to verify ownership and access management features.
+                </div>
+              </div>
             </div>
           )}
 
