@@ -20,6 +20,14 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
+  // In production, serve static files instead of using vite middleware
+  if (process.env.NODE_ENV === 'production') {
+    log("Setting up production static file serving");
+    return serveStatic(app);
+  }
+
+  log("Setting up development vite middleware");
+  
   // Dynamic imports to avoid loading vite in production
   const { createServer: createViteServer, createLogger } = await import("vite");
   const viteConfig = (await import("../vite.config")).default;

@@ -21,7 +21,8 @@
     "noEmitOnError": false,
     "paths": {
       "@/*": ["./client/src/*"],
-      "@shared/*": ["./shared/*"]
+      "@shared/*": ["./shared/*"],
+      "@shared/schema": ["./shared/schema.ts"]
     }
   }
 }
