@@ -93,32 +93,9 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
-// Helper function to reset to default server after guest registration
-async function resetToDefaultServerAfterRegistration(): Promise<void> {
-  try {
-    const currentServer = getServerName();
-    const defaultServer = process.env.SERVER_NAME || 'default-server';
-    
-    // Only reset if we're not already on the default server
-    if (currentServer !== defaultServer) {
-      console.log(`🔄 Resetting to default server from ${currentServer} to ${defaultServer} after guest registration`);
-      
-      // Switch back to default server context
-      const { botManager } = await import('./services/bot-manager');
-      await botManager.stopAllBots();
-      
-      process.env.RUNTIME_SERVER_NAME = defaultServer;
-      
-      // Resume bots for default server
-      await botManager.resumeBotsForServer(defaultServer);
-      
-      console.log(`✅ Successfully reset to default server: ${defaultServer}`);
-    }
-  } catch (error) {
-    console.warn('⚠️ Failed to reset to default server after registration:', error);
-    // Don't throw error as this shouldn't fail the registration
-  }
-}
+// REMOVED: Dangerous resetToDefaultServerAfterRegistration function
+// This function was causing downtime by stopping all bots unnecessarily.
+// Cross-server registrations now work properly without server context switching.
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -2459,8 +2436,8 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           });
         }
       } else {
-        // This is a new registration - add to global register
-        await storage.addGlobalRegistration(phoneNumber, currentTenancyName);
+        // This is a new registration - global registration will be handled by createCrossServerRegistration
+        console.log(`📝 New registration for ${phoneNumber} will be handled by cross-server registration method`);
       }
 
       // Check if phone number already exists locally (redundant check but for safety)
@@ -2540,37 +2517,25 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
       // Check bot count limit using strict validation (no auto-removal)
       const botCountCheck = await storage.strictCheckBotCountLimit();
+      let targetServerName = currentTenancyName; // Default to current server
+      
       if (!botCountCheck.canAdd) {
-        // Get available servers for user selection instead of auto-assignment
+        // Current server is full - try automatic cross-server registration
         const availableServers = await storage.getAvailableServers();
         
         if (availableServers.length > 0) {
-          // Return server full response with available server options for user to choose
-          console.log(`🔄 ${getServerName()} is full (${botCountCheck.currentCount}/${botCountCheck.maxCount}), providing server selection to user`);
+          // Automatically register on the first available server
+          const targetServer = availableServers[0];
+          targetServerName = targetServer.serverName;
           
-          return res.status(400).json({
-            type: 'server_full_selection',
-            message: `🚫 ${getServerName()} is full! (${botCountCheck.currentCount}/${botCountCheck.maxCount} bots)`,
-            serverFull: true,
-            currentServer: getServerName(),
-            availableServers: availableServers.map(server => ({
-              serverName: server.serverName,
-              currentBots: server.currentBotCount || 0,
-              maxBots: server.maxBotCount,
-              availableSlots: server.maxBotCount - (server.currentBotCount || 0),
-              serverUrl: server.serverUrl,
-              description: server.description,
-              status: server.serverStatus
-            })),
-            instructions: [
-              "Please select a different server from the list above",
-              "Your bot will be registered on the selected server",
-              "Each server maintains separate bot instances and data"
-            ],
-            action: 'select_server'
-          });
+          console.log(`🔄 ${getServerName()} is full (${botCountCheck.currentCount}/${botCountCheck.maxCount}), automatically registering on ${targetServerName}`);
+          
+          // Update global registration to point to the target server
+          await storage.updateGlobalRegistration(phoneNumber, targetServerName);
+          
+          console.log(`✅ Cross-server registration: Bot will be registered on ${targetServerName} instead of ${getServerName()}`);
         } else {
-          // All servers are full - provide manual selection as fallback
+          // All servers are full - cannot proceed
           return res.status(400).json({ 
             message: `😞 All servers are currently full! Current server: ${getServerName()} (${botCountCheck.currentCount}/${botCountCheck.maxCount}). Please contact administrator for more capacity or try again later.`,
             serverFull: true,
@@ -2585,23 +2550,35 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         }
       }
 
-      // Create guest bot instance
-      const botInstance = await storage.createBotInstance({
-        name: botName,
-        phoneNumber: phoneNumber,
-        credentials: credentials,
-        status: 'pending_validation',
-        approvalStatus: 'pending',
-        isGuest: true,
-        settings: { features: botFeatures },
-        // Map features to individual columns
-        autoLike: (botFeatures as any).autoLike || false,
-        autoViewStatus: (botFeatures as any).autoView || false,
-        autoReact: (botFeatures as any).autoReact || false,
-        typingMode: (botFeatures as any).typingIndicator ? 'typing' : 'none',
-        chatgptEnabled: (botFeatures as any).chatGPT || false,
-        serverName: selectedServer || getServerName()
-      });
+      // Use atomic cross-server registration with rollback support
+      const registrationResult = await storage.createCrossServerRegistration(
+        phoneNumber,
+        targetServerName,
+        {
+          name: botName,
+          phoneNumber: phoneNumber,
+          credentials: credentials,
+          status: 'pending_validation',
+          approvalStatus: 'pending',
+          isGuest: true,
+          settings: { features: botFeatures },
+          // Map features to individual columns
+          autoLike: (botFeatures as any).autoLike || false,
+          autoViewStatus: (botFeatures as any).autoView || false,
+          autoReact: (botFeatures as any).autoReact || false,
+          typingMode: (botFeatures as any).typingIndicator ? 'typing' : 'none',
+          chatgptEnabled: (botFeatures as any).chatGPT || false
+        }
+      );
+      
+      if (!registrationResult.success) {
+        return res.status(400).json({
+          message: registrationResult.error || "Failed to register bot",
+          serverFull: registrationResult.error?.includes('capacity') || false
+        });
+      }
+      
+      const botInstance = registrationResult.botInstance!;
 
       // Test WhatsApp connection and send validation message
       try {
@@ -2636,13 +2613,21 @@ Thank you for choosing TREKKER-MD! 🚀`;
           lastActivity: new Date()
         });
 
-        // Log activity
-        await storage.createActivity({
+        // Log activity on target server (cross-tenancy logging)
+        await storage.createCrossTenancyActivity({
           botInstanceId: botInstance.id,
           type: 'registration',
           description: `Guest bot registered and validation message sent to ${phoneNumber}`,
-          metadata: { phoneNumber, credentialType, phoneValidated: true },
-          serverName: getServerName()
+          metadata: { 
+            phoneNumber, 
+            credentialType, 
+            phoneValidated: true,
+            sourceServer: getServerName(),
+            targetServer: targetServerName,
+            crossServerRegistration: targetServerName !== currentTenancyName
+          },
+          serverName: targetServerName, // Log to target server where bot was created
+          phoneNumber: phoneNumber
         });
 
         broadcast({ 
@@ -2653,20 +2638,27 @@ Thank you for choosing TREKKER-MD! 🚀`;
           } 
         });
 
+        const crossServerMessage = targetServerName !== currentTenancyName 
+          ? ` Your bot was automatically registered on ${targetServerName} server because ${currentTenancyName} was full.`
+          : '';
+          
         res.json({ 
           success: true, 
-          message: "Bot registered successfully! Validation message sent to your WhatsApp. Contact +254704897825 for activation.",
-          botId: botInstance.id
+          message: `Bot registered successfully! Validation message sent to your WhatsApp.${crossServerMessage} Contact +254704897825 for activation.`,
+          botId: botInstance.id,
+          serverUsed: targetServerName,
+          crossServerRegistration: targetServerName !== currentTenancyName
         });
 
-        // Reset to default server after successful guest registration
-        await resetToDefaultServerAfterRegistration();
+        // REMOVED: Dangerous resetToDefaultServerAfterRegistration() call
+        // Cross-server registration now works properly without server switching
 
       } catch (error) {
         console.error('Failed to validate WhatsApp connection:', error);
         
-        // Delete the bot instance if validation fails
-        await storage.deleteBotInstance(botInstance.id);
+        // IMPROVED: Use proper rollback for failed validation
+        await storage.rollbackCrossServerRegistration(phoneNumber, botInstance.id, targetServerName);
+        console.log(`🔄 Rolled back failed registration for ${phoneNumber}`);
         
         return res.status(400).json({ 
           message: "Failed to validate WhatsApp credentials. Please check your session ID or creds.json file." 

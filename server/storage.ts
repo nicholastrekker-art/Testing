@@ -59,6 +59,7 @@ export interface IStorage {
   getAllBotInstances(): Promise<BotInstance[]>;
   getBotInstancesForServer(serverName: string): Promise<BotInstance[]>;
   createBotInstance(botInstance: InsertBotInstance): Promise<BotInstance>;
+  createBotInstanceForServer(serverName: string, botInstance: InsertBotInstance): Promise<BotInstance>;
   updateBotInstance(id: string, updates: Partial<BotInstance>): Promise<BotInstance>;
   deleteBotInstance(id: string): Promise<void>;
   checkBotCountLimit(): Promise<boolean>;
@@ -105,6 +106,15 @@ export interface IStorage {
   deleteGlobalRegistration(phoneNumber: string): Promise<void>;
   getAllGlobalRegistrations(): Promise<GodRegister[]>;
   updateGlobalRegistration(phoneNumber: string, tenancyName: string): Promise<GodRegister | undefined>;
+  
+  // Cross-server registration with rollback support
+  createCrossServerRegistration(phoneNumber: string, targetServerName: string, botData: InsertBotInstance): Promise<{
+    success: boolean;
+    botInstance?: BotInstance;
+    globalRegistration?: GodRegister;
+    error?: string;
+  }>;
+  rollbackCrossServerRegistration(phoneNumber: string, botId?: string, targetServerName?: string): Promise<void>;
   
   // Server registry methods (multi-tenancy management)
   getAllServers(): Promise<ServerRegistry[]>;
@@ -188,6 +198,23 @@ export class DatabaseStorage implements IStorage {
     // Auto-update server bot count in registry after bot creation
     await this.updateBotCountAfterChange(serverName);
     console.log(`📊 Updated bot count for ${serverName} after creating bot ${botInstance.name}`);
+    
+    return botInstance;
+  }
+
+  // NEW: Create bot instance on specific server (for cross-server registration)
+  async createBotInstanceForServer(targetServerName: string, insertBotInstance: InsertBotInstance): Promise<BotInstance> {
+    console.log(`🎯 Creating bot on target server: ${targetServerName} (current context: ${getServerName()})`);
+    
+    // Create bot directly on target server by specifying serverName explicitly
+    const [botInstance] = await db
+      .insert(botInstances)
+      .values({ ...insertBotInstance, serverName: targetServerName })
+      .returning();
+    
+    // Auto-update target server bot count in registry after bot creation
+    await this.updateBotCountAfterChange(targetServerName);
+    console.log(`📊 Updated bot count for ${targetServerName} after creating bot ${botInstance.name}`);
     
     return botInstance;
   }
@@ -583,6 +610,130 @@ export class DatabaseStorage implements IStorage {
       .where(eq(godRegister.phoneNumber, phoneNumber))
       .returning();
     return registration || undefined;
+  }
+  
+  // Cross-server registration with atomic rollback support
+  async createCrossServerRegistration(phoneNumber: string, targetServerName: string, botData: InsertBotInstance): Promise<{
+    success: boolean;
+    botInstance?: BotInstance;
+    globalRegistration?: GodRegister;
+    error?: string;
+  }> {
+    console.log(`🔄 Starting cross-server registration: ${phoneNumber} -> ${targetServerName}`);
+    
+    let globalRegistration: GodRegister | undefined;
+    let botInstance: BotInstance | undefined;
+    
+    try {
+      // Step 1: Re-check target server capacity to prevent race conditions
+      const capacityCheck = await this.strictCheckBotCountLimit(targetServerName);
+      if (!capacityCheck.canAdd) {
+        return {
+          success: false,
+          error: `Target server ${targetServerName} is at capacity (${capacityCheck.currentCount}/${capacityCheck.maxCount}). Please choose a different server.`
+        };
+      }
+      console.log(`✅ Target server ${targetServerName} capacity OK: ${capacityCheck.currentCount}/${capacityCheck.maxCount}`);
+      
+      // Step 2: Add global registration first (this will fail if phone already exists)
+      try {
+        globalRegistration = await this.addGlobalRegistration(phoneNumber, targetServerName);
+        console.log(`✅ Global registration created: ${phoneNumber} -> ${targetServerName}`);
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        if (errorMsg.includes('already registered')) {
+          return {
+            success: false,
+            error: `Phone number ${phoneNumber} is already registered. Each phone can only be used once.`
+          };
+        }
+        throw error; // Re-throw unexpected errors
+      }
+      
+      // Step 3: Create bot on target server
+      try {
+        botInstance = await this.createBotInstanceForServer(targetServerName, botData);
+        console.log(`✅ Bot created on target server: ${botInstance.id} on ${targetServerName}`);
+        
+        // Step 4: Log cross-tenancy activity for audit trail
+        await this.createCrossTenancyActivity({
+          type: 'cross_server_registration',
+          description: `Bot registered on ${targetServerName} from ${getServerName()}`,
+          metadata: {
+            sourceServer: getServerName(),
+            targetServer: targetServerName,
+            botId: botInstance.id,
+            botName: botInstance.name
+          },
+          serverName: targetServerName, // Log to target server
+          botInstanceId: botInstance.id,
+          phoneNumber: phoneNumber
+        });
+        
+        return {
+          success: true,
+          botInstance,
+          globalRegistration
+        };
+        
+      } catch (botError) {
+        console.error(`❌ Bot creation failed on ${targetServerName}:`, botError);
+        
+        // Rollback: Remove global registration
+        await this.deleteGlobalRegistration(phoneNumber);
+        console.log(`🔄 Rolled back global registration for ${phoneNumber}`);
+        
+        return {
+          success: false,
+          error: `Failed to create bot on ${targetServerName}: ${botError instanceof Error ? botError.message : 'Unknown error'}`
+        };
+      }
+      
+    } catch (error) {
+      console.error(`❌ Cross-server registration failed for ${phoneNumber}:`, error);
+      
+      // Comprehensive rollback
+      await this.rollbackCrossServerRegistration(phoneNumber, botInstance?.id, targetServerName);
+      
+      return {
+        success: false,
+        error: `Registration failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+  
+  // Comprehensive rollback for failed cross-server registrations
+  async rollbackCrossServerRegistration(phoneNumber: string, botId?: string, targetServerName?: string): Promise<void> {
+    console.log(`🔄 Rolling back cross-server registration for ${phoneNumber}`);
+    
+    try {
+      // Remove global registration
+      await this.deleteGlobalRegistration(phoneNumber);
+      console.log(`✅ Removed global registration for ${phoneNumber}`);
+    } catch (error) {
+      console.warn(`⚠️ Failed to remove global registration for ${phoneNumber}:`, error);
+    }
+    
+    if (botId && targetServerName) {
+      try {
+        // Remove bot instance from target server
+        await db.delete(botInstances).where(
+          and(
+            eq(botInstances.id, botId),
+            eq(botInstances.serverName, targetServerName)
+          )
+        );
+        
+        // Update target server bot count
+        await this.updateBotCountAfterChange(targetServerName);
+        
+        console.log(`✅ Removed bot ${botId} from ${targetServerName}`);
+      } catch (error) {
+        console.warn(`⚠️ Failed to remove bot ${botId} from ${targetServerName}:`, error);
+      }
+    }
+    
+    console.log(`🔄 Rollback completed for ${phoneNumber}`);
   }
   
   // Server registry methods (multi-tenancy management)
