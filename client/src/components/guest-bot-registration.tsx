@@ -972,16 +972,16 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
           </div>
         )}
 
-        {/* Step 8: Existing Bot Management */}
+        {/* Step 8: Existing Bot Management - SECURITY: Require credential validation first */}
         {step === 8 && existingBotData && (
           <div className="space-y-6">
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i className="fas fa-robot text-2xl text-blue-600"></i>
               </div>
-              <h3 className="text-xl font-bold mb-2">Welcome Back!</h3>
+              <h3 className="text-xl font-bold mb-2">Existing Bot Found!</h3>
               <p className="text-muted-foreground">
-                You have an existing bot on this server. Here's what you can do:
+                To manage your bot "{existingBotData.name}", please verify your ownership by uploading your credentials.
               </p>
             </div>
 
@@ -1035,62 +1035,42 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                   </div>
                 )}
 
-                <div className="space-y-3">
-                  <h4 className="font-medium">Available Actions:</h4>
-                  
-                  {existingBotData.isApproved && !existingBotData.isExpired && (
-                    <div className="grid grid-cols-3 gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleBotAction('start')}
-                        disabled={managingBot === 'start' || existingBotData.status === 'online'}
-                      >
-                        {managingBot === 'start' ? '🔄' : '▶️'} {existingBotData.status === 'online' ? 'Online' : 'Start'}
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleBotAction('stop')}
-                        disabled={managingBot === 'stop' || existingBotData.status === 'offline'}
-                      >
-                        {managingBot === 'stop' ? '🔄' : '⏸️'} {existingBotData.status === 'offline' ? 'Offline' : 'Stop'}
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleBotAction('restart')}
-                        disabled={managingBot === 'restart'}
-                      >
-                        {managingBot === 'restart' ? '🔄' : '🔄'} Restart
-                      </Button>
+                {/* SECURITY: Show credential validation requirement instead of immediate management access */}
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-8 h-8 bg-amber-100 dark:bg-amber-800 rounded-full flex items-center justify-center">
+                      🔐
                     </div>
-                  )}
-
-                  {!existingBotData.isApproved && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
-                      <p className="text-sm text-yellow-800">
-                        ⚠️ Your bot is not approved yet. You can only update credentials until it's approved.
+                    <div>
+                      <h4 className="font-medium text-amber-800 dark:text-amber-200">Security Verification Required</h4>
+                      <p className="text-sm text-amber-700 dark:text-amber-300">
+                        Please upload your credentials file to verify bot ownership
                       </p>
                     </div>
-                  )}
-
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full"
-                    onClick={() => setShowCredentialUpdate(true)}
-                  >
-                    🔑 Update Credentials
-                  </Button>
+                  </div>
                   
-                  {!existingBotData.isApproved && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <p className="text-sm text-blue-800">
-                        📞 Contact +254704897825 to get your bot approved and access all features
-                      </p>
+                  <div className="space-y-3">
+                    <Button 
+                      className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                      onClick={() => {
+                        // Close registration modal and redirect to search page for credential validation
+                        handleClose();
+                        // The user should use the search page which has proper credential validation flow
+                        toast({
+                          title: "Credential Validation Required",
+                          description: "Please use the 'Search Your Bot' page to verify your credentials and manage your bot securely.",
+                          duration: 5000
+                        });
+                      }}
+                    >
+                      🔍 Go to Bot Search & Verification
+                    </Button>
+                    
+                    <div className="text-xs text-amber-700 dark:text-amber-300 text-center">
+                      For security, bot management requires credential verification.
+                      Use the "Search Your Bot" page to securely access your bot.
                     </div>
-                  )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
