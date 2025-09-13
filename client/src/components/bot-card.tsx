@@ -46,7 +46,10 @@ export default function BotCard({ bot }: BotCardProps) {
       return apiRequest('POST', `/api/bot-instances/${bot.id}/toggle-feature`, { feature, enabled });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
+      // Invalidate both pending and approved bot queries for proper cache refresh
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/approved"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] }); // Keep for compatibility
       toast({ title: "Feature updated successfully" });
     },
     onError: (error) => {
@@ -64,7 +67,10 @@ export default function BotCard({ bot }: BotCardProps) {
       return apiRequest('POST', `/api/bot-instances/${bot.id}/approve`, { expirationMonths: 3 });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
+      // Critical: Invalidate both pending and approved bot queries after approval
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/approved"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] }); // Keep for compatibility
       toast({ title: "Bot approved successfully", description: "Bot is now approved for 3 months" });
     },
     onError: (error) => {
@@ -82,8 +88,10 @@ export default function BotCard({ bot }: BotCardProps) {
       return apiRequest('POST', `/api/bot-instances/${bot.id}/revoke`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
+      // Critical: Invalidate both pending and approved bot queries after revocation
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/bots/approved"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] }); // Keep for compatibility
       toast({ title: "Bot approval revoked", description: "Bot has been returned to pending status" });
     },
     onError: (error) => {
@@ -113,7 +121,10 @@ export default function BotCard({ bot }: BotCardProps) {
     },
     onSuccess: () => {
       toast({ title: "Bot started successfully" });
-      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
+      // Invalidate both pending and approved bot queries for proper cache refresh
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/approved"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] }); // Keep for compatibility
     },
     onError: (error: Error) => {
       toast({ 
@@ -142,7 +153,10 @@ export default function BotCard({ bot }: BotCardProps) {
     },
     onSuccess: () => {
       toast({ title: "Bot stopped successfully" });
-      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
+      // Invalidate both pending and approved bot queries for proper cache refresh
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/approved"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] }); // Keep for compatibility
     },
     onError: (error: Error) => {
       toast({ 
@@ -171,7 +185,10 @@ export default function BotCard({ bot }: BotCardProps) {
     },
     onSuccess: () => {
       toast({ title: "Bot restarted successfully" });
-      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] });
+      // Invalidate both pending and approved bot queries for proper cache refresh
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots/approved"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bot-instances"] }); // Keep for compatibility
     },
     onError: (error: Error) => {
       toast({ 
