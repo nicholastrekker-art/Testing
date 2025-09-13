@@ -1525,7 +1525,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
             otpMethod = 'whatsapp';
             console.log(`📱 OTP sent via WhatsApp to ${cleanedPhone}: ${otp}`);
           } catch (error) {
-            console.log(`⚠️ Failed to send WhatsApp OTP to ${cleanedPhone}, falling back to display: ${error.message}`);
+            console.log(`⚠️ Failed to send WhatsApp OTP to ${cleanedPhone}, falling back to display: ${(error as Error).message}`);
           }
         }
       }
@@ -1615,7 +1615,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   // ======= GUEST BOT ACTION ENDPOINTS =======
   
   // Guest bot start - requires authentication and ownership verification
-  app.post("/api/guest/bot/start", authenticateGuestWithBot, async (req: GuestAuthRequest, res) => {
+  app.post("/api/guest/bot/start", authenticateGuestWithBot, async (req: any, res) => {
     try {
       const { phoneNumber, botId } = req.guest;
       
@@ -1660,7 +1660,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   });
   
   // Guest bot stop - requires authentication and ownership verification  
-  app.post("/api/guest/bot/stop", authenticateGuestWithBot, async (req: GuestAuthRequest, res) => {
+  app.post("/api/guest/bot/stop", authenticateGuestWithBot, async (req: any, res) => {
     try {
       const { phoneNumber, botId } = req.guest;
       
@@ -1700,7 +1700,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   });
   
   // Guest bot delete - requires authentication and ownership verification
-  app.delete("/api/guest/bot/delete", authenticateGuestWithBot, async (req: GuestAuthRequest, res) => {
+  app.delete("/api/guest/bot/delete", authenticateGuestWithBot, async (req: any, res) => {
     try {
       const { phoneNumber, botId } = req.guest;
       

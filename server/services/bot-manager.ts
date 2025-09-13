@@ -122,6 +122,11 @@ class BotManager {
     }
   }
 
+  async deleteBot(botId: string) {
+    // Alias to destroyBot for guest API compatibility
+    await this.destroyBot(botId);
+  }
+
   async updateBot(botId: string, botInstance: BotInstance) {
     const bot = this.bots.get(botId);
     if (bot) {
