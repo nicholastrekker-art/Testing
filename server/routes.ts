@@ -1562,29 +1562,83 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         return res.status(400).json({ message: "Invalid phone number format" });
       }
       
-      let credentials = null;
-      let needsCredentials = false;
+      console.log(`🔍 Enhanced Guest OTP: Checking bot status first for ${cleanedPhone}`);
       
-      // Check if phone number has a registered bot
-      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
-      if (!globalRegistration) {
+      // Step 1: Check if bot exists and get its status
+      const currentServerName = process.env.RUNTIME_SERVER_NAME || process.env.SERVER_NAME || 'Server1';
+      const bot = await db.select()
+        .from(botInstances)
+        .where(
+          and(
+            eq(botInstances.phoneNumber, cleanedPhone),
+            eq(botInstances.serverName, currentServerName)
+          )
+        )
+        .limit(1);
+      
+      if (bot.length === 0) {
+        console.log(`❌ Bot not found for phone ${cleanedPhone}`);
         return res.status(404).json({ 
-          message: "No bot found with this phone number. Register a bot first to access guest features." 
+          message: "Bot not found. Please register your bot first.",
+          exists: false 
         });
       }
       
-      const currentServer = getServerName();
+      const botData = bot[0];
+      const isActive = botData.status === 'online';
+      const isApproved = botData.approvalStatus === 'approved';
       
-      // ALWAYS require fresh credential validation for guest OTP security
-      needsCredentials = true;
-      console.log(`🔒 Guest OTP requires credential validation for security - requesting fresh credentials for ${cleanedPhone}`);
+      console.log(`📊 Bot Status - Active: ${isActive}, Approved: ${isApproved}`);
       
-      // If no stored credentials, check if sessionData provided
-      if (needsCredentials) {
-        if (!sessionData) {
-          return res.status(400).json({ 
+      // Step 2: Handle different bot status combinations
+      if (isActive && !isApproved) {
+        console.log(`⚠️ Bot is active but not approved by admin`);
+        return res.status(403).json({
+          message: "Your bot is active but not approved by admin. Please wait for admin approval.",
+          botStatus: "active_not_approved",
+          canManage: false
+        });
+      }
+      
+      if (!isActive && !isApproved) {
+        console.log(`❌ Bot is inactive and not approved`);
+        return res.status(400).json({
+          message: "Your bot is inactive and not approved. Please update your credentials and wait for admin approval.",
+          botStatus: "inactive_not_approved",
+          needsCredentials: true,
+          canManage: false
+        });
+      }
+      
+      if (!isActive && isApproved) {
+        console.log(`🔄 Bot is approved but inactive - requesting credential update`);
+        return res.status(400).json({
+          message: "Your bot is approved but currently inactive. Please update your credentials to reactivate it.",
+          botStatus: "inactive_approved",
+          needsCredentials: true,
+          canManage: false
+        });
+      }
+      
+      // Step 3: For active + approved bots, validate credentials first
+      if (isActive && isApproved) {
+        console.log(`✅ Bot is active and approved - proceeding with credential validation`);
+      }
+      
+      // Initialize credentials for validation (accessible in wider scope)
+      let credentials = null;
+      let needsCredentials = true; // Always require credentials for enhanced security
+      
+      if (isActive && isApproved) {
+        
+        console.log(`🔒 Enhanced security - requesting fresh credentials for ${cleanedPhone}`);
+      
+        // If no credentials provided, request them
+        if (needsCredentials && !sessionData) {
+          return res.status(400).json({
             message: "Credentials required for validation",
             needsCredentials: true,
+            botStatus: "active_approved",
             instructions: "Please provide your WhatsApp session data (base64 encoded creds.json) to verify your identity before sending OTP."
           });
         }
@@ -1644,14 +1698,14 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           
           console.log(`✅ Credentials validated successfully for ${cleanedPhone}`);
           
-          // Generate and send OTP via WhatsApp using validated credentials
+          // Generate and send OTP via WhatsApp using validated credentials  
           const otp = generateGuestOTP();
           createGuestSession(cleanedPhone, otp);
           
           const message = `🔐 Your verification code for bot management: ${otp}\n\nThis code expires in 10 minutes. Keep it secure!`;
           
           try {
-            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), message, false); // false = don't logout, just terminate
+            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), message, true); // true = preserve credentials
             
             console.log(`📱 OTP sent via WhatsApp to ${cleanedPhone}: ${otp}`);
             
@@ -1661,6 +1715,8 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
               method: 'whatsapp',
               expiresIn: 600, // 10 minutes
               credentialsValidated: true,
+              botStatus: "active_approved",
+              botId: botData.id,
               // For development/demo - remove in production
               ...(process.env.NODE_ENV === 'development' && { otp })
             });
@@ -1677,6 +1733,8 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
               method: 'display',
               expiresIn: 600, // 10 minutes
               credentialsValidated: true,
+              botStatus: "active_approved",
+              botId: botData.id,
               // For development/demo - remove in production
               ...(process.env.NODE_ENV === 'development' && { otp })
             });
@@ -1685,12 +1743,14 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         } catch (error) {
           console.error(`❌ Credential validation failed for ${cleanedPhone}:`, error);
           return res.status(400).json({ 
-            message: "Failed to validate credentials. Please ensure your session data is valid and active." 
+            message: "Failed to validate credentials. Please ensure your session data is valid and active.",
+            botStatus: "active_approved"
           });
         }
       } else {
         return res.status(400).json({ 
-          message: "Unable to proceed without valid credentials" 
+          message: "Unable to proceed without valid credentials",
+          botStatus: "active_approved"
         });
       }
       

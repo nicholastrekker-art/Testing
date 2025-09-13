@@ -196,7 +196,7 @@ export const authenticateGuest = async (req: AuthRequest, res: Response, next: N
 };
 
 // Strict guest authentication that requires a bot ID
-export const authenticateGuestWithBot = async (req: GuestAuthRequest, res: Response, next: NextFunction) => {
+export const authenticateGuestWithBot = async (req: any, res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   
   if (!token) {
