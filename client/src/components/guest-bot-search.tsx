@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Search, Phone, Bot, Play, Square, RefreshCw, Settings, Trash2, Shield, AlertTriangle, ExternalLink } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import CredentialUpdateModal from "./credential-update-modal";
 
 interface GuestBot {
   id: string;
@@ -75,10 +76,14 @@ export default function GuestBotSearch() {
   // Guest authentication state
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authenticatedPhone, setAuthenticatedPhone] = useState<string | null>(null); // Track which phone was authenticated
   const [showOTPInput, setShowOTPInput] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpMethod, setOtpMethod] = useState<string>('');
+  
+  // UI modals state
+  const [showCredentialUpdate, setShowCredentialUpdate] = useState(false);
 
   // Search for guest bot by phone number
   const { data: botData, isLoading, error } = useQuery({
@@ -157,8 +162,10 @@ export default function GuestBotSearch() {
       return response.json();
     },
     onSuccess: (data) => {
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
       setGuestToken(data.token);
       setIsAuthenticated(true);
+      setAuthenticatedPhone(cleanedPhone); // Track the authenticated phone
       setShowOTPInput(false);
       setOtp("");
       toast({ 
@@ -182,7 +189,7 @@ export default function GuestBotSearch() {
 
   // Updated bot actions mutations to use guest endpoints
   const startBotMutation = useMutation({
-    mutationFn: async (botId: string) => {
+    mutationFn: async ({ botId, phoneNumber }: { botId: string, phoneNumber: string }) => {
       if (!guestToken) {
         throw new Error('Authentication required');
       }
@@ -193,6 +200,7 @@ export default function GuestBotSearch() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${guestToken}`
         },
+        body: JSON.stringify({ botId, phoneNumber })
       });
       
       if (!response.ok) {
@@ -216,7 +224,7 @@ export default function GuestBotSearch() {
   });
 
   const stopBotMutation = useMutation({
-    mutationFn: async (botId: string) => {
+    mutationFn: async ({ botId, phoneNumber }: { botId: string, phoneNumber: string }) => {
       if (!guestToken) {
         throw new Error('Authentication required');
       }
@@ -227,6 +235,7 @@ export default function GuestBotSearch() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${guestToken}`
         },
+        body: JSON.stringify({ botId, phoneNumber })
       });
       
       if (!response.ok) {
@@ -250,7 +259,7 @@ export default function GuestBotSearch() {
   });
 
   const deleteBotMutation = useMutation({
-    mutationFn: async (botId: string) => {
+    mutationFn: async ({ botId, phoneNumber }: { botId: string, phoneNumber: string }) => {
       if (!guestToken) {
         throw new Error('Authentication required');
       }
@@ -261,6 +270,7 @@ export default function GuestBotSearch() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${guestToken}`
         },
+        body: JSON.stringify({ botId, phoneNumber })
       });
       
       if (!response.ok) {
@@ -277,6 +287,7 @@ export default function GuestBotSearch() {
       setPhoneNumber("");
       setGuestToken(null);
       setIsAuthenticated(false);
+      setAuthenticatedPhone(null);
       setShowOTPInput(false);
       setOtp("");
       setOtpSent(false);
@@ -329,6 +340,7 @@ export default function GuestBotSearch() {
   const resetAuthentication = useCallback(() => {
     setGuestToken(null);
     setIsAuthenticated(false);
+    setAuthenticatedPhone(null);
     setShowOTPInput(false);
     setOtp("");
     setOtpSent(false);
@@ -336,7 +348,16 @@ export default function GuestBotSearch() {
   }, []);
 
   const canPerformActions = (bot: GuestBot) => {
-    return isAuthenticated && !bot.crossServer && bot.isApproved;
+    const cleanedBotPhone = bot.phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+    const isAuthenticatedForThisBot = isAuthenticated && authenticatedPhone === cleanedBotPhone;
+    return isAuthenticatedForThisBot && !bot.crossServer && bot.isApproved;
+  };
+
+  // Check if the current bot requires re-authentication
+  const needsAuthenticationForBot = (bot: GuestBot) => {
+    if (!bot) return false;
+    const cleanedBotPhone = bot.phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+    return !isAuthenticated || authenticatedPhone !== cleanedBotPhone;
   };
 
   const getStatusBadge = (status: string, approvalStatus: string) => {
@@ -376,13 +397,12 @@ export default function GuestBotSearch() {
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 className="pl-9 text-sm"
                 data-testid="input-phone-search"
-                disabled={isAuthenticated}
               />
             </div>
             <Button 
               size="sm" 
               onClick={handleSearch}
-              disabled={isLoading || !phoneNumber.trim() || isAuthenticated}
+              disabled={isLoading || !phoneNumber.trim()}
               data-testid="button-search-bot"
             >
               {isLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
@@ -390,14 +410,14 @@ export default function GuestBotSearch() {
           </div>
 
           {/* Authentication Flow */}
-          {botData && !isAuthenticated && (
+          {botData && needsAuthenticationForBot(botData) && (
             <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-800 space-y-3">
               <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
                 <Shield className="h-4 w-4" />
                 Secure Authentication Required
               </div>
               <p className="text-xs text-blue-600 dark:text-blue-400">
-                To manage your bot securely, please verify your phone number ownership.
+                To manage "{botData.name}" ({botData.phoneNumber}), please verify your phone number ownership.
               </p>
               
               {!showOTPInput ? (
@@ -457,19 +477,35 @@ export default function GuestBotSearch() {
             </div>
           )}
 
-          {isAuthenticated && (
+          {botData && !needsAuthenticationForBot(botData) && (
             <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-200 dark:border-green-800">
               <div className="flex items-center gap-2 text-xs text-green-700 dark:text-green-300">
                 <Shield className="h-3 w-3" />
-                Authenticated successfully - You can now manage your bot
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={resetAuthentication}
-                  className="ml-auto text-xs h-6 px-2"
-                >
-                  Logout
-                </Button>
+                Authenticated for {botData.phoneNumber} - You can now manage this bot
+                <div className="ml-auto flex gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => {
+                      // Reset authentication when searching for another bot
+                      resetAuthentication();
+                      setSearchTriggered(false);
+                      setPhoneNumber("");
+                    }}
+                    className="text-xs h-6 px-2"
+                    title="Search for another bot (requires re-authentication)"
+                  >
+                    Search Another
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={resetAuthentication}
+                    className="text-xs h-6 px-2"
+                  >
+                    Logout
+                  </Button>
+                </div>
               </div>
             </div>
           )}
@@ -538,10 +574,22 @@ export default function GuestBotSearch() {
                       size="sm" 
                       variant="outline"
                       className="text-xs h-7"
+                      onClick={() => {
+                        // Get current domain but with different server name
+                        const currentUrl = new URL(window.location.href);
+                        // For multi-tenant servers, typically they might be on subdomains
+                        // or the user needs to access a different URL entirely
+                        // For now, we'll show a helpful message about contacting admin
+                        toast({
+                          title: "Server Switch Required",
+                          description: `Your bot is on ${botData.serverName}. Please contact the administrator for access to that server, or visit the correct server URL directly.`,
+                          variant: "default"
+                        });
+                      }}
                       data-testid={`button-switch-server-${botData.phoneNumber}`}
                     >
                       <ExternalLink className="h-3 w-3 mr-1" />
-                      Switch to {botData.serverName}
+                      Contact Admin for {botData.serverName}
                     </Button>
                   </div>
                 </div>
@@ -569,10 +617,13 @@ export default function GuestBotSearch() {
 
                 {/* Conditional Actions based on nextStep */}
                 <div className="flex gap-2">
-                  {!isAuthenticated && botData.nextStep !== 'wait_approval' ? (
+                  {needsAuthenticationForBot(botData) && botData.nextStep !== 'wait_approval' ? (
                     <div className="w-full bg-gray-50 dark:bg-gray-900/50 p-3 rounded border border-gray-200 dark:border-gray-700 text-center">
                       <div className="text-xs text-gray-600 dark:text-gray-400">
-                        Authentication required to manage bot actions
+                        {isAuthenticated ? 
+                          `Please authenticate for this bot (${botData.phoneNumber}) to manage actions` :
+                          'Authentication required to manage bot actions'
+                        }
                       </div>
                     </div>
                   ) : botData.nextStep === 'wait_approval' ? (
@@ -587,8 +638,9 @@ export default function GuestBotSearch() {
                         size="sm"
                         variant="outline"
                         className="w-full text-xs"
-                        onClick={() => {/* TODO: Add credential upload modal */}}
+                        onClick={() => setShowCredentialUpdate(true)}
                         data-testid={`button-upload-credentials-${botData.phoneNumber}`}
+                        disabled={!isAuthenticated}
                       >
                         <Shield className="h-3 w-3 mr-1" />
                         Upload New Credentials
@@ -597,13 +649,13 @@ export default function GuestBotSearch() {
                         Upload your creds.json file to reactivate your bot
                       </div>
                     </div>
-                  ) : botData.nextStep === 'authenticated' && isAuthenticated ? (
+                  ) : botData.nextStep === 'authenticated' && !needsAuthenticationForBot(botData) ? (
                     <>
                       {botData.status === "online" ? (
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => stopBotMutation.mutate(botData.id)}
+                          onClick={() => stopBotMutation.mutate({ botId: botData.id, phoneNumber: botData.phoneNumber })}
                           disabled={stopBotMutation.isPending || !canPerformActions(botData)}
                           className="flex-1 text-xs"
                           data-testid={`button-stop-${botData.phoneNumber}`}
@@ -618,7 +670,7 @@ export default function GuestBotSearch() {
                       ) : (
                         <Button
                           size="sm"
-                          onClick={() => startBotMutation.mutate(botData.id)}
+                          onClick={() => startBotMutation.mutate({ botId: botData.id, phoneNumber: botData.phoneNumber })}
                           disabled={startBotMutation.isPending || !canPerformActions(botData)}
                           className="flex-1 text-xs"
                           data-testid={`button-start-${botData.phoneNumber}`}
@@ -653,7 +705,7 @@ export default function GuestBotSearch() {
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => deleteBotMutation.mutate(botData.id)}
+                              onClick={() => deleteBotMutation.mutate({ botId: botData.id, phoneNumber: botData.phoneNumber })}
                               data-testid={`confirm-delete-${botData.phoneNumber}`}
                             >
                               Delete
@@ -672,6 +724,21 @@ export default function GuestBotSearch() {
             )}
           </CardContent>
         </Card>
+      )}
+      
+      {/* Credential Update Modal */}
+      {botData && (
+        <CredentialUpdateModal
+          open={showCredentialUpdate}
+          onClose={() => setShowCredentialUpdate(false)}
+          botId={botData.id}
+          phoneNumber={botData.phoneNumber}
+          onSuccess={() => {
+            // Refresh bot data after credential update
+            queryClient.invalidateQueries({ queryKey: ["/api/guest/search-bot", phoneNumber] });
+            setShowCredentialUpdate(false);
+          }}
+        />
       )}
     </div>
   );
