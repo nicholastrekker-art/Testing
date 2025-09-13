@@ -2637,12 +2637,34 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       
       const botInstance = registrationResult.botInstance!;
 
-      // Test WhatsApp connection and send validation message
-      try {
-        console.log(`🔄 Testing WhatsApp connection for guest bot ${botInstance.id}`);
+      // Handle registration differently for cross-server vs same-server
+      if (targetServerName !== currentTenancyName) {
+        // Cross-server registration - no WhatsApp validation, just registry entry
+        console.log(`🔄 Cross-server registration: Creating registry entry for bot ${botInstance.id} on ${targetServerName}`);
         
-        // Prepare validation message
-        const validationMessage = `🎉 Welcome to TREKKER-MD!
+        // Mark credentials as verified without testing (assuming they're valid)
+        await storage.updateBotCredentialStatusOnServer(botInstance.id, targetServerName, {
+          credentialVerified: true,
+          credentialPhone: cleanPhoneNumber,
+          autoStart: false, // Don't auto-start cross-server registrations
+          invalidReason: null
+        });
+        console.log(`✅ Credentials marked as verified for bot ${botInstance.id} on server ${targetServerName} (cross-server)`);
+        
+        // Update bot status to dormant (awaiting approval) without validation
+        await storage.updateBotInstanceOnServer(botInstance.id, targetServerName, { 
+          status: 'dormant',
+          lastActivity: new Date()
+        });
+        console.log(`✅ Bot status set to dormant on server ${targetServerName} (cross-server registration)`);
+        
+      } else {
+        // Same-server registration - test WhatsApp connection and send validation message
+        try {
+          console.log(`🔄 Testing WhatsApp connection for guest bot ${botInstance.id}`);
+          
+          // Prepare validation message
+          const validationMessage = `🎉 Welcome to TREKKER-MD!
 
 Your bot "${botName}" has been successfully registered and is awaiting admin approval.
 
@@ -2658,78 +2680,75 @@ Next Steps:
 
 Thank you for choosing TREKKER-MD! 🚀`;
 
-        // Send validation message using the bot's own credentials
-        const credentialsBase64 = credentialType === 'base64' ? sessionId : Buffer.from(JSON.stringify(credentials)).toString('base64');
-        
-        await sendGuestValidationMessage(phoneNumber, credentialsBase64, validationMessage);
-        console.log(`✅ Validation message sent successfully to ${phoneNumber}`);
-        
-        // Mark credentials as verified since validation message was sent successfully
-        await storage.updateBotCredentialStatus(botInstance.id, {
-          credentialVerified: true,
-          credentialPhone: cleanPhoneNumber,
-          autoStart: true,
-          invalidReason: null
-        });
-        console.log(`✅ Credentials marked as verified for bot ${botInstance.id}`);
-        
-        // Update bot status to pending (awaiting approval)
-        await storage.updateBotInstance(botInstance.id, { 
-          status: 'dormant',
-          lastActivity: new Date()
-        });
-
-        // Log activity on target server (cross-tenancy logging)
-        await storage.createCrossTenancyActivity({
-          botInstanceId: botInstance.id,
-          type: 'registration',
-          description: `Guest bot registered and validation message sent to ${phoneNumber}`,
-          metadata: { 
-            phoneNumber, 
-            credentialType, 
-            phoneValidated: true,
-            sourceServer: getServerName(),
-            targetServer: targetServerName,
-            crossServerRegistration: targetServerName !== currentTenancyName
-          },
-          serverName: targetServerName, // Log to target server where bot was created
-          phoneNumber: phoneNumber
-        });
-
-        broadcast({ 
-          type: 'GUEST_BOT_REGISTERED', 
-          data: { 
-            botInstance: { ...botInstance, credentials: undefined }, // Don't broadcast credentials
-            phoneNumber 
-          } 
-        });
-
-        const crossServerMessage = targetServerName !== currentTenancyName 
-          ? ` Your bot was automatically registered on ${targetServerName} server because ${currentTenancyName} was full.`
-          : '';
+          // Send validation message using the bot's own credentials
+          const credentialsBase64 = credentialType === 'base64' ? sessionId : Buffer.from(JSON.stringify(credentials)).toString('base64');
           
-        res.json({ 
-          success: true, 
-          message: `Bot registered successfully! Validation message sent to your WhatsApp.${crossServerMessage} Contact +254704897825 for activation.`,
-          botId: botInstance.id,
-          serverUsed: targetServerName,
-          crossServerRegistration: targetServerName !== currentTenancyName
-        });
-
-        // REMOVED: Dangerous resetToDefaultServerAfterRegistration() call
-        // Cross-server registration now works properly without server switching
-
-      } catch (error) {
-        console.error('Failed to validate WhatsApp connection:', error);
-        
-        // IMPROVED: Use proper rollback for failed validation
-        await storage.rollbackCrossServerRegistration(phoneNumber, botInstance.id, targetServerName);
-        console.log(`🔄 Rolled back failed registration for ${phoneNumber}`);
-        
-        return res.status(400).json({ 
-          message: "Failed to validate WhatsApp credentials. Please check your session ID or creds.json file." 
-        });
+          await sendGuestValidationMessage(phoneNumber, credentialsBase64, validationMessage);
+          console.log(`✅ Validation message sent successfully to ${phoneNumber}`);
+          
+          // Mark credentials as verified since validation message was sent successfully
+          await storage.updateBotCredentialStatus(botInstance.id, {
+            credentialVerified: true,
+            credentialPhone: cleanPhoneNumber,
+            autoStart: true,
+            invalidReason: null
+          });
+          console.log(`✅ Credentials marked as verified for bot ${botInstance.id}`);
+          
+          // Update bot status to pending (awaiting approval)
+          await storage.updateBotInstance(botInstance.id, { 
+            status: 'dormant',
+            lastActivity: new Date()
+          });
+        } catch (validationError) {
+          console.error('Failed to validate WhatsApp connection:', validationError);
+          
+          // For same-server validation failures, rollback the registration
+          await storage.rollbackCrossServerRegistration(phoneNumber, botInstance.id, targetServerName);
+          console.log(`🔄 Rolled back failed registration for ${phoneNumber}`);
+          
+          return res.status(400).json({ 
+            message: "Failed to validate WhatsApp credentials. Please check your session ID or creds.json file." 
+          });
+        }
       }
+
+      // Log activity on target server (cross-tenancy logging)
+      await storage.createCrossTenancyActivity({
+        botInstanceId: botInstance.id,
+        type: 'registration',
+        description: `Guest bot registered${targetServerName !== currentTenancyName ? ' (cross-server)' : ' and validation message sent'} to ${phoneNumber}`,
+        metadata: { 
+          phoneNumber, 
+          credentialType, 
+          phoneValidated: targetServerName === currentTenancyName, // Only validated for same-server
+          sourceServer: getServerName(),
+          targetServer: targetServerName,
+          crossServerRegistration: targetServerName !== currentTenancyName
+        },
+        serverName: targetServerName, // Log to target server where bot was created
+        phoneNumber: phoneNumber
+      });
+
+      broadcast({ 
+        type: 'GUEST_BOT_REGISTERED', 
+        data: { 
+          botInstance: { ...botInstance, credentials: undefined }, // Don't broadcast credentials
+          phoneNumber 
+        } 
+      });
+
+      const crossServerMessage = targetServerName !== currentTenancyName 
+        ? ` Your bot was automatically registered on ${targetServerName} server because ${currentTenancyName} was full.`
+        : '';
+        
+      res.json({ 
+        success: true, 
+        message: `Bot registered successfully!${targetServerName === currentTenancyName ? ' Validation message sent to your WhatsApp.' : ''}${crossServerMessage} Contact +254704897825 for activation.`,
+        botId: botInstance.id,
+        serverUsed: targetServerName,
+        crossServerRegistration: targetServerName !== currentTenancyName
+      });
 
     } catch (error) {
       console.error('Guest bot registration error:', error);

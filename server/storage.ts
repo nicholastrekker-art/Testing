@@ -134,6 +134,19 @@ export interface IStorage {
     credentialPhone?: string;
     invalidReason?: string;
     credentials?: any;
+    autoStart?: boolean;
+    authMessageSentAt?: Date | null;
+  }): Promise<BotInstance>;
+  
+  // Cross-server update methods
+  updateBotInstanceOnServer(id: string, targetServerName: string, updates: Partial<BotInstance>): Promise<BotInstance>;
+  updateBotCredentialStatusOnServer(id: string, targetServerName: string, credentialData: {
+    credentialVerified: boolean;
+    credentialPhone?: string;
+    invalidReason?: string;
+    credentials?: any;
+    autoStart?: boolean;
+    authMessageSentAt?: Date | null;
   }): Promise<BotInstance>;
   markBotAsInactive(id: string, reason: string): Promise<void>;
   setBotAutoStart(id: string, autoStart: boolean): Promise<BotInstance>;
@@ -928,6 +941,8 @@ export class DatabaseStorage implements IStorage {
     credentialPhone?: string;
     invalidReason?: string;
     credentials?: any;
+    autoStart?: boolean;
+    authMessageSentAt?: Date | null;
   }): Promise<BotInstance> {
     const updateData: any = {
       credentialVerified: credentialData.credentialVerified,
@@ -943,12 +958,75 @@ export class DatabaseStorage implements IStorage {
     if (credentialData.credentials) {
       updateData.credentials = credentialData.credentials;
     }
+    if (credentialData.autoStart !== undefined) {
+      updateData.autoStart = credentialData.autoStart;
+    }
+    if (credentialData.authMessageSentAt !== undefined) {
+      updateData.authMessageSentAt = credentialData.authMessageSentAt;
+    }
 
     const [botInstance] = await db
       .update(botInstances)
       .set(updateData)
       .where(eq(botInstances.id, id))
       .returning();
+    
+    return botInstance;
+  }
+
+  // Cross-server bot update methods for cross-server operations
+  async updateBotInstanceOnServer(id: string, targetServerName: string, updates: Partial<BotInstance>): Promise<BotInstance> {
+    const [botInstance] = await db
+      .update(botInstances)
+      .set({ ...updates, updatedAt: sql`CURRENT_TIMESTAMP` })
+      .where(and(eq(botInstances.id, id), eq(botInstances.serverName, targetServerName)))
+      .returning();
+    
+    if (!botInstance) {
+      throw new Error(`Bot ${id} not found on server ${targetServerName} or access denied`);
+    }
+    
+    return botInstance;
+  }
+
+  async updateBotCredentialStatusOnServer(id: string, targetServerName: string, credentialData: {
+    credentialVerified: boolean;
+    credentialPhone?: string;
+    invalidReason?: string;
+    credentials?: any;
+    autoStart?: boolean;
+    authMessageSentAt?: Date | null;
+  }): Promise<BotInstance> {
+    const updateData: any = {
+      credentialVerified: credentialData.credentialVerified,
+      updatedAt: sql`CURRENT_TIMESTAMP`
+    };
+
+    if (credentialData.credentialPhone) {
+      updateData.credentialPhone = credentialData.credentialPhone;
+    }
+    if (credentialData.invalidReason !== undefined) {
+      updateData.invalidReason = credentialData.invalidReason;
+    }
+    if (credentialData.credentials) {
+      updateData.credentials = credentialData.credentials;
+    }
+    if (credentialData.autoStart !== undefined) {
+      updateData.autoStart = credentialData.autoStart;
+    }
+    if (credentialData.authMessageSentAt !== undefined) {
+      updateData.authMessageSentAt = credentialData.authMessageSentAt;
+    }
+
+    const [botInstance] = await db
+      .update(botInstances)
+      .set(updateData)
+      .where(and(eq(botInstances.id, id), eq(botInstances.serverName, targetServerName)))
+      .returning();
+    
+    if (!botInstance) {
+      throw new Error(`Bot ${id} not found on server ${targetServerName} or access denied`);
+    }
     
     return botInstance;
   }
