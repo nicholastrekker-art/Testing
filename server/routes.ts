@@ -6,9 +6,10 @@ import multer from "multer";
 import fs from 'fs';
 import path from 'path';
 import { storage } from "./storage";
-import { insertBotInstanceSchema, insertCommandSchema, insertActivitySchema } from "@shared/schema";
+import { insertBotInstanceSchema, insertCommandSchema, insertActivitySchema, botInstances } from "@shared/schema";
 import { botManager } from "./services/bot-manager";
-import { getServerName } from "./db";
+import { getServerName, db } from "./db";
+import { and, eq, desc, asc, isNotNull } from "drizzle-orm";
 import { 
   authenticateAdmin, 
   authenticateUser, 
@@ -1479,6 +1480,69 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   });
 
   // ======= GUEST AUTHENTICATION ENDPOINTS =======
+  
+  // Guest Bot Status Check - Check if bot exists and its status
+  app.post("/api/guest/bot/status", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      // Clean phone number
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      console.log(`🔍 Checking bot status for phone: ${cleanedPhone}`);
+      
+      // Check if bot exists in current server
+      const currentServerName = process.env.RUNTIME_SERVER_NAME || process.env.SERVER_NAME || 'Server1';
+      const bot = await db.select()
+        .from(botInstances)
+        .where(
+          and(
+            eq(botInstances.phoneNumber, cleanedPhone),
+            eq(botInstances.serverName, currentServerName)
+          )
+        )
+        .limit(1);
+      
+      if (bot.length === 0) {
+        console.log(`❌ No bot found for phone ${cleanedPhone} on server ${currentServerName}`);
+        return res.status(404).json({ 
+          message: "Bot not found", 
+          exists: false 
+        });
+      }
+      
+      const botData = bot[0];
+      const isActive = botData.status === 'online';
+      const isApproved = botData.approvalStatus === 'approved';
+      
+      console.log(`✅ Bot found - Status: ${botData.status}, Approval: ${botData.approvalStatus}`);
+      
+      return res.json({
+        exists: true,
+        botId: botData.id,
+        name: botData.name,
+        status: botData.status,
+        approvalStatus: botData.approvalStatus,
+        isActive,
+        isApproved,
+        features: {
+          autoLike: botData.autoLike,
+          autoViewStatus: botData.autoViewStatus,
+          autoReact: botData.autoReact,
+          typingMode: botData.typingMode,
+          chatgptEnabled: botData.chatgptEnabled
+        },
+        serverName: botData.serverName
+      });
+      
+    } catch (error) {
+      console.error("❌ Error checking bot status:", error);
+      return res.status(500).json({ message: "Failed to check bot status" });
+    }
+  });
   
   // Guest OTP Request - Send verification code via WhatsApp with credential validation
   app.post("/api/guest/auth/send-otp", async (req, res) => {
