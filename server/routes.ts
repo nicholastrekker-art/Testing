@@ -28,6 +28,59 @@ import {
 } from './middleware/auth';
 import { sendValidationMessage, sendGuestValidationMessage, validateWhatsAppCredentials } from "./services/validation-bot";
 
+// Data masking utility for guest-facing APIs - hides sensitive information
+function maskBotDataForGuest(botData: any, includeFeatures: boolean = false): any {
+  if (!botData) return null;
+  
+  const masked = {
+    // Keep essential identifiers (use phone number as public ID)
+    id: `bot_${botData.phoneNumber.slice(-4)}`, // Masked ID using last 4 digits
+    botId: botData.id, // Include original botId for API compatibility
+    name: botData.name,
+    phoneNumber: botData.phoneNumber,
+    
+    // Basic status information (safe to expose)
+    status: botData.status,
+    approvalStatus: botData.approvalStatus,
+    isActive: botData.status === 'online',
+    isApproved: botData.approvalStatus === 'approved',
+    
+    // Pass through isOnline if provided (for API compatibility)
+    ...(botData.hasOwnProperty('isOnline') && { isOnline: botData.isOnline }),
+    
+    // Enhanced credential management fields
+    credentialVerified: botData.credentialVerified || false,
+    invalidReason: botData.invalidReason,
+    nextStep: botData.nextStep,
+    message: botData.message,
+    autoStart: botData.autoStart ?? true,
+    needsCredentials: botData.needsCredentials || false,
+    canManage: botData.canManage || false,
+    credentialUploadEndpoint: botData.credentialUploadEndpoint,
+    
+    // Limited stats (counts only, no detailed activity)
+    messagesCount: Math.min(botData.messagesCount || 0, 9999), // Cap at 9999 for privacy
+    commandsCount: Math.min(botData.commandsCount || 0, 9999), // Cap at 9999 for privacy
+    lastActivity: botData.lastActivity ? new Date(botData.lastActivity).toISOString().split('T')[0] : null, // Date only, no time
+    
+    // Cross-server information (SECURITY FIX: Always mask server names)
+    crossServer: botData.crossServer || false,
+    serverName: 'Protected', // Always mask server names to prevent tenant isolation breaches
+    
+    // Optional: Basic feature status (simplified)
+    ...(includeFeatures && {
+      features: {
+        chatEnabled: !!(botData.chatgptEnabled || botData.autoReact),
+        automationEnabled: !!(botData.autoLike || botData.autoViewStatus),
+        // Don't expose specific feature configs
+      }
+    })
+  };
+  
+  // Remove undefined values
+  return Object.fromEntries(Object.entries(masked).filter(([_, v]) => v !== undefined));
+}
+
 const upload = multer({ 
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
@@ -1514,22 +1567,11 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       
       console.log(`✅ Bot found - Status: ${botData.status}, Approval: ${botData.approvalStatus}`);
       
+      // Apply data masking for guest endpoint
+      const maskedBotData = maskBotDataForGuest(botData, true);
       return res.json({
         exists: true,
-        botId: botData.id,
-        name: botData.name,
-        status: botData.status,
-        approvalStatus: botData.approvalStatus,
-        isActive,
-        isApproved,
-        features: {
-          autoLike: botData.autoLike,
-          autoViewStatus: botData.autoViewStatus,
-          autoReact: botData.autoReact,
-          typingMode: botData.typingMode,
-          chatgptEnabled: botData.chatgptEnabled
-        },
-        serverName: botData.serverName
+        ...maskedBotData
       });
       
     } catch (error) {
@@ -1916,30 +1958,15 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       // Get bot status from bot manager
       const isOnline = botManager.isActive(botId);
       
-      res.json({
-        botId: bot.id,
-        name: bot.name,
-        phoneNumber: bot.phoneNumber,
-        status: bot.status,
+      // Apply data masking for guest endpoint (includes features)
+      const maskedBotData = maskBotDataForGuest({
+        ...bot,
         isOnline,
-        approvalStatus: bot.approvalStatus,
-        isApproved: bot.approvalStatus === 'approved',
-        canManage: bot.approvalStatus === 'approved',
-        features: {
-          autoLike: bot.autoLike,
-          autoViewStatus: bot.autoViewStatus,
-          autoReact: bot.autoReact,
-          typingMode: bot.typingMode,
-          chatgptEnabled: bot.chatgptEnabled
-        },
-        stats: {
-          messagesCount: bot.messagesCount || 0,
-          commandsCount: bot.commandsCount || 0,
-          lastActivity: bot.lastActivity
-        },
-        recentActivities: activities,
-        serverName: bot.serverName
-      });
+        canManage: bot.approvalStatus === 'approved'
+        // Note: activities are excluded from masked data for privacy
+      }, true);
+      
+      res.json(maskedBotData);
       
     } catch (error) {
       console.error(`❌ Guest bot info error:`, error);
@@ -2184,27 +2211,15 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         message = 'Your bot registration was not approved. Contact support for assistance.';
       }
 
-      // Return bot details with management capabilities and enhanced status
-      res.json({
-        id: botInstance.id,
-        name: botInstance.name,
-        phoneNumber: botInstance.phoneNumber,
-        status: botInstance.status,
-        approvalStatus: botInstance.approvalStatus,
-        isActive: botInstance.status === 'online',
-        isApproved: botInstance.approvalStatus === 'approved',
-        credentialVerified: botInstance.credentialVerified || false,
-        autoStart: botInstance.autoStart ?? true,
-        invalidReason: botInstance.invalidReason,
-        serverName: botInstance.serverName,
-        messagesCount: botInstance.messagesCount,
-        commandsCount: botInstance.commandsCount,
-        lastActivity: botInstance.lastActivity,
-        expirationMonths: botInstance.expirationMonths,
-        crossServer: false,
+      // Apply data masking and return bot details with management capabilities
+      const maskedBotData = maskBotDataForGuest({
+        ...botInstance,
         nextStep,
-        message
+        message,
+        crossServer: false
       });
+      
+      res.json(maskedBotData);
       
     } catch (error) {
       console.error('Guest bot search error:', error);
