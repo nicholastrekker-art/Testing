@@ -106,10 +106,47 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  // Support deployment behind reverse proxies with path prefixes
+  const base = process.env.BASE_PATH || '/';
+  const basePath = base === '/' ? base : base.replace(/\/$/, ''); // Remove trailing slash except for root
 
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
-  });
+  log(`Serving static files at base path: ${basePath}`);
+
+  // Serve static assets under the base path
+  app.use(basePath, express.static(distPath));
+
+  // Handle SPA routing - serve index.html for non-API routes under base path
+  const indexPath = path.resolve(distPath, "index.html");
+  
+  if (basePath === '/') {
+    // Root deployment - catch all non-API routes
+    app.use("*", (req, res, next) => {
+      // Skip API routes - let them be handled by the registered API routes
+      if (req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/ws')) {
+        return next();
+      }
+      res.sendFile(indexPath);
+    });
+  } else {
+    // Path-based deployment - catch routes under base path
+    app.get([basePath, `${basePath}/*`], (req, res, next) => {
+      // Skip API routes - let them be handled by the registered API routes  
+      if (req.originalUrl.startsWith(`${basePath}/api/`) || req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/ws')) {
+        return next();
+      }
+      res.sendFile(indexPath);
+    });
+    
+    // Also handle root-level API routes for compatibility
+    app.use("*", (req, res, next) => {
+      if (req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/ws')) {
+        return next();
+      }
+      // For non-API routes not under base path, redirect to base path
+      if (!req.originalUrl.startsWith(basePath)) {
+        return res.redirect(basePath);
+      }
+      next();
+    });
+  }
 }

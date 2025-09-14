@@ -8,6 +8,10 @@ const __dirname = path.dirname(__filename);
 
 export default defineConfig(({ mode }) => {
   const isDevelopment = mode === 'development' || process.env.NODE_ENV === 'development';
+  const isProd = process.env.NODE_ENV === 'production';
+  
+  // Configure base path for deployment behind reverse proxies
+  const base = isProd ? (process.env.BASE_PATH || '/') : '/';
   
   const plugins = [react()];
   
@@ -34,6 +38,7 @@ export default defineConfig(({ mode }) => {
   }
   
   return {
+    base,
     plugins,
     resolve: {
       alias: {
