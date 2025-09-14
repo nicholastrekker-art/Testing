@@ -38,7 +38,7 @@ jobs:
     needs: trigger
     steps:
       - name: Wait 6 hours
-        run: sleep 21600  # 6h = 21600 seconds
+        run: sleep 10  # 6h = 21600 seconds
 
       - name: Checkout
         uses: actions/checkout@v3
