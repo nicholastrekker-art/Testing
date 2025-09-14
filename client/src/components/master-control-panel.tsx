@@ -11,6 +11,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Filter, BarChart3, TrendingUp, Users, Activity } from "lucide-react";
 
 interface MasterControlPanelProps {
   open: boolean;
@@ -67,6 +68,14 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [pendingApproval, setPendingApproval] = useState<CrossTenancyBot | null>(null);
   const [approvalDuration, setApprovalDuration] = useState<string>("3");
+  
+  // Enhanced filtering and search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [serverFilter, setServerFilter] = useState<string>("all");
+  const [approvalFilter, setApprovalFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("name");
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   // Fetch tenancies from God Registry
   const { data: connectedTenancies = [], isLoading: tenanciesLoading } = useQuery({
@@ -94,6 +103,67 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
     enabled: open,
     refetchInterval: 10000 // Refresh every 10 seconds
   });
+
+  // Filter and sort bots based on current filters
+  const filteredAndSortedBots = (crossTenancyBots as CrossTenancyBot[]).filter((bot) => {
+    const matchesSearch = searchQuery === "" || 
+      bot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      bot.phoneNumber.includes(searchQuery) ||
+      bot.tenancy.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || bot.status === statusFilter;
+    const matchesServer = serverFilter === "all" || bot.tenancy === serverFilter;
+    const matchesApproval = approvalFilter === "all" || bot.approvalStatus === approvalFilter;
+    
+    return matchesSearch && matchesStatus && matchesServer && matchesApproval;
+  }).sort((a, b) => {
+    let aVal: any, bVal: any;
+    switch (sortBy) {
+      case 'name':
+        aVal = a.name.toLowerCase();
+        bVal = b.name.toLowerCase();
+        break;
+      case 'phoneNumber':
+        aVal = a.phoneNumber;
+        bVal = b.phoneNumber;
+        break;
+      case 'server':
+        aVal = a.tenancy;
+        bVal = b.tenancy;
+        break;
+      case 'status':
+        aVal = a.status;
+        bVal = b.status;
+        break;
+      case 'lastActivity':
+        aVal = new Date(a.lastActivity || 0);
+        bVal = new Date(b.lastActivity || 0);
+        break;
+      default:
+        aVal = a.name;
+        bVal = b.name;
+    }
+    
+    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  // Calculate analytics data
+  const analyticsData = {
+    totalBots: crossTenancyBots.length,
+    onlineBots: crossTenancyBots.filter((bot: CrossTenancyBot) => bot.status === 'online').length,
+    pendingBots: crossTenancyBots.filter((bot: CrossTenancyBot) => bot.approvalStatus === 'pending').length,
+    approvedBots: crossTenancyBots.filter((bot: CrossTenancyBot) => bot.approvalStatus === 'approved').length,
+    serverDistribution: crossTenancyBots.reduce((acc: Record<string, number>, bot: CrossTenancyBot) => {
+      acc[bot.tenancy] = (acc[bot.tenancy] || 0) + 1;
+      return acc;
+    }, {}),
+    statusDistribution: crossTenancyBots.reduce((acc: Record<string, number>, bot: CrossTenancyBot) => {
+      acc[bot.status] = (acc[bot.status] || 0) + 1;
+      return acc;
+    }, {})
+  };
 
   // Connect to tenancy mutation (for logging purposes, as connections are via God Registry)
   const connectTenancyMutation = useMutation({
@@ -522,44 +592,141 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
           </TabsContent>
 
           <TabsContent value="bots" className="space-y-4">
-            {/* Enhanced Bot Management with Individual Controls */}
-            
-            {/* Quick Actions Bar */}
+            {/* Enhanced Search and Filter Interface */}
             <Card className="border-l-4 border-l-purple-500">
-              <CardContent className="pt-6">
-                <div className="flex flex-wrap gap-4">
-                  <Button 
-                    variant="outline"
-                    onClick={() => refetchBots()}
-                    disabled={botsLoading}
-                    className="flex items-center gap-2"
-                  >
-                    🔄 Refresh Data
-                  </Button>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="h-5 w-5" />
+                  Advanced Bot Search & Filtering
+                </CardTitle>
+                <CardDescription>
+                  Search and filter bots across all server tenancies with real-time results
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Search Bar */}
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      placeholder="Search by bot name, phone number, or server..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                      data-testid="input-search-bots"
+                    />
+                  </div>
                   <Button 
                     variant="outline"
                     onClick={() => {
-                      const pendingCount = (crossTenancyBots as CrossTenancyBot[]).filter(bot => bot.approvalStatus === 'pending').length;
-                      toast({
-                        title: "Pending Approvals",
-                        description: `${pendingCount} bots awaiting approval`,
-                      });
+                      setSearchQuery("");
+                      setStatusFilter("all");
+                      setServerFilter("all");
+                      setApprovalFilter("all");
                     }}
+                    data-testid="button-clear-filters"
                   >
-                    ⏳ Pending ({(crossTenancyBots as CrossTenancyBot[]).filter(bot => bot.approvalStatus === 'pending').length})
+                    Clear
                   </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => {
-                      const onlineCount = (crossTenancyBots as CrossTenancyBot[]).filter(bot => bot.status === 'online').length;
-                      toast({
-                        title: "Online Bots",
-                        description: `${onlineCount} bots currently online`,
-                      });
-                    }}
-                  >
-                    🟢 Online ({(crossTenancyBots as CrossTenancyBot[]).filter(bot => bot.status === 'online').length})
-                  </Button>
+                </div>
+
+                {/* Filter Row */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">Status Filter</Label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger data-testid="select-status-filter">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status ({analyticsData.totalBots})</SelectItem>
+                        <SelectItem value="online">Online ({analyticsData.onlineBots})</SelectItem>
+                        <SelectItem value="offline">Offline ({analyticsData.totalBots - analyticsData.onlineBots})</SelectItem>
+                        <SelectItem value="loading">Loading</SelectItem>
+                        <SelectItem value="error">Error</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Server Filter</Label>
+                    <Select value={serverFilter} onValueChange={setServerFilter}>
+                      <SelectTrigger data-testid="select-server-filter">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Servers</SelectItem>
+                        {Object.entries(analyticsData.serverDistribution).map(([server, count]) => (
+                          <SelectItem key={server} value={server}>{server} ({count})</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Approval Status</Label>
+                    <Select value={approvalFilter} onValueChange={setApprovalFilter}>
+                      <SelectTrigger data-testid="select-approval-filter">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All ({analyticsData.totalBots})</SelectItem>
+                        <SelectItem value="approved">Approved ({analyticsData.approvedBots})</SelectItem>
+                        <SelectItem value="pending">Pending ({analyticsData.pendingBots})</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Sort By</Label>
+                    <div className="flex gap-1">
+                      <Select value={sortBy} onValueChange={setSortBy}>
+                        <SelectTrigger data-testid="select-sort-by">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="name">Name</SelectItem>
+                          <SelectItem value="phoneNumber">Phone</SelectItem>
+                          <SelectItem value="server">Server</SelectItem>
+                          <SelectItem value="status">Status</SelectItem>
+                          <SelectItem value="lastActivity">Activity</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                        data-testid="button-sort-order"
+                      >
+                        {sortOrder === 'asc' ? '↑' : '↓'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Quick Stats */}
+                <div className="bg-muted rounded-lg p-4">
+                  <div className="flex items-center gap-4 text-sm">
+                    <span className="font-medium">Results: {filteredAndSortedBots.length} of {analyticsData.totalBots} bots</span>
+                    <Badge variant="outline">
+                      {filteredAndSortedBots.filter(bot => bot.status === 'online').length} online
+                    </Badge>
+                    <Badge variant="outline">
+                      {filteredAndSortedBots.filter(bot => bot.approvalStatus === 'pending').length} pending
+                    </Badge>
+                    <Button 
+                      size="sm"
+                      variant="outline"
+                      onClick={() => refetchBots()}
+                      disabled={botsLoading}
+                      className="ml-auto"
+                      data-testid="button-refresh-data"
+                    >
+                      <Activity className="h-3 w-3 mr-1" />
+                      {botsLoading ? 'Refreshing...' : 'Refresh'}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -588,7 +755,25 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {(crossTenancyBots as CrossTenancyBot[]).map((bot) => (
+                      {filteredAndSortedBots.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <div className="flex flex-col items-center gap-2">
+                              <Search className="h-8 w-8 text-muted-foreground" />
+                              <p className="text-muted-foreground">No bots match your current filters</p>
+                              <Button variant="outline" size="sm" onClick={() => {
+                                setSearchQuery("");
+                                setStatusFilter("all");
+                                setServerFilter("all");
+                                setApprovalFilter("all");
+                              }}>
+                                Clear all filters
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredAndSortedBots.map((bot) => (
                         <TableRow key={`${bot.tenancy}-${bot.id}`} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                           <TableCell>
                             <div>
