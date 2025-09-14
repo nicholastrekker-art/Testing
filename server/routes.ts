@@ -4178,6 +4178,101 @@ Thank you for choosing TREKKER-MD! 🚀`;
     }
   });
 
+  // Bot migration endpoint
+  app.post('/api/master/migrate-bot', authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { botId, sourceServer, targetServer } = req.body;
+      
+      // Validate input
+      if (!botId || !sourceServer || !targetServer) {
+        return res.status(400).json({ message: 'Missing required fields' });
+      }
+      
+      if (sourceServer === targetServer) {
+        return res.status(400).json({ message: 'Source and target servers cannot be the same' });
+      }
+      
+      // Get bot from source server
+      const sourceClient = new CrossTenancyClient(sourceServer);
+      const bot = await sourceClient.request('/api/bots/' + botId, 'GET');
+      
+      if (!bot) {
+        return res.status(404).json({ message: 'Bot not found on source server' });
+      }
+      
+      // Create bot on target server
+      const targetClient = new CrossTenancyClient(targetServer);
+      const migrationResult = await targetClient.request('/api/bots', 'POST', bot);
+      
+      // Delete from source server after successful migration
+      if (migrationResult) {
+        await sourceClient.request('/api/bots/' + botId, 'DELETE');
+      }
+      
+      res.json({ 
+        success: true, 
+        botId: migrationResult.id,
+        sourceServer,
+        targetServer
+      });
+    } catch (error) {
+      console.error('Bot migration failed:', error);
+      res.status(500).json({ message: 'Migration failed', error: error.message });
+    }
+  });
+
+  // Batch operations endpoint
+  app.post('/api/master/batch-operation', authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { operation, botIds } = req.body;
+      
+      if (!operation || !botIds || !Array.isArray(botIds)) {
+        return res.status(400).json({ message: 'Invalid request parameters' });
+      }
+      
+      let completedCount = 0;
+      const errors = [];
+      
+      for (const botKey of botIds) {
+        try {
+          const [tenancy, botId] = botKey.split('-');
+          const client = new CrossTenancyClient(tenancy);
+          
+          switch (operation) {
+            case 'start':
+              await client.request(`/api/bots/${botId}/start`, 'POST');
+              break;
+            case 'stop':
+              await client.request(`/api/bots/${botId}/stop`, 'POST');
+              break;
+            case 'restart':
+              await client.request(`/api/bots/${botId}/restart`, 'POST');
+              break;
+            case 'approve':
+              await client.request(`/api/bots/${botId}/approve`, 'POST');
+              break;
+            default:
+              throw new Error(`Unknown operation: ${operation}`);
+          }
+          
+          completedCount++;
+        } catch (error) {
+          console.error(`Batch operation failed for ${botKey}:`, error);
+          errors.push({ botKey, error: error.message });
+        }
+      }
+      
+      res.json({ 
+        completedCount,
+        totalCount: botIds.length,
+        errors
+      });
+    } catch (error) {
+      console.error('Batch operation failed:', error);
+      res.status(500).json({ message: 'Batch operation failed', error: error.message });
+    }
+  });
+
   app.post("/api/master/bot-action", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const { action, botId, tenancy, data } = req.body;

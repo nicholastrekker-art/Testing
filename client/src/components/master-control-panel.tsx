@@ -11,7 +11,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, BarChart3, TrendingUp, Users, Activity } from "lucide-react";
+import { Search, Filter, BarChart3, TrendingUp, Users, Activity, ArrowRight, Zap, Shield, RefreshCw } from "lucide-react";
 
 interface MasterControlPanelProps {
   open: boolean;
@@ -64,7 +64,6 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
   const [showCredentialUpdate, setShowCredentialUpdate] = useState(false);
   const [newCredentials, setNewCredentials] = useState("");
   const [credentialType, setCredentialType] = useState<"base64" | "file">("base64");
-  const [selectedBots, setSelectedBots] = useState<string[]>([]);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [pendingApproval, setPendingApproval] = useState<CrossTenancyBot | null>(null);
   const [approvalDuration, setApprovalDuration] = useState<string>("3");
@@ -76,6 +75,15 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
   const [approvalFilter, setApprovalFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("name");
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  
+  // Enhanced bot management state  
+  const [selectedBots, setSelectedBots] = useState<string[]>([]);
+  const [showBotMigrationModal, setShowBotMigrationModal] = useState(false);
+  const [botToMigrate, setBotToMigrate] = useState<CrossTenancyBot | null>(null);
+  const [targetServer, setTargetServer] = useState<string>("");
+  const [showBatchOperationsModal, setShowBatchOperationsModal] = useState(false);
+  const [batchOperation, setBatchOperation] = useState<string>("");
+  const [showHealthMonitorModal, setShowHealthMonitorModal] = useState(false);
 
   // Fetch tenancies from God Registry
   const { data: connectedTenancies = [], isLoading: tenanciesLoading } = useQuery({
@@ -182,6 +190,54 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
     onError: (error: Error) => {
       toast({
         title: "Connection Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Bot migration mutation
+  const botMigrationMutation = useMutation({
+    mutationFn: async (data: { botId: string; sourceServer: string; targetServer: string }) => {
+      const response = await apiRequest('POST', '/api/master/migrate-bot', data);
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Bot Migration Successful",
+        description: "Bot has been migrated to the target server",
+      });
+      setShowBotMigrationModal(false);
+      setBotToMigrate(null);
+      queryClient.invalidateQueries({ queryKey: ['/api/master/cross-tenancy-bots'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Migration Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Batch operations mutation
+  const batchOperationMutation = useMutation({
+    mutationFn: async (data: { operation: string; botIds: string[]; targetServer?: string }) => {
+      const response = await apiRequest('POST', '/api/master/batch-operation', data);
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Batch Operation Successful",
+        description: `${data.completedCount} of ${data.totalCount} operations completed successfully`,
+      });
+      setShowBatchOperationsModal(false);
+      setSelectedBots([]);
+      queryClient.invalidateQueries({ queryKey: ['/api/master/cross-tenancy-bots'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Batch Operation Failed",
         description: error.message,
         variant: "destructive"
       });
@@ -892,6 +948,21 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                                 disabled={featureManagementMutation.isPending}
                               >
                                 🎛️
+                              </Button>
+                              
+                              {/* Migration */}
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => {
+                                  setBotToMigrate(bot);
+                                  setShowBotMigrationModal(true);
+                                }}
+                                disabled={botActionMutation.isPending}
+                                data-testid={`button-migrate-${bot.id}`}
+                                title="Migrate to another server"
+                              >
+                                <ArrowRight className="h-3 w-3" />
                               </Button>
                               
                               {/* Delete */}
@@ -1611,6 +1682,304 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                     data-testid="button-cancel-approval"
                   >
                     Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Bot Migration Modal */}
+        {showBotMigrationModal && botToMigrate && (
+          <Dialog open={showBotMigrationModal} onOpenChange={setShowBotMigrationModal}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <ArrowRight className="h-5 w-5 text-blue-600" />
+                  Cross-Server Bot Migration
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
+                  <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Bot to Migrate</h4>
+                  <div className="space-y-1 text-sm">
+                    <div><strong>Name:</strong> {botToMigrate.name}</div>
+                    <div><strong>Phone:</strong> {botToMigrate.phoneNumber}</div>
+                    <div><strong>Current Server:</strong> {botToMigrate.tenancy}</div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="target-server">Target Server</Label>
+                  <Select value={targetServer} onValueChange={setTargetServer}>
+                    <SelectTrigger data-testid="select-target-server">
+                      <SelectValue placeholder="Select destination server" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(analyticsData.serverDistribution)
+                        .filter(server => server !== botToMigrate.tenancy)
+                        .map(server => (
+                        <SelectItem key={server} value={server}>
+                          {server} ({analyticsData.serverDistribution[server]} bots)
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 dark:bg-yellow-900/20 dark:border-yellow-800">
+                  <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                    <strong>Migration Process:</strong> Bot will be safely transferred with all data and credentials. 
+                    This process maintains data integrity and bot functionality.
+                  </p>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => {
+                      if (!targetServer) {
+                        toast({
+                          title: "Target Required",
+                          description: "Please select a target server",
+                          variant: "destructive"
+                        });
+                        return;
+                      }
+                      if (targetServer === botToMigrate.tenancy) {
+                        toast({
+                          title: "Invalid Target",
+                          description: "Target server must be different from source server",
+                          variant: "destructive"
+                        });
+                        return;
+                      }
+                      botMigrationMutation.mutate({
+                        botId: botToMigrate.id,
+                        sourceServer: botToMigrate.tenancy,
+                        targetServer
+                      });
+                    }}
+                    disabled={botMigrationMutation.isPending || !targetServer}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    data-testid="button-confirm-migration"
+                  >
+                    {botMigrationMutation.isPending ? (
+                      <>⏳ Migrating...</>
+                    ) : (
+                      <>🚀 Migrate Bot</>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setShowBotMigrationModal(false);
+                      setBotToMigrate(null);
+                      setTargetServer("");
+                    }}
+                    disabled={botMigrationMutation.isPending}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Batch Operations Modal */}
+        {showBatchOperationsModal && (
+          <Dialog open={showBatchOperationsModal} onOpenChange={setShowBatchOperationsModal}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-purple-600" />
+                  Batch Bot Operations
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 dark:bg-purple-900/20 dark:border-purple-800">
+                  <h4 className="font-medium text-purple-800 dark:text-purple-200 mb-2">
+                    Selected Bots ({selectedBots.length})
+                  </h4>
+                  <div className="max-h-32 overflow-y-auto space-y-1 text-sm">
+                    {selectedBots.map(botKey => {
+                      const [tenancy, botId] = botKey.split('-');
+                      const bot = filteredAndSortedBots.find(b => b.tenancy === tenancy && b.id === botId);
+                      return bot ? (
+                        <div key={botKey} className="flex justify-between">
+                          <span>{bot.name}</span>
+                          <span className="text-muted-foreground">{bot.tenancy}</span>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="batch-operation">Operation Type</Label>
+                  <Select value={batchOperation} onValueChange={setBatchOperation}>
+                    <SelectTrigger data-testid="select-batch-operation">
+                      <SelectValue placeholder="Select batch operation" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="start">Start All Selected Bots</SelectItem>
+                      <SelectItem value="stop">Stop All Selected Bots</SelectItem>
+                      <SelectItem value="restart">Restart All Selected Bots</SelectItem>
+                      <SelectItem value="approve">Bulk Approve (Pending Bots Only)</SelectItem>
+                      <SelectItem value="feature-toggle">Enable/Disable Feature</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 dark:bg-red-900/20 dark:border-red-800">
+                  <p className="text-xs text-red-700 dark:text-red-300">
+                    <strong>Batch Operations:</strong> This will apply the selected operation to all {selectedBots.length} 
+                    selected bots simultaneously. This action affects multiple servers and cannot be undone.
+                  </p>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => {
+                      if (!batchOperation) {
+                        toast({
+                          title: "Operation Required",
+                          description: "Please select a batch operation",
+                          variant: "destructive"
+                        });
+                        return;
+                      }
+                      batchOperationMutation.mutate({
+                        operation: batchOperation,
+                        botIds: selectedBots
+                      });
+                    }}
+                    disabled={batchOperationMutation.isPending || !batchOperation || selectedBots.length === 0}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700"
+                    data-testid="button-execute-batch"
+                  >
+                    {batchOperationMutation.isPending ? (
+                      <>⏳ Processing...</>
+                    ) : (
+                      <>⚡ Execute Batch Operation</>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setShowBatchOperationsModal(false);
+                      setBatchOperation("");
+                    }}
+                    disabled={batchOperationMutation.isPending}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Health Monitor Modal */}
+        {showHealthMonitorModal && (
+          <Dialog open={showHealthMonitorModal} onOpenChange={setShowHealthMonitorModal}>
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-green-600" />
+                  Cross-Server Health Monitor
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                {/* Health Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="border-green-200">
+                    <CardContent className="pt-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Healthy Bots</p>
+                          <p className="text-2xl font-bold text-green-600">
+                            {filteredAndSortedBots.filter(bot => bot.status === 'online').length}
+                          </p>
+                        </div>
+                        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="border-yellow-200">
+                    <CardContent className="pt-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Warning Status</p>
+                          <p className="text-2xl font-bold text-yellow-600">
+                            {filteredAndSortedBots.filter(bot => bot.status === 'loading').length}
+                          </p>
+                        </div>
+                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="border-red-200">
+                    <CardContent className="pt-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Critical Issues</p>
+                          <p className="text-2xl font-bold text-red-600">
+                            {filteredAndSortedBots.filter(bot => bot.status === 'error' || bot.status === 'offline').length}
+                          </p>
+                        </div>
+                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Server Health Status */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium">Server Health Status</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {Object.entries(analyticsData.serverDistribution).map(([server, botCount]) => {
+                        const serverBots = filteredAndSortedBots.filter(bot => bot.tenancy === server);
+                        const onlineBots = serverBots.filter(bot => bot.status === 'online').length;
+                        const healthPercentage = Math.round((onlineBots / (botCount as number)) * 100) || 0;
+                        const healthColor = healthPercentage >= 80 ? 'text-green-600' : healthPercentage >= 60 ? 'text-yellow-600' : 'text-red-600';
+                        
+                        return (
+                          <div key={server} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-3 h-3 rounded-full ${
+                                healthPercentage >= 80 ? 'bg-green-500' : 
+                                healthPercentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                              }`}></div>
+                              <div>
+                                <p className="font-medium">{server}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {onlineBots}/{botCount} bots online
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className={`font-bold ${healthColor}`}>{healthPercentage}%</p>
+                              <p className="text-xs text-muted-foreground">Health Score</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="flex justify-end">
+                  <Button 
+                    variant="outline"
+                    onClick={() => setShowHealthMonitorModal(false)}
+                  >
+                    Close Monitor
                   </Button>
                 </div>
               </div>
