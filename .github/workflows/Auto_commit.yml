@@ -50,8 +50,8 @@ jobs:
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
 
-          # Find trigger commits (recent)
-          TRIGGERS=$(git log --grep="^chore: trigger redeploy" -n 10 --pretty=format:"%H")
+          # Find trigger commits (recent 30)
+          TRIGGERS=$(git log --grep="^chore: trigger redeploy" -n 30 --pretty=format:"%H")
 
           if [ -n "$TRIGGERS" ]; then
             echo "Found trigger commits:"
