@@ -978,7 +978,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                             </div>
                           </TableCell>
                         </TableRow>
-                      ))}
+                      )))}
                     </TableBody>
                   </Table>
                 )}
