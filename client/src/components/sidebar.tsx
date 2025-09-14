@@ -11,6 +11,10 @@ import GuestBotSearch from "./guest-bot-search";
 // Guest mode navigation - only Dashboard
 const guestNavigationItems = [
   { href: "/", label: "Dashboard", icon: "fas fa-tachometer-alt" },
+  { href: "/guest/verification", label: "Phone Verification", icon: "fas fa-phone" },
+  { href: "/guest/bot-management", label: "Bot Management", icon: "fas fa-robot" },
+  { href: "/guest/credentials", label: "Credential Manager", icon: "fas fa-key" },
+  { href: "/guest/cross-server", label: "Cross-Server Bots", icon: "fas fa-network-wired" },
 ];
 
 // Admin mode navigation - full access
