@@ -64,6 +64,9 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
   const [newCredentials, setNewCredentials] = useState("");
   const [credentialType, setCredentialType] = useState<"base64" | "file">("base64");
   const [selectedBots, setSelectedBots] = useState<string[]>([]);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState<CrossTenancyBot | null>(null);
+  const [approvalDuration, setApprovalDuration] = useState<string>("3");
 
   // Fetch tenancies from God Registry
   const { data: connectedTenancies = [], isLoading: tenanciesLoading } = useQuery({
@@ -232,6 +235,27 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
 
   const handleCommandSync = (sourceServer: string, targetServers: string[], commandIds: string[]) => {
     commandSyncMutation.mutate({ sourceServer, targetServers, commandIds });
+  };
+
+  const confirmApproval = () => {
+    if (pendingApproval && approvalDuration) {
+      // Validate duration is within allowed range
+      const duration = parseInt(approvalDuration, 10);
+      if (isNaN(duration) || duration < 1 || duration > 12) {
+        toast({
+          title: "Invalid Duration",
+          description: "Approval duration must be between 1 and 12 months",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      handleBotAction('approve', pendingApproval.id, pendingApproval.tenancy, { 
+        duration: duration 
+      });
+      setShowApprovalModal(false);
+      setPendingApproval(null);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -591,11 +615,14 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                                 <Button 
                                   size="sm" 
                                   variant="default"
-                                  onClick={() => handleBotAction('approve', bot.id, bot.tenancy, { duration: 6 })}
+                                  onClick={() => {
+                                    setPendingApproval(bot);
+                                    setShowApprovalModal(true);
+                                  }}
                                   disabled={botActionMutation.isPending}
                                   data-testid={`button-approve-${bot.id}`}
                                 >
-                                  ✅
+                                  ✅ Approve
                                 </Button>
                                 <Button 
                                   size="sm" 
@@ -618,10 +645,11 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                               <Button 
                                 size="sm" 
                                 variant="outline"
-                                onClick={() => handleBotAction('approve', bot.id, bot.tenancy, { duration: 6 })}
+                                onClick={() => handleBotAction('revoke', bot.id, bot.tenancy)}
                                 disabled={botActionMutation.isPending}
+                                data-testid={`button-revoke-${bot.id}`}
                               >
-                                🔄 Return to Normal
+                                🔄 Revoke Approval
                               </Button>
                             )}
                           </TableCell>
@@ -1318,6 +1346,87 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                       Cancel
                     </Button>
                   </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Cross-Server Bot Approval Modal with Custom Expiry */}
+        {showApprovalModal && pendingApproval && (
+          <Dialog open={showApprovalModal} onOpenChange={() => {
+            setShowApprovalModal(false);
+            setPendingApproval(null);
+          }}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-center flex items-center justify-center gap-2">
+                  ✅ Cross-Server Bot Approval
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
+                  <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Bot Details</h4>
+                  <div className="space-y-1 text-sm">
+                    <div><strong>Name:</strong> {pendingApproval.name}</div>
+                    <div><strong>Phone:</strong> {pendingApproval.phoneNumber}</div>
+                    <div><strong>Server:</strong> {pendingApproval.tenancy}</div>
+                    <div><strong>Current Status:</strong> {pendingApproval.approvalStatus}</div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="approval-duration">Approval Duration</Label>
+                  <Select value={approvalDuration} onValueChange={setApprovalDuration}>
+                    <SelectTrigger data-testid="select-approval-duration">
+                      <SelectValue placeholder="Select approval duration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 Month</SelectItem>
+                      <SelectItem value="2">2 Months</SelectItem>
+                      <SelectItem value="3">3 Months (Recommended)</SelectItem>
+                      <SelectItem value="6">6 Months</SelectItem>
+                      <SelectItem value="9">9 Months</SelectItem>
+                      <SelectItem value="12">12 Months</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Bot will be automatically deactivated after this period unless renewed.
+                  </p>
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 dark:bg-yellow-900/20 dark:border-yellow-800">
+                  <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                    <strong>Cross-Server Approval:</strong> This bot is located on {pendingApproval.tenancy} server. 
+                    The approval will be coordinated through the God Registry system.
+                  </p>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={confirmApproval}
+                    disabled={botActionMutation.isPending}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    data-testid="button-confirm-approval"
+                  >
+                    {botActionMutation.isPending ? (
+                      <>⏳ Processing...</>
+                    ) : (
+                      <>✅ Approve for {approvalDuration} Month{parseInt(approvalDuration) > 1 ? 's' : ''}</>
+                    )}
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setShowApprovalModal(false);
+                      setPendingApproval(null);
+                    }}
+                    disabled={botActionMutation.isPending}
+                    data-testid="button-cancel-approval"
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </div>
             </DialogContent>
