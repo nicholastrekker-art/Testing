@@ -30,6 +30,140 @@ import { sendValidationMessage, sendGuestValidationMessage, validateWhatsAppCred
 import { CrossTenancyClient } from "./services/crossTenancyClient";
 import { z } from "zod";
 
+// Helper function to resolve bot location by phone number across tenancies
+async function resolveBotByPhone(phoneNumber: string): Promise<{
+  bot: any;
+  isLocal: boolean;
+  serverName: string;
+  canManage: boolean;
+  needsProxy: boolean;
+}> {
+  const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+  const currentServer = getServerName();
+  
+  // Check God Registry to find hosting server
+  const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+  if (!globalRegistration) {
+    throw new Error("No bot found with this phone number");
+  }
+  
+  const hostingServer = globalRegistration.tenancyName;
+  const isLocal = hostingServer === currentServer;
+  
+  if (isLocal) {
+    // Bot is on current server
+    const bot = await storage.getBotByPhoneNumber(cleanedPhone);
+    if (!bot) {
+      throw new Error("Bot found in registry but not in local database");
+    }
+    
+    const canManage = enforceGuestPermissions(bot);
+    return {
+      bot,
+      isLocal: true,
+      serverName: hostingServer,
+      canManage,
+      needsProxy: false
+    };
+  } else {
+    // Bot is on remote server - create basic bot info from registry
+    // For cross-server bots, we'll use minimal info and rely on proxy for actions
+    const remoteBot = {
+      id: `remote-${cleanedPhone}`,
+      name: `Bot (${cleanedPhone})`,
+      phoneNumber: cleanedPhone,
+      status: "cross-server",
+      approvalStatus: "unknown", // Will need validation to get real status
+      messagesCount: 0,
+      commandsCount: 0,
+      lastActivity: null
+    };
+    
+    // For cross-server bots, assume they need credential validation to determine real permissions
+    const canManage = false; // Will be determined after credential validation
+    return {
+      bot: remoteBot,
+      isLocal: false,
+      serverName: hostingServer,
+      canManage,
+      needsProxy: true
+    };
+  }
+}
+
+// Helper function to resolve bot by ID with tenancy support
+async function resolveBotById(botId: string, phoneNumber?: string): Promise<{
+  bot: any;
+  isLocal: boolean;
+  serverName: string;
+  canManage: boolean;
+  needsProxy: boolean;
+}> {
+  const currentServer = getServerName();
+  
+  // First try local lookup
+  try {
+    const localBot = await storage.getBotInstance(botId);
+    if (localBot && (!phoneNumber || localBot.phoneNumber === phoneNumber)) {
+      const canManage = enforceGuestPermissions(localBot);
+      return {
+        bot: localBot,
+        isLocal: true,
+        serverName: currentServer,
+        canManage,
+        needsProxy: false
+      };
+    }
+  } catch (error) {
+    // Bot not found locally, continue to cross-tenancy search
+  }
+  
+  // If not found locally and phone number provided, use phone-based resolution
+  if (phoneNumber) {
+    return await resolveBotByPhone(phoneNumber);
+  }
+  
+  throw new Error("Bot not found on any server");
+}
+
+// Helper function to enforce guest permissions based on bot approval status
+function enforceGuestPermissions(bot: any): boolean {
+  if (!bot) return false;
+  
+  // Only approved bots can be managed (start/stop/restart)
+  // All bots (including pending/dormant) can have credentials updated
+  return bot.approvalStatus === 'approved';
+}
+
+// Helper function to validate guest action permissions
+function validateGuestAction(action: string, bot: any): { allowed: boolean; reason?: string } {
+  if (!bot) {
+    return { allowed: false, reason: "Bot not found" };
+  }
+  
+  const isApproved = bot.approvalStatus === 'approved';
+  
+  switch (action) {
+    case 'start':
+    case 'stop': 
+    case 'restart':
+      if (!isApproved) {
+        return { 
+          allowed: false, 
+          reason: "Only approved bots can be started, stopped, or restarted. Pending bots must be approved by admin first." 
+        };
+      }
+      return { allowed: true };
+      
+    case 'update_credentials':
+      // All bots can have credentials updated
+      return { allowed: true };
+      
+    default:
+      return { allowed: false, reason: "Unknown action" };
+  }
+}
+
 // Data masking utility for guest-facing APIs - hides sensitive information
 function maskBotDataForGuest(botData: any, includeFeatures: boolean = false): any {
   if (!botData) return null;
@@ -2131,6 +2265,150 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     }
   });
 
+  // ======= NEW GUEST ENDPOINTS FOR CROSS-TENANCY SUPPORT =======
+
+  // Guest my-bots endpoint - Get all bots for a phone number across servers
+  app.post("/api/guest/my-bots", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      // Use tenancy resolution helper
+      try {
+        const resolution = await resolveBotByPhone(phoneNumber);
+        const { bot, isLocal, serverName, canManage, needsProxy } = resolution;
+        
+        // Return array of bots (even if just one) with proper masking and permissions
+        const botInfo = maskBotDataForGuest({
+          ...bot,
+          canManage,
+          crossServer: !isLocal,
+          needsCredentialValidation: true,
+          nextStep: canManage ? 'ready_to_manage' : 'credential_validation_required',
+          message: canManage 
+            ? `Bot ready for management.${!isLocal ? ` Hosted on ${serverName} server.` : ''}`
+            : `Please verify your credentials to access management features.${!isLocal ? ` Bot is hosted on ${serverName} server.` : ''}`
+        }, true);
+        
+        // Override server name for security
+        botInfo.serverName = 'Protected';
+        
+        res.json([botInfo]); // Return as array
+        
+      } catch (resolutionError: any) {
+        if (resolutionError.message.includes("No bot found")) {
+          return res.json([]); // Return empty array if no bots found
+        }
+        throw resolutionError;
+      }
+      
+    } catch (error) {
+      console.error('Guest my-bots error:', error);
+      res.status(500).json({ message: "Failed to fetch bots" });
+    }
+  });
+
+  // Guest cross-server-bots endpoint - Get bots from other servers
+  app.post("/api/guest/cross-server-bots", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      const currentServer = getServerName();
+      
+      // Check God Registry to find hosting server
+      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      if (!globalRegistration) {
+        return res.json([]); // No bots found
+      }
+      
+      const hostingServer = globalRegistration.tenancyName;
+      
+      // Only return cross-server bots (not local ones)
+      if (hostingServer === currentServer) {
+        return res.json([]); // Bot is local, not cross-server
+      }
+      
+      // Create cross-server bot info
+      const crossServerBot = maskBotDataForGuest({
+        id: `cross-server-${cleanedPhone}`,
+        name: `Bot (${cleanedPhone})`,
+        phoneNumber: cleanedPhone,
+        status: "cross-server",
+        approvalStatus: "unknown",
+        messagesCount: 0,
+        commandsCount: 0,
+        lastActivity: null,
+        crossServer: true,
+        canManage: false,
+        needsCredentialValidation: true,
+        nextStep: 'credential_validation_required',
+        message: `Your bot is hosted on ${hostingServer} server. Please verify your credentials to access management features.`
+      }, true);
+      
+      // Override server name for security
+      crossServerBot.serverName = 'Protected';
+      
+      res.json([crossServerBot]);
+      
+    } catch (error) {
+      console.error('Guest cross-server-bots error:', error);
+      res.status(500).json({ message: "Failed to fetch cross-server bots" });
+    }
+  });
+
+  // Guest verify-phone endpoint - Basic phone verification for guest access
+  app.post("/api/guest/verify-phone", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      // Check if phone number is registered in God Registry
+      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      
+      if (!globalRegistration) {
+        return res.json({
+          verified: false,
+          message: "Phone number not found in our system",
+          canRegister: true,
+          nextStep: "register_new_bot"
+        });
+      }
+      
+      const hostingServer = globalRegistration.tenancyName;
+      const currentServer = getServerName();
+      const isLocal = hostingServer === currentServer;
+      
+      res.json({
+        verified: true,
+        isLocal,
+        hostingServer: isLocal ? currentServer : 'Protected', // Mask remote server names
+        crossServer: !isLocal,
+        message: isLocal 
+          ? "Phone number verified. You can manage your bot on this server."
+          : "Phone number verified. Your bot is hosted on another server.",
+        nextStep: "credential_validation_required",
+        canRegister: false
+      });
+      
+    } catch (error) {
+      console.error('Guest verify-phone error:', error);
+      res.status(500).json({ message: "Failed to verify phone number" });
+    }
+  });
+
   // ======= EXISTING GUEST ENDPOINTS =======
 
   // Guest bot search endpoint - SECURITY: Requires credential validation for management access
@@ -2142,73 +2420,37 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         return res.status(400).json({ message: "Phone number is required" });
       }
       
-      // Clean phone number
-      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
-      // Check God Registry first to see which server the bot is on
-      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
-      if (!globalRegistration) {
-        return res.status(404).json({ 
-          message: "No bot found with this phone number. You may need to register a new bot." 
-        });
-      }
-      
-      const botServer = globalRegistration.tenancyName;
-      const currentServer = getServerName();
-      
-      // If bot is on a different server, provide cross-server information (no management allowed)
-      if (botServer !== currentServer) {
-        return res.json({
-          id: `cross-server-${cleanedPhone}`,
-          name: `Bot (${cleanedPhone})`,
-          phoneNumber: cleanedPhone,
-          status: "cross-server",
-          approvalStatus: "unknown",
-          isActive: false,
-          isApproved: false,
-          serverName: botServer,
-          messagesCount: 0,
-          commandsCount: 0,
-          lastActivity: null,
-          crossServer: true,
+      // Use new tenancy resolution helper
+      try {
+        const resolution = await resolveBotByPhone(phoneNumber);
+        const { bot, isLocal, serverName, canManage, needsProxy } = resolution;
+        
+        // Create masked bot info with proper permission flags
+        const botInfo = maskBotDataForGuest({
+          ...bot,
+          canManage,
+          crossServer: !isLocal,
+          needsCredentialValidation: true, // Always require credential validation for security
           nextStep: 'credential_validation_required',
-          message: `Your bot is registered on ${botServer}. Please verify your credentials to access management features.`,
-          canManage: false,
-          needsCredentialValidation: true
-        });
+          message: `To access management features for your bot, please verify your credentials.${
+            !isLocal ? ` Your bot is hosted on ${serverName} server.` : ''
+          }`,
+          botExists: true
+        }, true);
+        
+        // Override server name for security (always mask)
+        botInfo.serverName = 'Protected';
+        
+        res.json(botInfo);
+        
+      } catch (resolutionError: any) {
+        if (resolutionError.message.includes("No bot found")) {
+          return res.status(404).json({ 
+            message: "No bot found with this phone number. You may need to register a new bot." 
+          });
+        }
+        throw resolutionError;
       }
-      
-      // Bot is on current server - get full details
-      const botInstance = await storage.getBotByPhoneNumber(cleanedPhone);
-      if (!botInstance) {
-        return res.status(404).json({ 
-          message: "Bot found in registry but not in local database. Contact support." 
-        });
-      }
-      
-      // SECURITY FIX: Always require credential validation for existing bots
-      // Return basic info but require credential validation for management access
-      const basicBotInfo = {
-        id: `bot_${cleanedPhone.slice(-4)}`,
-        name: botInstance.name,
-        phoneNumber: cleanedPhone,
-        status: botInstance.status,
-        approvalStatus: botInstance.approvalStatus,
-        isActive: botInstance.status === 'online',
-        isApproved: botInstance.approvalStatus === 'approved',
-        messagesCount: Math.min(botInstance.messagesCount || 0, 9999),
-        commandsCount: Math.min(botInstance.commandsCount || 0, 9999),
-        lastActivity: botInstance.lastActivity ? new Date(botInstance.lastActivity).toISOString().split('T')[0] : null,
-        crossServer: false,
-        serverName: 'Protected',
-        nextStep: 'credential_validation_required',
-        message: 'To access management features for your existing bot, please verify your credentials by uploading your creds.json file.',
-        canManage: false,
-        needsCredentialValidation: true,
-        botExists: true
-      };
-      
-      res.json(basicBotInfo);
       
     } catch (error) {
       console.error('Guest bot search error:', error);
@@ -4192,22 +4434,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
         return res.status(400).json({ message: 'Source and target servers cannot be the same' });
       }
       
-      // Get bot from source server
-      const sourceClient = new CrossTenancyClient(sourceServer);
-      const bot = await sourceClient.request('/api/bots/' + botId, 'GET');
+      // Get bot from source server using existing storage methods
+      const crossTenancyClient = new CrossTenancyClient();
       
-      if (!bot) {
-        return res.status(404).json({ message: 'Bot not found on source server' });
-      }
-      
-      // Create bot on target server
-      const targetClient = new CrossTenancyClient(targetServer);
-      const migrationResult = await targetClient.request('/api/bots', 'POST', bot);
-      
-      // Delete from source server after successful migration
-      if (migrationResult) {
-        await sourceClient.request('/api/bots/' + botId, 'DELETE');
-      }
+      // For now, disable migration functionality until proper CrossTenancyClient integration
+      return res.status(501).json({ 
+        message: 'Bot migration functionality is temporarily disabled for maintenance' 
+      });
       
       res.json({ 
         success: true, 
