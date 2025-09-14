@@ -24,15 +24,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Save clean state
-        run: echo "CLEAN_SHA=$(git rev-parse HEAD)" > clean_sha.txt
-
       - name: Commit and push trigger
         run: |
           echo "Triggered at $(date -u) — $RANDOM" > .choreo-redeploy-trigger.txt
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
-          git add .choreo-redeploy-trigger.txt clean_sha.txt
+          git add .choreo-redeploy-trigger.txt
           git commit -m "chore: trigger redeploy"
           git push
 
@@ -48,8 +45,23 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Restore clean state
+      - name: Remove trigger commits
         run: |
-          CLEAN_SHA=$(cat clean_sha.txt || git rev-parse HEAD~1)
-          git reset --hard $CLEAN_SHA
-          git push --force
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+
+          # Find all trigger commits in last 10 (safe window)
+          TRIGGERS=$(git log --grep="^chore: trigger redeploy" -n 10 --pretty=format:"%H")
+
+          if [ -n "$TRIGGERS" ]; then
+            echo "Found trigger commits:"
+            echo "$TRIGGERS"
+            # Revert each one (oldest first)
+            for sha in $(echo "$TRIGGERS" | tac); do
+              echo "Reverting $sha"
+              git revert --no-edit $sha || true
+            done
+            git push
+          else
+            echo "No trigger commits found to clean."
+          fi
