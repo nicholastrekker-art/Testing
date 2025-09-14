@@ -26,7 +26,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "yarn dev"
 waitForPort = 5000
 
 [[ports]]
@@ -34,10 +34,10 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 46817
-externalPort = 3001
+localPort = 38287
+externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
-build = ["npm", "run", "build"]
-run = ["npm", "start"]
+build = ["yarn", "build"]
+run = ["yarn", "start"]

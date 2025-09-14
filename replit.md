@@ -40,6 +40,15 @@ This is a WhatsApp Bot Management application built as a full-stack web applicat
 - Wait for DATABASE_URL to be set in secrets before attempting to start the application
 - This rule applies to ALL GitHub imports to Replit for this project
 
+**CRITICAL PACKAGE MANAGER RULE FOR REPLIT AGENTS**:
+- This project EXCLUSIVELY uses YARN for all operations
+- NEVER change from yarn to npm when importing from GitHub
+- ALL scripts, builds, installs, and deployments MUST use yarn commands only
+- When setting up GitHub imports, always keep existing yarn configuration
+- Package.json scripts should always use yarn (e.g., "yarn vite build", "yarn tsx", etc.)
+- Deployment configuration must use yarn commands ("yarn build", "yarn start")
+- This yarn-only rule applies to ALL future GitHub imports and project setups
+
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
