@@ -1,4 +1,4 @@
-name: Clean Redeploy Trigger
+name: TREKKER MD BOT
 
 on:
   schedule:
@@ -25,9 +25,9 @@ jobs:
 
       - name: Commit and push trigger
         run: |
-          echo "Triggered at $(date -u) — $RANDOM" > .choreo-redeploy-trigger.txt
+          echo "Triggered at $(date -u) — $RANDOM" > .trekker-kit.txt
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
-          git add .choreo-redeploy-trigger.txt
-          git commit -m "chore: trigger redeploy"
+          git add .trekker-kit.txt
+          git commit -m "trekker: md deploy"
           git push
