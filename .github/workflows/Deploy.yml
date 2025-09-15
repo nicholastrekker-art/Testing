@@ -22,9 +22,10 @@ jobs:
       - name: Install Jamsocket CLI
         run: npm install -g jamsocket
 
-      - name: Push to Jamsocket
-        run: |
-          npx jamsocket login --token ${{ secrets.JAMSOCKET_API_KEY }}
-          npx jamsocket push trekker-md -f Dockerfile
+      - name: Authenticate Jamsocket
+        run: npx jamsocket login --token $JAMSOCKET_API_KEY
         env:
           JAMSOCKET_API_KEY: ${{ secrets.JAMSOCKET_API_KEY }}
+
+      - name: Push to Jamsocket
+        run: npx jamsocket push trekker-md -f Dockerfile
