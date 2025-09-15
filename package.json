@@ -14,7 +14,6 @@
     "check": "tsc --noEmit",
     "typecheck": "yarn check",
     "db:push": "yarn drizzle-kit push",
-    "install": "yarn install --frozen-lockfile",
     "install:clean": "yarn --frozen-lockfile --production",
     "install:prod": "yarn install --frozen-lockfile --production"
   },
