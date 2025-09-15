@@ -10,7 +10,6 @@ import AdminConsole from "@/pages/admin-console";
 import NotFound from "@/pages/not-found";
 import GuestPhoneVerification from "@/pages/guest/verification";
 import GuestBotManagement from "@/pages/guest/bot-management";
-import GuestCredentials from "@/pages/guest/credentials";
 import GuestCrossServer from "@/pages/guest/cross-server";
 import Sidebar from "@/components/sidebar";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -27,7 +26,6 @@ function Router() {
           <Route path="/admin" component={AdminConsole} />
           <Route path="/guest/verification" component={GuestPhoneVerification} />
           <Route path="/guest/bot-management" component={GuestBotManagement} />
-          <Route path="/guest/credentials" component={GuestCredentials} />
           <Route path="/guest/cross-server" component={GuestCrossServer} />
           <Route component={NotFound} />
         </Switch>
