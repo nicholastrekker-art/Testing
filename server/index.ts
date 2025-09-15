@@ -4,6 +4,102 @@ import { setupVite, serveStatic, log } from "./vite";
 import { initializeDatabase } from "./db";
 import "./services/enhanced-commands";
 
+// Guard to prevent double-start of monitoring
+let monitoringStarted = false;
+
+// Start monitoring once with guard
+async function startMonitoringOnce() {
+  if (monitoringStarted) return;
+  monitoringStarted = true;
+  
+  try {
+    await startScheduledBotMonitoring();
+  } catch (error) {
+    console.error('❌ Failed to start monitoring:', error);
+  }
+}
+
+// Scheduled bot monitoring function
+async function startScheduledBotMonitoring() {
+  try {
+    console.log('🕒 Starting scheduled bot monitoring (every 3 minutes)');
+    
+    const { storage } = await import('./storage');
+    const { botManager } = await import('./services/bot-manager');
+    
+    console.log('✅ Scheduled monitoring imports loaded successfully');
+  
+  const checkApprovedBots = async () => {
+    try {
+      log('🔍 Checking approved bots status...');
+      
+      // Get all approved bots that should be auto-started
+      const approvedBots = await storage.getBotInstancesForAutoStart();
+      
+      if (approvedBots.length === 0) {
+        log('📋 No approved bots found for monitoring');
+        return;
+      }
+      
+      log(`📊 Found ${approvedBots.length} approved bot(s) to monitor`);
+      
+      for (const bot of approvedBots) {
+        try {
+          // Check if bot is in the bot manager and its status
+          const existingBot = botManager.getBot(bot.id);
+          const isOnline = existingBot?.getStatus() === 'online';
+          
+          if (!existingBot || !isOnline) {
+            log(`🚀 Starting/restarting approved bot: ${bot.name} (${bot.id})`);
+            
+            // Create activity log
+            await storage.createActivity({
+              botInstanceId: bot.id,
+              type: 'monitoring',
+              description: 'Bot restarted by scheduled monitoring - was offline or not found',
+              serverName: bot.serverName
+            });
+            
+            // Start the bot
+            if (!existingBot) {
+              await botManager.createBot(bot.id, bot);
+            }
+            await botManager.startBot(bot.id);
+            
+            log(`✅ Scheduled restart completed for bot: ${bot.name}`);
+          } else {
+            log(`✓ Bot ${bot.name} is already online`);
+          }
+        } catch (error) {
+          log(`❌ Failed to restart bot ${bot.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          
+          // Log the error as an activity
+          await storage.createActivity({
+            botInstanceId: bot.id,
+            type: 'error',
+            description: `Scheduled monitoring failed to restart bot: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            serverName: bot.serverName
+          });
+        }
+      }
+      
+      log('✅ Scheduled bot monitoring check completed');
+    } catch (error) {
+      log(`❌ Scheduled bot monitoring error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+  
+  // Initial check after 30 seconds
+  setTimeout(checkApprovedBots, 30000);
+  
+  // Schedule checks every 3 minutes (180,000 milliseconds)
+  setInterval(checkApprovedBots, 180000);
+  
+  } catch (error) {
+    console.error('❌ Failed to start scheduled bot monitoring:', error);
+  }
+}
+
 const app = express();
 app.use(express.json({ limit: '7mb' }));
 app.use(express.urlencoded({ extended: false, limit: '7mb' }));
@@ -44,6 +140,10 @@ app.use((req, res, next) => {
   // Initialize database (create tables if they don't exist)
   await initializeDatabase();
   
+  // Start scheduled bot monitoring immediately after database initialization
+  console.log('🚀 Bootstrap: Starting scheduled monitoring system...');
+  await startMonitoringOnce();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -68,6 +168,9 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    
+    // Start scheduled bot monitoring every 3 minutes
+    startScheduledBotMonitoring();
   });
 
   // Graceful shutdown handling for containerized environments

@@ -48,7 +48,9 @@ let connectionString: string = dbConfig.url;
 
 // Add SSL mode to connection string if not already present and SSL is enabled
 if (sslConfig !== false && !connectionString.includes('sslmode=') && sslMode) {
-  connectionString += (connectionString.includes('?') ? '&' : '') + sslMode.substring(1);
+  const separator = connectionString.includes('?') ? '&' : '?';
+  const sslParam = sslMode.startsWith('?') ? sslMode.substring(1) : sslMode;
+  connectionString += separator + sslParam;
 }
 
 // Log connection info (host only, never credentials)
