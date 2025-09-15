@@ -168,9 +168,6 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
-    
-    // Start scheduled bot monitoring every 3 minutes
-    startScheduledBotMonitoring();
   });
 
   // Graceful shutdown handling for containerized environments
