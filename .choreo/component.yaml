@@ -21,4 +21,4 @@ endpoints:
       port: 8080
       networkVisibilities:
         - Public
-      schemaFilePath: chat_asyncapi.yaml
+      schemaFilePath: openapi.yaml
