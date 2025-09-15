@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "NODE_ENV=development yarn tsx server/index.ts",
+    "prestart": "yarn build",
     "start": "NODE_ENV=production yarn tsx server/index.ts",
     "build": "yarn vite build",
     "postbuild": "echo 'Build completed successfully'",
