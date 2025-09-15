@@ -2,6 +2,9 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Install git (needed for some npm/yarn dependencies)
+RUN apk add --no-cache git
+
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 
