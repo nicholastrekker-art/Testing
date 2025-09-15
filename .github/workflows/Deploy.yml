@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:        # adds manual Run workflow button
+  workflow_dispatch:
     inputs:
       branch:
         description: "Branch to deploy"
@@ -34,7 +34,7 @@ jobs:
         run: npm install -g jamsocket
 
       - name: Authenticate Jamsocket
-        run: npx jamsocket login --api-key "${{ secrets.JAMSOCKET_API_KEY }}"
+        run: npx jamsocket login --api-key ${{ secrets.JAMSOCKET_API_KEY }}
 
       - name: Push to Jamsocket
         run: npx jamsocket push ${{ github.event.inputs.service || 'trekker-md' }} -f Dockerfile
