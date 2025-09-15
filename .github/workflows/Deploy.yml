@@ -33,6 +33,11 @@ jobs:
       - name: Install Jamsocket CLI
         run: npm install -g jamsocket
 
+      - name: Verify Jamsocket Auth
+        run: npx jamsocket whoami
+        env:
+          JAMSOCKET_API_KEY: ${{ secrets.JAMSOCKET_API_KEY }}
+
       - name: Push to Jamsocket
         run: npx jamsocket push ${{ github.event.inputs.service || 'trekker-md' }} -f Dockerfile
         env:
