@@ -33,7 +33,11 @@ waitForPort = 5000
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 45979
+externalPort = 3000
+
 [deployment]
 deploymentTarget = "autoscale"
-build = ["yarn", "build"]
-run = ["yarn", "start"]
+build = ["npm", "run", "build"]
+run = ["npm", "run", "start"]
