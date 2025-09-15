@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:        # 👈 adds manual Run workflow button
+  workflow_dispatch:        # adds manual Run workflow button
     inputs:
       branch:
         description: "Branch to deploy"
@@ -28,13 +28,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install Jamsocket CLI
         run: npm install -g jamsocket
 
       - name: Authenticate Jamsocket
-        run: npx jamsocket login --token "${{ secrets.JAMSOCKET_API_KEY }}"
+        run: npx jamsocket login --api-key "${{ secrets.JAMSOCKET_API_KEY }}"
 
       - name: Push to Jamsocket
         run: npx jamsocket push ${{ github.event.inputs.service || 'trekker-md' }} -f Dockerfile
