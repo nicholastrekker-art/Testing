@@ -6,7 +6,7 @@ endpoints:
     displayName: REST Service
     type: REST
     service:
-      basePath: /client/src
+      basePath: /dist/public
       port: 8080
       networkVisibilities:
         - Public
