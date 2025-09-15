@@ -4,9 +4,16 @@
 
 This is a WhatsApp Bot Management application built as a full-stack web application for creating, managing, and monitoring WhatsApp bot instances. The system provides a comprehensive dashboard for controlling multiple bot instances, managing commands, and tracking activities in real-time. Each bot can be configured with automation features like auto-like, auto-react, and ChatGPT integration for intelligent responses.
 
-## Recent Changes (September 12, 2025)
+## Recent Changes (September 15, 2025)
 
-- **PRODUCTION MODE DEFAULT**: Application now runs in production mode by default when imported from Git to Replit
+- **PRODUCTION MODE ONLY**: GitHub imports to Replit now EXCLUSIVELY use production mode - no development mode option
+- **AUTOMATIC FRONTEND BUILD**: Build process automatically creates optimized static files for production deployment
+- **STATIC FILE SERVING**: Production mode serves built frontend from /dist/public with optimized performance
+- **PRODUCTION WORKFLOW**: Default workflow uses `yarn start` (production) instead of `yarn dev` (development)
+- **REPLIT DEPLOYMENT READY**: Configured for autoscale deployment with proper production settings
+
+## Previous Changes (September 12, 2025)
+
 - **DATABASE_URL ONLY RULE**: Implemented strict database configuration that ONLY works with DATABASE_URL from Replit secrets
 - **Removed Replit Built-in Database Support**: Application no longer supports PG* environment variables or local Replit database
 - **Enhanced SSL Security**: Automatic SSL requirement for all database connections with proper certificate verification
@@ -48,6 +55,14 @@ This is a WhatsApp Bot Management application built as a full-stack web applicat
 - Package.json scripts should always use yarn (e.g., "yarn vite build", "yarn tsx", etc.)
 - Deployment configuration must use yarn commands ("yarn build", "yarn start")
 - This yarn-only rule applies to ALL future GitHub imports and project setups
+
+**CRITICAL PRODUCTION MODE RULE FOR REPLIT AGENTS**:
+- This application EXCLUSIVELY runs in PRODUCTION MODE when imported from GitHub to Replit
+- NEVER use development mode (yarn dev) for GitHub imports - ONLY use production mode (yarn start)
+- ALWAYS build the frontend first with "yarn build" before starting the application
+- The workflow MUST use "yarn start" which serves static files from /dist/public
+- GitHub imports to Replit should NEVER use development mode or Vite dev server
+- This production-only rule applies to ALL future GitHub imports and project setups
 
 Preferred communication style: Simple, everyday language.
 
