@@ -34,7 +34,7 @@ jobs:
         run: npm install -g jamsocket
 
       - name: Verify Jamsocket Auth
-        run: npx jamsocket whoami
+        run: npx jamsocket services list
         env:
           JAMSOCKET_API_KEY: ${{ secrets.JAMSOCKET_API_KEY }}
 
