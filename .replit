@@ -26,7 +26,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "yarn dev"
+args = "yarn start"
 waitForPort = 5000
 
 [[ports]]
