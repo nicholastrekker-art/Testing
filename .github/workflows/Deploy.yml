@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main   # or whatever branch you deploy from
+  workflow_dispatch:   # 👈 adds the Run workflow button in GitHub Actions
 
 jobs:
   deploy:
