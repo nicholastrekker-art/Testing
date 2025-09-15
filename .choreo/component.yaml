@@ -6,7 +6,7 @@ endpoints:
     displayName: REST Service
     type: REST
     service:
-      basePath: /default/server1/rest-service/v1   # ✅ removed `.`
+      basePath: /
       port: 8080
       networkVisibilities:
         - Public
