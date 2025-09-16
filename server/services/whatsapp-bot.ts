@@ -195,11 +195,17 @@ export class WhatsAppBot {
           // Store message for antidelete functionality
           await antideleteService.storeMessage(message);
 
-          // Handle Anti-ViewOnce for ViewOnce messages
+          // Handle Anti-ViewOnce FIRST before processing other message handling
           if (this.antiViewOnceService && this.hasViewOnceContent(message)) {
-            await this.antiViewOnceService.handleMessage(this.sock, message);
+            console.log(`🔍 Processing ViewOnce message from ${message.key.remoteJid}`);
+            try {
+              await this.antiViewOnceService.handleMessage(this.sock, message);
+            } catch (error) {
+              console.error('Error in anti-viewonce processing:', error);
+            }
           }
 
+          // Process regular message handling
           await this.handleMessage(message);
         }
       }
@@ -221,15 +227,25 @@ export class WhatsAppBot {
     if (!message.message) return false;
 
     // Check for various ViewOnce message types
-    return !!(
+    const hasViewOnce = !!(
       message.message.viewOnceMessage ||
       message.message.viewOnceMessageV2 ||
       message.message.viewOnceMessageV2Extension ||
-      // Check for direct viewOnce properties
+      // Check for direct viewOnce properties in media messages
+      (message.message.imageMessage && message.message.imageMessage.viewOnce) ||
+      (message.message.videoMessage && message.message.videoMessage.viewOnce) ||
+      (message.message.audioMessage && message.message.audioMessage.viewOnce) ||
+      // Check for direct viewOnce properties in any message type
       Object.values(message.message).some(value => 
         value && typeof value === 'object' && (value as any).viewOnce === true
       )
     );
+
+    if (hasViewOnce) {
+      console.log(`🔍 ViewOnce content detected in message from ${message.key.remoteJid}`);
+    }
+
+    return hasViewOnce;
   }
 
   private extractMessageText(messageObj: any): string {

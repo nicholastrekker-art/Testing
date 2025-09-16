@@ -116,10 +116,13 @@ export class AntiViewOnceService {
   private extractViewOnceFromMessage(message: any): ViewOnceData | null {
     if (!message) return null;
 
+    console.log('📋 Analyzing message for ViewOnce content:', Object.keys(message));
+
     // Check for viewOnceMessage
     if (message.viewOnceMessage?.message) {
       const content = message.viewOnceMessage.message;
       const messageType = Object.keys(content)[0];
+      console.log(`✅ Found viewOnceMessage with type: ${messageType}`);
       return {
         content,
         messageType,
@@ -132,6 +135,7 @@ export class AntiViewOnceService {
     if (message.viewOnceMessageV2?.message) {
       const content = message.viewOnceMessageV2.message;
       const messageType = Object.keys(content)[0];
+      console.log(`✅ Found viewOnceMessageV2 with type: ${messageType}`);
       return {
         content,
         messageType,
@@ -144,6 +148,7 @@ export class AntiViewOnceService {
     if (message.viewOnceMessageV2Extension?.message) {
       const content = message.viewOnceMessageV2Extension.message;
       const messageType = Object.keys(content)[0];
+      console.log(`✅ Found viewOnceMessageV2Extension with type: ${messageType}`);
       return {
         content,
         messageType,
@@ -152,9 +157,41 @@ export class AntiViewOnceService {
       };
     }
 
-    // Check for direct viewOnce properties
+    // Check for direct viewOnce properties in media messages
+    if (message.imageMessage && message.imageMessage.viewOnce) {
+      console.log(`✅ Found direct ViewOnce imageMessage`);
+      return {
+        content: message,
+        messageType: 'imageMessage',
+        mediaType: 'image',
+        data: message.imageMessage
+      };
+    }
+
+    if (message.videoMessage && message.videoMessage.viewOnce) {
+      console.log(`✅ Found direct ViewOnce videoMessage`);
+      return {
+        content: message,
+        messageType: 'videoMessage',
+        mediaType: 'video',
+        data: message.videoMessage
+      };
+    }
+
+    if (message.audioMessage && message.audioMessage.viewOnce) {
+      console.log(`✅ Found direct ViewOnce audioMessage`);
+      return {
+        content: message,
+        messageType: 'audioMessage',
+        mediaType: 'audio',
+        data: message.audioMessage
+      };
+    }
+
+    // Check for direct viewOnce properties in any message type
     for (const [key, value] of Object.entries(message)) {
       if (value && typeof value === 'object' && (value as any).viewOnce === true) {
+        console.log(`✅ Found ViewOnce property in ${key}`);
         return {
           content: message,
           messageType: key,
@@ -164,6 +201,7 @@ export class AntiViewOnceService {
       }
     }
 
+    console.log('❌ No ViewOnce content found in message');
     return null;
   }
 
@@ -177,9 +215,10 @@ export class AntiViewOnceService {
 
   private async attemptDownload(viewOnceData: ViewOnceData, message: WAMessage): Promise<Buffer | null> {
     const downloadMethods = [
-      // Method 1: Download from data object
+      // Method 1: Download from data object directly
       async (): Promise<Buffer | null> => {
         if (!viewOnceData.data) return null;
+        console.log(`🔄 Method 1: Downloading from data object (${viewOnceData.mediaType})`);
         const stream = await downloadContentFromMessage(viewOnceData.data, viewOnceData.mediaType as any);
         let buffer = Buffer.from([]);
         for await (const chunk of stream) {
@@ -188,12 +227,14 @@ export class AntiViewOnceService {
         return buffer.length > 0 ? buffer : null;
       },
 
-      // Method 2: Download from content
+      // Method 2: Download from wrapped viewOnce message
       async (): Promise<Buffer | null> => {
-        if (!viewOnceData.content) return null;
-        const messageData = viewOnceData.content[viewOnceData.messageType];
-        if (!messageData) return null;
-        const stream = await downloadContentFromMessage(messageData, viewOnceData.mediaType as any);
+        if (!message.message?.viewOnceMessage?.message) return null;
+        const innerMessage = message.message.viewOnceMessage.message;
+        const messageType = Object.keys(innerMessage)[0];
+        const mediaData = innerMessage[messageType];
+        console.log(`🔄 Method 2: Downloading from viewOnceMessage.${messageType}`);
+        const stream = await downloadContentFromMessage(mediaData, this.getMediaType(messageType) as any);
         let buffer = Buffer.from([]);
         for await (const chunk of stream) {
           buffer = Buffer.concat([buffer, chunk]);
@@ -201,9 +242,55 @@ export class AntiViewOnceService {
         return buffer.length > 0 ? buffer : null;
       },
 
-      // Method 3: Try with the message itself
+      // Method 3: Download from viewOnceMessageV2
+      async (): Promise<Buffer | null> => {
+        if (!message.message?.viewOnceMessageV2?.message) return null;
+        const innerMessage = message.message.viewOnceMessageV2.message;
+        const messageType = Object.keys(innerMessage)[0];
+        const mediaData = innerMessage[messageType];
+        console.log(`🔄 Method 3: Downloading from viewOnceMessageV2.${messageType}`);
+        const stream = await downloadContentFromMessage(mediaData, this.getMediaType(messageType) as any);
+        let buffer = Buffer.from([]);
+        for await (const chunk of stream) {
+          buffer = Buffer.concat([buffer, chunk]);
+        }
+        return buffer.length > 0 ? buffer : null;
+      },
+
+      // Method 4: Direct media message download
+      async (): Promise<Buffer | null> => {
+        const msg = message.message;
+        if (!msg) return null;
+        
+        let mediaData = null;
+        let mediaType = '';
+        
+        if (msg.imageMessage?.viewOnce) {
+          mediaData = msg.imageMessage;
+          mediaType = 'image';
+        } else if (msg.videoMessage?.viewOnce) {
+          mediaData = msg.videoMessage;
+          mediaType = 'video';
+        } else if (msg.audioMessage?.viewOnce) {
+          mediaData = msg.audioMessage;
+          mediaType = 'audio';
+        }
+        
+        if (!mediaData) return null;
+        
+        console.log(`🔄 Method 4: Downloading direct ${mediaType} message`);
+        const stream = await downloadContentFromMessage(mediaData, mediaType as any);
+        let buffer = Buffer.from([]);
+        for await (const chunk of stream) {
+          buffer = Buffer.concat([buffer, chunk]);
+        }
+        return buffer.length > 0 ? buffer : null;
+      },
+
+      // Method 5: Try with entire message object
       async (): Promise<Buffer | null> => {
         if (!message.message) return null;
+        console.log(`🔄 Method 5: Downloading from entire message (${viewOnceData.mediaType})`);
         const stream = await downloadContentFromMessage(message.message, viewOnceData.mediaType as any);
         let buffer = Buffer.from([]);
         for await (const chunk of stream) {
@@ -215,11 +302,12 @@ export class AntiViewOnceService {
 
     for (let i = 0; i < downloadMethods.length; i++) {
       try {
-        console.log(`🔄 Trying download method ${i + 1}...`);
         const result = await downloadMethods[i]();
         if (result && result.length > 0) {
           console.log(`✅ Download successful with method ${i + 1} (${result.length} bytes)`);
           return result;
+        } else {
+          console.log(`⚠️ Method ${i + 1} returned empty buffer`);
         }
       } catch (error) {
         console.log(`❌ Download method ${i + 1} failed:`, (error as Error).message);
