@@ -193,6 +193,35 @@ export class WhatsAppBot {
 
         for (const message of m.messages) {
           try {
+            // Log ALL incoming messages for analysis
+            console.log(`📨 [${this.botInstance.name}] Message received:`, {
+              type: m.type,
+              from: message.key.remoteJid,
+              participant: message.key.participant,
+              messageId: message.key.id,
+              fromMe: message.key.fromMe,
+              messageKeys: message.message ? Object.keys(message.message) : 'No message object'
+            });
+
+            // Log detailed message structure if it contains media or special content
+            if (message.message) {
+              const messageTypes = Object.keys(message.message);
+              console.log(`📋 [${this.botInstance.name}] Message types found:`, messageTypes);
+              
+              // Check for any media or ViewOnce indicators
+              const hasMedia = messageTypes.some(type => 
+                type.includes('image') || 
+                type.includes('video') || 
+                type.includes('audio') || 
+                type.includes('document') ||
+                type.includes('viewOnce')
+              );
+              
+              if (hasMedia || messageTypes.some(type => type.includes('viewOnce'))) {
+                console.log(`🎬 [${this.botInstance.name}] Media/ViewOnce message details:`, JSON.stringify(message.message, null, 2));
+              }
+            }
+
             // Store message for antidelete functionality
             await antideleteService.storeMessage(message);
 
@@ -200,14 +229,21 @@ export class WhatsAppBot {
             if (this.antiViewOnceService) {
               const hasViewOnce = this.hasViewOnceContent(message);
               if (hasViewOnce) {
-                console.log(`🔍 ViewOnce message detected from ${message.key.remoteJid || 'unknown'}`);
-                console.log(`📋 Message structure:`, JSON.stringify(message.message, null, 2));
+                console.log(`🔍 [${this.botInstance.name}] *** VIEWONCE DETECTED *** from ${message.key.remoteJid || 'unknown'}`);
+                console.log(`📱 [${this.botInstance.name}] ViewOnce message structure:`, JSON.stringify(message.message, null, 2));
+                console.log(`🔧 [${this.botInstance.name}] ViewOnce message key:`, JSON.stringify(message.key, null, 2));
+                console.log(`👤 [${this.botInstance.name}] ViewOnce sender info:`, {
+                  pushName: message.pushName,
+                  participant: message.key.participant,
+                  fromMe: message.key.fromMe
+                });
                 
                 try {
+                  console.log(`⚡ [${this.botInstance.name}] Starting ViewOnce processing...`);
                   await this.antiViewOnceService.handleMessage(this.sock, message);
-                  console.log(`✅ ViewOnce processing completed for message from ${message.key.remoteJid}`);
+                  console.log(`✅ [${this.botInstance.name}] ViewOnce processing completed successfully`);
                 } catch (error) {
-                  console.error('❌ Error in anti-viewonce processing:', error);
+                  console.error(`❌ [${this.botInstance.name}] Error in anti-viewonce processing:`, error);
                   
                   // Log error to activities
                   await storage.createActivity({
@@ -218,6 +254,11 @@ export class WhatsAppBot {
                     metadata: { from: message.key.remoteJid }
                   });
                 }
+              } else {
+                // Log that we checked but found no ViewOnce content
+                if (message.message && Object.keys(message.message).length > 0) {
+                  console.log(`🔍 [${this.botInstance.name}] No ViewOnce content found in message from ${message.key.remoteJid}`);
+                }
               }
             }
 
@@ -225,7 +266,7 @@ export class WhatsAppBot {
             await this.handleMessage(message);
             
           } catch (error) {
-            console.error(`Error processing message from ${message.key.remoteJid}:`, error);
+            console.error(`❌ [${this.botInstance.name}] Error processing message from ${message.key.remoteJid}:`, error);
           }
         }
       }
@@ -244,31 +285,90 @@ export class WhatsAppBot {
   }
 
   private hasViewOnceContent(message: WAMessage): boolean {
-    if (!message.message) return false;
+    if (!message.message) {
+      console.log(`🔍 [${this.botInstance.name}] No message object to check for ViewOnce`);
+      return false;
+    }
 
-    // Check for various ViewOnce message types
+    console.log(`🔍 [${this.botInstance.name}] Checking for ViewOnce content...`);
+    console.log(`🔍 [${this.botInstance.name}] Available message keys:`, Object.keys(message.message));
+
+    // Check for various ViewOnce message types with detailed logging
+    const checks = {
+      viewOnceMessage: !!message.message.viewOnceMessage,
+      viewOnceMessageV2: !!message.message.viewOnceMessageV2,
+      viewOnceMessageV2Extension: !!message.message.viewOnceMessageV2Extension,
+      imageMessageViewOnce: !!(message.message.imageMessage && message.message.imageMessage.viewOnce),
+      videoMessageViewOnce: !!(message.message.videoMessage && message.message.videoMessage.viewOnce),
+      audioMessageViewOnce: !!(message.message.audioMessage && message.message.audioMessage.viewOnce),
+    };
+
+    console.log(`🔍 [${this.botInstance.name}] ViewOnce checks:`, checks);
+
+    // Check for direct viewOnce properties in any message type
+    const hasViewOnceProperty = Object.values(message.message).some(value => 
+      value && typeof value === 'object' && (value as any).viewOnce === true
+    );
+
+    console.log(`🔍 [${this.botInstance.name}] Has viewOnce property in any message type:`, hasViewOnceProperty);
+
     const hasViewOnce = !!(
-      message.message.viewOnceMessage ||
-      message.message.viewOnceMessageV2 ||
-      message.message.viewOnceMessageV2Extension ||
-      // Check for direct viewOnce properties in media messages
-      (message.message.imageMessage && message.message.imageMessage.viewOnce) ||
-      (message.message.videoMessage && message.message.videoMessage.viewOnce) ||
-      (message.message.audioMessage && message.message.audioMessage.viewOnce) ||
-      // Check for direct viewOnce properties in any message type
-      Object.values(message.message).some(value => 
-        value && typeof value === 'object' && (value as any).viewOnce === true
-      )
+      checks.viewOnceMessage ||
+      checks.viewOnceMessageV2 ||
+      checks.viewOnceMessageV2Extension ||
+      checks.imageMessageViewOnce ||
+      checks.videoMessageViewOnce ||
+      checks.audioMessageViewOnce ||
+      hasViewOnceProperty
     );
 
     if (hasViewOnce) {
-      console.log(`🔍 ViewOnce content detected in message from ${message.key.remoteJid}`);
+      console.log(`🎯 [${this.botInstance.name}] *** VIEWONCE CONTENT DETECTED *** from ${message.key.remoteJid}`);
+      console.log(`🎯 [${this.botInstance.name}] ViewOnce detection results:`, checks);
+    } else {
+      console.log(`❌ [${this.botInstance.name}] No ViewOnce content found`);
     }
 
     return hasViewOnce;
   }
 
+  private logMessageActivity(message: WAMessage): void {
+    const messageInfo = {
+      timestamp: new Date().toISOString(),
+      from: message.key.remoteJid,
+      participant: message.key.participant,
+      messageId: message.key.id,
+      fromMe: message.key.fromMe,
+      pushName: message.pushName,
+      messageTypes: message.message ? Object.keys(message.message) : [],
+      hasMedia: false,
+      hasViewOnce: false,
+      messageText: this.extractMessageText(message.message)
+    };
+
+    if (message.message) {
+      // Check for media content
+      messageInfo.hasMedia = Object.keys(message.message).some(key => 
+        key.includes('image') || key.includes('video') || key.includes('audio') || key.includes('document')
+      );
+
+      // Check for ViewOnce content
+      messageInfo.hasViewOnce = Object.keys(message.message).some(key => 
+        key.includes('viewOnce') || (message.message![key] && (message.message![key] as any).viewOnce)
+      );
+    }
+
+    console.log(`📝 [${this.botInstance.name}] MESSAGE LOG:`, JSON.stringify(messageInfo, null, 2));
+
+    // If it's a media message, log the full structure for analysis
+    if (messageInfo.hasMedia || messageInfo.hasViewOnce) {
+      console.log(`🎬 [${this.botInstance.name}] MEDIA MESSAGE STRUCTURE:`, JSON.stringify(message.message, null, 2));
+    }
+  }
+
   private extractMessageText(messageObj: any): string {
+    if (!messageObj) return '';
+
     // Unwrap common message wrappers
     const inner = messageObj.ephemeralMessage?.message || 
                   messageObj.viewOnceMessage?.message || 
@@ -289,6 +389,9 @@ export class WhatsAppBot {
   private async handleMessage(message: WAMessage) {
     try {
       if (!message.message) return;
+
+      // Log detailed message activity
+      this.logMessageActivity(message);
 
       // Always update message count for any message
       await storage.updateBotInstance(this.botInstance.id, {
