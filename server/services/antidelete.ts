@@ -256,7 +256,7 @@ export class AntideleteService {
     return { type: mediaType, path: mediaPath };
   }
 
-  async storeMessage(message: WAMessage, sock?: any): Promise<void> {
+  async storeMessage(message: WAMessage): Promise<void> {
     try {
       const messageId = message.key.id;
       if (!messageId || this.processedMessages.has(messageId)) return;
@@ -304,8 +304,6 @@ export class AntideleteService {
       console.error('❌ [Antidelete] Error storing message:', error);
     }
   }
-
-  
 
   getStoredMessage(messageId: string | undefined): StoredMessage | null {
     if (!messageId) return null;
@@ -439,9 +437,7 @@ export class AntideleteService {
         }
       }
 
-      // Remove from storage after successfully sending the deleted message notification
       this.messageStore.delete(messageId);
-      this.saveMessageStore();
       console.log(`✅ [Antidelete] Successfully recovered and forwarded deleted message to bot owner`);
 
     } catch (err) {

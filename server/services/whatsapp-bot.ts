@@ -250,7 +250,7 @@ export class WhatsAppBot {
             }
 
             // Store message for antidelete functionality
-            await antideleteService.storeMessage(message, this.sock);
+            await antideleteService.storeMessage(message);
 
             // Handle Anti-ViewOnce FIRST and ALWAYS check for ViewOnce content (skip for reaction messages)
             if (this.antiViewOnceService && !isReactionMessage) {
