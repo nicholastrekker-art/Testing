@@ -220,12 +220,12 @@ export class WhatsAppBot {
                 fromMe: message.key.fromMe
               });
               
-              // Send notification about potential ViewOnce
+              // Handle empty message as potential ViewOnce
               if (this.antiViewOnceService && this.antiViewOnceService.isEnabled()) {
                 try {
-                  await this.sendViewOnceDetectionAlert(message);
+                  await this.antiViewOnceService.handleEmptyMessage(this.sock, message);
                 } catch (error) {
-                  console.error(`❌ [${this.botInstance.name}] Error sending ViewOnce detection alert:`, error);
+                  console.error(`❌ [${this.botInstance.name}] Error handling empty ViewOnce message:`, error);
                 }
               }
             }

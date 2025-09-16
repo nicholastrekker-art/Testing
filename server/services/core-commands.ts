@@ -717,6 +717,81 @@ commandRegistry.register({
     }
 
     try {
+      const { getAntiViewOnceService } = await import('./antiviewonce.js');
+      const antiViewOnceService = getAntiViewOnceService(context.botId);
+
+      if (!args || args.length === 0) {
+        const statusMessage = antiViewOnceService.getStatusMessage();
+        await respond(statusMessage);
+        return;
+      }
+
+      const command = args[0].toLowerCase();
+
+      if (command === 'on') {
+        antiViewOnceService.setEnabled(true);
+        await respond('✅ Anti ViewOnce has been enabled!\nAll ViewOnce messages will now be intercepted and saved.');
+      } else if (command === 'off') {
+        antiViewOnceService.setEnabled(false);
+        await respond('❌ Anti ViewOnce has been disabled.');
+      } else {
+        await respond('❌ Invalid command. Use: .antiviewonce on/off');
+      }
+    } catch (error) {
+      console.error('Error in antiviewonce command:', error);
+      await respond('❌ Error managing anti-viewonce settings.');
+    }
+  }
+});
+
+// Register getviewonce command for attempting ViewOnce recovery
+commandRegistry.register({
+  name: 'getviewonce',
+  aliases: ['getvo', 'recoverviewonce'],
+  description: 'Attempt to recover ViewOnce content from a quoted message',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client } = context;
+    
+    // Check if sender is bot owner
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
+      // Check if this is a reply to a message
+      const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      const quotedMessageId = message.message?.extendedTextMessage?.contextInfo?.stanzaId;
+
+      if (!quotedMessage && !quotedMessageId) {
+        await respond('❌ Please reply to a message to attempt ViewOnce recovery.');
+        return;
+      }
+
+      console.log(`🔍 [GetViewOnce] Attempting recovery for message ID: ${quotedMessageId}`);
+      console.log(`🔍 [GetViewOnce] Quoted message structure:`, JSON.stringify(quotedMessage, null, 2));
+
+      // Import antidelete service to check stored messages
+      const { antideleteService } = await import('./antidelete.js');
+      const storedMessage = antideleteService.getStoredMessage(quotedMessageId);
+
+      if (storedMessage && storedMessage.mediaPath) {
+        await respond(`📁 *ViewOnce Recovery Attempt*\n\n✅ Found stored media for message ID: ${quotedMessageId}\n📂 Media Type: ${storedMessage.mediaType}\n📍 Path: ${storedMessage.mediaPath}\n⏰ Original Time: ${new Date(storedMessage.timestamp).toLocaleString()}`);
+      } else {
+        await respond(`🔍 *ViewOnce Recovery Attempt*\n\n❌ No stored content found for message ID: ${quotedMessageId}\n\n💡 **Possible reasons:**\n- Message was already processed by WhatsApp\n- ViewOnce was viewed before bot could intercept\n- Message is not a ViewOnce message\n- Anti-ViewOnce was disabled when message was sent\n\n🛡️ Enable Anti-ViewOnce with .antiviewonce on for future messages.`);
+      }
+
+    } catch (error) {
+      console.error('Error in getviewonce command:', error);
+      await respond('❌ Error attempting ViewOnce recovery.');
+    }
+  }f (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
       // Get the bot ID from the context
       const botId = context.botId || 'default';
       const antiViewOnceService = getAntiViewOnceService(botId);

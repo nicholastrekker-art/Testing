@@ -12,6 +12,7 @@ interface StoredMessage {
   sender: string;
   group: string | null;
   timestamp: string;
+  fullMessage: any; // Store the full message object for recovery attempts
 }
 
 interface AntideleteConfig {
@@ -23,24 +24,25 @@ export class AntideleteService {
   private configPath: string;
   private tempMediaDir: string;
   private messageStorePath: string;
+  private processedMessages = new Set<string>(); // To prevent processing the same message multiple times
 
   constructor() {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-    
+
     this.configPath = path.join(__dirname, '../data/antidelete.json');
     this.tempMediaDir = path.join(__dirname, '../tmp');
     this.messageStorePath = path.join(__dirname, '../data/message-store.json');
-    
+
     // Ensure directories exist
     this.ensureDirectories();
-    
+
     // Load stored messages from local storage
     this.loadMessageStore();
-    
+
     // Start periodic cleanup every minute
     setInterval(() => this.cleanTempFolderIfLarge(), 60 * 1000);
-    
+
     // Save message store periodically (every 5 minutes)
     setInterval(() => this.saveMessageStore(), 5 * 60 * 1000);
   }
@@ -50,7 +52,7 @@ export class AntideleteService {
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
     }
-    
+
     if (!fs.existsSync(this.tempMediaDir)) {
       fs.mkdirSync(this.tempMediaDir, { recursive: true });
     }
@@ -78,7 +80,7 @@ export class AntideleteService {
   private cleanTempFolderIfLarge(): void {
     try {
       const sizeMB = this.getFolderSizeInMB(this.tempMediaDir);
-      
+
       if (sizeMB > 100) {
         const files = fs.readdirSync(this.tempMediaDir);
         for (const file of files) {
@@ -163,86 +165,137 @@ export class AntideleteService {
     await sock.sendMessage(chatId, { text: `*Antidelete ${match === 'on' ? 'enabled' : 'disabled'}*` });
   }
 
+  // Helper to extract text from different message types
+  private extractMessageText(message: any): string {
+    if (!message) return '';
+    if (message.conversation) return message.conversation;
+    if (message.extendedTextMessage?.text) return message.extendedTextMessage.text;
+    if (message.imageMessage?.caption) return message.imageMessage.caption;
+    if (message.videoMessage?.caption) return message.videoMessage.caption;
+    if (message.audioMessage?.caption) return message.audioMessage.caption;
+    if (message.stickerMessage?.caption) return message.stickerMessage.caption;
+    if (message.documentMessage?.caption) return message.documentMessage.caption;
+    if (message.viewOnceMessageV2?.message?.imageMessage?.caption) return message.viewOnceMessageV2.message.imageMessage.caption;
+    if (message.viewOnceMessageV2?.message?.videoMessage?.caption) return message.viewOnceMessageV2.message.videoMessage.caption;
+    return '';
+  }
+
+  // Helper to extract and save media
+  private async extractAndSaveMedia(message: WAMessage): Promise<{ type: string, path: string }> {
+    let mediaType = '';
+    let mediaPath = '';
+    const messageId = message.key.id;
+
+    if (message.message?.imageMessage) {
+      mediaType = 'image';
+      try {
+        const buffer = await downloadContentFromMessage(message.message.imageMessage, 'image');
+        mediaPath = path.join(this.tempMediaDir, `${messageId}.jpg`);
+        const chunks: Buffer[] = [];
+        for await (const chunk of buffer) {
+          chunks.push(chunk);
+        }
+        await writeFile(mediaPath, Buffer.concat(chunks));
+      } catch (err) {
+        console.error('Error downloading image:', err);
+      }
+    } else if (message.message?.stickerMessage) {
+      mediaType = 'sticker';
+      try {
+        const buffer = await downloadContentFromMessage(message.message.stickerMessage, 'sticker');
+        mediaPath = path.join(this.tempMediaDir, `${messageId}.webp`);
+        const chunks: Buffer[] = [];
+        for await (const chunk of buffer) {
+          chunks.push(chunk);
+        }
+        await writeFile(mediaPath, Buffer.concat(chunks));
+      } catch (err) {
+        console.error('Error downloading sticker:', err);
+      }
+    } else if (message.message?.videoMessage) {
+      mediaType = 'video';
+      try {
+        const buffer = await downloadContentFromMessage(message.message.videoMessage, 'video');
+        mediaPath = path.join(this.tempMediaDir, `${messageId}.mp4`);
+        const chunks: Buffer[] = [];
+        for await (const chunk of buffer) {
+          chunks.push(chunk);
+        }
+        await writeFile(mediaPath, Buffer.concat(chunks));
+      } catch (err) {
+        console.error('Error downloading video:', err);
+      }
+    } else if (message.message?.viewOnceMessageV2?.message?.imageMessage) {
+      mediaType = 'image';
+      try {
+        const buffer = await downloadContentFromMessage(message.message.viewOnceMessageV2.message.imageMessage, 'image');
+        mediaPath = path.join(this.tempMediaDir, `${messageId}-viewonce.jpg`);
+        const chunks: Buffer[] = [];
+        for await (const chunk of buffer) {
+          chunks.push(chunk);
+        }
+        await writeFile(mediaPath, Buffer.concat(chunks));
+      } catch (err) {
+        console.error('Error downloading view-once image:', err);
+      }
+    } else if (message.message?.viewOnceMessageV2?.message?.videoMessage) {
+      mediaType = 'video';
+      try {
+        const buffer = await downloadContentFromMessage(message.message.viewOnceMessageV2.message.videoMessage, 'video');
+        mediaPath = path.join(this.tempMediaDir, `${messageId}-viewonce.mp4`);
+        const chunks: Buffer[] = [];
+        for await (const chunk of buffer) {
+          chunks.push(chunk);
+        }
+        await writeFile(mediaPath, Buffer.concat(chunks));
+      } catch (err) {
+        console.error('Error downloading view-once video:', err);
+      }
+    }
+
+    return { type: mediaType, path: mediaPath };
+  }
+
   async storeMessage(message: WAMessage): Promise<void> {
     try {
-      const config = this.loadAntideleteConfig();
-      if (!config.enabled) return; // Don't store if antidelete is disabled
-
-      if (!message.key?.id) return;
-
       const messageId = message.key.id;
-      let content = '';
+      if (!messageId || this.processedMessages.has(messageId)) return;
+
+      this.processedMessages.add(messageId);
+
+      const messageText = this.extractMessageText(message.message);
       let mediaType = '';
       let mediaPath = '';
 
-      const sender = message.key.participant || message.key.remoteJid || '';
-
-      // Detect content
-      if (message.message?.conversation) {
-        content = message.message.conversation;
-      } else if (message.message?.extendedTextMessage?.text) {
-        content = message.message.extendedTextMessage.text;
-      } else if (message.message?.imageMessage) {
-        mediaType = 'image';
-        content = message.message.imageMessage.caption || '';
-        try {
-          const buffer = await downloadContentFromMessage(message.message.imageMessage, 'image');
-          mediaPath = path.join(this.tempMediaDir, `${messageId}.jpg`);
-          
-          const chunks: Buffer[] = [];
-          for await (const chunk of buffer) {
-            chunks.push(chunk);
-          }
-          await writeFile(mediaPath, Buffer.concat(chunks));
-        } catch (err) {
-          console.error('Error downloading image:', err);
-        }
-      } else if (message.message?.stickerMessage) {
-        mediaType = 'sticker';
-        try {
-          const buffer = await downloadContentFromMessage(message.message.stickerMessage, 'sticker');
-          mediaPath = path.join(this.tempMediaDir, `${messageId}.webp`);
-          
-          const chunks: Buffer[] = [];
-          for await (const chunk of buffer) {
-            chunks.push(chunk);
-          }
-          await writeFile(mediaPath, Buffer.concat(chunks));
-        } catch (err) {
-          console.error('Error downloading sticker:', err);
-        }
-      } else if (message.message?.videoMessage) {
-        mediaType = 'video';
-        content = message.message.videoMessage.caption || '';
-        try {
-          const buffer = await downloadContentFromMessage(message.message.videoMessage, 'video');
-          mediaPath = path.join(this.tempMediaDir, `${messageId}.mp4`);
-          
-          const chunks: Buffer[] = [];
-          for await (const chunk of buffer) {
-            chunks.push(chunk);
-          }
-          await writeFile(mediaPath, Buffer.concat(chunks));
-        } catch (err) {
-          console.error('Error downloading video:', err);
-        }
+      // Check for media content and save it
+      if (message.message) {
+        const mediaInfo = await this.extractAndSaveMedia(message);
+        mediaType = mediaInfo.type;
+        mediaPath = mediaInfo.path;
       }
 
-      this.messageStore.set(messageId, {
-        content,
+      const messageData: StoredMessage = {
+        content: messageText,
         mediaType,
         mediaPath,
-        sender,
-        group: message.key.remoteJid?.endsWith('@g.us') ? message.key.remoteJid : null,
-        timestamp: new Date().toISOString()
-      });
+        sender: message.key.participant || message.key.remoteJid || '',
+        group: message.key.remoteJid?.includes('@g.us') ? message.key.remoteJid : null,
+        timestamp: new Date().toISOString(),
+        fullMessage: message.message // Store the full message object for recovery attempts
+      };
 
-      // Save to persistent storage immediately
+      this.messageStore.set(messageId, messageData);
       this.saveMessageStore();
 
-    } catch (err) {
-      console.error('storeMessage error:', err);
+      console.log(`💾 [Antidelete] Stored message ${messageId} with media type: ${mediaType}`);
+    } catch (error) {
+      console.error('Error storing message:', error);
     }
+  }
+
+  getStoredMessage(messageId: string | undefined): StoredMessage | null {
+    if (!messageId) return null;
+    return this.messageStore.get(messageId) || null;
   }
 
   async handleMessageRevocation(sock: WASocket, revocationMessage: WAMessage): Promise<void> {
@@ -254,11 +307,10 @@ export class AntideleteService {
 
       const messageId = revocationMessage.message.protocolMessage.key.id;
       const deletedBy = revocationMessage.key.participant || revocationMessage.key.remoteJid || '';
-      
+
       // Get bot's own WhatsApp ID with better detection
       let ownerNumber = '';
       if (sock.user?.id) {
-        // Handle different formats of user ID
         const userId = sock.user.id;
         if (userId.includes(':')) {
           ownerNumber = userId.split(':')[0] + '@s.whatsapp.net';
@@ -268,27 +320,26 @@ export class AntideleteService {
           ownerNumber = userId + '@s.whatsapp.net';
         }
       }
-      
+
       console.log(`Antidelete: Message deleted by ${deletedBy}, bot owner: ${ownerNumber}`);
-      
-      // Don't send if bot deleted its own message or owner number is not detected
+
       if (!ownerNumber || deletedBy.includes(sock.user?.id || '') || deletedBy === ownerNumber) {
         console.log('Antidelete: Ignoring deletion (bot deleted own message or owner not detected)');
         return;
       }
 
-      const original = this.messageStore.get(messageId);
+      const original = this.getStoredMessage(messageId); // Use the new method
       if (!original) {
         console.log(`Antidelete: No stored message found for ID ${messageId}`);
         return;
       }
-      
+
       console.log(`Antidelete: Found deleted message from ${original.sender} in ${original.group ? 'group' : 'private chat'}`);
 
       const sender = original.sender;
       const senderName = sender.split('@')[0];
       let groupName = '';
-      
+
       if (original.group) {
         try {
           const groupMetadata = await sock.groupMetadata(original.group);
@@ -300,12 +351,12 @@ export class AntideleteService {
 
       const time = new Date().toLocaleString('en-US', {
         timeZone: 'Africa/Nairobi',
-        hour12: true, 
-        hour: '2-digit', 
-        minute: '2-digit', 
+        hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
         second: '2-digit',
-        day: '2-digit', 
-        month: '2-digit', 
+        day: '2-digit',
+        month: '2-digit',
         year: 'numeric'
       });
 

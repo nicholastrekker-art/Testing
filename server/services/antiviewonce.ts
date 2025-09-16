@@ -1,4 +1,3 @@
-
 import { downloadContentFromMessage } from '@whiskeysockets/baileys';
 import { writeFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
@@ -27,14 +26,14 @@ export class AntiViewOnceService {
     if (!existsSync(dataDir)) {
       mkdirSync(dataDir, { recursive: true });
     }
-    
+
     this.configPath = join(dataDir, `${botId}.json`);
     this.mediaDir = join(dataDir, 'media');
-    
+
     if (!existsSync(this.mediaDir)) {
       mkdirSync(this.mediaDir, { recursive: true });
     }
-    
+
     this.initializeConfig();
   }
 
@@ -81,7 +80,7 @@ export class AntiViewOnceService {
     try {
       console.log(`🔄 [AntiViewOnce] Starting handleMessage processing...`);
       console.log(`🔄 [AntiViewOnce] Service enabled: ${this.isEnabled()}`);
-      
+
       if (!this.isEnabled()) {
         console.log(`❌ [AntiViewOnce] Service is disabled, skipping`);
         return;
@@ -89,7 +88,7 @@ export class AntiViewOnceService {
 
       const messageId = message.key.id;
       console.log(`🔄 [AntiViewOnce] Message ID: ${messageId}`);
-      
+
       if (!messageId || this.processedMessages.has(messageId)) {
         console.log(`⚠️ [AntiViewOnce] Message already processed or no ID, skipping`);
         return;
@@ -119,10 +118,10 @@ export class AntiViewOnceService {
       // Attempt to download the media
       console.log(`⬇️ [AntiViewOnce] Starting download attempt...`);
       const buffer = await this.attemptDownload(viewOnceData, message);
-      
+
       if (buffer && buffer.length > 0) {
         console.log(`✅ [AntiViewOnce] Download successful! Size: ${buffer.length} bytes`);
-        
+
         // Save media if configured
         const config = this.getConfig();
         if (config.saveMedia) {
@@ -274,7 +273,7 @@ export class AntiViewOnceService {
             data: obj
           };
         }
-        
+
         // Check nested message objects
         if (obj.message) {
           const nestedResult = this.extractViewOnceFromMessage(obj.message);
@@ -310,21 +309,21 @@ export class AntiViewOnceService {
 
   private deepScanForViewOnce(obj: any, depth: number = 0): boolean {
     if (depth > 10) return false; // Prevent infinite recursion
-    
+
     if (obj && typeof obj === 'object') {
       // Check if current object has viewOnce property
       if (obj.hasOwnProperty('viewOnce')) {
         console.log(`🔍 Deep scan found viewOnce at depth ${depth}:`, obj.viewOnce);
         return true;
       }
-      
+
       // Recursively check nested objects
       for (const [key, value] of Object.entries(obj)) {
         if (key.toLowerCase().includes('viewonce') || key.toLowerCase().includes('view_once')) {
           console.log(`🔍 Deep scan found ViewOnce-related key: ${key}`);
           return true;
         }
-        
+
         if (value && typeof value === 'object') {
           if (this.deepScanForViewOnce(value, depth + 1)) {
             return true;
@@ -332,7 +331,7 @@ export class AntiViewOnceService {
         }
       }
     }
-    
+
     return false;
   }
 
@@ -392,10 +391,10 @@ export class AntiViewOnceService {
       async (): Promise<Buffer | null> => {
         const msg = message.message;
         if (!msg) return null;
-        
+
         let mediaData = null;
         let mediaType = '';
-        
+
         if (msg.imageMessage?.viewOnce) {
           mediaData = msg.imageMessage;
           mediaType = 'image';
@@ -406,9 +405,9 @@ export class AntiViewOnceService {
           mediaData = msg.audioMessage;
           mediaType = 'audio';
         }
-        
+
         if (!mediaData) return null;
-        
+
         console.log(`🔄 Method 4: Downloading direct ${mediaType} message`);
         const stream = await downloadContentFromMessage(mediaData, mediaType as any);
         let buffer = Buffer.from([]);
@@ -454,7 +453,7 @@ export class AntiViewOnceService {
       const extension = this.getFileExtension(mediaType);
       const filename = `viewonce_${messageId}.${extension}`;
       const filepath = join(this.mediaDir, filename);
-      
+
       writeFileSync(filepath, buffer);
       console.log(`💾 ViewOnce media saved: ${filename}`);
     } catch (error) {
@@ -512,7 +511,7 @@ export class AntiViewOnceService {
             ptt: viewOnceData.data?.ptt || false,
             mimetype: viewOnceData.data?.mimetype || 'audio/ogg; codecs=opus'
           }, messageOptions);
-          
+
           // Also send a text message with details for audio
           await sock.sendMessage(botOwnerJid, {
             text: `🎵 *Audio ViewOnce Intercepted*\n\n${caption}`
@@ -571,7 +570,7 @@ export class AntiViewOnceService {
     const config = this.getConfig();
     const status = config.enabled ? 'enabled' : 'disabled';
     const saveStatus = config.saveMedia ? 'enabled' : 'disabled';
-    
+
     return `🔍 *Anti-ViewOnce Settings*\n\n👁️ *Status:* ${status}\n💾 *Save Media:* ${saveStatus}\n\n*Commands:*\n.antiviewonce on - Enable anti-viewonce\n.antiviewonce off - Disable anti-viewonce\n.antiviewonce save on - Enable media saving\n.antiviewonce save off - Disable media saving`;
   }
 }
