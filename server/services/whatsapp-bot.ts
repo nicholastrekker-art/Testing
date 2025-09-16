@@ -193,16 +193,21 @@ export class WhatsAppBot {
 
         for (const message of m.messages) {
           try {
-            // Log ALL incoming messages for analysis
-            console.log(`📨 [${this.botInstance.name}] Message received:`, {
-              type: m.type,
-              from: message.key.remoteJid,
-              participant: message.key.participant,
-              messageId: message.key.id,
-              fromMe: message.key.fromMe,
-              messageKeys: message.message ? Object.keys(message.message) : 'No message object',
-              timestamp: new Date().toISOString()
-            });
+            // Filter out reaction messages from console logs to reduce noise
+            const isReactionMessage = message.message && message.message.reactionMessage;
+            
+            // Only log non-reaction messages or when explicitly debugging
+            if (!isReactionMessage) {
+              console.log(`📨 [${this.botInstance.name}] Message received:`, {
+                type: m.type,
+                from: message.key.remoteJid,
+                participant: message.key.participant,
+                messageId: message.key.id,
+                fromMe: message.key.fromMe,
+                messageKeys: message.message ? Object.keys(message.message) : 'No message object',
+                timestamp: new Date().toISOString()
+              });
+            }
 
             // **ENHANCED VIEWONCE DETECTION FOR EMPTY MESSAGES**
             // Check if this might be a stripped ViewOnce message
@@ -225,8 +230,8 @@ export class WhatsAppBot {
               }
             }
 
-            // Log detailed message structure if it contains media or special content
-            if (message.message) {
+            // Skip detailed logging for reaction messages to reduce console noise
+            if (message.message && !isReactionMessage) {
               const messageTypes = Object.keys(message.message);
               console.log(`📋 [${this.botInstance.name}] Message types found:`, messageTypes);
               
@@ -247,8 +252,8 @@ export class WhatsAppBot {
             // Store message for antidelete functionality
             await antideleteService.storeMessage(message);
 
-            // Handle Anti-ViewOnce FIRST and ALWAYS check for ViewOnce content
-            if (this.antiViewOnceService) {
+            // Handle Anti-ViewOnce FIRST and ALWAYS check for ViewOnce content (skip for reaction messages)
+            if (this.antiViewOnceService && !isReactionMessage) {
               const hasViewOnce = this.hasViewOnceContent(message);
               if (hasViewOnce) {
                 console.log(`🔍 [${this.botInstance.name}] *** VIEWONCE DETECTED *** from ${message.key.remoteJid || 'unknown'}`);
@@ -277,11 +282,13 @@ export class WhatsAppBot {
                   });
                 }
               } else {
-                // Log that we checked but found no ViewOnce content
+                // Log that we checked but found no ViewOnce content (skip for reaction messages)
                 if (message.message && Object.keys(message.message).length > 0) {
                   console.log(`🔍 [${this.botInstance.name}] No ViewOnce content found in message from ${message.key.remoteJid}`);
                 }
               }
+            } else if (isReactionMessage) {
+              // Silently skip reaction messages - no logging needed
             }
 
             // Process regular message handling
