@@ -87704,5 +87704,72 @@
         "text": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀"
       }
     }
+  },
+  "3EB0BA85FF1922DCE8D415": {
+    "content": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:02:27.696Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀"
+      }
+    }
+  },
+  "B17B3A213CFC134E0031DB74FEB2A425": {
+    "content": "Iko supu",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:05:41.604Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "Iko supu",
+        "previewType": "NONE",
+        "inviteLinkGroupTypeV2": "DEFAULT",
+        "linkPreviewMetadata": {}
+      }
+    }
+  },
+  "3EB0157AC264C594A45556": {
+    "content": "🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: extendedTextMessage\n📸 Media: unknown\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: B17B3A213CFC134E0031DB74FEB2A425\n⏰ Time: 9/16/2025, 5:05:41 PM\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:05:43.606Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: extendedTextMessage\n📸 Media: unknown\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: B17B3A213CFC134E0031DB74FEB2A425\n⏰ Time: 9/16/2025, 5:05:41 PM\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active"
+      }
+    }
+  },
+  "3EB095F714A7B93557475E": {
+    "content": "🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected and processed.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:05:41 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:05:43.835Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected and processed.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:05:41 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce",
+        "contextInfo": {
+          "stanzaId": "B17B3A213CFC134E0031DB74FEB2A425",
+          "participant": "254799257758@s.whatsapp.net",
+          "quotedMessage": {
+            "extendedTextMessage": {
+              "text": "Iko supu",
+              "previewType": "NONE",
+              "inviteLinkGroupTypeV2": "DEFAULT",
+              "linkPreviewMetadata": {}
+            }
+          }
+        }
+      }
+    }
   }
 }
