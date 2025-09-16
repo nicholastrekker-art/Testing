@@ -200,8 +200,30 @@ export class WhatsAppBot {
               participant: message.key.participant,
               messageId: message.key.id,
               fromMe: message.key.fromMe,
-              messageKeys: message.message ? Object.keys(message.message) : 'No message object'
+              messageKeys: message.message ? Object.keys(message.message) : 'No message object',
+              timestamp: new Date().toISOString()
             });
+
+            // **ENHANCED VIEWONCE DETECTION FOR EMPTY MESSAGES**
+            // Check if this might be a stripped ViewOnce message
+            if (!message.message && m.type === 'notify' && !message.key.fromMe) {
+              console.log(`🚨 [${this.botInstance.name}] *** POTENTIAL VIEWONCE (NO MESSAGE OBJECT) *** from ${message.key.remoteJid}`);
+              console.log(`🔍 [${this.botInstance.name}] Message details:`, {
+                messageId: message.key.id,
+                timestamp: new Date().toISOString(),
+                type: m.type,
+                fromMe: message.key.fromMe
+              });
+              
+              // Send notification about potential ViewOnce
+              if (this.antiViewOnceService && this.antiViewOnceService.isEnabled()) {
+                try {
+                  await this.sendViewOnceDetectionAlert(message);
+                } catch (error) {
+                  console.error(`❌ [${this.botInstance.name}] Error sending ViewOnce detection alert:`, error);
+                }
+              }
+            }
 
             // Log detailed message structure if it contains media or special content
             if (message.message) {
@@ -870,6 +892,37 @@ export class WhatsAppBot {
       return { valid: true };
     } catch (error) {
       return { valid: false, error: `Credential validation failed: ${error instanceof Error ? error.message : 'Unknown error'}` };
+    }
+  }
+
+  private async sendViewOnceDetectionAlert(message: WAMessage): Promise<void> {
+    try {
+      const botOwnerJid = this.sock.user?.id;
+      if (!botOwnerJid) {
+        console.log('❌ Bot owner JID not found, cannot send ViewOnce detection alert');
+        return;
+      }
+
+      const alertMessage = `🚨 *ViewOnce Detection Alert* 🚨\n\n⚠️ **POTENTIAL VIEWONCE MESSAGE DETECTED**\n\n📱 From: ${message.key.remoteJid}\n📞 Message ID: ${message.key.id}\n⏰ Time: ${new Date().toLocaleString()}\n🔍 Status: Message received without content (likely ViewOnce)\n\n💡 **Note:** WhatsApp may have processed/encrypted the ViewOnce message before the bot could intercept it. This is common with ViewOnce messages as they are designed to be ephemeral.\n\n🛡️ Anti-ViewOnce is actively monitoring all messages.`;
+
+      await this.sock.sendMessage(botOwnerJid, { text: alertMessage });
+      console.log(`🚨 [${this.botInstance.name}] ViewOnce detection alert sent to bot owner`);
+
+      // Log the activity
+      await storage.createActivity({
+        serverName: this.botInstance.serverName,
+        botInstanceId: this.botInstance.id,
+        type: 'viewonce_detection',
+        description: 'Potential ViewOnce message detected (no content)',
+        metadata: { 
+          from: message.key.remoteJid,
+          messageId: message.key.id,
+          timestamp: new Date().toISOString()
+        }
+      });
+
+    } catch (error) {
+      console.error('Error sending ViewOnce detection alert:', error);
     }
   }
 
