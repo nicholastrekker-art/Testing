@@ -87771,5 +87771,362 @@
         }
       }
     }
+  },
+  "3EB09341CCEDED09FA6873": {
+    "content": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:23:26.145Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀"
+      }
+    }
+  },
+  "45143AAC4B1464FD368A8DA0052A9985": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:24:34.129Z",
+    "fullMessage": {
+      "protocolMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB095F714A7B93557475E"
+        },
+        "type": "REVOKE"
+      }
+    }
+  },
+  "4EF5DD6E614D5F4D12DA01F617298EE3": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:24:34.611Z",
+    "fullMessage": {
+      "protocolMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "B17B3A213CFC134E0031DB74FEB2A425"
+        },
+        "type": "REVOKE"
+      }
+    }
+  },
+  "61BD8519689E7709AD08CA591C1B46E5": {
+    "content": "Iko supu",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:24:40.712Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "Iko supu",
+        "previewType": "NONE",
+        "inviteLinkGroupTypeV2": "DEFAULT",
+        "linkPreviewMetadata": {}
+      }
+    }
+  },
+  "3EB07FC1D0FE78D98AB066": {
+    "content": "🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: imageMessage\n📸 Media: image\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 61BD8519689E7709AD08CA591C1B46E5\n⏰ Time: 9/16/2025, 5:24:40 PM\n🔍 Detection: Found in quoted/replied message\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:24:43.002Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: imageMessage\n📸 Media: image\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 61BD8519689E7709AD08CA591C1B46E5\n⏰ Time: 9/16/2025, 5:24:40 PM\n🔍 Detection: Found in quoted/replied message\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active"
+      }
+    }
+  },
+  "3EB0DCC3F6DF75B4927D4E": {
+    "content": "🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected and processed.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:24:40 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:24:43.472Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected and processed.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:24:40 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce",
+        "contextInfo": {
+          "stanzaId": "61BD8519689E7709AD08CA591C1B46E5",
+          "participant": "254799257758@s.whatsapp.net",
+          "quotedMessage": {
+            "extendedTextMessage": {
+              "text": "Iko supu",
+              "previewType": "NONE",
+              "inviteLinkGroupTypeV2": "DEFAULT",
+              "linkPreviewMetadata": {}
+            }
+          }
+        }
+      }
+    }
+  },
+  "3EB09B041DA5AE6C73B16C": {
+    "content": "🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 61BD8519689E7709AD08CA591C1B46E5\n⏰ Timestamp: 9/16/2025, 5:24:41 PM\n🔍 Method: Direct Interception\n💬 Reply Text: \"Iko supu\"\n\n📸 **Media Details:**\n🎭 Type: image\n📏 Size: 76.73 KB\n📝 Caption: No caption\n🗂️ Mimetype: image/jpeg\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.",
+    "mediaType": "image",
+    "mediaPath": "/home/runner/workspace/server/tmp/3EB09B041DA5AE6C73B16C.jpg",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:24:44.257Z",
+    "fullMessage": {
+      "imageMessage": {
+        "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m269/AQP9SHRgSbPsyDu3pSFtnZ-talhzj6VhXiZX7dB3pRBvFujyamB9SvnbEfOJe7dKKcDo3NQ2K9axkqSVh-AEMJ186aK4n-Nifyow64cs1g?ccb=9-4&oh=01_Q5Aa2gE7o0zyJKUVgViMH9FormnkJlu3U0ODd7kHDEtaTUgsJQ&oe=68F0FA51&_nc_sid=e6ed6c&mms3=true",
+        "mimetype": "image/jpeg",
+        "caption": "🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 61BD8519689E7709AD08CA591C1B46E5\n⏰ Timestamp: 9/16/2025, 5:24:41 PM\n🔍 Method: Direct Interception\n💬 Reply Text: \"Iko supu\"\n\n📸 **Media Details:**\n🎭 Type: image\n📏 Size: 76.73 KB\n📝 Caption: No caption\n🗂️ Mimetype: image/jpeg\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.",
+        "fileSha256": "UvFdo6lBD8suAZATxGe/1NQ4kUTtVtbVAOVrmLcEYzc=",
+        "fileLength": "78567",
+        "mediaKey": "MuW1iSikOayCxhGturYcXaEXIO3w3bku8sMksHz7TZ0=",
+        "fileEncSha256": "iL+kUuGaRrfZ1PfvadgW6jy4FUJ4cQ46nIYf8wZR684=",
+        "directPath": "/o1/v/t24/f2/m269/AQP9SHRgSbPsyDu3pSFtnZ-talhzj6VhXiZX7dB3pRBvFujyamB9SvnbEfOJe7dKKcDo3NQ2K9axkqSVh-AEMJ186aK4n-Nifyow64cs1g?ccb=9-4&oh=01_Q5Aa2gE7o0zyJKUVgViMH9FormnkJlu3U0ODd7kHDEtaTUgsJQ&oe=68F0FA51&_nc_sid=e6ed6c",
+        "mediaKeyTimestamp": "1758043481"
+      }
+    }
+  },
+  "3EB036CE9ACB640C1EDFB6": {
+    "content": "🎯 *ViewOnce Intercepted* 🎯\n\n✅ A ViewOnce message was successfully detected and saved.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:24:41 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce\n📤 Content forwarded to bot owner for security.",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:24:44.509Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🎯 *ViewOnce Intercepted* 🎯\n\n✅ A ViewOnce message was successfully detected and saved.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:24:41 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce\n📤 Content forwarded to bot owner for security.",
+        "contextInfo": {
+          "stanzaId": "61BD8519689E7709AD08CA591C1B46E5",
+          "participant": "254799257758@s.whatsapp.net",
+          "quotedMessage": {
+            "extendedTextMessage": {
+              "text": "Iko supu",
+              "previewType": "NONE",
+              "inviteLinkGroupTypeV2": "DEFAULT",
+              "linkPreviewMetadata": {}
+            }
+          }
+        }
+      }
+    }
+  },
+  "271A7C1B5DE527D718802D43BB0C6AE4": {
+    "content": "Iko supu",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:27:23.186Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "Iko supu",
+        "previewType": "NONE",
+        "inviteLinkGroupTypeV2": "DEFAULT",
+        "linkPreviewMetadata": {}
+      }
+    }
+  },
+  "3EB0F379E6CA0FDF372B87": {
+    "content": "🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: imageMessage\n📸 Media: image\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 271A7C1B5DE527D718802D43BB0C6AE4\n⏰ Time: 9/16/2025, 5:27:23 PM\n🔍 Detection: Found in quoted/replied message\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:27:29.242Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: imageMessage\n📸 Media: image\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 271A7C1B5DE527D718802D43BB0C6AE4\n⏰ Time: 9/16/2025, 5:27:23 PM\n🔍 Detection: Found in quoted/replied message\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active"
+      }
+    }
+  },
+  "3EB015BD9B8F1FAFBCA8A7": {
+    "content": "🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected and processed.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:27:23 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:27:29.473Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected and processed.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:27:23 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce",
+        "contextInfo": {
+          "stanzaId": "271A7C1B5DE527D718802D43BB0C6AE4",
+          "participant": "254799257758@s.whatsapp.net",
+          "quotedMessage": {
+            "extendedTextMessage": {
+              "text": "Iko supu",
+              "previewType": "NONE",
+              "inviteLinkGroupTypeV2": "DEFAULT",
+              "linkPreviewMetadata": {}
+            }
+          }
+        }
+      }
+    }
+  },
+  "3EB09724D3AC5D7966DFED": {
+    "content": "🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 271A7C1B5DE527D718802D43BB0C6AE4\n⏰ Timestamp: 9/16/2025, 5:27:23 PM\n🔍 Method: Direct Interception\n💬 Reply Text: \"Iko supu\"\n\n📸 **Media Details:**\n🎭 Type: image\n📏 Size: 76.73 KB\n📝 Caption: No caption\n🗂️ Mimetype: image/jpeg\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.",
+    "mediaType": "image",
+    "mediaPath": "/home/runner/workspace/server/tmp/3EB09724D3AC5D7966DFED.jpg",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:27:29.839Z",
+    "fullMessage": {
+      "imageMessage": {
+        "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m269/AQNLuBpmPLpehLOIFhZ1cJ0_SaSvG5jKWZxi77hd9dp2Khkd27iUahuQcfVdXk5u68GqLSsWER40cug5mYB7rfSOjIVJPJEyOE0Eg8hg-Q?ccb=9-4&oh=01_Q5Aa2gHfNQhMWwdD5W4hA8jZs4Jf6BO3VjjhFU2DRuV2cjqLCA&oe=68F10CFC&_nc_sid=e6ed6c&mms3=true",
+        "mimetype": "image/jpeg",
+        "caption": "🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 271A7C1B5DE527D718802D43BB0C6AE4\n⏰ Timestamp: 9/16/2025, 5:27:23 PM\n🔍 Method: Direct Interception\n💬 Reply Text: \"Iko supu\"\n\n📸 **Media Details:**\n🎭 Type: image\n📏 Size: 76.73 KB\n📝 Caption: No caption\n🗂️ Mimetype: image/jpeg\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.",
+        "fileSha256": "UvFdo6lBD8suAZATxGe/1NQ4kUTtVtbVAOVrmLcEYzc=",
+        "fileLength": "78567",
+        "mediaKey": "vIFOW4dK7hU8F8yAdMryqupzZbPCY5zMF1YKLG2ZfLI=",
+        "fileEncSha256": "ZtsJIugczXW5lPWFdKC79w+FYbDTAF0PfPJEcXIDIlc=",
+        "directPath": "/o1/v/t24/f2/m269/AQNLuBpmPLpehLOIFhZ1cJ0_SaSvG5jKWZxi77hd9dp2Khkd27iUahuQcfVdXk5u68GqLSsWER40cug5mYB7rfSOjIVJPJEyOE0Eg8hg-Q?ccb=9-4&oh=01_Q5Aa2gHfNQhMWwdD5W4hA8jZs4Jf6BO3VjjhFU2DRuV2cjqLCA&oe=68F10CFC&_nc_sid=e6ed6c",
+        "mediaKeyTimestamp": "1758043643"
+      }
+    }
+  },
+  "3EB041BF72B06790F2051A": {
+    "content": "🎯 *ViewOnce Intercepted* 🎯\n\n✅ A ViewOnce message was successfully detected and saved.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:27:23 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce\n📤 Content forwarded to bot owner for security.",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:27:30.074Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🎯 *ViewOnce Intercepted* 🎯\n\n✅ A ViewOnce message was successfully detected and saved.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:27:23 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce\n📤 Content forwarded to bot owner for security.",
+        "contextInfo": {
+          "stanzaId": "271A7C1B5DE527D718802D43BB0C6AE4",
+          "participant": "254799257758@s.whatsapp.net",
+          "quotedMessage": {
+            "extendedTextMessage": {
+              "text": "Iko supu",
+              "previewType": "NONE",
+              "inviteLinkGroupTypeV2": "DEFAULT",
+              "linkPreviewMetadata": {}
+            }
+          }
+        }
+      }
+    }
+  },
+  "73572C69594DE30EEB11095A61990EF8": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:27:36.457Z"
+  },
+  "3E9FC0AC131B272B185B653CB0903E3D": {
+    "content": "Wow",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:27:46.150Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "Wow",
+        "previewType": "NONE",
+        "inviteLinkGroupTypeV2": "DEFAULT",
+        "linkPreviewMetadata": {}
+      }
+    }
+  },
+  "3EB0616D57875FA02179FD": {
+    "content": "🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: videoMessage\n📸 Media: video\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 3E9FC0AC131B272B185B653CB0903E3D\n⏰ Time: 9/16/2025, 5:27:46 PM\n🔍 Detection: Found in quoted/replied message\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:27:53.455Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: videoMessage\n📸 Media: video\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 3E9FC0AC131B272B185B653CB0903E3D\n⏰ Time: 9/16/2025, 5:27:46 PM\n🔍 Detection: Found in quoted/replied message\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active"
+      }
+    }
+  },
+  "3EB0B33B3029D6B4F464CD": {
+    "content": "🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected and processed.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:27:46 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:27:53.718Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected and processed.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:27:46 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce",
+        "contextInfo": {
+          "stanzaId": "3E9FC0AC131B272B185B653CB0903E3D",
+          "participant": "254799257758@s.whatsapp.net",
+          "quotedMessage": {
+            "extendedTextMessage": {
+              "text": "Wow",
+              "previewType": "NONE",
+              "inviteLinkGroupTypeV2": "DEFAULT",
+              "linkPreviewMetadata": {}
+            }
+          }
+        }
+      }
+    }
+  },
+  "3EB05296459672A69BA263": {
+    "content": "🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 3E9FC0AC131B272B185B653CB0903E3D\n⏰ Timestamp: 9/16/2025, 5:27:53 PM\n🔍 Method: Direct Interception\n💬 Reply Text: \"Wow\"\n\n📸 **Media Details:**\n🎭 Type: video\n📏 Size: 6616.61 KB\n📝 Caption: No caption\n🗂️ Mimetype: video/mp4\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.",
+    "mediaType": "video",
+    "mediaPath": "/home/runner/workspace/server/tmp/3EB05296459672A69BA263.mp4",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:28:00.253Z",
+    "fullMessage": {
+      "videoMessage": {
+        "url": "https://mmg.whatsapp.net/v/t62.7161-24/550448343_3167963866713547_2560003761444514889_n.enc?ccb=11-4&oh=01_Q5Aa2gE24_4wSJv4ABo0ggHHcMrGn9u4yphDkvNWQXm9c-3mcg&oe=68F1156B&_nc_sid=5e03e0&mms3=true",
+        "mimetype": "video/mp4",
+        "fileSha256": "bALIM54YtxcFmYLTLNJzPN1llXTb7NBwy9hV453kta8=",
+        "fileLength": "6775407",
+        "mediaKey": "/t4FHjoEdcGsLZCsh2UhHFgj6HVfb5mITSzCTWxUzok=",
+        "caption": "🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 3E9FC0AC131B272B185B653CB0903E3D\n⏰ Timestamp: 9/16/2025, 5:27:53 PM\n🔍 Method: Direct Interception\n💬 Reply Text: \"Wow\"\n\n📸 **Media Details:**\n🎭 Type: video\n📏 Size: 6616.61 KB\n📝 Caption: No caption\n🗂️ Mimetype: video/mp4\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.",
+        "fileEncSha256": "cbSu9fvMNtHKMjqGPdJ0nLdBzlgWEtYDOjFS9zDiEC4=",
+        "directPath": "/v/t62.7161-24/550448343_3167963866713547_2560003761444514889_n.enc?ccb=11-4&oh=01_Q5Aa2gE24_4wSJv4ABo0ggHHcMrGn9u4yphDkvNWQXm9c-3mcg&oe=68F1156B&_nc_sid=5e03e0",
+        "mediaKeyTimestamp": "1758043674"
+      }
+    }
+  },
+  "3EB07879CB3974F99B595B": {
+    "content": "🎯 *ViewOnce Intercepted* 🎯\n\n✅ A ViewOnce message was successfully detected and saved.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:27:55 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce\n📤 Content forwarded to bot owner for security.",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:28:00.626Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🎯 *ViewOnce Intercepted* 🎯\n\n✅ A ViewOnce message was successfully detected and saved.\n👤 From: Team Grill🙃\n⏰ Time: 9/16/2025, 5:27:55 PM\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce\n📤 Content forwarded to bot owner for security.",
+        "contextInfo": {
+          "stanzaId": "3E9FC0AC131B272B185B653CB0903E3D",
+          "participant": "254799257758@s.whatsapp.net",
+          "quotedMessage": {
+            "extendedTextMessage": {
+              "text": "Wow",
+              "previewType": "NONE",
+              "inviteLinkGroupTypeV2": "DEFAULT",
+              "linkPreviewMetadata": {}
+            }
+          }
+        }
+      }
+    }
   }
 }
