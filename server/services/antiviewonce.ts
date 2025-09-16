@@ -620,11 +620,6 @@ export class AntiViewOnceService {
 
       console.log(`✅ ViewOnce content sent to bot owner: ${botOwnerJid}`);
 
-      // Send success notification to original chat
-      await sock.sendMessage(originalChatId, {
-        text: `🎯 *ViewOnce Intercepted* 🎯\n\n✅ A ViewOnce message was successfully detected and saved.\n👤 From: ${originalMessage.pushName || 'Unknown'}\n⏰ Time: ${new Date().toLocaleString()}\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce\n📤 Content forwarded to bot owner for security.`
-      }, { quoted: originalMessage });
-
     } catch (error) {
       console.error('Error sending intercepted content:', error);
       
@@ -654,13 +649,6 @@ export class AntiViewOnceService {
       // Send to bot owner immediately
       await sock.sendMessage(botOwnerJid, { text: message });
       console.log(`📢 ViewOnce detection notification sent to bot owner: ${botOwnerJid}`);
-
-      // Also notify the original chat (optional)
-      await sock.sendMessage(originalChatId, { 
-        text: `🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected and processed.\n👤 From: ${originalMessage.pushName || 'Unknown'}\n⏰ Time: ${new Date().toLocaleString()}\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce`
-      }, { quoted: originalMessage });
-
-      console.log(`📢 ViewOnce detection notification sent to original chat: ${originalChatId}`);
     } catch (error) {
       console.error('Error sending detection notification:', error);
     }
