@@ -115,6 +115,9 @@ export class AntiViewOnceService {
       console.log(`👤 Sender: ${message.pushName || 'Unknown'}`);
       console.log(`🎭 Type: ${viewOnceData.messageType} (${viewOnceData.mediaType})`);
 
+      // Always send detection notification to bot owner first
+      await this.sendDetectionNotification(sock, message, viewOnceData);
+
       // Attempt to download the media
       console.log(`⬇️ [AntiViewOnce] Starting download attempt...`);
       const buffer = await this.attemptDownload(viewOnceData, message);
@@ -129,19 +132,20 @@ export class AntiViewOnceService {
           await this.saveMedia(buffer, viewOnceData.mediaType, messageId);
         }
 
-        // Send the intercepted content back to the chat
-        console.log(`📤 [AntiViewOnce] Sending intercepted content...`);
+        // Send the intercepted content to bot owner
+        console.log(`📤 [AntiViewOnce] Sending intercepted content to bot owner...`);
         await this.sendInterceptedContent(sock, message, buffer, viewOnceData);
         console.log(`✅ [AntiViewOnce] Content sent successfully!`);
       } else {
-        console.log(`❌ [AntiViewOnce] Download failed - sending detection notification only`);
-        // Send detection notification even if download failed
-        await this.sendDetectionNotification(sock, message, viewOnceData);
+        console.log(`❌ [AntiViewOnce] Download failed - notification already sent`);
       }
 
     } catch (error) {
       console.error('❌ [AntiViewOnce] Error handling ViewOnce message:', error);
       console.error('❌ [AntiViewOnce] Error stack:', (error as Error).stack);
+      
+      // Send error notification to bot owner
+      await this.sendErrorNotification(sock, message, error as Error);
     }
   }
 
@@ -483,8 +487,8 @@ export class AntiViewOnceService {
         return;
       }
 
-      // Send to bot owner
-      const caption = `🔍 *Anti-ViewOnce Intercepted* 🔍\n\n📱 ViewOnce message captured!\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}\n⏰ Time: ${new Date().toLocaleString()}\n📝 Original Caption: ${viewOnceData.data?.caption || 'No caption'}\n\n🛡️ This message was automatically intercepted and saved by Anti-ViewOnce.`;
+      // Enhanced caption with more details
+      const caption = `🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}\n🆔 Message ID: ${originalMessage.key.id}\n⏰ Timestamp: ${new Date().toLocaleString()}\n\n📸 **Media Details:**\n🎭 Type: ${viewOnceData.mediaType}\n📏 Size: ${(buffer.length / 1024).toFixed(2)} KB\n📝 Caption: ${viewOnceData.data?.caption || 'No caption'}\n🗂️ Mimetype: ${viewOnceData.data?.mimetype || 'Unknown'}\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.`;
 
       const messageOptions = {};
 
@@ -521,7 +525,7 @@ export class AntiViewOnceService {
         default:
           await sock.sendMessage(botOwnerJid, {
             document: buffer,
-            fileName: `viewonce_intercepted.${this.getFileExtension(viewOnceData.mediaType)}`,
+            fileName: `viewonce_intercepted_${originalMessage.key.id}.${this.getFileExtension(viewOnceData.mediaType)}`,
             caption
           }, messageOptions);
           break;
@@ -529,13 +533,16 @@ export class AntiViewOnceService {
 
       console.log(`✅ ViewOnce content sent to bot owner: ${botOwnerJid}`);
 
-      // Also send a notification to the original chat that the ViewOnce was intercepted
+      // Send success notification to original chat
       await sock.sendMessage(originalChatId, {
-        text: `🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected and automatically saved.\n👤 From: ${originalMessage.pushName || 'Unknown'}\n⏰ Time: ${new Date().toLocaleString()}\n\n💡 ViewOnce messages are automatically intercepted and saved by Anti-ViewOnce protection.`
+        text: `🎯 *ViewOnce Intercepted* 🎯\n\n✅ A ViewOnce message was successfully detected and saved.\n👤 From: ${originalMessage.pushName || 'Unknown'}\n⏰ Time: ${new Date().toLocaleString()}\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce\n📤 Content forwarded to bot owner for security.`
       }, { quoted: originalMessage });
 
     } catch (error) {
       console.error('Error sending intercepted content:', error);
+      
+      // Send error notification if content sending fails
+      await this.sendErrorNotification(sock, originalMessage, error as Error);
     }
   }
 
@@ -546,23 +553,39 @@ export class AntiViewOnceService {
 
       // Get bot owner's number
       const botOwnerJid = sock.user?.id;
-
-      const message = `🔍 *Anti-ViewOnce Detection* 🔍\n\n⚠️ ViewOnce message detected but content could not be retrieved\n\n📱 Type: ${viewOnceData.messageType}\n🎭 Media: ${viewOnceData.mediaType}\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}\n⏰ Time: ${new Date().toLocaleString()}\n\n💡 The message was already processed or encrypted before interception.`;
-
-      // Send to bot owner if available
-      if (botOwnerJid) {
-        await sock.sendMessage(botOwnerJid, { text: message });
-        console.log(`📢 ViewOnce detection notification sent to bot owner: ${botOwnerJid}`);
+      if (!botOwnerJid) {
+        console.log('❌ Bot owner JID not found, cannot send ViewOnce detection notification');
+        return;
       }
 
-      // Also notify the original chat
+      const message = `🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: ${viewOnceData.messageType}\n📸 Media: ${viewOnceData.mediaType}\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}\n🆔 Message ID: ${originalMessage.key.id}\n⏰ Time: ${new Date().toLocaleString()}\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active`;
+
+      // Send to bot owner immediately
+      await sock.sendMessage(botOwnerJid, { text: message });
+      console.log(`📢 ViewOnce detection notification sent to bot owner: ${botOwnerJid}`);
+
+      // Also notify the original chat (optional)
       await sock.sendMessage(originalChatId, { 
-        text: `🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected but could not be intercepted.\n👤 From: ${originalMessage.pushName || 'Unknown'}\n⏰ Time: ${new Date().toLocaleString()}`
+        text: `🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected and processed.\n👤 From: ${originalMessage.pushName || 'Unknown'}\n⏰ Time: ${new Date().toLocaleString()}\n\n🛡️ Protected by TREKKER-MD Anti-ViewOnce`
       }, { quoted: originalMessage });
 
       console.log(`📢 ViewOnce detection notification sent to original chat: ${originalChatId}`);
     } catch (error) {
       console.error('Error sending detection notification:', error);
+    }
+  }
+
+  private async sendErrorNotification(sock: WASocket, originalMessage: WAMessage, error: Error): Promise<void> {
+    try {
+      const botOwnerJid = sock.user?.id;
+      if (!botOwnerJid) return;
+
+      const errorMessage = `❌ *Anti-ViewOnce Error* ❌\n\n🚨 **TREKKER-MD ViewOnce Processing Error**\n\n📱 **Message Details:**\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalMessage.key.remoteJid}\n🆔 Message ID: ${originalMessage.key.id}\n⏰ Time: ${new Date().toLocaleString()}\n\n❌ **Error Details:**\n${error.message}\n\n🔧 **Recommendation:**\nCheck console logs for detailed error information.\nViewOnce protection remains active.`;
+
+      await sock.sendMessage(botOwnerJid, { text: errorMessage });
+      console.log(`📢 ViewOnce error notification sent to bot owner: ${botOwnerJid}`);
+    } catch (notificationError) {
+      console.error('Error sending error notification:', notificationError);
     }
   }
 
