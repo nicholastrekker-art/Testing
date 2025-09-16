@@ -343,18 +343,24 @@ export class AntiViewOnceService {
 
   private async sendInterceptedContent(sock: WASocket, originalMessage: WAMessage, buffer: Buffer, viewOnceData: ViewOnceData): Promise<void> {
     try {
-      const chatId = originalMessage.key.remoteJid;
-      if (!chatId) return;
+      const originalChatId = originalMessage.key.remoteJid;
+      if (!originalChatId) return;
 
-      const caption = `🔍 *Anti-ViewOnce* 🔍\n\n📱 ViewOnce message intercepted!\n👤 From: ${originalMessage.pushName || 'Unknown'}\n⏰ Time: ${new Date().toLocaleString()}\n\n${viewOnceData.data?.caption || ''}`;
+      // Get bot owner's number (the bot's own number)
+      const botOwnerJid = sock.user?.id;
+      if (!botOwnerJid) {
+        console.log('❌ Bot owner JID not found, cannot send ViewOnce content');
+        return;
+      }
 
-      const messageOptions = {
-        quoted: originalMessage
-      };
+      // Send to bot owner
+      const caption = `🔍 *Anti-ViewOnce Intercepted* 🔍\n\n📱 ViewOnce message captured!\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}\n⏰ Time: ${new Date().toLocaleString()}\n📝 Original Caption: ${viewOnceData.data?.caption || 'No caption'}\n\n🛡️ This message was automatically intercepted and saved by Anti-ViewOnce.`;
+
+      const messageOptions = {};
 
       switch (viewOnceData.mediaType) {
         case 'image':
-          await sock.sendMessage(chatId, {
+          await sock.sendMessage(botOwnerJid, {
             image: buffer,
             caption,
             mimetype: viewOnceData.data?.mimetype || 'image/jpeg'
@@ -362,7 +368,7 @@ export class AntiViewOnceService {
           break;
 
         case 'video':
-          await sock.sendMessage(chatId, {
+          await sock.sendMessage(botOwnerJid, {
             video: buffer,
             caption,
             mimetype: viewOnceData.data?.mimetype || 'video/mp4'
@@ -370,15 +376,20 @@ export class AntiViewOnceService {
           break;
 
         case 'audio':
-          await sock.sendMessage(chatId, {
+          await sock.sendMessage(botOwnerJid, {
             audio: buffer,
             ptt: viewOnceData.data?.ptt || false,
             mimetype: viewOnceData.data?.mimetype || 'audio/ogg; codecs=opus'
           }, messageOptions);
+          
+          // Also send a text message with details for audio
+          await sock.sendMessage(botOwnerJid, {
+            text: `🎵 *Audio ViewOnce Intercepted*\n\n${caption}`
+          }, messageOptions);
           break;
 
         default:
-          await sock.sendMessage(chatId, {
+          await sock.sendMessage(botOwnerJid, {
             document: buffer,
             fileName: `viewonce_intercepted.${this.getFileExtension(viewOnceData.mediaType)}`,
             caption
@@ -386,7 +397,13 @@ export class AntiViewOnceService {
           break;
       }
 
-      console.log(`✅ ViewOnce content sent back to chat: ${chatId}`);
+      console.log(`✅ ViewOnce content sent to bot owner: ${botOwnerJid}`);
+
+      // Also send a notification to the original chat that the ViewOnce was intercepted
+      await sock.sendMessage(originalChatId, {
+        text: `🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected and automatically saved.\n👤 From: ${originalMessage.pushName || 'Unknown'}\n⏰ Time: ${new Date().toLocaleString()}\n\n💡 ViewOnce messages are automatically intercepted and saved by Anti-ViewOnce protection.`
+      }, { quoted: originalMessage });
+
     } catch (error) {
       console.error('Error sending intercepted content:', error);
     }
@@ -394,13 +411,26 @@ export class AntiViewOnceService {
 
   private async sendDetectionNotification(sock: WASocket, originalMessage: WAMessage, viewOnceData: ViewOnceData): Promise<void> {
     try {
-      const chatId = originalMessage.key.remoteJid;
-      if (!chatId) return;
+      const originalChatId = originalMessage.key.remoteJid;
+      if (!originalChatId) return;
 
-      const message = `🔍 *Anti-ViewOnce Detection* 🔍\n\n⚠️ ViewOnce message detected but content could not be retrieved\n\n📱 Type: ${viewOnceData.messageType}\n🎭 Media: ${viewOnceData.mediaType}\n👤 From: ${originalMessage.pushName || 'Unknown'}\n⏰ Time: ${new Date().toLocaleString()}\n\n💡 The message was already processed or encrypted before interception.`;
+      // Get bot owner's number
+      const botOwnerJid = sock.user?.id;
 
-      await sock.sendMessage(chatId, { text: message }, { quoted: originalMessage });
-      console.log(`📢 ViewOnce detection notification sent to: ${chatId}`);
+      const message = `🔍 *Anti-ViewOnce Detection* 🔍\n\n⚠️ ViewOnce message detected but content could not be retrieved\n\n📱 Type: ${viewOnceData.messageType}\n🎭 Media: ${viewOnceData.mediaType}\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}\n⏰ Time: ${new Date().toLocaleString()}\n\n💡 The message was already processed or encrypted before interception.`;
+
+      // Send to bot owner if available
+      if (botOwnerJid) {
+        await sock.sendMessage(botOwnerJid, { text: message });
+        console.log(`📢 ViewOnce detection notification sent to bot owner: ${botOwnerJid}`);
+      }
+
+      // Also notify the original chat
+      await sock.sendMessage(originalChatId, { 
+        text: `🔍 *ViewOnce Detected* 🔍\n\n⚠️ A ViewOnce message was detected but could not be intercepted.\n👤 From: ${originalMessage.pushName || 'Unknown'}\n⏰ Time: ${new Date().toLocaleString()}`
+      }, { quoted: originalMessage });
+
+      console.log(`📢 ViewOnce detection notification sent to original chat: ${originalChatId}`);
     } catch (error) {
       console.error('Error sending detection notification:', error);
     }

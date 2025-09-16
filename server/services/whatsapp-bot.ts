@@ -192,21 +192,41 @@ export class WhatsAppBot {
         await this.autoStatusService.handleStatusUpdate(this.sock, m);
 
         for (const message of m.messages) {
-          // Store message for antidelete functionality
-          await antideleteService.storeMessage(message);
+          try {
+            // Store message for antidelete functionality
+            await antideleteService.storeMessage(message);
 
-          // Handle Anti-ViewOnce FIRST before processing other message handling
-          if (this.antiViewOnceService && this.hasViewOnceContent(message)) {
-            console.log(`🔍 Processing ViewOnce message from ${message.key.remoteJid}`);
-            try {
-              await this.antiViewOnceService.handleMessage(this.sock, message);
-            } catch (error) {
-              console.error('Error in anti-viewonce processing:', error);
+            // Handle Anti-ViewOnce FIRST and ALWAYS check for ViewOnce content
+            if (this.antiViewOnceService) {
+              const hasViewOnce = this.hasViewOnceContent(message);
+              if (hasViewOnce) {
+                console.log(`🔍 ViewOnce message detected from ${message.key.remoteJid || 'unknown'}`);
+                console.log(`📋 Message structure:`, JSON.stringify(message.message, null, 2));
+                
+                try {
+                  await this.antiViewOnceService.handleMessage(this.sock, message);
+                  console.log(`✅ ViewOnce processing completed for message from ${message.key.remoteJid}`);
+                } catch (error) {
+                  console.error('❌ Error in anti-viewonce processing:', error);
+                  
+                  // Log error to activities
+                  await storage.createActivity({
+                    serverName: this.botInstance.serverName,
+                    botInstanceId: this.botInstance.id,
+                    type: 'error',
+                    description: `ViewOnce processing error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                    metadata: { from: message.key.remoteJid }
+                  });
+                }
+              }
             }
-          }
 
-          // Process regular message handling
-          await this.handleMessage(message);
+            // Process regular message handling
+            await this.handleMessage(message);
+            
+          } catch (error) {
+            console.error(`Error processing message from ${message.key.remoteJid}:`, error);
+          }
         }
       }
     });
@@ -270,27 +290,25 @@ export class WhatsAppBot {
     try {
       if (!message.message) return;
 
-      const messageText = this.extractMessageText(message.message);
-
-      if (!messageText) return;
-
-      // Update message count
+      // Always update message count for any message
       await storage.updateBotInstance(this.botInstance.id, {
         messagesCount: (this.botInstance.messagesCount || 0) + 1,
         lastActivity: new Date()
       });
 
+      const messageText = this.extractMessageText(message.message);
+
       // Get command prefix from environment variable (default: .)
       const commandPrefix = process.env.BOT_PREFIX || '.';
 
       // Handle commands (only respond to messages with the configured prefix)
-      if (messageText.startsWith(commandPrefix)) {
+      if (messageText && messageText.startsWith(commandPrefix)) {
         console.log(`Bot ${this.botInstance.name}: Detected command: "${messageText.trim()}"`);
         await this.handleCommand(message, messageText);
         return;
       }
 
-      // Auto-reactions and features (only for prefix commands)
+      // Auto-reactions and features for non-command messages
       await this.handleAutoFeatures(message);
 
       // No automatic ChatGPT responses - only respond to prefix commands
