@@ -318,5 +318,325 @@
     "sender": "120363404795599832@g.us",
     "group": "120363404795599832@g.us",
     "timestamp": "2025-09-16T11:36:34.623Z"
+  },
+  "3EB0445EE2F10BF99A283C": {
+    "content": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:51:19.055Z"
+  },
+  "3EB047F8B277DF730D3C80": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:51:20.909Z"
+  },
+  "65B8CAB0DCCF49B2B7BD02FF6DC35A74": {
+    "content": ".antidelete",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:51:29.485Z"
+  },
+  "3EB0C45E9932D3F5ABF842": {
+    "content": "*ANTIDELETE SETUP*\n\nCurrent Status: ✅ Enabled\n\n*.antidelete on* - Enable\n*.antidelete off* - Disable",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:51:33.267Z"
+  },
+  "3EB08C079B61F7AFF6AB63": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:51:34.999Z"
+  },
+  "E36A9E83F47C96B29B404144CFEAC110": {
+    "content": ".antiviewonce",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:51:43.249Z"
+  },
+  "3EB082415D553FFD4E89C5": {
+    "content": "🔍 *Anti-ViewOnce Settings*\n\n👁️ *Status:* enabled\n💾 *Save Media:* enabled\n\n*Commands:*\n.antiviewonce on - Enable anti-viewonce\n.antiviewonce off - Disable anti-viewonce\n.antiviewonce save on - Enable media saving\n.antiviewonce save off - Disable media saving",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:51:44.848Z"
+  },
+  "3EB01ED6FE7E41E6BDD352": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:51:47.396Z"
+  },
+  "8A1123D8BEC1DAF7A038A4CA43FC14D5": {
+    "content": ".antiviewonce on",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:52:12.750Z"
+  },
+  "3EB0A77A21B55604FABB77": {
+    "content": "✅ Anti ViewOnce has been enabled!\nAll ViewOnce messages will now be intercepted and saved.",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:52:14.993Z"
+  },
+  "3EB080BDAFDC9C7FE0D4AB": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:52:16.844Z"
+  },
+  "F027462200AA9A7EC3E5DA6D210E6FF4": {
+    "content": "",
+    "mediaType": "image",
+    "mediaPath": "/home/runner/workspace/server/tmp/F027462200AA9A7EC3E5DA6D210E6FF4.jpg",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:53:29.725Z"
+  },
+  "5BE2A84FE927CEF8D0BE2D9F838E1CF8": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:54:13.705Z"
+  },
+  "3C4D334CC51D9E28BA4DBBA5D3EFED9C": {
+    "content": ".vv",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:54:23.361Z"
+  },
+  "3EB0D714C9DCDF7A2CD472": {
+    "content": "❌ Command .vv not found. Type .help to see available commands.",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:54:27.870Z"
+  },
+  "3EB0BAACF92928CAD5E9C7": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:54:29.984Z"
+  },
+  "E5455583AD1977DAD6ABEA49EC40161F": {
+    "content": ".antiviewonce",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:54:44.067Z"
+  },
+  "3EB0BDA48593B6D66E9CE9": {
+    "content": "🔍 *Anti-ViewOnce Settings*\n\n👁️ *Status:* enabled\n💾 *Save Media:* enabled\n\n*Commands:*\n.antiviewonce on - Enable anti-viewonce\n.antiviewonce off - Disable anti-viewonce\n.antiviewonce save on - Enable media saving\n.antiviewonce save off - Disable media saving",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:54:46.374Z"
+  },
+  "3EB09BA38A1C124C65CD45": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:54:48.961Z"
+  },
+  "F487EA46BF0B4810C1B0B88BA28179B5": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:55:05.077Z"
+  },
+  "8FF545DB61545399D8C3601B2440BFDC": {
+    "content": ".antiviewonce",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:56:17.349Z"
+  },
+  "3EB065DB1688BB5AB692C1": {
+    "content": "🔍 *Anti-ViewOnce Settings*\n\n👁️ *Status:* enabled\n💾 *Save Media:* enabled\n\n*Commands:*\n.antiviewonce on - Enable anti-viewonce\n.antiviewonce off - Disable anti-viewonce\n.antiviewonce save on - Enable media saving\n.antiviewonce save off - Disable media saving",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:56:21.492Z"
+  },
+  "3EB068C8D1652104C00E55": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:56:24.934Z"
+  },
+  "C140962B093044A26C79C5D085DC0D10": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "280234452607229@lid",
+    "group": "120363404795599832@g.us",
+    "timestamp": "2025-09-16T12:57:08.838Z"
+  },
+  "9B4424F6D71682A1260D5C231A89DE15": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:57:04.211Z"
+  },
+  "56F54F2D01C1EEA10631AE8753D32D0A": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "280234452607229@lid",
+    "group": "120363404795599832@g.us",
+    "timestamp": "2025-09-16T12:58:17.738Z"
+  },
+  "6F10D2C17086780A04371A2D966D0507": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:58:11.131Z"
+  },
+  "4AE94C35321EDF74BC7140AB4F5EC5B3": {
+    "content": ".antviewonce",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:58:33.136Z"
+  },
+  "5FACCA28B7E133E4B3A6D7E49691EC47": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:58:32.637Z"
+  },
+  "3EB0E3EF237EB233385B12": {
+    "content": "❌ Command .antviewonce not found. Type .help to see available commands.",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:58:34.862Z"
+  },
+  "3EB0D2A76DCDA7C3CC678A": {
+    "content": "❌ Command .antviewonce not found. Type .help to see available commands.",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:58:35.408Z"
+  },
+  "3EB04C094404B717587165": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:58:37.041Z"
+  },
+  "3EB0D2D6B0B3AA6A3D4967": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:58:37.042Z"
+  },
+  "9B22621B2435EB030DF6D52D1E1B3A46": {
+    "content": ".antiviewonce",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:59:07.657Z"
+  },
+  "3EB0BD4B240F43871348BE": {
+    "content": "🔍 *Anti-ViewOnce Settings*\n\n👁️ *Status:* enabled\n💾 *Save Media:* enabled\n\n*Commands:*\n.antiviewonce on - Enable anti-viewonce\n.antiviewonce off - Disable anti-viewonce\n.antiviewonce save on - Enable media saving\n.antiviewonce save off - Disable media saving",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:59:10.692Z"
+  },
+  "3EB01491510D8D45DFB398": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:59:13.615Z"
+  },
+  "46595E94B5EFB5A47960B45483D6F2B0": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:59:31.107Z"
+  },
+  "36FF42C8AC3502327FC17A23BFC837CA": {
+    "content": ".antiviewonce",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:59:35.697Z"
+  },
+  "3EB0C7A0ECF63E22406F6E": {
+    "content": "🔍 *Anti-ViewOnce Settings*\n\n👁️ *Status:* enabled\n💾 *Save Media:* enabled\n\n*Commands:*\n.antiviewonce on - Enable anti-viewonce\n.antiviewonce off - Disable anti-viewonce\n.antiviewonce save on - Enable media saving\n.antiviewonce save off - Disable media saving",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:59:39.767Z"
+  },
+  "3EB02C92B8B7D91DD5121D": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T12:59:43.970Z"
   }
 }
