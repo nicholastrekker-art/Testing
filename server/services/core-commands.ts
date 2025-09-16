@@ -786,45 +786,6 @@ commandRegistry.register({
       console.error('Error in getviewonce command:', error);
       await respond('❌ Error attempting ViewOnce recovery.');
     }
-  }f (!message.key.fromMe) {
-      await respond('❌ This command can only be used by the bot owner!');
-      return;
-    }
-
-    try {
-      // Get the bot ID from the context
-      const botId = context.botId || 'default';
-      const antiViewOnceService = getAntiViewOnceService(botId);
-
-      if (!antiViewOnceService) {
-        await respond('❌ Anti-viewonce service is not available.');
-        return;
-      }
-
-      // If no arguments, show current status
-      if (!args || args.length === 0) {
-        const statusMessage = antiViewOnceService.getStatusMessage();
-        await respond(statusMessage);
-        return;
-      }
-
-      // Handle on/off commands
-      const command = args[0].toLowerCase();
-
-      if (command === 'on') {
-        antiViewOnceService.setEnabled(true);
-        await respond('✅ Anti ViewOnce has been enabled!\nAll ViewOnce messages will now be intercepted and saved.');
-      } else if (command === 'off') {
-        antiViewOnceService.setEnabled(false);
-        await respond('❌ Anti ViewOnce has been disabled!\nViewOnce messages will no longer be intercepted.');
-      } else {
-        await respond('❌ Invalid command! Use: .antiviewonce on/off');
-      }
-
-    } catch (error) {
-      console.error('Error in antiviewonce command:', error);
-      await respond('❌ Error occurred while managing Anti ViewOnce!\n' + (error as Error).message);
-    }
   }
 });
 
