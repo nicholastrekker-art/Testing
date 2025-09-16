@@ -155,6 +155,59 @@ export class AntiViewOnceService {
     console.log('📋 Analyzing message for ViewOnce content:', Object.keys(message));
     console.log('📋 Full message structure:', JSON.stringify(message, null, 2));
 
+    // **PRIORITY CHECK: ViewOnce content in quoted messages (replies)**
+    if (message.extendedTextMessage?.contextInfo?.quotedMessage) {
+      const quotedMessage = message.extendedTextMessage.contextInfo.quotedMessage;
+      console.log('🔍 Checking quoted message for ViewOnce content:', Object.keys(quotedMessage));
+      
+      // Check for ViewOnce image in quoted message
+      if (quotedMessage.imageMessage?.viewOnce) {
+        console.log(`✅ Found ViewOnce image in quoted message`);
+        return {
+          content: { imageMessage: quotedMessage.imageMessage },
+          messageType: 'imageMessage',
+          mediaType: 'image',
+          data: quotedMessage.imageMessage
+        };
+      }
+      
+      // Check for ViewOnce video in quoted message
+      if (quotedMessage.videoMessage?.viewOnce) {
+        console.log(`✅ Found ViewOnce video in quoted message`);
+        return {
+          content: { videoMessage: quotedMessage.videoMessage },
+          messageType: 'videoMessage',
+          mediaType: 'video',
+          data: quotedMessage.videoMessage
+        };
+      }
+      
+      // Check for ViewOnce audio in quoted message
+      if (quotedMessage.audioMessage?.viewOnce) {
+        console.log(`✅ Found ViewOnce audio in quoted message`);
+        return {
+          content: { audioMessage: quotedMessage.audioMessage },
+          messageType: 'audioMessage',
+          mediaType: 'audio',
+          data: quotedMessage.audioMessage
+        };
+      }
+      
+      // Check for any media with viewOnce property in quoted message
+      const mediaTypes = ['imageMessage', 'videoMessage', 'audioMessage', 'documentMessage'];
+      for (const mediaType of mediaTypes) {
+        if (quotedMessage[mediaType]?.hasOwnProperty('viewOnce')) {
+          console.log(`✅ Found ViewOnce ${mediaType} in quoted message:`, quotedMessage[mediaType].viewOnce);
+          return {
+            content: { [mediaType]: quotedMessage[mediaType] },
+            messageType: mediaType,
+            mediaType: this.getMediaType(mediaType),
+            data: quotedMessage[mediaType]
+          };
+        }
+      }
+    }
+
     // Check for viewOnceMessage
     if (message.viewOnceMessage?.message) {
       const content = message.viewOnceMessage.message;
@@ -353,12 +406,41 @@ export class AntiViewOnceService {
       async (): Promise<Buffer | null> => {
         if (!viewOnceData.data) return null;
         console.log(`🔄 Method 1: Downloading from data object (${viewOnceData.mediaType})`);
+        console.log(`🔄 Method 1: Media data keys:`, Object.keys(viewOnceData.data));
+        
+        // Check if this data has the required fields for download
+        if (!viewOnceData.data.url && !viewOnceData.data.directPath) {
+          console.log(`⚠️ Method 1: No URL or directPath found in media data`);
+          return null;
+        }
+        
         const stream = await downloadContentFromMessage(viewOnceData.data, viewOnceData.mediaType as any);
         let buffer = Buffer.from([]);
         for await (const chunk of stream) {
           buffer = Buffer.concat([buffer, chunk]);
         }
         return buffer.length > 0 ? buffer : null;
+      },
+
+      // Method 1.5: Download from quoted ViewOnce content
+      async (): Promise<Buffer | null> => {
+        const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+        if (!quotedMessage) return null;
+        
+        const mediaTypes = ['imageMessage', 'videoMessage', 'audioMessage', 'documentMessage'];
+        for (const mediaType of mediaTypes) {
+          if (quotedMessage[mediaType]?.viewOnce) {
+            console.log(`🔄 Method 1.5: Downloading quoted ViewOnce ${mediaType}`);
+            const mediaData = quotedMessage[mediaType];
+            const stream = await downloadContentFromMessage(mediaData, this.getMediaType(mediaType) as any);
+            let buffer = Buffer.from([]);
+            for await (const chunk of stream) {
+              buffer = Buffer.concat([buffer, chunk]);
+            }
+            return buffer.length > 0 ? buffer : null;
+          }
+        }
+        return null;
       },
 
       // Method 2: Download from wrapped viewOnce message
@@ -487,8 +569,13 @@ export class AntiViewOnceService {
         return;
       }
 
+      // Check if this was recovered from a quoted message
+      const isFromQuotedMessage = originalMessage.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      const recoveryMethod = isFromQuotedMessage ? 'Quoted Message Recovery' : 'Direct Interception';
+      const replyText = originalMessage.message?.extendedTextMessage?.text || '';
+      
       // Enhanced caption with more details
-      const caption = `🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}\n🆔 Message ID: ${originalMessage.key.id}\n⏰ Timestamp: ${new Date().toLocaleString()}\n\n📸 **Media Details:**\n🎭 Type: ${viewOnceData.mediaType}\n📏 Size: ${(buffer.length / 1024).toFixed(2)} KB\n📝 Caption: ${viewOnceData.data?.caption || 'No caption'}\n🗂️ Mimetype: ${viewOnceData.data?.mimetype || 'Unknown'}\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.`;
+      const caption = `🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}\n🆔 Message ID: ${originalMessage.key.id}\n⏰ Timestamp: ${new Date().toLocaleString()}\n🔍 Method: ${recoveryMethod}${replyText ? `\n💬 Reply Text: "${replyText}"` : ''}\n\n📸 **Media Details:**\n🎭 Type: ${viewOnceData.mediaType}\n📏 Size: ${(buffer.length / 1024).toFixed(2)} KB\n📝 Caption: ${viewOnceData.data?.caption || 'No caption'}\n🗂️ Mimetype: ${viewOnceData.data?.mimetype || 'Unknown'}\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.`;
 
       const messageOptions = {};
 
@@ -558,7 +645,11 @@ export class AntiViewOnceService {
         return;
       }
 
-      const message = `🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: ${viewOnceData.messageType}\n📸 Media: ${viewOnceData.mediaType}\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}\n🆔 Message ID: ${originalMessage.key.id}\n⏰ Time: ${new Date().toLocaleString()}\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active`;
+      // Check if this was found in a quoted message
+      const isFromQuotedMessage = originalMessage.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      const detectionSource = isFromQuotedMessage ? 'quoted/replied message' : 'direct message';
+      
+      const message = `🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: ${viewOnceData.messageType}\n📸 Media: ${viewOnceData.mediaType}\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}\n🆔 Message ID: ${originalMessage.key.id}\n⏰ Time: ${new Date().toLocaleString()}\n🔍 Detection: Found in ${detectionSource}\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active`;
 
       // Send to bot owner immediately
       await sock.sendMessage(botOwnerJid, { text: message });
