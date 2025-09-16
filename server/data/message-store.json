@@ -84043,5 +84043,3666 @@
         "senderTimestampMs": "1758041275135"
       }
     }
+  },
+  "3EB037FF2631861008F7A6": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:02.712Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0875E32F9D7B840BDE1"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041276869"
+      }
+    }
+  },
+  "3EB01B0BD618A59C0FAC1D": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:03.361Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB06C78FACB29B30BE431"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041277587"
+      }
+    }
+  },
+  "3EB0D7C570EFF981CF91AE": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:04.015Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB01051EA09E12908350A"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041277956"
+      }
+    }
+  },
+  "3EB06C8B12524AFAF34EFC": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:04.649Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0ACB8B7B7C69DA60381"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041278582"
+      }
+    }
+  },
+  "3EB00F7383B3FF2BDDEAD0": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:06.113Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB037FF2631861008F7A6"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041282840"
+      }
+    }
+  },
+  "3EB0DAEEC33EB7F1AA2AD8": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:06.381Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB06C8B12524AFAF34EFC"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041284776"
+      }
+    }
+  },
+  "3EB04C28E4FF139A0F572E": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:06.763Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB01B0BD618A59C0FAC1D"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041283496"
+      }
+    }
+  },
+  "3EB074F79E02F35041ECEC": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:07.623Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0D7C570EFF981CF91AE"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041284136"
+      }
+    }
+  },
+  "3EB0ED3DBB56458D0B8215": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:09.721Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB00F7383B3FF2BDDEAD0"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041286247"
+      }
+    }
+  },
+  "3EB0CD6A8020D3A7181F8C": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:10.397Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0DAEEC33EB7F1AA2AD8"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041286507"
+      }
+    }
+  },
+  "3EB066B515ED0A575A0A6D": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:11.029Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB04C28E4FF139A0F572E"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041286889"
+      }
+    }
+  },
+  "3EB0C733738B44AAED1F23": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:11.680Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB074F79E02F35041ECEC"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041287769"
+      }
+    }
+  },
+  "3EB051B47EC320660B49C2": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:12.779Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0ED3DBB56458D0B8215"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041289871"
+      }
+    }
+  },
+  "3EB0EFB61C3D16E97C67FA": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:13.471Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0CD6A8020D3A7181F8C"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041290514"
+      }
+    }
+  },
+  "3EB0E630A10DCD070C7F1E": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:14.118Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB066B515ED0A575A0A6D"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041291163"
+      }
+    }
+  },
+  "3EB0A0B9CD63F55E2D28EB": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:14.182Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0C733738B44AAED1F23"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041291816"
+      }
+    }
+  },
+  "3EB0DFDC6BD5D9E3FCBE6B": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:14.516Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB051B47EC320660B49C2"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041292942"
+      }
+    }
+  },
+  "3EB00BABDD3198A0EF7637": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:15.805Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0EFB61C3D16E97C67FA"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041293603"
+      }
+    }
+  },
+  "3EB0819E8F868D576A37C9": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:16.432Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0E630A10DCD070C7F1E"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041294250"
+      }
+    }
+  },
+  "3EB0036099EB912FAFE5EB": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:17.215Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0A0B9CD63F55E2D28EB"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041294311"
+      }
+    }
+  },
+  "3EB0F7EEE6368D88513109": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:17.520Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB00BABDD3198A0EF7637"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041295933"
+      }
+    }
+  },
+  "3EB0667C5FDF766DF68B63": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:17.849Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0DFDC6BD5D9E3FCBE6B"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041294663"
+      }
+    }
+  },
+  "3EB0C7C398395EC03A81BA": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:20.785Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0819E8F868D576A37C9"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041296562"
+      }
+    }
+  },
+  "3EB0EA1F666C2EFFB8F5D9": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:21.432Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0036099EB912FAFE5EB"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041297349"
+      }
+    }
+  },
+  "3EB0DF28C88FD31A791D62": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:22.077Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0F7EEE6368D88513109"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041297670"
+      }
+    }
+  },
+  "3EB0F90EA788E32DB26794": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:22.722Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0667C5FDF766DF68B63"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041297974"
+      }
+    }
+  },
+  "3EB0FE1276EF2204B2C774": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:25.475Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0C7C398395EC03A81BA"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041300912"
+      }
+    }
+  },
+  "3EB02B38D5B190EEEA2091": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:26.126Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0EA1F666C2EFFB8F5D9"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041301562"
+      }
+    }
+  },
+  "3EB02B103493DFF63232A0": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:26.983Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0DF28C88FD31A791D62"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041302218"
+      }
+    }
+  },
+  "3EB08195D7F256F6724ACC": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:27.156Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0FE1276EF2204B2C774"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041305600"
+      }
+    }
+  },
+  "3EB03F5D68662CE451CFFA": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:27.633Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0F90EA788E32DB26794"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041302855"
+      }
+    }
+  },
+  "3EB0EDB1B00D73C21FF48C": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:28.471Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB02B38D5B190EEEA2091"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041306280"
+      }
+    }
+  },
+  "3EB0ED0A2D591EB98C290B": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:30.378Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB02B103493DFF63232A0"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041307125"
+      }
+    }
+  },
+  "3EB00F4F0EC05953F3E52D": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:31.025Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB08195D7F256F6724ACC"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041307284"
+      }
+    }
+  },
+  "3EB0EC620320F92854FEEB": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:31.887Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB03F5D68662CE451CFFA"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041307759"
+      }
+    }
+  },
+  "3EB01272A91A8072FA91E1": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:32.552Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0EDB1B00D73C21FF48C"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041308603"
+      }
+    }
+  },
+  "3EB02CFF4040C19D65A4BC": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:35.007Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0ED0A2D591EB98C290B"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041310513"
+      }
+    }
+  },
+  "3EB0A58BF17EAA527346A5": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:35.670Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB00F4F0EC05953F3E52D"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041311160"
+      }
+    }
+  },
+  "3EB0BF5FFF7A1F756F62B0": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:36.313Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0EC620320F92854FEEB"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041312034"
+      }
+    }
+  },
+  "3EB0DF50565A65D1B95027": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:36.835Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB02CFF4040C19D65A4BC"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041315147"
+      }
+    }
+  },
+  "3EB04AEBE0DF611DD913AB": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:36.967Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB01272A91A8072FA91E1"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041312686"
+      }
+    }
+  },
+  "3EB0A280DE0D4BCBD97E33": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:37.412Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0A58BF17EAA527346A5"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041315793"
+      }
+    }
+  },
+  "3EB09FEBE81E0C4AC299AB": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:38.845Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0BF5FFF7A1F756F62B0"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041316445"
+      }
+    }
+  },
+  "3EB083830D41A9D1B74F3B": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:39.061Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0A280DE0D4BCBD97E33"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041317527"
+      }
+    }
+  },
+  "3EB05860138DB7CA431599": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:40.286Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0DF50565A65D1B95027"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041316955"
+      }
+    }
+  },
+  "3EB01D5A6B88E31D11DAB5": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:40.914Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB04AEBE0DF611DD913AB"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041317095"
+      }
+    }
+  },
+  "3EB042C17B0F412464EB11": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:42.902Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB083830D41A9D1B74F3B"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041319672"
+      }
+    }
+  },
+  "3EB09F01B1A6D85E8C48D6": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:43.775Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB09FEBE81E0C4AC299AB"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041319558"
+      }
+    }
+  },
+  "3EB0A6BE552436739A113E": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:44.632Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB05860138DB7CA431599"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041320411"
+      }
+    }
+  },
+  "3EB03DDA5AB96F63582B99": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:45.282Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB01D5A6B88E31D11DAB5"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041321039"
+      }
+    }
+  },
+  "3EB08E3CA6723F99EE1168": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:45.457Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB042C17B0F412464EB11"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041323039"
+      }
+    }
+  },
+  "3EB00F37DE96087035FA8F": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:47.208Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB09F01B1A6D85E8C48D6"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041323901"
+      }
+    }
+  },
+  "3EB0F83D19B23CDA0D7401": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:47.862Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0A6BE552436739A113E"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041324770"
+      }
+    }
+  },
+  "3EB04BB2BDD061228812DC": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:48.497Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB03DDA5AB96F63582B99"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041325437"
+      }
+    }
+  },
+  "3EB0CC377F752196A5A958": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:49.142Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB08E3CA6723F99EE1168"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041325583"
+      }
+    }
+  },
+  "3EB030B6D1992F97FCE0D8": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:49.932Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB00F37DE96087035FA8F"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041327347"
+      }
+    }
+  },
+  "3EB07E06D85AFD7FF5D9DA": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:50.628Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0F83D19B23CDA0D7401"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041327990"
+      }
+    }
+  },
+  "3EB074E059083D285FFAEA": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:50.692Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB04BB2BDD061228812DC"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041328634"
+      }
+    }
+  },
+  "3EB055871F4567DC974B43": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:51.899Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0CC377F752196A5A958"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041329276"
+      }
+    }
+  },
+  "3EB0F35D6A9C84DD318468": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:52.549Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB030B6D1992F97FCE0D8"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041330096"
+      }
+    }
+  },
+  "3EB09885FE3EF9B2472B28": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:53.148Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB07E06D85AFD7FF5D9DA"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041330779"
+      }
+    }
+  },
+  "3EB08D13CCA18B2FA461E7": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:53.984Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB074E059083D285FFAEA"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041330834"
+      }
+    }
+  },
+  "3EB004BF3F0601C991B89B": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:54.241Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB055871F4567DC974B43"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041332023"
+      }
+    }
+  },
+  "3EB036F5505B89B6D03AB0": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:55.150Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0F35D6A9C84DD318468"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041332688"
+      }
+    }
+  },
+  "3EB06CDBF9AD73B5C00304": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:55.802Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB09885FE3EF9B2472B28"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041333276"
+      }
+    }
+  },
+  "3EB0F934239E9F63464D51": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:55.903Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB08D13CCA18B2FA461E7"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041334117"
+      }
+    }
+  },
+  "3EB05621C03F7A6815B1B9": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:56.824Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB004BF3F0601C991B89B"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041334386"
+      }
+    }
+  },
+  "3EB0F4F37C3968E8859C12": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:57.485Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB036F5505B89B6D03AB0"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041335284"
+      }
+    }
+  },
+  "3EB0ED9E765FF79C734870": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:57.572Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB06CDBF9AD73B5C00304"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041335930"
+      }
+    }
+  },
+  "3EB0567015FBA929330B2D": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:58.215Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0F934239E9F63464D51"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041336040"
+      }
+    }
+  },
+  "3EB0464392E4A260C8059F": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:58.544Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB05621C03F7A6815B1B9"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041336969"
+      }
+    }
+  },
+  "3EB0DB28B3384F53F361F0": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:48:59.990Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0F4F37C3968E8859C12"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041337621"
+      }
+    }
+  },
+  "3EB08BDAA422A4E28B06D5": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:00.241Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0464392E4A260C8059F"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041338680"
+      }
+    }
+  },
+  "3EB0FB1E0825B83037D4F7": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:00.765Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0ED9E765FF79C734870"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041337707"
+      }
+    }
+  },
+  "3EB061FEBD96F63AF81A2D": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:01.447Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0567015FBA929330B2D"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041338353"
+      }
+    }
+  },
+  "3EB081C3AC5BC7A5C34D11": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:01.940Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0DB28B3384F53F361F0"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041340234"
+      }
+    }
+  },
+  "3EB0CE37F3B7C6115F89E8": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:02.372Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB08BDAA422A4E28B06D5"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041340433"
+      }
+    }
+  },
+  "3EB0D80E875E68F5C49643": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:02.565Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0FB1E0825B83037D4F7"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041340931"
+      }
+    }
+  },
+  "3EB0DC8E35FC3012237C27": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:03.295Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB061FEBD96F63AF81A2D"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041341726"
+      }
+    }
+  },
+  "3EB05A6CF9D8FC4CC18691": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:04.544Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB081C3AC5BC7A5C34D11"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041342081"
+      }
+    }
+  },
+  "3EB0DC076067C94CC42A81": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:05.212Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0CE37F3B7C6115F89E8"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041342517"
+      }
+    }
+  },
+  "3EB04F1F144931A192AAAB": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:05.295Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0DC8E35FC3012237C27"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041343419"
+      }
+    }
+  },
+  "3EB00AA30F949F8BC47C5E": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:05.867Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0D80E875E68F5C49643"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041342690"
+      }
+    }
+  },
+  "3EB0C372F2E6D248828487": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:06.409Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB05A6CF9D8FC4CC18691"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041344692"
+      }
+    }
+  },
+  "3EB09F8327E13A1841DE82": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:06.959Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0DC076067C94CC42A81"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041345343"
+      }
+    }
+  },
+  "3EB0DD8C17908E68ECE3DE": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:07.209Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB04F1F144931A192AAAB"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041345418"
+      }
+    }
+  },
+  "3EB0CC224BC76C58D4B1FA": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:07.772Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB00AA30F949F8BC47C5E"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041346000"
+      }
+    }
+  },
+  "3EB05D47D60BAC5FF616FA": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:08.186Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0C372F2E6D248828487"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041346538"
+      }
+    }
+  },
+  "3EB05718F65F697D16D775": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:08.741Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB09F8327E13A1841DE82"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041347089"
+      }
+    }
+  },
+  "3EB083B828941B2CF0C164": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:09.294Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0DD8C17908E68ECE3DE"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041347340"
+      }
+    }
+  },
+  "3EB03AA98DFB89F68B75CD": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:09.719Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0CC224BC76C58D4B1FA"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041347918"
+      }
+    }
+  },
+  "3EB0D5F495F503FC9ABE37": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:09.946Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB05D47D60BAC5FF616FA"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041348307"
+      }
+    }
+  },
+  "3EB0EEB60AFAE7B6D4B26D": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:11.307Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB05718F65F697D16D775"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041348890"
+      }
+    }
+  },
+  "3EB08AC3EAF471077B3F8B": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:11.698Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB03AA98DFB89F68B75CD"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041349851"
+      }
+    }
+  },
+  "3EB0C05CB6E0F34DAC1651": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:11.965Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB083B828941B2CF0C164"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041349429"
+      }
+    }
+  },
+  "3EB01ACB80EF9FBD84D81B": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:12.328Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0D5F495F503FC9ABE37"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041350080"
+      }
+    }
+  },
+  "3EB097C7837653614389AF": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:13.086Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0EEB60AFAE7B6D4B26D"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041351440"
+      }
+    }
+  },
+  "3EB07F06B975340FD76E14": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:13.748Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB08AC3EAF471077B3F8B"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041351821"
+      }
+    }
+  },
+  "3EB0AD8C833432DB6200C7": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:14.306Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB01ACB80EF9FBD84D81B"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041352456"
+      }
+    }
+  },
+  "3EB0DE36095EAF0C6B7578": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:14.379Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0C05CB6E0F34DAC1651"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041352099"
+      }
+    }
+  },
+  "3EB08BDE71E17B79492F7C": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:15.077Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB097C7837653614389AF"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041353216"
+      }
+    }
+  },
+  "3EB099EDF2BFECE14B43CE": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:15.466Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB07F06B975340FD76E14"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041353872"
+      }
+    }
+  },
+  "3EB0D59F14CFA6467EE99A": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:16.102Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0AD8C833432DB6200C7"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041354465"
+      }
+    }
+  },
+  "3EB0AFBAF877C085D74A84": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:16.970Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0DE36095EAF0C6B7578"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041354519"
+      }
+    }
+  },
+  "3EB049DE344C8A60A430BF": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:17.383Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB08BDE71E17B79492F7C"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041355209"
+      }
+    }
+  },
+  "3EB095BDD7873F07E98753": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:18.053Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB099EDF2BFECE14B43CE"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041355597"
+      }
+    }
+  },
+  "3EB0198446FCC7E28F6764": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:18.673Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0D59F14CFA6467EE99A"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041356227"
+      }
+    }
+  },
+  "3EB08B1E7DE5A662CBA9B5": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:19.078Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB049DE344C8A60A430BF"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041357527"
+      }
+    }
+  },
+  "3EB0848106E443E7E024B1": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:19.425Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0AFBAF877C085D74A84"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041357098"
+      }
+    }
+  },
+  "3EB05673C1601027B270D6": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:19.742Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB095BDD7873F07E98753"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041358188"
+      }
+    }
+  },
+  "3EB0F33612B376AF49F6A3": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:21.124Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0198446FCC7E28F6764"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041358900"
+      }
+    }
+  },
+  "3EB0993AB0C3B42D3C9304": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:21.498Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0848106E443E7E024B1"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041359549"
+      }
+    }
+  },
+  "3EB070ED70E2B06DA2650E": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:21.873Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB05673C1601027B270D6"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041359894"
+      }
+    }
+  },
+  "3EB0FCBBC25D0F33BB11F8": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:21.982Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB08B1E7DE5A662CBA9B5"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041359215"
+      }
+    }
+  },
+  "3EB06638799C0C77E56E2F": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:23.662Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0F33612B376AF49F6A3"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041361255"
+      }
+    }
+  },
+  "3EB0DBA5243BED7B406542": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:24.327Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0993AB0C3B42D3C9304"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041361625"
+      }
+    }
+  },
+  "3EB0359EB6100396AF4532": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:24.963Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB070ED70E2B06DA2650E"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041362012"
+      }
+    }
+  },
+  "3EB0425828829AAFEBAFC8": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:25.607Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0FCBBC25D0F33BB11F8"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041362124"
+      }
+    }
+  },
+  "3EB03086AA050FE447F175": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:26.054Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB06638799C0C77E56E2F"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041363797"
+      }
+    }
+  },
+  "3EB0EFEDD40FF0AE4E1018": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:26.653Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0359EB6100396AF4532"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041365091"
+      }
+    }
+  },
+  "3EB0B53AB160C06E86530B": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:26.721Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0DBA5243BED7B406542"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041364459"
+      }
+    }
+  },
+  "3EB0639FF93A5EB5378B30": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:27.371Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0425828829AAFEBAFC8"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041365728"
+      }
+    }
+  },
+  "3EB02541F896D42E0DC8D6": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:28.048Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB03086AA050FE447F175"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041366196"
+      }
+    }
+  },
+  "3EB03BA87E0438C4D570B4": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:28.425Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0EFEDD40FF0AE4E1018"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041366793"
+      }
+    }
+  },
+  "3EB0F78DC17F67E73B1193": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:29.080Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0639FF93A5EB5378B30"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041367513"
+      }
+    }
+  },
+  "3EB009A536C67E568491A8": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:29.115Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0B53AB160C06E86530B"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041366847"
+      }
+    }
+  },
+  "3EB086B68B17DAC4A59FAD": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:29.743Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB02541F896D42E0DC8D6"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041368183"
+      }
+    }
+  },
+  "3EB02AF6B1A3AB263CFED7": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:30.413Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB03BA87E0438C4D570B4"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041368589"
+      }
+    }
+  },
+  "3EB07F818FB7F04D89CD0C": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:30.809Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0F78DC17F67E73B1193"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041369214"
+      }
+    }
+  },
+  "3EB0A4EBA43219102DE15F": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:31.434Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB086B68B17DAC4A59FAD"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041369881"
+      }
+    }
+  },
+  "3EB0CBBB12189977B76335": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:31.497Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB009A536C67E568491A8"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041369252"
+      }
+    }
+  },
+  "3EB023B174FA428E42D77A": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:32.112Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB02AF6B1A3AB263CFED7"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041370546"
+      }
+    }
+  },
+  "3EB02B50EEDA58FEA55134": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:32.540Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB07F818FB7F04D89CD0C"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041370965"
+      }
+    }
+  },
+  "3EB0F7741954B207DEEE8A": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:33.173Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0A4EBA43219102DE15F"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041371594"
+      }
+    }
+  },
+  "3EB04DD7AE55C5E88365F3": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:33.829Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB023B174FA428E42D77A"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041372258"
+      }
+    }
+  },
+  "3EB023F274F068FD9B8634": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:34.229Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB02B50EEDA58FEA55134"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041372672"
+      }
+    }
+  },
+  "3EB0C69191DB2781A92A1B": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:34.347Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0CBBB12189977B76335"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041371645"
+      }
+    }
+  },
+  "3EB0311016BE28492CCE0E": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:36.277Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0F7741954B207DEEE8A"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041373303"
+      }
+    }
+  },
+  "3EB0BBAC194E1DC95F79B3": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:36.950Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB04DD7AE55C5E88365F3"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041374183"
+      }
+    }
+  },
+  "3EB0911DBDCC682A41E686": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:37.807Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB023F274F068FD9B8634"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041374526"
+      }
+    }
+  },
+  "3EB085613AE01A45EAF052": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:38.459Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0C69191DB2781A92A1B"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041374551"
+      }
+    }
+  },
+  "3EB0DED979BCCD4F6DA3AA": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:38.836Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0311016BE28492CCE0E"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041376415"
+      }
+    }
+  },
+  "3EB03DB107EB5175360F67": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:39.563Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0BBAC194E1DC95F79B3"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041377091"
+      }
+    }
+  },
+  "3EB035F2CF080C23F30B73": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:40.215Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0911DBDCC682A41E686"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041377940"
+      }
+    }
+  },
+  "3EB07F362CC42D10C142FD": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:40.877Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB085613AE01A45EAF052"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041378629"
+      }
+    }
+  },
+  "3EB0E4D88D1E6AC55FA318": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:41.254Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0DED979BCCD4F6DA3AA"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041379030"
+      }
+    }
+  },
+  "3EB0D68DE748D942E18E40": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:41.915Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB03DB107EB5175360F67"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041379723"
+      }
+    }
+  },
+  "3EB0A5F405FBED467255FE": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:42.005Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB035F2CF080C23F30B73"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041380352"
+      }
+    }
+  },
+  "3EB0C7180428F1658A8AF4": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:42.564Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB07F362CC42D10C142FD"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041381011"
+      }
+    }
+  },
+  "3EB099CD4C0301A78D4BE8": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:43.613Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0E4D88D1E6AC55FA318"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041381394"
+      }
+    }
+  },
+  "3EB093F37D1841763B0A75": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:44.018Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0A5F405FBED467255FE"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041382134"
+      }
+    }
+  },
+  "3EB0588A66A7EE59D171C8": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:44.276Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0D68DE748D942E18E40"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041382043"
+      }
+    }
+  },
+  "3EB04C98A0B545D8792E98": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:44.348Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0C7180428F1658A8AF4"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041382695"
+      }
+    }
+  },
+  "3EB0F37A258B6122324DB5": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:46.059Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB099CD4C0301A78D4BE8"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041383757"
+      }
+    }
+  },
+  "3EB093573C487394AA9B40": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:46.712Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB093F37D1841763B0A75"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041384158"
+      }
+    }
+  },
+  "3EB0E6D73F91498FA77CAE": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:47.355Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0588A66A7EE59D171C8"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041384444"
+      }
+    }
+  },
+  "3EB0C0B0E62DCF762723DE": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:47.999Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB04C98A0B545D8792E98"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041384500"
+      }
+    }
+  },
+  "3EB06CD8146CEC6212F0AC": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:48.390Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0F37A258B6122324DB5"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041386189"
+      }
+    }
+  },
+  "3EB0EE4233A18D2FEA5D65": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:49.043Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB093573C487394AA9B40"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041386831"
+      }
+    }
+  },
+  "3EB09CAF46282FA76C0D0F": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:49.082Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0E6D73F91498FA77CAE"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041387484"
+      }
+    }
+  },
+  "3EB0D15E032B80D35EA8D3": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:49.807Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0C0B0E62DCF762723DE"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041388152"
+      }
+    }
+  },
+  "3EB0D3667EAEE451F6D530": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:50.739Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB06CD8146CEC6212F0AC"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041388516"
+      }
+    }
+  },
+  "3EB0FF16204EEFB6AE0AFE": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:51.453Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0EE4233A18D2FEA5D65"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041389210"
+      }
+    }
+  },
+  "3EB0BFAF07E725FEF246E0": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:52.110Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB09CAF46282FA76C0D0F"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041389283"
+      }
+    }
+  },
+  "3EB009EAC2D2BDCCB5CB22": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:52.742Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0D15E032B80D35EA8D3"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041389952"
+      }
+    }
+  },
+  "3EB0BBDEED9FCCC34FE641": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:53.099Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0D3667EAEE451F6D530"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041390874"
+      }
+    }
+  },
+  "3EB0486B096F26CA555507": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:53.820Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0FF16204EEFB6AE0AFE"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041391590"
+      }
+    }
+  },
+  "3EB00549668C70EAA1C152": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:54.531Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0BFAF07E725FEF246E0"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041392237"
+      }
+    }
+  },
+  "3EB0CA2E781E0A98124FE1": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:54.596Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB009EAC2D2BDCCB5CB22"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041392870"
+      }
+    }
+  },
+  "3EB0CC6F357FF67F30DAFF": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:55.436Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0BBDEED9FCCC34FE641"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041393225"
+      }
+    }
+  },
+  "3EB0969F2E280A09DA7CAF": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:56.246Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0486B096F26CA555507"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041393995"
+      }
+    }
+  },
+  "3EB0213530444197C80B29": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:56.887Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB00549668C70EAA1C152"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041394673"
+      }
+    }
+  },
+  "3EB05E02D0E586DED26AC0": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:57.345Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0CC6F357FF67F30DAFF"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041395562"
+      }
+    }
+  },
+  "3EB08DE70E59808722194A": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:57.529Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0CA2E781E0A98124FE1"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041394729"
+      }
+    }
+  },
+  "3EB03C706039CB59FD21CB": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:58.630Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0969F2E280A09DA7CAF"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041396368"
+      }
+    }
+  },
+  "3EB0BADC63BB4A00890997": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:59.011Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB05E02D0E586DED26AC0"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041397476"
+      }
+    }
+  },
+  "3EB04CDCAB6037686B7103": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:59.276Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0213530444197C80B29"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041397018"
+      }
+    }
+  },
+  "3EB0AE61C5F50802770959": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:49:59.686Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB08DE70E59808722194A"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041397654"
+      }
+    }
+  },
+  "3EB0CEB4CF4B80DF96D94F": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:00.452Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB03C706039CB59FD21CB"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041398758"
+      }
+    }
+  },
+  "3EB06B223167540297B53F": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:00.989Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0BADC63BB4A00890997"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041399146"
+      }
+    }
+  },
+  "3EB0835BB9A6B6B5BEAC3E": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:01.379Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0AE61C5F50802770959"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041399812"
+      }
+    }
+  },
+  "3EB0114CD9CF39A160E86F": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:02.126Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB04CDCAB6037686B7103"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758041399414"
+      }
+    }
+  },
+  "3EB0752ADFD725865DBD77": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:02.931Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0CEB4CF4B80DF96D94F"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041400629"
+      }
+    }
+  },
+  "3EB0AE271E22AC60B91CA1": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:03.850Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB06B223167540297B53F"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041401611"
+      }
+    }
+  },
+  "3EB0B4731FE1C5F19C9802": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:04.501Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0835BB9A6B6B5BEAC3E"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041401543"
+      }
+    }
+  },
+  "3EB03960775C06C8374120": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:05.310Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0752ADFD725865DBD77"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758041403054"
+      }
+    }
+  },
+  "3EB0F1B49DB9C6F17B0FA9": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:05.393Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0114CD9CF39A160E86F"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041402250"
+      }
+    }
+  },
+  "3EB031AFFA3663E8F1D945": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:06.413Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0AE271E22AC60B91CA1"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041403977"
+      }
+    }
+  },
+  "3EB0146A17A53B706059CE": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:07.278Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0B4731FE1C5F19C9802"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041404657"
+      }
+    }
+  },
+  "3EB037FB977A8C18C64BC5": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:07.347Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB03960775C06C8374120"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758041405441"
+      }
+    }
+  },
+  "3EB04A823C626D2A691923": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:08.836Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0F1B49DB9C6F17B0FA9"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758041405517"
+      }
+    }
+  },
+  "3EB073BA518E6855F963A6": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:09.209Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254704897825@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB031AFFA3663E8F1D945"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758041406550"
+      }
+    }
+  },
+  "3EB0A9603CADA4F170FEF6": {
+    "content": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T16:50:32.524Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀"
+      }
+    }
   }
 }
