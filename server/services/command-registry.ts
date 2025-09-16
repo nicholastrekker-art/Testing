@@ -15,6 +15,7 @@ interface CommandContext {
   args: string[];
   command: string;
   prefix: string;
+  botId?: string;
 }
 
 class CommandRegistry {
@@ -22,7 +23,7 @@ class CommandRegistry {
 
   register(command: BotCommand) {
     this.commands.set(command.name.toLowerCase(), command);
-    
+
     // Register aliases
     if (command.aliases) {
       command.aliases.forEach(alias => {
@@ -37,18 +38,18 @@ class CommandRegistry {
 
   getAllCommands(): BotCommand[] {
     const uniqueCommands = new Map<string, BotCommand>();
-    
+
     Array.from(this.commands.values()).forEach(command => {
       uniqueCommands.set(command.name, command);
     });
-    
+
     return Array.from(uniqueCommands.values());
   }
 
   getCommandsByCategory(): Record<string, BotCommand[]> {
     const commands = this.getAllCommands();
     const categorized: Record<string, BotCommand[]> = {};
-    
+
     commands.forEach(command => {
       const category = command.category.toUpperCase();
       if (!categorized[category]) {
@@ -56,7 +57,7 @@ class CommandRegistry {
       }
       categorized[category].push(command);
     });
-    
+
     return categorized;
   }
 }

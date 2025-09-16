@@ -300,7 +300,8 @@ export class WhatsAppBot {
           sender: message.key.participant || message.key.remoteJid || '',
           args: commandArgs,
           command: commandName,
-          prefix: '.'
+          prefix: '.',
+          botId: this.botInstance.id
         };
 
         await registeredCommand.handler(context);

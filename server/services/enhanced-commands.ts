@@ -191,11 +191,8 @@ commandRegistry.register({
     }
 
     try {
-      // Check if in a group chat
-      if (!from.endsWith('@g.us')) {
-        await respond('❌ This command can only be used in group chats!');
-        return;
-      }
+      // This command works in both private chats and group chats
+      // Remove the group-only restriction
 
       // Get group settings
       const chat = storage.getChat(from);
