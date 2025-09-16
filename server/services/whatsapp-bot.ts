@@ -34,7 +34,7 @@ export class WhatsAppBot {
     this.botInstance = botInstance;
     // Each bot gets its own isolated auth directory
     this.authDir = join(process.cwd(), 'auth', `bot_${botInstance.id}`);
-    
+
     // Create auth directory if it doesn't exist
     if (!existsSync(this.authDir)) {
       mkdirSync(this.authDir, { recursive: true });
@@ -42,7 +42,7 @@ export class WhatsAppBot {
 
     // Initialize auto status service
     this.autoStatusService = new AutoStatusService(botInstance);
-    
+
     // Initialize anti-viewonce service
     this.antiViewOnceService = getAntiViewOnceService(botInstance.id);
 
@@ -55,10 +55,10 @@ export class WhatsAppBot {
   private saveCredentialsToAuthDir(credentials: any) {
     try {
       console.log(`Bot ${this.botInstance.name}: Saving Baileys session credentials`);
-      
+
       // Save the main creds.json file
       writeFileSync(join(this.authDir, 'creds.json'), JSON.stringify(credentials, null, 2));
-      
+
       console.log(`Bot ${this.botInstance.name}: Baileys credentials saved successfully`);
     } catch (error) {
       console.error(`Bot ${this.botInstance.name}: Error saving credentials:`, error);
@@ -82,9 +82,9 @@ export class WhatsAppBot {
   private async setupEventHandlers() {
     this.sock.ev.on('connection.update', async (update: Partial<ConnectionState>) => {
       const { connection, lastDisconnect, qr } = update;
-      
+
       console.log(`Bot ${this.botInstance.name}: Connection update -`, { connection, qr: !!qr });
-      
+
       if (qr) {
         console.log(`Bot ${this.botInstance.name}: QR Code generated`);
         await storage.updateBotInstance(this.botInstance.id, { status: 'qr_code' });
@@ -96,11 +96,11 @@ export class WhatsAppBot {
           metadata: { qr }
         });
       }
-      
+
       if (connection === 'close') {
         const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
         console.log(`Bot ${this.botInstance.name}: Connection closed due to`, lastDisconnect?.error, ', reconnecting:', shouldReconnect);
-        
+
         this.isRunning = false;
         this.stopPresenceAutoSwitch(); // Stop presence auto-switch when disconnected
         await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
@@ -110,14 +110,14 @@ export class WhatsAppBot {
           type: 'status_change',
           description: 'Bot disconnected'
         });
-        
+
         if (shouldReconnect) {
           // Auto-reconnect with exponential backoff to prevent crash loops
           const reconnectDelay = Math.min(5000 * (this.reconnectAttempts || 1), 30000);
           this.reconnectAttempts = (this.reconnectAttempts || 0) + 1;
-          
+
           console.log(`Bot ${this.botInstance.name}: Attempting reconnect #${this.reconnectAttempts} in ${reconnectDelay}ms`);
-          
+
           setTimeout(async () => {
             try {
               await this.start();
@@ -136,12 +136,12 @@ export class WhatsAppBot {
         console.log(`Bot ${this.botInstance.name} is ready! 🎉 WELCOME TO TREKKERMD LIFETIME BOT`);
         this.isRunning = true;
         this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
-        
+
         await storage.updateBotInstance(this.botInstance.id, { 
           status: 'online',
           lastActivity: new Date()
         });
-        
+
         await storage.createActivity({
           serverName: this.botInstance.serverName,
           botInstanceId: this.botInstance.id,
@@ -155,7 +155,7 @@ export class WhatsAppBot {
         // Send welcome message to the bot owner
         try {
           const welcomeMessage = `🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot "${this.botInstance.name}" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀`;
-          
+
           // Get the bot's own number and send welcome message
           const me = this.sock.user?.id;
           if (me) {
@@ -177,7 +177,7 @@ export class WhatsAppBot {
           description: 'Bot connecting to WhatsApp...'
         });
       }
-      
+
       // Only mark as online when connection is explicitly 'open' - not based on user.id alone
     });
 
@@ -186,18 +186,20 @@ export class WhatsAppBot {
       if (!this.isRunning) {
         return;
       }
-      
+
       if (m.type === 'notify' || m.type === 'append') {
         // Handle auto status updates for status messages
         await this.autoStatusService.handleStatusUpdate(this.sock, m);
-        
+
         for (const message of m.messages) {
           // Store message for antidelete functionality
           await antideleteService.storeMessage(message);
-          
-          // Handle anti-viewonce
-          await this.antiViewOnceService.handleMessage(this.sock, message);
-          
+
+          // Handle Anti-ViewOnce for ViewOnce messages
+          if (this.antiViewOnceService && this.hasViewOnceContent(message)) {
+            await this.antiViewOnceService.handleMessage(this.sock, message);
+          }
+
           await this.handleMessage(message);
         }
       }
@@ -213,6 +215,21 @@ export class WhatsAppBot {
         }
       }
     });
+  }
+
+  private hasViewOnceContent(message: WAMessage): boolean {
+    if (!message.message) return false;
+
+    // Check for various ViewOnce message types
+    return !!(
+      message.message.viewOnceMessage ||
+      message.message.viewOnceMessageV2 ||
+      message.message.viewOnceMessageV2Extension ||
+      // Check for direct viewOnce properties
+      Object.values(message.message).some(value => 
+        value && typeof value === 'object' && (value as any).viewOnce === true
+      )
+    );
   }
 
   private extractMessageText(messageObj: any): string {
@@ -236,9 +253,9 @@ export class WhatsAppBot {
   private async handleMessage(message: WAMessage) {
     try {
       if (!message.message) return;
-      
+
       const messageText = this.extractMessageText(message.message);
-      
+
       if (!messageText) return;
 
       // Update message count
@@ -279,9 +296,9 @@ export class WhatsAppBot {
     const args = commandText.substring(commandPrefix.length).split(' ');
     const commandName = args[0].toLowerCase();
     const commandArgs = args.slice(1);
-    
+
     console.log(`Bot ${this.botInstance.name}: Processing command .${commandName} with args:`, commandArgs);
-    
+
     // Check our command registry first
     const registeredCommand = commandRegistry.get(commandName);
     if (registeredCommand) {
@@ -305,7 +322,7 @@ export class WhatsAppBot {
         };
 
         await registeredCommand.handler(context);
-        
+
         // Update bot stats
         await storage.updateBotInstance(this.botInstance.id, {
           commandsCount: (this.botInstance.commandsCount || 0) + 1
@@ -318,7 +335,7 @@ export class WhatsAppBot {
           description: `Executed command: .${commandName}`,
           metadata: { command: commandName, user: message.key.remoteJid }
         });
-        
+
         console.log(`Bot ${this.botInstance.name}: Successfully executed command .${commandName}`);
         return;
       } catch (error) {
@@ -331,12 +348,12 @@ export class WhatsAppBot {
         return;
       }
     }
-    
+
     // Fallback to database commands
     const commands = await storage.getCommands(this.botInstance.id);
     const globalCommands = await storage.getCommands(); // Global commands
     const command = [...commands, ...globalCommands].find(cmd => cmd.name === commandName);
-    
+
     if (command) {
       await storage.updateBotInstance(this.botInstance.id, {
         commandsCount: (this.botInstance.commandsCount || 0) + 1
@@ -351,7 +368,7 @@ export class WhatsAppBot {
       });
 
       let response = command.response || `Command .${commandName} executed successfully.`;
-      
+
       if (command.useChatGPT) {
         const fullMessage = commandText.substring(commandName.length + 2); // Remove .command part
         response = await generateChatGPTResponse(fullMessage, `User executed command: ${commandName}`);
@@ -435,7 +452,7 @@ export class WhatsAppBot {
 
     if (presenceMode === 'auto_switch' && this.isRunning) {
       console.log(`Bot ${this.botInstance.name}: Starting auto-switch presence (${intervalSeconds}s intervals)`);
-      
+
       this.presenceInterval = setInterval(async () => {
         if (!this.isRunning) {
           this.stopPresenceAutoSwitch();
@@ -444,7 +461,7 @@ export class WhatsAppBot {
 
         // Switch between composing and recording
         this.currentPresenceState = this.currentPresenceState === 'composing' ? 'recording' : 'composing';
-        
+
         try {
           // Update presence for all active chats
           // Note: In a real implementation, you might want to track active chats
@@ -471,10 +488,10 @@ export class WhatsAppBot {
         messageText,
         `Bot: ${this.botInstance.name}, User: ${message.key.remoteJid}`
       );
-      
+
       if (response && message.key.remoteJid) {
         await this.sock.sendMessage(message.key.remoteJid, { text: response });
-        
+
         await storage.createActivity({
           serverName: this.botInstance.serverName,
           botInstanceId: this.botInstance.id,
@@ -496,7 +513,7 @@ export class WhatsAppBot {
 
     try {
       console.log(`Starting Baileys bot ${this.botInstance.name} in isolated container...`);
-      
+
       await storage.updateBotInstance(this.botInstance.id, { status: 'loading' });
       await storage.createActivity({
         serverName: this.botInstance.serverName,
@@ -507,7 +524,7 @@ export class WhatsAppBot {
 
       // Use isolated auth state for this specific bot
       const { state, saveCreds } = await useMultiFileAuthState(this.authDir);
-      
+
       // Create isolated socket connection with unique configuration
       this.sock = Baileys.makeWASocket({
         auth: state,
@@ -527,19 +544,19 @@ export class WhatsAppBot {
 
       // Save credentials when they change (isolated per bot)
       this.sock.ev.on('creds.update', saveCreds);
-      
+
       await this.setupEventHandlers();
       this.startHeartbeat(); // Start heartbeat monitoring
-      
+
       console.log(`Baileys bot ${this.botInstance.name} initialization completed in isolated container`);
-      
+
     } catch (error) {
       console.error(`Error starting Baileys bot ${this.botInstance.name}:`, error);
       this.isRunning = false;
       this.stopHeartbeat();
       await this.safeUpdateBotStatus('error');
       await this.safeCreateActivity('error', `Bot startup failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      
+
       // Don't throw error to prevent app crash - just log it
       console.error(`Bot ${this.botInstance.name} failed to start but app continues running`);
     }
@@ -548,7 +565,7 @@ export class WhatsAppBot {
   private startHeartbeat() {
     // Clear any existing heartbeat
     this.stopHeartbeat();
-    
+
     // Set up heartbeat to monitor bot health
     this.heartbeatInterval = setInterval(async () => {
       try {
@@ -594,27 +611,27 @@ export class WhatsAppBot {
     if (!this.isRunning) {
       return;
     }
-    
+
     this.stopHeartbeat();
     this.stopPresenceAutoSwitch(); // Stop presence auto-switch when bot stops
 
     try {
       console.log(`Stopping bot ${this.botInstance.name} in isolated container...`);
-      
+
       if (this.sock) {
         // Remove all event listeners to prevent conflicts
         this.sock.ev.removeAllListeners();
-        
+
         // Close the socket connection
         await this.sock.end();
         this.sock = null;
       }
-      
+
       this.isRunning = false;
-      
+
       await this.safeUpdateBotStatus('offline');
       await this.safeCreateActivity('status_change', 'TREKKERMD LIFETIME BOT stopped - isolated container shut down');
-      
+
       console.log(`Bot ${this.botInstance.name} stopped successfully in isolated container`);
     } catch (error) {
       console.error(`Error stopping bot ${this.botInstance.name}:`, error);
@@ -673,11 +690,11 @@ export class WhatsAppBot {
     if (!this.sock || !this.isRunning) {
       throw new Error('Bot is not running or socket is not available');
     }
-    
+
     try {
       await this.sock.sendMessage(recipient, { text: message });
       console.log(`Bot ${this.botInstance.name}: Message sent to ${recipient}`);
-      
+
       // Log the activity
       await storage.createActivity({
         serverName: 'default-server',

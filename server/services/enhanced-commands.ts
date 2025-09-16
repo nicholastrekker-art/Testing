@@ -182,7 +182,7 @@ commandRegistry.register({
   description: 'Intercept and save ViewOnce messages',
   category: 'AUTOMATION',
   handler: async (context: CommandContext) => {
-    const { respond, message, args, client, from } = context;
+    const { respond, message, args, botId } = context;
 
     // Check if sender is bot owner (from own number)
     if (!message.key.fromMe) {
@@ -191,19 +191,21 @@ commandRegistry.register({
     }
 
     try {
-      // This command works in both private chats and group chats
-      // Remove the group-only restriction
+      // Get the bot ID from the context
+      const currentBotId = botId || 'default';
+      
+      // Import antiviewonce service
+      const { getAntiViewOnceService } = await import('./antiviewonce.js');
+      const antiViewOnceService = getAntiViewOnceService(currentBotId);
 
-      // Get group settings
-      const chat = storage.getChat(from);
+      if (!antiViewOnceService) {
+        await respond('❌ Anti-viewonce service is not available.');
+        return;
+      }
 
       // If no arguments, show current status
       if (!args || args.length === 0) {
-        const statusMessage = `🔄 *Anti ViewOnce Settings*\n\n` +
-          `👁️ *Status:* ${chat?.antiviewonce ? 'Enabled' : 'Disabled'}\n` +
-          `\n*Commands:*\n` +
-          `.antiviewonce on - Enable anti ViewOnce\n` +
-          `.antiviewonce off - Disable anti ViewOnce`;
+        const statusMessage = antiViewOnceService.getStatusMessage();
         await respond(statusMessage);
         return;
       }
@@ -212,10 +214,10 @@ commandRegistry.register({
       const command = args[0].toLowerCase();
 
       if (command === 'on') {
-        storage.updateChat(from, { antiviewonce: true });
+        antiViewOnceService.setEnabled(true);
         await respond('✅ Anti ViewOnce has been enabled!\nAll ViewOnce messages will now be intercepted and saved.');
       } else if (command === 'off') {
-        storage.updateChat(from, { antiviewonce: false });
+        antiViewOnceService.setEnabled(false);
         await respond('❌ Anti ViewOnce has been disabled!\nViewOnce messages will no longer be intercepted.');
       } else {
         await respond('❌ Invalid command! Use: .antiviewonce on/off');
