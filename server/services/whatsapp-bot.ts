@@ -412,6 +412,12 @@ export class WhatsAppBot {
   }
 
   private logMessageActivity(message: WAMessage): void {
+    // Skip logging for reaction messages to reduce console noise
+    const isReactionMessage = message.message && message.message.reactionMessage;
+    if (isReactionMessage) {
+      return;
+    }
+
     const messageInfo = {
       timestamp: new Date().toISOString(),
       from: message.key.remoteJid,
