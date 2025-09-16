@@ -290,12 +290,18 @@ export class AntideleteService {
       this.messageStore.set(messageId, messageData);
       this.saveMessageStore();
 
-      // Only log when storing messages with actual content or media
+      // Enhanced logging for antidelete
+      const senderInfo = message.key.participant ? 
+        `${message.pushName || 'Unknown'} (${message.key.participant.split('@')[0]})` : 
+        `${message.pushName || 'Unknown'} (${message.key.remoteJid?.split('@')[0]})`;
+      
+      const chatType = message.key.remoteJid?.includes('@g.us') ? 'Group' : 'Private';
+      
       if (messageText || mediaType) {
-        console.log(`💾 [Antidelete] Stored message ${messageId} with media type: ${mediaType}`);
+        console.log(`💾 [Antidelete] Message stored - From: ${senderInfo} | Chat: ${chatType} | Type: ${mediaType || 'text'} | Content: ${messageText ? messageText.substring(0, 50) + '...' : 'Media only'}`);
       }
     } catch (error) {
-      console.error('Error storing message:', error);
+      console.error('❌ [Antidelete] Error storing message:', error);
     }
   }
 
@@ -307,7 +313,10 @@ export class AntideleteService {
   async handleMessageRevocation(sock: WASocket, revocationMessage: WAMessage): Promise<void> {
     try {
       const config = this.loadAntideleteConfig();
-      if (!config.enabled) return;
+      if (!config.enabled) {
+        console.log(`🔒 [Antidelete] Service disabled - ignoring deletion`);
+        return;
+      }
 
       if (!revocationMessage.message?.protocolMessage?.key?.id) return;
 
@@ -327,20 +336,22 @@ export class AntideleteService {
         }
       }
 
-      console.log(`Antidelete: Message deleted by ${deletedBy}, bot owner: ${ownerNumber}`);
+      console.log(`🗑️ [Antidelete] Message deletion detected by ${deletedBy.split('@')[0]}`);
 
       if (!ownerNumber || deletedBy.includes(sock.user?.id || '') || deletedBy === ownerNumber) {
-        console.log('Antidelete: Ignoring deletion (bot deleted own message or owner not detected)');
+        console.log(`⚠️ [Antidelete] Ignoring deletion (bot owner deleted own message)`);
         return;
       }
 
-      const original = this.getStoredMessage(messageId); // Use the new method
+      const original = this.getStoredMessage(messageId);
       if (!original) {
-        console.log(`Antidelete: No stored message found for ID ${messageId}`);
+        console.log(`❌ [Antidelete] No backup found for deleted message ${messageId}`);
         return;
       }
 
-      console.log(`Antidelete: Found deleted message from ${original.sender} in ${original.group ? 'group' : 'private chat'}`);
+      const senderName = original.sender.split('@')[0];
+      const chatType = original.group ? 'group chat' : 'private chat';
+      console.log(`🔍 [Antidelete] Recovering deleted message from ${senderName} in ${chatType}`);
 
       const sender = original.sender;
       const senderName = sender.split('@')[0];
@@ -422,15 +433,17 @@ export class AntideleteService {
         // Cleanup
         try {
           fs.unlinkSync(original.mediaPath);
+          console.log(`🧹 [Antidelete] Cleaned up temporary media file`);
         } catch (err) {
-          console.error('Media cleanup error:', err);
+          console.error('❌ [Antidelete] Media cleanup error:', err);
         }
       }
 
       this.messageStore.delete(messageId);
+      console.log(`✅ [Antidelete] Successfully recovered and forwarded deleted message to bot owner`);
 
     } catch (err) {
-      console.error('handleMessageRevocation error:', err);
+      console.error('❌ [Antidelete] Error in message recovery:', err);
     }
   }
 }

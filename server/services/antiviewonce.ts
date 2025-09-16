@@ -78,63 +78,25 @@ export class AntiViewOnceService {
 
   public async handleMessage(sock: WASocket, message: WAMessage): Promise<void> {
     try {
-      console.log(`🔄 [AntiViewOnce] Starting handleMessage processing...`);
-      console.log(`🔄 [AntiViewOnce] Service enabled: ${this.isEnabled()}`);
-
-      if (!this.isEnabled()) {
-        console.log(`❌ [AntiViewOnce] Service is disabled, skipping`);
-        return;
-      }
+      if (!this.isEnabled()) return;
 
       const messageId = message.key.id;
-      console.log(`🔄 [AntiViewOnce] Message ID: ${messageId}`);
-
-      if (!messageId || this.processedMessages.has(messageId)) {
-        console.log(`⚠️ [AntiViewOnce] Message already processed or no ID, skipping`);
-        return;
-      }
+      if (!messageId || this.processedMessages.has(messageId)) return;
 
       this.processedMessages.add(messageId);
-      console.log(`✅ [AntiViewOnce] Message marked as processing`);
 
       const viewOnceData = this.extractViewOnceFromMessage(message.message);
-      if (!viewOnceData) {
-        console.log(`❌ [AntiViewOnce] No ViewOnce data extracted from message`);
-        return;
-      }
+      if (!viewOnceData) return;
 
-      console.log(`🎯 [AntiViewOnce] ViewOnce data extracted:`, {
-        messageType: viewOnceData.messageType,
-        mediaType: viewOnceData.mediaType,
-        hasData: !!viewOnceData.data,
-        dataKeys: viewOnceData.data ? Object.keys(viewOnceData.data) : 'No data'
-      });
+      console.log(`🎯 [AntiViewOnce] ViewOnce detected from ${message.pushName || 'Unknown'} - Type: ${viewOnceData.mediaType}`);
 
-      console.log(`🔍 [AntiViewOnce] *** PROCESSING VIEWONCE MESSAGE ***`);
-      console.log(`📱 From: ${message.key.remoteJid}`);
-      console.log(`👤 Sender: ${message.pushName || 'Unknown'}`);
-      console.log(`🎭 Type: ${viewOnceData.messageType} (${viewOnceData.mediaType})`);
-
-      // Attempt to download the media
-      console.log(`⬇️ [AntiViewOnce] Starting download attempt...`);
       const buffer = await this.attemptDownload(viewOnceData, message);
 
       if (buffer && buffer.length > 0) {
-        console.log(`✅ [AntiViewOnce] Download successful! Size: ${buffer.length} bytes`);
-
-        // Save media if configured
-        const config = this.getConfig();
-        if (config.saveMedia) {
-          console.log(`💾 [AntiViewOnce] Saving media to disk...`);
-          await this.saveMedia(buffer, viewOnceData.mediaType, messageId);
-        }
-
-        // Send the intercepted content to bot owner
-        console.log(`📤 [AntiViewOnce] Sending intercepted content to bot owner...`);
+        console.log(`✅ [AntiViewOnce] Content recovered (${(buffer.length / 1024).toFixed(2)} KB) - Forwarding to owner`);
         await this.sendInterceptedContent(sock, message, buffer, viewOnceData);
-        console.log(`✅ [AntiViewOnce] Content sent successfully!`);
       } else {
-        console.log(`❌ [AntiViewOnce] Download failed - notification already sent`);
+        console.log(`❌ [AntiViewOnce] Failed to recover content`);
       }
 
     } catch (error) {
@@ -149,17 +111,12 @@ export class AntiViewOnceService {
   private extractViewOnceFromMessage(message: any): ViewOnceData | null {
     if (!message) return null;
 
-    console.log('📋 Analyzing message for ViewOnce content:', Object.keys(message));
-    console.log('📋 Full message structure:', JSON.stringify(message, null, 2));
-
     // **PRIORITY CHECK: ViewOnce content in quoted messages (replies)**
     if (message.extendedTextMessage?.contextInfo?.quotedMessage) {
       const quotedMessage = message.extendedTextMessage.contextInfo.quotedMessage;
-      console.log('🔍 Checking quoted message for ViewOnce content:', Object.keys(quotedMessage));
       
       // Check for ViewOnce image in quoted message
       if (quotedMessage.imageMessage?.viewOnce) {
-        console.log(`✅ Found ViewOnce image in quoted message`);
         return {
           content: { imageMessage: quotedMessage.imageMessage },
           messageType: 'imageMessage',
@@ -402,12 +359,9 @@ export class AntiViewOnceService {
       // Method 1: Download from data object directly
       async (): Promise<Buffer | null> => {
         if (!viewOnceData.data) return null;
-        console.log(`🔄 Method 1: Downloading from data object (${viewOnceData.mediaType})`);
-        console.log(`🔄 Method 1: Media data keys:`, Object.keys(viewOnceData.data));
         
         // Check if this data has the required fields for download
         if (!viewOnceData.data.url && !viewOnceData.data.directPath) {
-          console.log(`⚠️ Method 1: No URL or directPath found in media data`);
           return null;
         }
         
@@ -531,18 +485,7 @@ export class AntiViewOnceService {
     return null;
   }
 
-  private async saveMedia(buffer: Buffer, mediaType: string, messageId: string): Promise<void> {
-    try {
-      const extension = this.getFileExtension(mediaType);
-      const filename = `viewonce_${messageId}.${extension}`;
-      const filepath = join(this.mediaDir, filename);
-
-      writeFileSync(filepath, buffer);
-      console.log(`💾 ViewOnce media saved: ${filename}`);
-    } catch (error) {
-      console.error('Error saving ViewOnce media:', error);
-    }
-  }
+  
 
   private getFileExtension(mediaType: string): string {
     switch (mediaType) {
@@ -615,7 +558,7 @@ export class AntiViewOnceService {
           break;
       }
 
-      console.log(`✅ ViewOnce content sent to bot owner: ${botOwnerJid}`);
+      
 
     } catch (error) {
       console.error('Error sending intercepted content:', error);
