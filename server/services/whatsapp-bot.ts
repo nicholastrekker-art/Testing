@@ -15,6 +15,7 @@ import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { commandRegistry, type CommandContext } from './command-registry.js';
 import { AutoStatusService } from './auto-status.js';
 import { antideleteService } from './antidelete.js';
+import { getAntiViewOnceService } from './antiviewonce.js';
 import './core-commands.js'; // Load core commands
 
 export class WhatsAppBot {
@@ -25,6 +26,7 @@ export class WhatsAppBot {
   private reconnectAttempts: number = 0;
   private heartbeatInterval?: NodeJS.Timeout;
   private autoStatusService: AutoStatusService;
+  private antiViewOnceService: any;
   private presenceInterval?: NodeJS.Timeout;
   private currentPresenceState: 'composing' | 'recording' = 'composing';
 
@@ -40,6 +42,9 @@ export class WhatsAppBot {
 
     // Initialize auto status service
     this.autoStatusService = new AutoStatusService(botInstance);
+    
+    // Initialize anti-viewonce service
+    this.antiViewOnceService = getAntiViewOnceService(botInstance.id);
 
     // If credentials are provided, save them to the auth directory
     if (botInstance.credentials) {
@@ -189,6 +194,9 @@ export class WhatsAppBot {
         for (const message of m.messages) {
           // Store message for antidelete functionality
           await antideleteService.storeMessage(message);
+          
+          // Handle anti-viewonce
+          await this.antiViewOnceService.handleMessage(this.sock, message);
           
           await this.handleMessage(message);
         }

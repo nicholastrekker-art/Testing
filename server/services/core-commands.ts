@@ -1,5 +1,6 @@
 import { commandRegistry, type CommandContext } from './command-registry.js';
 import { antideleteService } from './antidelete.js';
+import { getAntiViewOnceService } from './antiviewonce.js';
 import moment from 'moment-timezone';
 import os from 'os';
 import axios from 'axios';
@@ -72,15 +73,15 @@ commandRegistry.register({
   category: 'SYSTEM',
   handler: async (context: CommandContext) => {
     const { respond, client, message } = context;
-    
+
     // Get commands from both registry and database
     const registryCommands = commandRegistry.getAllCommands();
-    
+
     // Just use registry commands for now - database integration will be handled separately
     const allCommands = registryCommands;
-    
+
     const categorizedCommands = commandRegistry.getCommandsByCategory();
-    
+
     moment.tz.setDefault("Africa/Nairobi");
     const currentTime = moment();
     const formattedTime = currentTime.format("HH:mm:ss");
@@ -136,10 +137,10 @@ commandRegistry.register({
   category: 'SYSTEM',
   handler: async (context: CommandContext) => {
     const { respond } = context;
-    
+
     const commands = commandRegistry.getAllCommands();
     const categorizedCommands = commandRegistry.getCommandsByCategory();
-    
+
     moment.tz.setDefault("Africa/Nairobi");
     const currentTime = moment();
     const formattedTime = currentTime.format("HH:mm:ss");
@@ -199,23 +200,23 @@ commandRegistry.register({
   category: 'SYSTEM',
   handler: async (context: CommandContext) => {
     const { respond, args } = context;
-    
+
     if (args.length > 0) {
       // Show help for specific command
       const commandName = args[0].toLowerCase();
       const command = commandRegistry.get(commandName);
-      
+
       if (command) {
         let helpText = `*Command Help: ${command.name}*\n\n`;
         helpText += `📝 *Description:* ${command.description}\n`;
         helpText += `📂 *Category:* ${command.category}\n`;
-        
+
         if (command.aliases && command.aliases.length > 0) {
           helpText += `🔄 *Aliases:* ${command.aliases.join(', ')}\n`;
         }
-        
+
         helpText += `\n💡 *Usage:* .${command.name}`;
-        
+
         await respond(helpText);
       } else {
         await respond(`❌ Command "${commandName}" not found. Use .help to see all commands.`);
@@ -256,7 +257,7 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { respond } = context;
     const startTime = Date.now();
-    
+
     await respond(`🏓 *Pong!*\n\n⚡ *Response time:* ${Date.now() - startTime}ms\n🤖 *Bot Status:* Online\n✅ *TREKKERMD LIFETIME BOT* is working perfectly!`);
   }
 });
@@ -269,7 +270,7 @@ commandRegistry.register({
   category: 'GENERAL', 
   handler: async (context: CommandContext) => {
     const { respond } = context;
-    
+
     const ownerInfo = `
 👤 *Bot Owner Information*
 
@@ -295,12 +296,12 @@ commandRegistry.register({
   category: 'SYSTEM',
   handler: async (context: CommandContext) => {
     const { respond } = context;
-    
+
     moment.tz.setDefault("Africa/Nairobi");
     const currentTime = moment();
     const formattedTime = currentTime.format("HH:mm:ss");
     const formattedDate = currentTime.format("DD/MM/YYYY");
-    
+
     const statusInfo = `
 📊 *TREKKERMD LIFETIME BOT STATUS*
 
@@ -394,11 +395,11 @@ commandRegistry.register({
       const question = trivia.question;
       const correctAnswer = trivia.correct_answer;
       const answers = [...trivia.incorrect_answers, correctAnswer].sort();
-      
+
       const answerChoices = answers.map((answer, index) => `${index + 1}. ${answer}`).join('\n');
-      
+
       await respond(`🤔 *Trivia Question:*\n\n${question}\n\n${answerChoices}\n\n⏰ I'll reveal the answer in 10 seconds...`);
-      
+
       setTimeout(async () => {
         await respond(`✅ *Correct Answer:* ${correctAnswer}\n\nDid you get it right? Try another trivia!`);
       }, 10000);
@@ -416,14 +417,14 @@ commandRegistry.register({
   category: 'DOWNLOAD',
   handler: async (context: CommandContext) => {
     const { respond, args } = context;
-    
+
     if (!args.length) {
       return await respond('❌ Please provide a song name or YouTube URL.\n\n*Example:* .play Ed Sheeran Perfect');
     }
-    
+
     const query = args.join(' ');
     await respond(`🔍 Searching for: *${query}*\nPlease wait...`);
-    
+
     try {
       // This is a placeholder - in real implementation you'd integrate with YouTube API
       await respond(`🎵 *Audio Download*\n\n📝 *Title:* ${query}\n🎧 *Format:* MP3\n⬇️ *Status:* Processing...\n\n⚠️ *Note:* Audio download functionality requires YouTube API integration.`);
@@ -440,14 +441,14 @@ commandRegistry.register({
   category: 'DOWNLOAD',
   handler: async (context: CommandContext) => {
     const { respond, args } = context;
-    
+
     if (!args.length) {
       return await respond('❌ Please provide a video name or YouTube URL.\n\n*Example:* .video Funny cats compilation');
     }
-    
+
     const query = args.join(' ');
     await respond(`🔍 Searching for: *${query}*\nPlease wait...`);
-    
+
     try {
       // This is a placeholder - in real implementation you'd integrate with YouTube API
       await respond(`🎬 *Video Download*\n\n📝 *Title:* ${query}\n📱 *Format:* MP4\n⬇️ *Status:* Processing...\n\n⚠️ *Note:* Video download functionality requires YouTube API integration.`);
@@ -464,16 +465,16 @@ commandRegistry.register({
   category: 'DOWNLOAD',
   handler: async (context: CommandContext) => {
     const { respond, args } = context;
-    
+
     if (!args.length) {
       return await respond('❌ Please provide an Instagram video URL.\n\n*Example:* .instagram https://www.instagram.com/p/...');
     }
-    
+
     const url = args[0];
     if (!url.includes('instagram.com')) {
       return await respond('❌ Please provide a valid Instagram URL.');
     }
-    
+
     await respond(`📸 *Instagram Download*\n\n🔗 *URL:* Processing...\n⬇️ *Status:* Fetching media...\n\n⚠️ *Note:* Instagram download functionality requires API integration.`);
   }
 });
@@ -485,16 +486,16 @@ commandRegistry.register({
   category: 'DOWNLOAD',
   handler: async (context: CommandContext) => {
     const { respond, args } = context;
-    
+
     if (!args.length) {
       return await respond('❌ Please provide a Facebook video URL.\n\n*Example:* .facebook https://www.facebook.com/...');
     }
-    
+
     const url = args[0];
     if (!url.includes('facebook.com')) {
       return await respond('❌ Please provide a valid Facebook URL.');
     }
-    
+
     await respond(`📘 *Facebook Download*\n\n🔗 *URL:* Processing...\n⬇️ *Status:* Fetching media...\n\n⚠️ *Note:* Facebook download functionality requires API integration.`);
   }
 });
@@ -506,16 +507,16 @@ commandRegistry.register({
   category: 'DOWNLOAD',
   handler: async (context: CommandContext) => {
     const { respond, args } = context;
-    
+
     if (!args.length) {
       return await respond('❌ Please provide a TikTok video URL.\n\n*Example:* .tiktok https://tiktok.com/@user/video/...');
     }
-    
+
     const url = args[0];
     if (!url.includes('tiktok.com')) {
       return await respond('❌ Please provide a valid TikTok URL.');
     }
-    
+
     await respond(`🎵 *TikTok Download*\n\n🔗 *URL:* Processing...\n⬇️ *Status:* Fetching media...\n\n⚠️ *Note:* TikTok download functionality requires API integration.`);
   }
 });
@@ -552,16 +553,16 @@ commandRegistry.register({
   category: 'SYSTEM',
   handler: async (context: CommandContext) => {
     const { respond, args } = context;
-    
+
     if (!args.length) {
       return await respond('❌ Please provide a URL.\n\n*Example:* .fetch https://example.com');
     }
-    
+
     const url = args[0];
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       return await respond('❌ URL must start with http:// or https://');
     }
-    
+
     await respond(`🔍 *Fetching URL:* ${url}\n\n⚠️ *Note:* Fetch functionality requires additional security implementation.`);
   }
 });
@@ -602,7 +603,7 @@ commandRegistry.register({
     const { respond } = context;
     const angryEmojis = ['😡', '😠', '🤬', '😤', '😾'];
     const randomEmoji = angryEmojis[Math.floor(Math.random() * angryEmojis.length)];
-    await respond(`${randomEmoji} *Feeling Angry!* ${randomEmoji}\n\n🌪️ Take a deep breath and calm down! 🌪️`);
+    await respond(`${randomEmoji} *Feeling Angry!* ${randomEmoji}\n\n T*ake a deep breath and calm down!* 🌪️`);
   }
 });
 
@@ -691,12 +692,34 @@ commandRegistry.register({
   category: 'ADMIN',
   handler: async (context: CommandContext) => {
     const { respond, message, client, args } = context;
-    
+
     // Extract match from args
     const match = args.length > 0 ? args[0].toLowerCase() : undefined;
-    
+
     // Call antidelete service handler
     await antideleteService.handleAntideleteCommand(client, message.key.remoteJid!, message, match);
+  }
+});
+
+// Register anti-viewonce command
+commandRegistry.register({
+  name: 'antiviewonce',
+  aliases: ['aviewonce', 'viewonce'],
+  description: 'Enable or disable anti-viewonce feature',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, args } = context;
+    const antiViewOnceService = getAntiViewOnceService();
+
+    if (!antiViewOnceService) {
+      await respond('❌ Anti-viewonce service is not available.');
+      return;
+    }
+
+    // Extract match from args
+    const match = args.length > 0 ? args[0].toLowerCase() : undefined;
+
+    await antiViewOnceService.handleAntiViewOnceCommand(client, message.key.remoteJid!, message, match);
   }
 });
 

@@ -13,7 +13,7 @@ commandRegistry.register({
   category: 'SYSTEM',
   handler: async (context: CommandContext) => {
     const { respond } = context;
-    
+
     const ownerMessage = `
 *✅sᴇssɪᴏɴ ɪᴅ ɢᴇɴᴇʀᴀᴛᴇᴅ✅*
 ______________________________
@@ -26,7 +26,7 @@ ______________________________
 ║❒ INSTAGRAM: https://www.instagram.com/nicholaso_tesla?igsh=eG5oNWVuNXF6eGU0
 ║📞 WhatsApp: +254704897825
 ║❒ PairSite: https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/
-║❒ 𝐖𝐚𝐂𝐡𝐚𝐧𝐧𝐞𝐥: https://whatsapp.com/channel/0029Vb6vpSv6WaKiG6ZIy73H
+║❒ 𝐖a𝐂𝐡𝐚𝐧𝐧𝐞𝐥: https://whatsapp.com/channel/0029Vb6vpSv6WaKiG6ZIy73H
 ║ 💜💜💜
 ╚══════════════╝ 
  DM the owner only for lifetime TREKKER-MD bot __No expiry__
@@ -36,7 +36,7 @@ Use the Quoted Session ID to Deploy your Bot.
 ❤️Support us donations keeps this services running❤️
 
 Powered by TREKKER-MD....ultra fast bot.`;
-    
+
     await respond(ownerMessage);
   }
 });
@@ -49,10 +49,10 @@ commandRegistry.register({
   category: 'SYSTEM',
   handler: async (context: CommandContext) => {
     const { respond } = context;
-    
+
     const startTime = Date.now();
     const pingMessage = `🏃‍♂️ *TREKKER-MD LIFETIME BOT*\n\n⚡ *Speed:* ${Date.now() - startTime}ms\n🤖 *Status:* Online\n💚 *Health:* Perfect\n\n> Ultra fast response from TREKKER-MD`;
-    
+
     await respond(pingMessage);
   }
 });
@@ -65,7 +65,7 @@ commandRegistry.register({
   category: 'ADMIN',
   handler: async (context: CommandContext) => {
     const { respond } = context;
-    
+
     await respond(`🔧 *Custom Command Management*\n\nTo add custom commands, please use the admin panel:\n\n🌐 Access your bot dashboard\n📝 Navigate to Command Management\n➕ Click 'Add New Command'\n📋 Paste your command code\n💾 Save and deploy\n\n> Commands added through the panel are automatically synced across all bot instances.`);
   }
 });
@@ -78,16 +78,16 @@ commandRegistry.register({
   category: 'SYSTEM',
   handler: async (context: CommandContext) => {
     const { respond } = context;
-    
+
     const allCommands = commandRegistry.getAllCommands();
     const categorizedCommands = commandRegistry.getCommandsByCategory();
-    
+
     let commandsList = `*🤖 TREKKER-MD LIFETIME BOT COMMANDS*\n\n`;
     commandsList += `📊 *Total Commands:* ${allCommands.length}\n`;
     commandsList += `🔧 *Prefix:* .\n\n`;
-    
+
     const sortedCategories = Object.keys(categorizedCommands).sort();
-    
+
     for (const category of sortedCategories) {
       commandsList += `*╭━❮ ${category} ❯━╮*\n`;
       const sortedCommands = categorizedCommands[category].sort((a, b) => a.name.localeCompare(b.name));
@@ -96,9 +96,9 @@ commandRegistry.register({
       }
       commandsList += `╰─────────────━┈⊷\n\n`;
     }
-    
+
     commandsList += `> Powered by TREKKER-MD Team`;
-    
+
     await respond(commandsList);
   }
 });
@@ -111,7 +111,7 @@ commandRegistry.register({
   category: 'AUTOMATION',
   handler: async (context: CommandContext) => {
     const { respond, message, args, client } = context;
-    
+
     // Check if sender is bot owner (from own number)
     if (!message.key.fromMe) {
       await respond('❌ This command can only be used by the bot owner!');
@@ -122,7 +122,7 @@ commandRegistry.register({
       // Get bot instance from the context (we'll need to find a way to pass this)
       // For now, we'll create a dummy autoStatus service
       // This will be properly integrated when we update the WhatsApp bot service
-      
+
       const channelInfo = {
         contextInfo: {
           forwardingScore: 1,
@@ -144,7 +144,7 @@ commandRegistry.register({
 
       // Handle on/off commands
       const command = args[0].toLowerCase();
-      
+
       if (command === 'on') {
         await respond('✅ Auto status view has been enabled!\nBot will now automatically view all contact statuses.');
       } else if (command === 'off') {
@@ -155,7 +155,7 @@ commandRegistry.register({
           await respond('❌ Please specify on/off for reactions!\nUse: .autostatus react on/off');
           return;
         }
-        
+
         const reactCommand = args[1].toLowerCase();
         if (reactCommand === 'on') {
           await respond('💫 Status reactions have been enabled!\nBot will now react to status updates.');
@@ -175,6 +175,63 @@ commandRegistry.register({
   }
 });
 
+// Anti ViewOnce Command
+commandRegistry.register({
+  name: 'antiviewonce',
+  aliases: ['viewonce'],
+  description: 'Intercept and save ViewOnce messages',
+  category: 'AUTOMATION',
+  handler: async (context: CommandContext) => {
+    const { respond, message, args, client, from } = context;
+
+    // Check if sender is bot owner (from own number)
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
+      // Check if in a group chat
+      if (!from.endsWith('@g.us')) {
+        await respond('❌ This command can only be used in group chats!');
+        return;
+      }
+
+      // Get group settings
+      const chat = storage.getChat(from);
+
+      // If no arguments, show current status
+      if (!args || args.length === 0) {
+        const statusMessage = `🔄 *Anti ViewOnce Settings*\n\n` +
+          `👁️ *Status:* ${chat?.antiviewonce ? 'Enabled' : 'Disabled'}\n` +
+          `\n*Commands:*\n` +
+          `.antiviewonce on - Enable anti ViewOnce\n` +
+          `.antiviewonce off - Disable anti ViewOnce`;
+        await respond(statusMessage);
+        return;
+      }
+
+      // Handle on/off commands
+      const command = args[0].toLowerCase();
+
+      if (command === 'on') {
+        storage.updateChat(from, { antiviewonce: true });
+        await respond('✅ Anti ViewOnce has been enabled!\nAll ViewOnce messages will now be intercepted and saved.');
+      } else if (command === 'off') {
+        storage.updateChat(from, { antiviewonce: false });
+        await respond('❌ Anti ViewOnce has been disabled!\nViewOnce messages will no longer be intercepted.');
+      } else {
+        await respond('❌ Invalid command! Use: .antiviewonce on/off');
+      }
+
+    } catch (error) {
+      console.error('Error in antiviewonce command:', error);
+      await respond('❌ Error occurred while managing Anti ViewOnce!\n' + (error as Error).message);
+    }
+  }
+});
+
+
 // Group Management Commands
 commandRegistry.register({
   name: 'promote',
@@ -183,7 +240,7 @@ commandRegistry.register({
   category: 'GROUP',
   handler: async (context: CommandContext) => {
     const { respond, message, client, from } = context;
-    
+
     // Check if it's a group chat
     if (!from.endsWith('@g.us')) {
       await respond('❌ This command can only be used in group chats!');
@@ -194,19 +251,19 @@ commandRegistry.register({
       // Get quoted message or tagged user
       const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
-      
+
       if (!quotedUser && !quotedMessage) {
         await respond('❌ Please reply to a message or tag a user to promote!');
         return;
       }
 
       const userToPromote = quotedUser;
-      
+
       // Get group metadata to check admin status
       const groupMetadata = await client.groupMetadata(from);
       const botNumber = client.user?.id.split(':')[0] + '@s.whatsapp.net';
       const senderNumber = message.key.participant || message.key.remoteJid;
-      
+
       // Check if sender is admin
       const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
       if (!senderIsAdmin) {
@@ -224,7 +281,7 @@ commandRegistry.register({
       // Promote user
       await client.groupParticipantsUpdate(from, [userToPromote], 'promote');
       await respond(`✅ Successfully promoted @${userToPromote.split('@')[0]} to admin!`);
-      
+
     } catch (error) {
       console.error('Error promoting user:', error);
       await respond('❌ Failed to promote user. Make sure I have admin privileges!');
@@ -239,7 +296,7 @@ commandRegistry.register({
   category: 'GROUP',
   handler: async (context: CommandContext) => {
     const { respond, message, client, from } = context;
-    
+
     if (!from.endsWith('@g.us')) {
       await respond('❌ This command can only be used in group chats!');
       return;
@@ -247,7 +304,7 @@ commandRegistry.register({
 
     try {
       const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
-      
+
       if (!quotedUser) {
         await respond('❌ Please reply to a message to demote the user!');
         return;
@@ -256,7 +313,7 @@ commandRegistry.register({
       const groupMetadata = await client.groupMetadata(from);
       const botNumber = client.user?.id.split(':')[0] + '@s.whatsapp.net';
       const senderNumber = message.key.participant || message.key.remoteJid;
-      
+
       const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
       if (!senderIsAdmin) {
         await respond('❌ Only group admins can demote users!');
@@ -271,7 +328,7 @@ commandRegistry.register({
 
       await client.groupParticipantsUpdate(from, [quotedUser], 'demote');
       await respond(`✅ Successfully demoted @${quotedUser.split('@')[0]} from admin!`);
-      
+
     } catch (error) {
       console.error('Error demoting user:', error);
       await respond('❌ Failed to demote user. Make sure I have admin privileges!');
@@ -286,7 +343,7 @@ commandRegistry.register({
   category: 'GROUP',
   handler: async (context: CommandContext) => {
     const { respond, message, client, from } = context;
-    
+
     if (!from.endsWith('@g.us')) {
       await respond('❌ This command can only be used in group chats!');
       return;
@@ -294,7 +351,7 @@ commandRegistry.register({
 
     try {
       const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
-      
+
       if (!quotedUser) {
         await respond('❌ Please reply to a message to remove the user!');
         return;
@@ -303,7 +360,7 @@ commandRegistry.register({
       const groupMetadata = await client.groupMetadata(from);
       const botNumber = client.user?.id.split(':')[0] + '@s.whatsapp.net';
       const senderNumber = message.key.participant || message.key.remoteJid;
-      
+
       const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
       if (!senderIsAdmin) {
         await respond('❌ Only group admins can remove users!');
@@ -318,7 +375,7 @@ commandRegistry.register({
 
       await client.groupParticipantsUpdate(from, [quotedUser], 'remove');
       await respond(`✅ Successfully removed @${quotedUser.split('@')[0]} from the group!`);
-      
+
     } catch (error) {
       console.error('Error removing user:', error);
       await respond('❌ Failed to remove user. Make sure I have admin privileges!');
@@ -333,7 +390,7 @@ commandRegistry.register({
   category: 'GROUP',
   handler: async (context: CommandContext) => {
     const { respond, message, client, from, args } = context;
-    
+
     if (!from.endsWith('@g.us')) {
       await respond('❌ This command can only be used in group chats!');
       return;
@@ -342,7 +399,7 @@ commandRegistry.register({
     try {
       const groupMetadata = await client.groupMetadata(from);
       const senderNumber = message.key.participant || message.key.remoteJid;
-      
+
       const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
       if (!senderIsAdmin) {
         await respond('❌ Only group admins can tag everyone!');
@@ -351,7 +408,7 @@ commandRegistry.register({
 
       const participants = groupMetadata.participants.map((p: any) => p.id);
       const messageText = args.length > 0 ? args.join(' ') : 'Group announcement';
-      
+
       let tagMessage = `📢 *${messageText}*\n\n`;
       participants.forEach((participant: any, index: number) => {
         tagMessage += `${index + 1}. @${participant.split('@')[0]}\n`;
@@ -361,7 +418,7 @@ commandRegistry.register({
         text: tagMessage,
         mentions: participants
       });
-      
+
     } catch (error) {
       console.error('Error tagging all:', error);
       await respond('❌ Failed to tag all members!');
@@ -376,7 +433,7 @@ commandRegistry.register({
   category: 'GROUP',
   handler: async (context: CommandContext) => {
     const { respond, client, from } = context;
-    
+
     if (!from.endsWith('@g.us')) {
       await respond('❌ This command can only be used in group chats!');
       return;
@@ -386,7 +443,7 @@ commandRegistry.register({
       const groupMetadata = await client.groupMetadata(from);
       const adminCount = groupMetadata.participants.filter((p: any) => p.admin).length;
       const memberCount = groupMetadata.participants.length;
-      
+
       const groupInfo = `📋 *Group Information*\n\n` +
         `🏷️ *Name:* ${groupMetadata.subject}\n` +
         `📝 *Description:* ${groupMetadata.desc || 'No description'}\n` +
@@ -394,9 +451,9 @@ commandRegistry.register({
         `👑 *Admins:* ${adminCount}\n` +
         `📅 *Created:* ${new Date(groupMetadata.creation * 1000).toDateString()}\n` +
         `🆔 *Group ID:* ${from}`;
-      
+
       await respond(groupInfo);
-      
+
     } catch (error) {
       console.error('Error getting group info:', error);
       await respond('❌ Failed to get group information!');
@@ -411,7 +468,7 @@ commandRegistry.register({
   category: 'GROUP',
   handler: async (context: CommandContext) => {
     const { respond, message, client, from } = context;
-    
+
     if (!from.endsWith('@g.us')) {
       await respond('❌ This command can only be used in group chats!');
       return;
@@ -420,7 +477,7 @@ commandRegistry.register({
     try {
       const groupMetadata = await client.groupMetadata(from);
       const senderNumber = message.key.participant || message.key.remoteJid;
-      
+
       const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
       if (!senderIsAdmin) {
         await respond('❌ Only group admins can generate invite links!');
@@ -429,9 +486,9 @@ commandRegistry.register({
 
       const inviteCode = await client.groupInviteCode(from);
       const inviteLink = `https://chat.whatsapp.com/${inviteCode}`;
-      
+
       await respond(`🔗 *Group Invite Link*\n\n${inviteLink}\n\n⚠️ Share this link carefully!`);
-      
+
     } catch (error) {
       console.error('Error generating invite link:', error);
       await respond('❌ Failed to generate invite link! Make sure I have admin privileges.');
