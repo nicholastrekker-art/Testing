@@ -349,12 +349,10 @@ export class AntideleteService {
         return;
       }
 
-      const senderName = original.sender.split('@')[0];
-      const chatType = original.group ? 'group chat' : 'private chat';
-      console.log(`🔍 [Antidelete] Recovering deleted message from ${senderName} in ${chatType}`);
-
       const sender = original.sender;
       const senderName = sender.split('@')[0];
+      const chatType = original.group ? 'group chat' : 'private chat';
+      console.log(`🔍 [Antidelete] Recovering deleted message from ${senderName} in ${chatType}`);
       let groupName = '';
 
       if (original.group) {
