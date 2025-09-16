@@ -88128,5 +88128,211 @@
         }
       }
     }
+  },
+  "3EB0211C81149A66E2D33F": {
+    "content": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:31:16.808Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀"
+      }
+    }
+  },
+  "A53DDCDB52CB5976702C48D42A318857": {
+    "content": "Thanks",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:31:56.043Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "Thanks",
+        "previewType": "NONE",
+        "contextInfo": {
+          "stanzaId": "00536509ED9D8E55CFFA4B2A588A6673",
+          "participant": "254704897825@s.whatsapp.net",
+          "quotedMessage": {
+            "imageMessage": {
+              "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m233/AQMJPSbtHJ-Oxa40AztmiXqIPQF0fk8FPCgguiYDduXDspu0-tovk7GrBF7LB5faU1pXT46Ge52vUwu8MGykwXZ-YM7OaMS1O3cXU4NyHw?ccb=9-4&oh=01_Q5Aa2gEg_ecz3v9r7BBRWw8wdHiy1Tq9M2ILYAFNVVkuM7sEnQ&oe=68F0CCDE&_nc_sid=e6ed6c&mms3=true",
+              "mimetype": "image/jpeg",
+              "fileSha256": "UvFdo6lBD8suAZATxGe/1NQ4kUTtVtbVAOVrmLcEYzc=",
+              "fileLength": "78567",
+              "height": 640,
+              "width": 640,
+              "mediaKey": "Djiizo2qjVMvIv4X+EKPi6xx6tMU0UHG88KKE9ul1TI=",
+              "fileEncSha256": "lVELMo4zuvf86pIobhK/A+Rx9iZsSWbipS2T8OSQcUU=",
+              "directPath": "/o1/v/t24/f2/m233/AQMJPSbtHJ-Oxa40AztmiXqIPQF0fk8FPCgguiYDduXDspu0-tovk7GrBF7LB5faU1pXT46Ge52vUwu8MGykwXZ-YM7OaMS1O3cXU4NyHw?ccb=9-4&oh=01_Q5Aa2gEg_ecz3v9r7BBRWw8wdHiy1Tq9M2ILYAFNVVkuM7sEnQ&oe=68F0CCDE&_nc_sid=e6ed6c",
+              "mediaKeyTimestamp": "1758029933",
+              "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCABkAGQDASIAAhEBAxEB/8QAHAAAAQQDAQAAAAAAAAAAAAAAAAEFBgcCAwQI/8QAOBAAAQMDAwIEBAUBCAMAAAAAAQIDBAAFEQYSITFBBxNRcSJhgZEUFTJCocEIUnKCorHR8BZi8f/EABsBAAIDAQEBAAAAAAAAAAAAAAAEAQMFAgYH/8QAKREAAgIBAwIFBAMAAAAAAAAAAQIAAxEEEiEFQRMiMXGhMlGB8COx0f/aAAwDAQACEQMRAD8A8/YpaKXFdTmAFLjmlArYy0486hpltbjiztShAyVH0A70QmvFLipRcNE3W1RWn7w3+EDv6Wz8a8epSDxTbb4MCRLCDO3oTytCU7Vn26jrUBgwyJJBHBnHbID9ylojRUguK7k4CR6k9hU5t2mNHR3PIv2o5Jkfu/CM/Ag/MkHP8VySNzcq9Q9NwhvhMtrS4E7lcISpW4985UPemOzt3q5uhEeakuJ/ajICT/35VXYCT9WBLExj6cmatUQbdb75JjWW4fmMBG0tSdmzcCASCPUEkfSmrFXHZLbYrq01Y9aW5Vquixhi5NjaVnsSeivr/FQTXujLlou7iHcQlxlwb48lsfA8j1HoR3Hb2waK7Qx2n1kOhXntItiis8UmKtlcwxRWWKKITWBSgUopQKIRUIKjhPX3qdeEN9i2W/uOtWk3K4OjyIbhOENrOcn2xjJ64z61G7faFy7PNllRQ2j4cgZJA5I/lP3NTb+zcw/d9cttvhJh26Mt1sBP6VKUAMnucKV/NL3sCjARihVDAv8AiM+uZl6/8kdiXV4qnHDklwK4CT0Sn0HI47VHLWHbjqRKIbBW8tGAEcqUAodatzSEeJq/V2vLtcWkvMR0KKMjgIG/H+lCajng3YXoHiHbZFwbUhtURTgABVxkDPFc+OEUjuJPgl2yPQx08Gx5vizf7XNRtEqGpKkKHdOEn64J+1QnS2j5sXWYtbrmx10gs7uQcL2ke4608XXUD2kPGRzVEZhMq3yn3/JUhY2PtKJwUkfQ1Y2krerUM+1X1wpafizFSFBHICHFbtufQZH2qtrChL9iPmMVacWoR3X+syCan1HIs0u56Q1JE/GxorwU3KzhxpBwcpOPRQFZX3W653h8vTl3jmetK0OW64Z5QkKGc/PblJ9/Y1YutLBA1F4j6gtr6AJBZaeacHUHykg/cHH0qkJ9petT35a+SuPIb8+KvGcKGQU/QgpNTUyFghGCOZVarbN4PEYcUmKzpMU7E5rwPlRWeKKJE1YoFFKKJMk8CchzR0m0wm1mY4pTjpPTb0GPrt/mnbwU1hD0dK1GxKS8bnKY2xfLRuG9CFkAntyf4rh8NmA/dJaSAQWAOf8AGk/0pt0zG8nxDYwElT7zyCFDPCkrSf4JpOwruZPzNLS0NcFb7cSV+E+prVp+ya0h3maiLLmQ1IZS4D8a9iwBke4+9WzpxhtnW2mHEJ+GRZdw4/8Abn/cV581nZo0a7T35zxaYTIU22EpycepPYZyAO+DVp6I1uE3TTqro4hVvhxVRmpLbatylHaQFf5R2+dLXpnziXis1koD+8ys29JJdv0a2NOLGd6sk5xirA8Ntdaet1ouDNzmOx1KieUlsJVuUvKgSMdDjbzkVwSLWHr8ue245sQtaklOQduc9uelPulo2l9TRZUFE1DkpvA8tDG8IJ4GUlOVc+hFAs8QAEZl7VhFyDtJ+Y7aQuLkmRGvL8lyUVy2kF9z9Sm1J8oZ+uKavETThlWab+DTmZbLuvyu3wPbXCP9X8V24laf0m+mNGaeLHloTgpKdyHd3GR3HQ9vlTsb4xN0jer5IiGMkvMOvISsryUkJz74AFVs21wVk317kyfQDBnnu8Q3YF0lRpCNjrbhCk+lcRqR6/ukS9awuVwtwWIjy0lvcME4SATj3BqPVsKSVBM8+wAJAmIopcUVM5milAoFAokx90lekWOc4+40pxK0bcD3FdkBxTviZbWoKEuLM1bTZKsBZUogc/UVGKmvhlP3a50qypptKWJKUAgfqKlHKjnvyBn0SKospBbcI9pdY1KlP3M0a/kpXd7jbrrHdREVMU8UNqAUSQBuBwRnjH2p1sK7au1QrTZ4L0dsy/xjsiUvc665tKRkgDgBR4xW7xSS2dSPq4CtxqH3CV5TLXkSwzIT8SeuT9qWsJPkWOIVJ8RwMy9mLDIiwFSmXUbtvwn+6rHB+9QPRMOyWbXLd1Xpy7/m7TynWY5dBjNuH96SE9B1HOBTBYdaX2K2hEwLeZW3lCVKCe/Q+nHNO7Or7zFfXKmWt/8ALwrbvSypCE89ckf8VVWtlYO2Wu1NrAPz75H+S0NQKQ9a5bznlsh57zFnokFRJJ+5NU5reWWmosSLNKmloUXkNrO1XxAjcB16Z5qeeJk1mT4dR5ENxQRIebCh9Ccf99KpSr9PVuItzFNZqCoajHeJSUtJT0y4lFH1oohOcUo6UCgUQmQrptsx63z402KrZIjuJdbVjopJyD9xXMO1ZJohJx4mvi5SIt2gfFHnIDiQP2q/ck/MHIrlsXh7d75tkR0pRG2hanickjGTj6ZxTHb7ipiMuI8C7EWrdszgoV/eSex/3+1TMXi/aQSiKxJaU282l5tJUMlKwCOOvfp0pSz+Ns4yJo0sLU25wZcuiPDG1adMZ99vz3zlKnXeecZzz0HB+9Oevb1ZLdZp0QJaeVKRtIABGSNp9+AK8/P+KN8VlNweWgZxg5/rXA/rD8YypaUKdeUDhbhztPt60G2x/Ki4nQ09FXntfcfsJu1lefOgxLSwdrLSvNWgdjjCR9AT96iXvWSlFSipRyScknvSGma0CKFEz7rTc5du8Skpe1Ia6lcSiiiiTOYUooFAohMhWYrFAKlBKQSTwAB1q9fDjwgZEZq5avQpS1gKagA7do9XCOf8o+voF9Tqq9Mu+wztK2c4Eqq2aUvlwaDse2yQwUlYecQUIICd3Cjx06etOnjRFWqbCchtrdiJYQ0h1v40q2JA6j2r0tLsMR+GqMiO01HIwEtoCcehqrr34csIdW1IeU1EUvekpbKmweeT1CTz6ex5IrKr61Rcdr8RxaGq5XmefrPb3rnIQlxJWgEDJGT7VbOpdAXROmrdMt0He1FYUX0tEFQBVkHaOTxknFTTTGhrTClNuNyG5zqDuSEsFzBxxyAMevUd6tW2w5zzLTbxEWMP1IBBUoY4SMcJGc9CT0560W9VqqbKnPx8SXQsuCMTxk/HfjlIkMuNFQ3J3pKcj1Ga1V6/134bWTV0fc8hUWehJS3LaOSP8Seihn6/MV5l1vou76On+RdWcsrJ8mS3y26Pkex+R5p7SdRq1XC8H7RJ6ysjVIaKSn5WIhopQfnRRJnLR0ooohLc/s7WWFcdRzZs1rzXoDaXGAr9KVk/qx3Ixx/8r0DvKnBk9aKK8b18nxwJpaQeSd4SPKHFRLVtwlMKW1HdLKUbeUAZVnPU/wDGKKKU6XWlmtVXAIwfX2i3VHZNKzIcGRxu9XKI6FNTHSEnJSs7wfkc/wBKsyzyly7dHfdCQtxAUQnoCfSiimuvVJXt2KB7CZ/RLbLEbexPuZ2MOr3lOcj51z6kssHUFllW66Mh2M6jkd0nspJ7EdjRRWTpGIcEHvNmwTxHKbDUl5tOSlC1JGevBrSaKK+kj0mbMTRRRRCf/9k=",
+              "contextInfo": {
+                "pairedMediaType": "NOT_PAIRED_MEDIA"
+              },
+              "scansSidecar": "/TGt0iYlhuSn1jyFxLgtj0S0C96rfPDbypCV7I3vabV4ONSr3Fs6Gw==",
+              "scanLengths": [
+                4436,
+                16806,
+                6390,
+                50935
+              ],
+              "midQualityFileSha256": "cEo7XHZ0qfRhD7uNeQdydtO0xrYrcDzhbGYFJVgMMaI=",
+              "viewOnce": true
+            }
+          }
+        },
+        "inviteLinkGroupTypeV2": "DEFAULT",
+        "linkPreviewMetadata": {}
+      }
+    }
+  },
+  "3EB0B2DA3E87A19FB018B0": {
+    "content": "🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: imageMessage\n📸 Media: image\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: A53DDCDB52CB5976702C48D42A318857\n⏰ Time: 9/16/2025, 5:31:56 PM\n🔍 Detection: Found in quoted/replied message\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:31:58.200Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: imageMessage\n📸 Media: image\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: A53DDCDB52CB5976702C48D42A318857\n⏰ Time: 9/16/2025, 5:31:56 PM\n🔍 Detection: Found in quoted/replied message\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active"
+      }
+    }
+  },
+  "3EB05E61D30B44B157BB23": {
+    "content": "🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: A53DDCDB52CB5976702C48D42A318857\n⏰ Timestamp: 9/16/2025, 5:31:56 PM\n🔍 Method: Quoted Message Recovery\n💬 Reply Text: \"Thanks\"\n\n📸 **Media Details:**\n🎭 Type: image\n📏 Size: 76.73 KB\n📝 Caption: No caption\n🗂️ Mimetype: image/jpeg\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.",
+    "mediaType": "image",
+    "mediaPath": "/home/runner/workspace/server/tmp/3EB05E61D30B44B157BB23.jpg",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:32:01.698Z",
+    "fullMessage": {
+      "imageMessage": {
+        "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m234/AQMKfVESeN4p47mU7wuzGTWOuYOh24luCvXSOwl7FTylUzjOvEDq1UWGMS27yDzlt5r2iUYZZ9l_3ATJm7TwuJ25SH2E7KlP4r-Aip-kag?ccb=9-4&oh=01_Q5Aa2gHOdNeJZk8IbrOZQMnRW34b6Fk-t8ap549CwKJ44ZL6oA&oe=68F11530&_nc_sid=e6ed6c&mms3=true",
+        "mimetype": "image/jpeg",
+        "caption": "🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: A53DDCDB52CB5976702C48D42A318857\n⏰ Timestamp: 9/16/2025, 5:31:56 PM\n🔍 Method: Quoted Message Recovery\n💬 Reply Text: \"Thanks\"\n\n📸 **Media Details:**\n🎭 Type: image\n📏 Size: 76.73 KB\n📝 Caption: No caption\n🗂️ Mimetype: image/jpeg\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.",
+        "fileSha256": "UvFdo6lBD8suAZATxGe/1NQ4kUTtVtbVAOVrmLcEYzc=",
+        "fileLength": "78567",
+        "mediaKey": "DU99cthG/Y06aOLE60+4KaLONLmg/6YRUFqV5uVoDow=",
+        "fileEncSha256": "hSLGtcTTGv1qI7lrM2JAlMwCKuBgBuLM0Lj440yicDE=",
+        "directPath": "/o1/v/t24/f2/m234/AQMKfVESeN4p47mU7wuzGTWOuYOh24luCvXSOwl7FTylUzjOvEDq1UWGMS27yDzlt5r2iUYZZ9l_3ATJm7TwuJ25SH2E7KlP4r-Aip-kag?ccb=9-4&oh=01_Q5Aa2gHOdNeJZk8IbrOZQMnRW34b6Fk-t8ap549CwKJ44ZL6oA&oe=68F11530&_nc_sid=e6ed6c",
+        "mediaKeyTimestamp": "1758043917"
+      }
+    }
+  },
+  "E008B0EAD4DBA5D0D50902F075C904C5": {
+    "content": "Yowh",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:32:58.246Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "Yowh",
+        "previewType": "NONE",
+        "contextInfo": {
+          "stanzaId": "A53DDCDB52CB5976702C48D42A318857",
+          "participant": "254799257758@s.whatsapp.net",
+          "quotedMessage": {
+            "conversation": "Thanks"
+          }
+        },
+        "inviteLinkGroupTypeV2": "DEFAULT",
+        "linkPreviewMetadata": {}
+      }
+    }
+  },
+  "8A8A20E0D658E77B74CAFC875AD97D2E": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:35:24.815Z"
+  },
+  "504301F2B0F29ECBC7E70C7D22E71916": {
+    "content": "Thanks",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:35:36.205Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "Thanks",
+        "previewType": "NONE",
+        "contextInfo": {
+          "stanzaId": "8A8A20E0D658E77B74CAFC875AD97D2E",
+          "participant": "254799257758@s.whatsapp.net",
+          "quotedMessage": {
+            "imageMessage": {
+              "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m234/AQOQVOVYMvMZGu2eYn8FZxJrHBIG_fkB6G0P0UegVzQC6P2_LUogwfNooq5nAM2k0SMWJrjCFc16Yb9QvqHX7flQy5snYi5P7NbY0reczg?ccb=9-4&oh=01_Q5Aa2gHbBktUWpNQUzpkFe7Mumraii84JOlvaLh2gyANzGuG6g&oe=68F10F82&_nc_sid=e6ed6c&mms3=true",
+              "mimetype": "image/jpeg",
+              "fileSha256": "CU8fV+yh6NoJa6S/d8ywUmxrx145J+Leh7lNCy4VhS8=",
+              "fileLength": "149109",
+              "height": 720,
+              "width": 1280,
+              "mediaKey": "YCh2fjcu1k2FmCDmdlpiWzuff9zJYGLyiHgyNvC0GHI=",
+              "fileEncSha256": "7QgFdfuZn0IZhO4k39YAp06xy76ElyuDHQQ4R1XwSp0=",
+              "directPath": "/o1/v/t24/f2/m234/AQOQVOVYMvMZGu2eYn8FZxJrHBIG_fkB6G0P0UegVzQC6P2_LUogwfNooq5nAM2k0SMWJrjCFc16Yb9QvqHX7flQy5snYi5P7NbY0reczg?ccb=9-4&oh=01_Q5Aa2gHbBktUWpNQUzpkFe7Mumraii84JOlvaLh2gyANzGuG6g&oe=68F10F82&_nc_sid=e6ed6c",
+              "mediaKeyTimestamp": "1758044111",
+              "jpegThumbnail": "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",
+              "contextInfo": {
+                "pairedMediaType": "NOT_PAIRED_MEDIA"
+              },
+              "scansSidecar": "IW3q7MY6xFNHq3HwqMcFt48ngvoxnyxk+70s5xvuY9Ph+bExrY6rrQ==",
+              "scanLengths": [
+                12167,
+                59496,
+                30892,
+                46554
+              ],
+              "midQualityFileSha256": "VfIKGNS8uZzcTsB6hcg6DLsamtld4634Kz5DPgeyPcg=",
+              "viewOnce": true
+            }
+          }
+        },
+        "inviteLinkGroupTypeV2": "DEFAULT",
+        "linkPreviewMetadata": {}
+      }
+    }
+  },
+  "3EB023E214575D729139EF": {
+    "content": "🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: imageMessage\n📸 Media: image\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 504301F2B0F29ECBC7E70C7D22E71916\n⏰ Time: 9/16/2025, 5:35:36 PM\n🔍 Detection: Found in quoted/replied message\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:35:38.229Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: imageMessage\n📸 Media: image\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 504301F2B0F29ECBC7E70C7D22E71916\n⏰ Time: 9/16/2025, 5:35:36 PM\n🔍 Detection: Found in quoted/replied message\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active"
+      }
+    }
+  },
+  "3EB0298503CE3855C16C63": {
+    "content": "🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 504301F2B0F29ECBC7E70C7D22E71916\n⏰ Timestamp: 9/16/2025, 5:35:36 PM\n🔍 Method: Quoted Message Recovery\n💬 Reply Text: \"Thanks\"\n\n📸 **Media Details:**\n🎭 Type: image\n📏 Size: 145.61 KB\n📝 Caption: No caption\n🗂️ Mimetype: image/jpeg\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.",
+    "mediaType": "image",
+    "mediaPath": "/home/runner/workspace/server/tmp/3EB0298503CE3855C16C63.jpg",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T17:35:39.782Z",
+    "fullMessage": {
+      "imageMessage": {
+        "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m231/AQMijP4UrxsETvVxHieGS1zAPrNuLdy8uT5WrnXKmnP5q-Kge7bDYyvplnEPlDoc742Tw5gv4IXAxifTywY5bXYJMs_3T56TmJzRvGO3Jg?ccb=9-4&oh=01_Q5Aa2gFlJ_zqfmK-Vt1E6PFYuzC6el5DxkeYMernvmWHB59H7g&oe=68F10831&_nc_sid=e6ed6c&mms3=true",
+        "mimetype": "image/jpeg",
+        "caption": "🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: Team Grill🙃\n📞 Number: 254704897825@s.whatsapp.net\n💬 Chat: 254704897825@s.whatsapp.net\n🆔 Message ID: 504301F2B0F29ECBC7E70C7D22E71916\n⏰ Timestamp: 9/16/2025, 5:35:36 PM\n🔍 Method: Quoted Message Recovery\n💬 Reply Text: \"Thanks\"\n\n📸 **Media Details:**\n🎭 Type: image\n📏 Size: 145.61 KB\n📝 Caption: No caption\n🗂️ Mimetype: image/jpeg\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.",
+        "fileSha256": "CU8fV+yh6NoJa6S/d8ywUmxrx145J+Leh7lNCy4VhS8=",
+        "fileLength": "149109",
+        "mediaKey": "MQSJldNewgp2v/3mmpY0huzOMVrmZUDtN8/Whn5Q1gM=",
+        "fileEncSha256": "QF8l3s2P06qb5K1WImUX5tXJU80URzHl1tp3hPZsETo=",
+        "directPath": "/o1/v/t24/f2/m231/AQMijP4UrxsETvVxHieGS1zAPrNuLdy8uT5WrnXKmnP5q-Kge7bDYyvplnEPlDoc742Tw5gv4IXAxifTywY5bXYJMs_3T56TmJzRvGO3Jg?ccb=9-4&oh=01_Q5Aa2gFlJ_zqfmK-Vt1E6PFYuzC6el5DxkeYMernvmWHB59H7g&oe=68F10831&_nc_sid=e6ed6c",
+        "mediaKeyTimestamp": "1758044137"
+      }
+    }
   }
 }
