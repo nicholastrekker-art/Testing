@@ -175,4 +175,268 @@ commandRegistry.register({
   }
 });
 
+// Group Management Commands
+commandRegistry.register({
+  name: 'promote',
+  aliases: ['admin'],
+  description: 'Promote user to admin (Group admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from } = context;
+    
+    // Check if it's a group chat
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      // Get quoted message or tagged user
+      const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
+      
+      if (!quotedUser && !quotedMessage) {
+        await respond('❌ Please reply to a message or tag a user to promote!');
+        return;
+      }
+
+      const userToPromote = quotedUser;
+      
+      // Get group metadata to check admin status
+      const groupMetadata = await client.groupMetadata(from);
+      const botNumber = client.user?.id.split(':')[0] + '@s.whatsapp.net';
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      
+      // Check if sender is admin
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can promote users!');
+        return;
+      }
+
+      // Check if bot is admin
+      const botIsAdmin = groupMetadata.participants.find((p: any) => p.id === botNumber)?.admin;
+      if (!botIsAdmin) {
+        await respond('❌ Bot needs admin privileges to promote users!');
+        return;
+      }
+
+      // Promote user
+      await client.groupParticipantsUpdate(from, [userToPromote], 'promote');
+      await respond(`✅ Successfully promoted @${userToPromote.split('@')[0]} to admin!`);
+      
+    } catch (error) {
+      console.error('Error promoting user:', error);
+      await respond('❌ Failed to promote user. Make sure I have admin privileges!');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'demote',
+  aliases: ['unadmin'],
+  description: 'Demote user from admin (Group admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from } = context;
+    
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
+      
+      if (!quotedUser) {
+        await respond('❌ Please reply to a message to demote the user!');
+        return;
+      }
+
+      const groupMetadata = await client.groupMetadata(from);
+      const botNumber = client.user?.id.split(':')[0] + '@s.whatsapp.net';
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can demote users!');
+        return;
+      }
+
+      const botIsAdmin = groupMetadata.participants.find((p: any) => p.id === botNumber)?.admin;
+      if (!botIsAdmin) {
+        await respond('❌ Bot needs admin privileges to demote users!');
+        return;
+      }
+
+      await client.groupParticipantsUpdate(from, [quotedUser], 'demote');
+      await respond(`✅ Successfully demoted @${quotedUser.split('@')[0]} from admin!`);
+      
+    } catch (error) {
+      console.error('Error demoting user:', error);
+      await respond('❌ Failed to demote user. Make sure I have admin privileges!');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'kick',
+  aliases: ['remove'],
+  description: 'Remove user from group (Group admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from } = context;
+    
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
+      
+      if (!quotedUser) {
+        await respond('❌ Please reply to a message to remove the user!');
+        return;
+      }
+
+      const groupMetadata = await client.groupMetadata(from);
+      const botNumber = client.user?.id.split(':')[0] + '@s.whatsapp.net';
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can remove users!');
+        return;
+      }
+
+      const botIsAdmin = groupMetadata.participants.find((p: any) => p.id === botNumber)?.admin;
+      if (!botIsAdmin) {
+        await respond('❌ Bot needs admin privileges to remove users!');
+        return;
+      }
+
+      await client.groupParticipantsUpdate(from, [quotedUser], 'remove');
+      await respond(`✅ Successfully removed @${quotedUser.split('@')[0]} from the group!`);
+      
+    } catch (error) {
+      console.error('Error removing user:', error);
+      await respond('❌ Failed to remove user. Make sure I have admin privileges!');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'tagall',
+  aliases: ['everyone', 'all'],
+  description: 'Tag all group members (Group admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from, args } = context;
+    
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      const groupMetadata = await client.groupMetadata(from);
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can tag everyone!');
+        return;
+      }
+
+      const participants = groupMetadata.participants.map((p: any) => p.id);
+      const messageText = args.length > 0 ? args.join(' ') : 'Group announcement';
+      
+      let tagMessage = `📢 *${messageText}*\n\n`;
+      participants.forEach((participant: any, index: number) => {
+        tagMessage += `${index + 1}. @${participant.split('@')[0]}\n`;
+      });
+
+      await client.sendMessage(from, {
+        text: tagMessage,
+        mentions: participants
+      });
+      
+    } catch (error) {
+      console.error('Error tagging all:', error);
+      await respond('❌ Failed to tag all members!');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'groupinfo',
+  aliases: ['ginfo'],
+  description: 'Get group information',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, client, from } = context;
+    
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      const groupMetadata = await client.groupMetadata(from);
+      const adminCount = groupMetadata.participants.filter((p: any) => p.admin).length;
+      const memberCount = groupMetadata.participants.length;
+      
+      const groupInfo = `📋 *Group Information*\n\n` +
+        `🏷️ *Name:* ${groupMetadata.subject}\n` +
+        `📝 *Description:* ${groupMetadata.desc || 'No description'}\n` +
+        `👥 *Total Members:* ${memberCount}\n` +
+        `👑 *Admins:* ${adminCount}\n` +
+        `📅 *Created:* ${new Date(groupMetadata.creation * 1000).toDateString()}\n` +
+        `🆔 *Group ID:* ${from}`;
+      
+      await respond(groupInfo);
+      
+    } catch (error) {
+      console.error('Error getting group info:', error);
+      await respond('❌ Failed to get group information!');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'invite',
+  aliases: ['link'],
+  description: 'Generate group invite link (Group admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from } = context;
+    
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      const groupMetadata = await client.groupMetadata(from);
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can generate invite links!');
+        return;
+      }
+
+      const inviteCode = await client.groupInviteCode(from);
+      const inviteLink = `https://chat.whatsapp.com/${inviteCode}`;
+      
+      await respond(`🔗 *Group Invite Link*\n\n${inviteLink}\n\n⚠️ Share this link carefully!`);
+      
+    } catch (error) {
+      console.error('Error generating invite link:', error);
+      await respond('❌ Failed to generate invite link! Make sure I have admin privileges.');
+    }
+  }
+});
+
 console.log('✅ TREKKER-MD essential commands loaded successfully');

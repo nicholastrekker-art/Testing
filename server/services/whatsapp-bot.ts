@@ -25,6 +25,8 @@ export class WhatsAppBot {
   private reconnectAttempts: number = 0;
   private heartbeatInterval?: NodeJS.Timeout;
   private autoStatusService: AutoStatusService;
+  private presenceInterval?: NodeJS.Timeout;
+  private currentPresenceState: 'composing' | 'recording' = 'composing';
 
   constructor(botInstance: BotInstance) {
     this.botInstance = botInstance;
@@ -95,6 +97,7 @@ export class WhatsAppBot {
         console.log(`Bot ${this.botInstance.name}: Connection closed due to`, lastDisconnect?.error, ', reconnecting:', shouldReconnect);
         
         this.isRunning = false;
+        this.stopPresenceAutoSwitch(); // Stop presence auto-switch when disconnected
         await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
         await storage.createActivity({
           serverName: this.botInstance.serverName,
@@ -141,9 +144,12 @@ export class WhatsAppBot {
           description: '🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot connected and ready!'
         });
 
+        // Start presence auto-switch if configured
+        this.startPresenceAutoSwitch();
+
         // Send welcome message to the bot owner
         try {
-          const welcomeMessage = `🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot "${this.botInstance.name}" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀`;
+          const welcomeMessage = `🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot "${this.botInstance.name}" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀`;
           
           // Get the bot's own number and send welcome message
           const me = this.sock.user?.id;
@@ -372,17 +378,81 @@ export class WhatsAppBot {
       }
     }
 
-    // Typing indicators
-    if (this.botInstance.typingMode === 'typing' || this.botInstance.typingMode === 'both') {
-      if (message.key.remoteJid) {
-        await this.sock.sendPresenceUpdate('composing', message.key.remoteJid);
-      }
-    }
+    // Handle presence updates based on settings
+    await this.updatePresenceForChat(message.key.remoteJid);
+  }
 
-    if (this.botInstance.typingMode === 'recording' || this.botInstance.typingMode === 'both') {
-      if (message.key.remoteJid) {
-        await this.sock.sendPresenceUpdate('recording', message.key.remoteJid);
+  private async updatePresenceForChat(chatId: string | null | undefined) {
+    if (!chatId || !this.isRunning) return;
+
+    try {
+      const settings = this.botInstance.settings as any || {};
+      const presenceMode = settings.presenceMode || 'none';
+
+      switch (presenceMode) {
+        case 'always_online':
+          await this.sock.sendPresenceUpdate('available', chatId);
+          break;
+        case 'always_typing':
+          await this.sock.sendPresenceUpdate('composing', chatId);
+          break;
+        case 'always_recording':
+          await this.sock.sendPresenceUpdate('recording', chatId);
+          break;
+        case 'auto_switch':
+          // For auto_switch, the presence is managed by the interval timer
+          // Just update the current state for this chat
+          await this.sock.sendPresenceUpdate(this.currentPresenceState, chatId);
+          break;
+        default:
+          // Legacy typingMode support for backward compatibility
+          if (this.botInstance.typingMode === 'typing' || this.botInstance.typingMode === 'both') {
+            await this.sock.sendPresenceUpdate('composing', chatId);
+          }
+          if (this.botInstance.typingMode === 'recording' || this.botInstance.typingMode === 'both') {
+            await this.sock.sendPresenceUpdate('recording', chatId);
+          }
+          break;
       }
+    } catch (error) {
+      console.log('Error updating presence:', error);
+    }
+  }
+
+  private startPresenceAutoSwitch() {
+    const settings = this.botInstance.settings as any || {};
+    const presenceMode = settings.presenceMode;
+    const intervalSeconds = settings.intervalSeconds || 30;
+
+    if (presenceMode === 'auto_switch' && this.isRunning) {
+      console.log(`Bot ${this.botInstance.name}: Starting auto-switch presence (${intervalSeconds}s intervals)`);
+      
+      this.presenceInterval = setInterval(async () => {
+        if (!this.isRunning) {
+          this.stopPresenceAutoSwitch();
+          return;
+        }
+
+        // Switch between composing and recording
+        this.currentPresenceState = this.currentPresenceState === 'composing' ? 'recording' : 'composing';
+        
+        try {
+          // Update presence for all active chats
+          // Note: In a real implementation, you might want to track active chats
+          // For now, we'll update when messages come in
+          console.log(`Bot ${this.botInstance.name}: Switched presence to ${this.currentPresenceState}`);
+        } catch (error) {
+          console.log('Error in auto-switch presence:', error);
+        }
+      }, intervalSeconds * 1000);
+    }
+  }
+
+  private stopPresenceAutoSwitch() {
+    if (this.presenceInterval) {
+      clearInterval(this.presenceInterval);
+      this.presenceInterval = undefined;
+      console.log(`Bot ${this.botInstance.name}: Stopped auto-switch presence`);
     }
   }
 
@@ -517,6 +587,7 @@ export class WhatsAppBot {
     }
     
     this.stopHeartbeat();
+    this.stopPresenceAutoSwitch(); // Stop presence auto-switch when bot stops
 
     try {
       console.log(`Stopping bot ${this.botInstance.name} in isolated container...`);

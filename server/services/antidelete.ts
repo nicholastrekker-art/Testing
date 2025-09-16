@@ -22,6 +22,7 @@ export class AntideleteService {
   private messageStore = new Map<string, StoredMessage>();
   private configPath: string;
   private tempMediaDir: string;
+  private messageStorePath: string;
 
   constructor() {
     const __filename = fileURLToPath(import.meta.url);
@@ -29,12 +30,19 @@ export class AntideleteService {
     
     this.configPath = path.join(__dirname, '../data/antidelete.json');
     this.tempMediaDir = path.join(__dirname, '../tmp');
+    this.messageStorePath = path.join(__dirname, '../data/message-store.json');
     
     // Ensure directories exist
     this.ensureDirectories();
     
+    // Load stored messages from local storage
+    this.loadMessageStore();
+    
     // Start periodic cleanup every minute
     setInterval(() => this.cleanTempFolderIfLarge(), 60 * 1000);
+    
+    // Save message store periodically (every 5 minutes)
+    setInterval(() => this.saveMessageStore(), 5 * 60 * 1000);
   }
 
   private ensureDirectories(): void {
@@ -100,6 +108,30 @@ export class AntideleteService {
       fs.writeFileSync(this.configPath, JSON.stringify(config, null, 2));
     } catch (err) {
       console.error('Config save error:', err);
+    }
+  }
+
+  private loadMessageStore(): void {
+    try {
+      if (fs.existsSync(this.messageStorePath)) {
+        const data = fs.readFileSync(this.messageStorePath, 'utf8');
+        const storedMessages = JSON.parse(data);
+        this.messageStore = new Map(Object.entries(storedMessages));
+        console.log(`Loaded ${this.messageStore.size} stored messages for antidelete`);
+      }
+    } catch (err) {
+      console.error('Error loading message store:', err);
+      this.messageStore = new Map();
+    }
+  }
+
+  private saveMessageStore(): void {
+    try {
+      // Convert Map to plain object for JSON storage
+      const messageObj = Object.fromEntries(this.messageStore);
+      fs.writeFileSync(this.messageStorePath, JSON.stringify(messageObj, null, 2));
+    } catch (err) {
+      console.error('Error saving message store:', err);
     }
   }
 
@@ -205,6 +237,9 @@ export class AntideleteService {
         timestamp: new Date().toISOString()
       });
 
+      // Save to persistent storage immediately
+      this.saveMessageStore();
+
     } catch (err) {
       console.error('storeMessage error:', err);
     }
@@ -219,12 +254,36 @@ export class AntideleteService {
 
       const messageId = revocationMessage.message.protocolMessage.key.id;
       const deletedBy = revocationMessage.key.participant || revocationMessage.key.remoteJid || '';
-      const ownerNumber = sock.user?.id.split(':')[0] + '@s.whatsapp.net';
-
-      if (!ownerNumber || deletedBy.includes(sock.user?.id || '') || deletedBy === ownerNumber) return;
+      
+      // Get bot's own WhatsApp ID with better detection
+      let ownerNumber = '';
+      if (sock.user?.id) {
+        // Handle different formats of user ID
+        const userId = sock.user.id;
+        if (userId.includes(':')) {
+          ownerNumber = userId.split(':')[0] + '@s.whatsapp.net';
+        } else if (userId.includes('@')) {
+          ownerNumber = userId;
+        } else {
+          ownerNumber = userId + '@s.whatsapp.net';
+        }
+      }
+      
+      console.log(`Antidelete: Message deleted by ${deletedBy}, bot owner: ${ownerNumber}`);
+      
+      // Don't send if bot deleted its own message or owner number is not detected
+      if (!ownerNumber || deletedBy.includes(sock.user?.id || '') || deletedBy === ownerNumber) {
+        console.log('Antidelete: Ignoring deletion (bot deleted own message or owner not detected)');
+        return;
+      }
 
       const original = this.messageStore.get(messageId);
-      if (!original) return;
+      if (!original) {
+        console.log(`Antidelete: No stored message found for ID ${messageId}`);
+        return;
+      }
+      
+      console.log(`Antidelete: Found deleted message from ${original.sender} in ${original.group ? 'group' : 'private chat'}`);
 
       const sender = original.sender;
       const senderName = sender.split('@')[0];
