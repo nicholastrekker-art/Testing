@@ -150,8 +150,18 @@ app.use((req, res, next) => {
 
   const server = await registerRoutes(app);
 
-  // WebSocket handling
+  // WebSocket handling with duplicate prevention
+  const handledSockets = new WeakSet();
+  
   server.on('upgrade', (request, socket, head) => {
+    // Prevent duplicate handling of the same socket
+    if (handledSockets.has(socket)) {
+      console.log('⚠️ WebSocket upgrade already handled for this socket, skipping...');
+      return;
+    }
+    
+    handledSockets.add(socket);
+    
     console.log('🔌 WebSocket upgrade request received:', {
       url: request.url,
       headers: {
