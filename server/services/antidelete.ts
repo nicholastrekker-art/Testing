@@ -261,6 +261,9 @@ export class AntideleteService {
       const messageId = message.key.id;
       if (!messageId || this.processedMessages.has(messageId)) return;
 
+      // Skip storing reaction messages to reduce noise
+      if (message.message?.reactionMessage) return;
+
       this.processedMessages.add(messageId);
 
       const messageText = this.extractMessageText(message.message);
@@ -287,7 +290,10 @@ export class AntideleteService {
       this.messageStore.set(messageId, messageData);
       this.saveMessageStore();
 
-      console.log(`💾 [Antidelete] Stored message ${messageId} with media type: ${mediaType}`);
+      // Only log when storing messages with actual content or media
+      if (messageText || mediaType) {
+        console.log(`💾 [Antidelete] Stored message ${messageId} with media type: ${mediaType}`);
+      }
     } catch (error) {
       console.error('Error storing message:', error);
     }
