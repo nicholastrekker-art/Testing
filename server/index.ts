@@ -3,10 +3,10 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeDatabase } from "./db";
 import "./services/enhanced-commands";
-import WebSocket from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 
 // Create WebSocket server
-const wss = new WebSocket.Server({ noServer: true });
+const wss = new WebSocketServer({ noServer: true });
 
 // Guard to prevent double-start of monitoring
 let monitoringStarted = false;
