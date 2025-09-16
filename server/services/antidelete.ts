@@ -256,7 +256,7 @@ export class AntideleteService {
     return { type: mediaType, path: mediaPath };
   }
 
-  async storeMessage(message: WAMessage): Promise<void> {
+  async storeMessage(message: WAMessage, sock?: any): Promise<void> {
     try {
       const messageId = message.key.id;
       if (!messageId || this.processedMessages.has(messageId)) return;
@@ -299,9 +299,123 @@ export class AntideleteService {
       
       if (messageText || mediaType) {
         console.log(`💾 [Antidelete] Message stored - From: ${senderInfo} | Chat: ${chatType} | Type: ${mediaType || 'text'} | Content: ${messageText ? messageText.substring(0, 50) + '...' : 'Media only'}`);
+        
+        // Send stored message to bot owner immediately
+        if (sock && (messageText || mediaType)) {
+          await this.sendStoredMessageToOwner(sock, message, messageData, senderInfo, chatType);
+        }
       }
     } catch (error) {
       console.error('❌ [Antidelete] Error storing message:', error);
+    }
+  }
+
+  private async sendStoredMessageToOwner(sock: any, originalMessage: WAMessage, messageData: StoredMessage, senderInfo: string, chatType: string): Promise<void> {
+    try {
+      // Get bot owner JID
+      let ownerNumber = '';
+      if (sock.user?.id) {
+        const userId = sock.user.id;
+        if (userId.includes(':')) {
+          ownerNumber = userId.split(':')[0] + '@s.whatsapp.net';
+        } else if (userId.includes('@')) {
+          ownerNumber = userId;
+        } else {
+          ownerNumber = userId + '@s.whatsapp.net';
+        }
+      }
+
+      if (!ownerNumber) {
+        console.log('❌ Bot owner JID not found, cannot send stored message notification');
+        return;
+      }
+
+      // Skip if this message is from the bot owner itself
+      const sender = messageData.sender;
+      if (sender.includes(sock.user?.id || '') || sender === ownerNumber) {
+        return;
+      }
+
+      const time = new Date().toLocaleString('en-US', {
+        timeZone: 'Africa/Nairobi',
+        hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+
+      let notificationText = `*📨 MESSAGE STORED* 📨\n\n` +
+        `*👤 From:* @${sender.split('@')[0]}\n` +
+        `*📱 Number:* ${sender}\n` +
+        `*📍 Chat:* ${chatType}\n` +
+        `*🕒 Time:* ${time}\n`;
+
+      if (messageData.group) {
+        try {
+          const groupMetadata = await sock.groupMetadata(messageData.group);
+          notificationText += `*👥 Group:* ${groupMetadata.subject}\n`;
+        } catch (err) {
+          console.error('Error getting group metadata:', err);
+        }
+      }
+
+      if (messageData.content) {
+        notificationText += `\n*💬 Message:*\n${messageData.content}`;
+      }
+
+      // Send notification to bot owner
+      await sock.sendMessage(ownerNumber, {
+        text: notificationText,
+        mentions: [sender]
+      });
+
+      // Send media if available
+      if (messageData.mediaType && messageData.mediaPath && require('fs').existsSync(messageData.mediaPath)) {
+        const mediaOptions = {
+          caption: `*Stored ${messageData.mediaType}*\nFrom: @${sender.split('@')[0]}`,
+          mentions: [sender]
+        };
+
+        try {
+          switch (messageData.mediaType) {
+            case 'image':
+              await sock.sendMessage(ownerNumber, {
+                image: { url: messageData.mediaPath },
+                ...mediaOptions
+              });
+              break;
+            case 'sticker':
+              await sock.sendMessage(ownerNumber, {
+                sticker: { url: messageData.mediaPath },
+                ...mediaOptions
+              });
+              break;
+            case 'video':
+              await sock.sendMessage(ownerNumber, {
+                video: { url: messageData.mediaPath },
+                ...mediaOptions
+              });
+              break;
+          }
+        } catch (err) {
+          await sock.sendMessage(ownerNumber, {
+            text: `⚠️ Error sending stored media: ${(err as Error).message}`
+          });
+        }
+      }
+
+      console.log(`📤 [Antidelete] Stored message sent to bot owner: ${ownerNumber}`);
+      
+      // Remove from storage after sending (as requested)
+      this.messageStore.delete(originalMessage.key.id!);
+      this.saveMessageStore();
+      console.log(`🗑️ [Antidelete] Message removed from storage after sending to owner`);
+
+    } catch (error) {
+      console.error('❌ [Antidelete] Error sending stored message to owner:', error);
     }
   }
 
