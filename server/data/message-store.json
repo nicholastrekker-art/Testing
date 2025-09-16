@@ -33270,5 +33270,189 @@
     "sender": "254799257758:21@s.whatsapp.net",
     "group": null,
     "timestamp": "2025-09-16T14:48:04.512Z"
+  },
+  "3EB0A07791C31CF59FF9FC": {
+    "content": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T14:52:53.996Z",
+    "fullMessage": {
+      "extendedTextMessage": {
+        "text": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀"
+      }
+    }
+  },
+  "3EB0EAE8F4D32190C48572": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T14:52:55.264Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0A07791C31CF59FF9FC"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758034374132"
+      }
+    }
+  },
+  "3EB02A00748022ED226C18": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T14:53:06.435Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0EAE8F4D32190C48572"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758034375382"
+      }
+    }
+  },
+  "3EB005BE8A22EB32FFC10B": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T14:53:10.657Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB02A00748022ED226C18"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758034386552"
+      }
+    }
+  },
+  "3EB060105CBC364B320AAD": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T14:53:12.896Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB005BE8A22EB32FFC10B"
+        },
+        "text": "😊",
+        "senderTimestampMs": "1758034390829"
+      }
+    }
+  },
+  "3EB054C4F850157374C493": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T14:53:16.547Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB060105CBC364B320AAD"
+        },
+        "text": "👍",
+        "senderTimestampMs": "1758034393019"
+      }
+    }
+  },
+  "3EB0D2C858BDB9A7ED66D7": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T14:53:26.565Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB054C4F850157374C493"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758034396666"
+      }
+    }
+  },
+  "3EB0CFF80B6C499737B882": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T14:53:29.943Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0D2C858BDB9A7ED66D7"
+        },
+        "text": "❤️",
+        "senderTimestampMs": "1758034406679"
+      }
+    }
+  },
+  "3EB0DE45362934AA3656FD": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T14:53:31.771Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0CFF80B6C499737B882"
+        },
+        "text": "👏",
+        "senderTimestampMs": "1758034410067"
+      }
+    }
+  },
+  "3EB027209CCAD3C6390D8F": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758:21@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-16T14:53:36.468Z",
+    "fullMessage": {
+      "reactionMessage": {
+        "key": {
+          "remoteJid": "254799257758:21@s.whatsapp.net",
+          "fromMe": true,
+          "id": "3EB0DE45362934AA3656FD"
+        },
+        "text": "🔥",
+        "senderTimestampMs": "1758034411901"
+      }
+    }
   }
 }
