@@ -115,9 +115,6 @@ export class AntiViewOnceService {
       console.log(`👤 Sender: ${message.pushName || 'Unknown'}`);
       console.log(`🎭 Type: ${viewOnceData.messageType} (${viewOnceData.mediaType})`);
 
-      // Always send detection notification to bot owner first
-      await this.sendDetectionNotification(sock, message, viewOnceData);
-
       // Attempt to download the media
       console.log(`⬇️ [AntiViewOnce] Starting download attempt...`);
       const buffer = await this.attemptDownload(viewOnceData, message);
