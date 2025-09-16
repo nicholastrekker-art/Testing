@@ -150,6 +150,7 @@ export class AntiViewOnceService {
     if (!message) return null;
 
     console.log('📋 Analyzing message for ViewOnce content:', Object.keys(message));
+    console.log('📋 Full message structure:', JSON.stringify(message, null, 2));
 
     // Check for viewOnceMessage
     if (message.viewOnceMessage?.message) {
@@ -221,21 +222,118 @@ export class AntiViewOnceService {
       };
     }
 
-    // Check for direct viewOnce properties in any message type
+    if (message.documentMessage && message.documentMessage.viewOnce) {
+      console.log(`✅ Found direct ViewOnce documentMessage`);
+      return {
+        content: message,
+        messageType: 'documentMessage',
+        mediaType: 'document',
+        data: message.documentMessage
+      };
+    }
+
+    // Enhanced check for nested ViewOnce content
+    const messageTypes = ['imageMessage', 'videoMessage', 'audioMessage', 'documentMessage'];
+    for (const msgType of messageTypes) {
+      if (message[msgType]) {
+        const mediaData = message[msgType];
+        // Check if viewOnce property exists (even if false, it indicates ViewOnce capability)
+        if (mediaData.hasOwnProperty('viewOnce')) {
+          console.log(`✅ Found ${msgType} with viewOnce property:`, mediaData.viewOnce);
+          return {
+            content: message,
+            messageType: msgType,
+            mediaType: this.getMediaType(msgType),
+            data: mediaData
+          };
+        }
+      }
+    }
+
+    // Check for ephemeral message containing ViewOnce
+    if (message.ephemeralMessage?.message) {
+      console.log('🔍 Checking ephemeral message for ViewOnce...');
+      const ephemeralResult = this.extractViewOnceFromMessage(message.ephemeralMessage.message);
+      if (ephemeralResult) {
+        console.log(`✅ Found ViewOnce in ephemeral message`);
+        return ephemeralResult;
+      }
+    }
+
+    // Check for any message type that has viewOnce property
     for (const [key, value] of Object.entries(message)) {
-      if (value && typeof value === 'object' && (value as any).viewOnce === true) {
-        console.log(`✅ Found ViewOnce property in ${key}`);
+      if (value && typeof value === 'object') {
+        const obj = value as any;
+        // Check if this object has a viewOnce property
+        if (obj.hasOwnProperty('viewOnce')) {
+          console.log(`✅ Found ViewOnce property in ${key}:`, obj.viewOnce);
+          return {
+            content: message,
+            messageType: key,
+            mediaType: this.getMediaType(key),
+            data: obj
+          };
+        }
+        
+        // Check nested message objects
+        if (obj.message) {
+          const nestedResult = this.extractViewOnceFromMessage(obj.message);
+          if (nestedResult) {
+            console.log(`✅ Found ViewOnce in nested ${key}.message`);
+            return nestedResult;
+          }
+        }
+      }
+    }
+
+    // Deep scan for viewOnce properties anywhere in the message structure
+    const hasViewOnceAnywhere = this.deepScanForViewOnce(message);
+    if (hasViewOnceAnywhere) {
+      console.log(`✅ Found ViewOnce indicator through deep scan`);
+      // Try to extract the first media type found
+      const firstMediaType = Object.keys(message).find(key => 
+        key.includes('Message') && message[key] && typeof message[key] === 'object'
+      );
+      if (firstMediaType) {
         return {
           content: message,
-          messageType: key,
-          mediaType: this.getMediaType(key),
-          data: value
+          messageType: firstMediaType,
+          mediaType: this.getMediaType(firstMediaType),
+          data: message[firstMediaType]
         };
       }
     }
 
     console.log('❌ No ViewOnce content found in message');
     return null;
+  }
+
+  private deepScanForViewOnce(obj: any, depth: number = 0): boolean {
+    if (depth > 10) return false; // Prevent infinite recursion
+    
+    if (obj && typeof obj === 'object') {
+      // Check if current object has viewOnce property
+      if (obj.hasOwnProperty('viewOnce')) {
+        console.log(`🔍 Deep scan found viewOnce at depth ${depth}:`, obj.viewOnce);
+        return true;
+      }
+      
+      // Recursively check nested objects
+      for (const [key, value] of Object.entries(obj)) {
+        if (key.toLowerCase().includes('viewonce') || key.toLowerCase().includes('view_once')) {
+          console.log(`🔍 Deep scan found ViewOnce-related key: ${key}`);
+          return true;
+        }
+        
+        if (value && typeof value === 'object') {
+          if (this.deepScanForViewOnce(value, depth + 1)) {
+            return true;
+          }
+        }
+      }
+    }
+    
+    return false;
   }
 
   private getMediaType(messageType: string): string {

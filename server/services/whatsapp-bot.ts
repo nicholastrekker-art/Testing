@@ -292,25 +292,42 @@ export class WhatsAppBot {
 
     console.log(`🔍 [${this.botInstance.name}] Checking for ViewOnce content...`);
     console.log(`🔍 [${this.botInstance.name}] Available message keys:`, Object.keys(message.message));
+    console.log(`🔍 [${this.botInstance.name}] Full message structure:`, JSON.stringify(message.message, null, 2));
 
     // Check for various ViewOnce message types with detailed logging
     const checks = {
       viewOnceMessage: !!message.message.viewOnceMessage,
       viewOnceMessageV2: !!message.message.viewOnceMessageV2,
       viewOnceMessageV2Extension: !!message.message.viewOnceMessageV2Extension,
-      imageMessageViewOnce: !!(message.message.imageMessage && message.message.imageMessage.viewOnce),
-      videoMessageViewOnce: !!(message.message.videoMessage && message.message.videoMessage.viewOnce),
-      audioMessageViewOnce: !!(message.message.audioMessage && message.message.audioMessage.viewOnce),
+      imageMessageViewOnce: !!(message.message.imageMessage && message.message.imageMessage.hasOwnProperty('viewOnce')),
+      videoMessageViewOnce: !!(message.message.videoMessage && message.message.videoMessage.hasOwnProperty('viewOnce')),
+      audioMessageViewOnce: !!(message.message.audioMessage && message.message.audioMessage.hasOwnProperty('viewOnce')),
+      documentMessageViewOnce: !!(message.message.documentMessage && message.message.documentMessage.hasOwnProperty('viewOnce')),
     };
 
     console.log(`🔍 [${this.botInstance.name}] ViewOnce checks:`, checks);
 
-    // Check for direct viewOnce properties in any message type
-    const hasViewOnceProperty = Object.values(message.message).some(value => 
-      value && typeof value === 'object' && (value as any).viewOnce === true
-    );
+    // Enhanced check for viewOnce properties (including false values)
+    const hasViewOnceProperty = Object.entries(message.message).some(([key, value]) => {
+      if (value && typeof value === 'object') {
+        const hasViewOnce = (value as any).hasOwnProperty('viewOnce');
+        if (hasViewOnce) {
+          console.log(`🎯 [${this.botInstance.name}] Found viewOnce property in ${key}:`, (value as any).viewOnce);
+        }
+        return hasViewOnce;
+      }
+      return false;
+    });
 
     console.log(`🔍 [${this.botInstance.name}] Has viewOnce property in any message type:`, hasViewOnceProperty);
+
+    // Deep scan for ViewOnce indicators
+    const hasDeepViewOnce = this.deepScanMessageForViewOnce(message.message);
+    console.log(`🔍 [${this.botInstance.name}] Deep ViewOnce scan result:`, hasDeepViewOnce);
+
+    // Check for ephemeral messages that might contain ViewOnce
+    const hasEphemeralViewOnce = !!(message.message.ephemeralMessage?.message && 
+      this.hasViewOnceContent({ message: message.message.ephemeralMessage.message, key: message.key } as WAMessage));
 
     const hasViewOnce = !!(
       checks.viewOnceMessage ||
@@ -319,17 +336,50 @@ export class WhatsAppBot {
       checks.imageMessageViewOnce ||
       checks.videoMessageViewOnce ||
       checks.audioMessageViewOnce ||
-      hasViewOnceProperty
+      checks.documentMessageViewOnce ||
+      hasViewOnceProperty ||
+      hasDeepViewOnce ||
+      hasEphemeralViewOnce
     );
 
     if (hasViewOnce) {
       console.log(`🎯 [${this.botInstance.name}] *** VIEWONCE CONTENT DETECTED *** from ${message.key.remoteJid}`);
       console.log(`🎯 [${this.botInstance.name}] ViewOnce detection results:`, checks);
+      console.log(`🎯 [${this.botInstance.name}] Additional checks - Property: ${hasViewOnceProperty}, Deep: ${hasDeepViewOnce}, Ephemeral: ${hasEphemeralViewOnce}`);
     } else {
       console.log(`❌ [${this.botInstance.name}] No ViewOnce content found`);
     }
 
     return hasViewOnce;
+  }
+
+  private deepScanMessageForViewOnce(messageObj: any, depth: number = 0): boolean {
+    if (depth > 5 || !messageObj) return false;
+    
+    if (typeof messageObj === 'object') {
+      // Check current level for viewOnce
+      if (messageObj.hasOwnProperty('viewOnce')) {
+        console.log(`🎯 [${this.botInstance.name}] Deep scan found viewOnce at depth ${depth}:`, messageObj.viewOnce);
+        return true;
+      }
+      
+      // Check for ViewOnce-related keys
+      for (const key of Object.keys(messageObj)) {
+        if (key.toLowerCase().includes('viewonce') || key.toLowerCase().includes('view_once')) {
+          console.log(`🎯 [${this.botInstance.name}] Deep scan found ViewOnce key: ${key}`);
+          return true;
+        }
+        
+        // Recursively check nested objects
+        if (messageObj[key] && typeof messageObj[key] === 'object') {
+          if (this.deepScanMessageForViewOnce(messageObj[key], depth + 1)) {
+            return true;
+          }
+        }
+      }
+    }
+    
+    return false;
   }
 
   private logMessageActivity(message: WAMessage): void {
