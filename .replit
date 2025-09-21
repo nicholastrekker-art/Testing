@@ -26,16 +26,12 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "yarn start"
+args = "NODE_ENV=production BASE_PATH=/default/server1/rest-service/v1.0 yarn tsx server/index.ts"
 waitForPort = 5000
 
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 37483
-externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
