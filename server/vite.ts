@@ -106,9 +106,9 @@ export function serveStatic(app: Express) {
     );
   }
 
-  // Support deployment behind reverse proxies with path prefixes
-  const base = process.env.BASE_PATH || '/';
-  const basePath = base === '/' ? base : base.replace(/\/$/, ''); // Remove trailing slash except for root
+  // For Cloud Run deployment, always serve at root path
+  const base = '/';
+  const basePath = base;
 
   log(`Serving static files at base path: ${basePath}`);
 
