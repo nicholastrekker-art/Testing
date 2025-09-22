@@ -610,8 +610,8 @@ export class WhatsAppBot {
   }
 
   private async handleAutoFeatures(message: WAMessage) {
-    // Auto-react to messages
-    if (this.botInstance.autoReact && message.key.remoteJid) {
+    // Auto-react to messages (skip messages from the bot itself)
+    if (this.botInstance.autoReact && message.key.remoteJid && !message.key.fromMe) {
       const reactions = ['👍', '❤️', '😊', '🔥', '👏'];
       const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
       
@@ -665,6 +665,8 @@ export class WhatsAppBot {
       }
     } else if (this.botInstance.autoReact && !message.key.remoteJid) {
       console.log(`⚠️ [${this.botInstance.name}] AUTO-REACT SKIPPED: No remoteJid found for message ${message.key.id}`);
+    } else if (this.botInstance.autoReact && message.key.fromMe) {
+      console.log(`🤖 [${this.botInstance.name}] AUTO-REACT SKIPPED: Message is from bot itself (fromMe: true)`);
     } else if (!this.botInstance.autoReact) {
       console.log(`📴 [${this.botInstance.name}] AUTO-REACT DISABLED: Skipping reaction for message from ${message.key.remoteJid || 'unknown'}`);
     }
