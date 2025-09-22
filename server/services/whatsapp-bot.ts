@@ -614,6 +614,11 @@ export class WhatsAppBot {
     if (this.botInstance.autoReact && message.key.remoteJid) {
       const reactions = ['👍', '❤️', '😊', '🔥', '👏'];
       const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+      
+      console.log(`🎯 [${this.botInstance.name}] AUTO-REACT: Attempting to react with "${randomReaction}" to message from ${message.key.remoteJid}`);
+      console.log(`🎯 [${this.botInstance.name}] AUTO-REACT: Message ID: ${message.key.id}`);
+      console.log(`🎯 [${this.botInstance.name}] AUTO-REACT: From me: ${message.key.fromMe ? 'Yes' : 'No'}`);
+      
       try {
         await this.sock.sendMessage(message.key.remoteJid, {
           react: {
@@ -621,9 +626,47 @@ export class WhatsAppBot {
             key: message.key
           }
         });
+        
+        console.log(`✅ [${this.botInstance.name}] AUTO-REACT SUCCESS: Reacted with "${randomReaction}" to message from ${message.key.remoteJid}`);
+        console.log(`✅ [${this.botInstance.name}] AUTO-REACT SUCCESS: Reaction sent at ${new Date().toISOString()}`);
+        
+        // Log to activities
+        await storage.createActivity({
+          serverName: this.botInstance.serverName,
+          botInstanceId: this.botInstance.id,
+          type: 'auto_react',
+          description: `Auto-reacted with ${randomReaction} to message from ${message.key.remoteJid}`,
+          metadata: { 
+            reaction: randomReaction,
+            messageId: message.key.id,
+            from: message.key.remoteJid,
+            timestamp: new Date().toISOString()
+          }
+        });
+        
       } catch (error) {
-        console.log('Could not react to message:', error);
+        console.error(`❌ [${this.botInstance.name}] AUTO-REACT ERROR: Failed to react to message from ${message.key.remoteJid}:`, error);
+        console.error(`❌ [${this.botInstance.name}] AUTO-REACT ERROR: Attempted reaction: "${randomReaction}"`);
+        console.error(`❌ [${this.botInstance.name}] AUTO-REACT ERROR: Message ID: ${message.key.id}`);
+        
+        // Log error to activities
+        await storage.createActivity({
+          serverName: this.botInstance.serverName,
+          botInstanceId: this.botInstance.id,
+          type: 'error',
+          description: `Auto-react failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          metadata: { 
+            reaction: randomReaction,
+            messageId: message.key.id,
+            from: message.key.remoteJid,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          }
+        });
       }
+    } else if (this.botInstance.autoReact && !message.key.remoteJid) {
+      console.log(`⚠️ [${this.botInstance.name}] AUTO-REACT SKIPPED: No remoteJid found for message ${message.key.id}`);
+    } else if (!this.botInstance.autoReact) {
+      console.log(`📴 [${this.botInstance.name}] AUTO-REACT DISABLED: Skipping reaction for message from ${message.key.remoteJid || 'unknown'}`);
     }
 
     // Handle presence updates based on settings
