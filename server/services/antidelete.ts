@@ -355,157 +355,97 @@ export class AntideleteService {
       const chatType = this.getChatType(fromJid);
       const timestamp = new Date().toLocaleString();
 
-      // Check if this message already exists in store with content but now has empty content
-      const existingMessage = this.messageStore.get(messageId);
-      if (existingMessage && existingMessage.content && existingMessage.content.trim() !== '' && 
-          (!messageContent || messageContent.trim() === '')) {
-        
-        console.log(`🚨 [Antidelete] MESSAGE DELETION DETECTED VIA EMPTY CONTENT!`);
+      // Check if this is an empty content message with existing media message
+      if ((!messageContent || messageContent.trim() === '') && !message.key.fromMe) {
+        console.log(`🚨 [Antidelete] EMPTY CONTENT MESSAGE DETECTED - CHECKING FOR MEDIA DELETION!`);
         console.log(`══════════════════════════════════════════════════════════`);
         console.log(`   🆔 Message ID: ${messageId}`);
-        console.log(`   👤 Original Sender: ${existingMessage.senderJid}`);
-        console.log(`   💬 Chat: ${chatType} (${fromJid})`);
-        console.log(`   📝 Original Content: "${existingMessage.content}"`);
-        console.log(`   🕐 Deletion Time: ${timestamp}`);
-        console.log(`   🔄 Detection Method: Empty content replacement`);
-
-        // Create a synthetic revocation message to handle this deletion
-        const syntheticRevocationMessage = {
-          key: {
-            id: `synthetic_${Date.now()}`,
-            remoteJid: fromJid,
-            participant: message.key.participant
-          },
-          message: {
-            protocolMessage: {
-              key: {
-                id: messageId,
-                remoteJid: fromJid,
-                participant: message.key.participant
-              },
-              type: 0 // REVOKE type
-            }
-          }
-        };
-
-        console.log(`📤 [Antidelete] Forwarding synthetic deletion to handler...`);
-        
-        // Check if deleted message had media content
-        const hadMedia = this.hasMediaContent(existingMessage.originalMessage);
-        if (hadMedia) {
-          const mediaInfo = this.getDetailedMediaInfo(existingMessage.originalMessage);
-          console.log(`🎬 [Antidelete] DELETED MESSAGE CONTAINED MEDIA!`);
-          console.log(`      📱 Media Type: ${mediaInfo.type}`);
-          console.log(`      📏 File Size: ${mediaInfo.size || 'Unknown'} bytes`);
-          console.log(`      🎭 MIME Type: ${mediaInfo.mimetype || 'Unknown'}`);
-          console.log(`      📄 Caption: ${mediaInfo.caption || 'None'}`);
-          console.log(`      👁️ ViewOnce: ${mediaInfo.viewOnce ? 'Yes' : 'No'}`);
-          console.log(`      📐 Dimensions: ${mediaInfo.width || '?'}x${mediaInfo.height || '?'}`);
-          
-          // Try to save and forward the media before sending alert
-          try {
-            const savedMedia = await this.extractAndSaveMedia(existingMessage.originalMessage);
-            if (savedMedia.path && fs.existsSync(savedMedia.path)) {
-              console.log(`💾 [Antidelete] Media saved to: ${savedMedia.path}`);
-              
-              // Forward the saved media to bot owner first
-              if (sock) {
-                await this.forwardMediaToBotOwner(sock, savedMedia, mediaInfo, existingMessage);
-              }
-            } else {
-              console.log(`⚠️ [Antidelete] Media file not saved or doesn't exist`);
-            }
-          } catch (mediaError) {
-            console.error(`❌ [Antidelete] Failed to save deleted media:`, mediaError);
-          }
-        }
-        
-        // Send deletion alert to bot owner only
-        if (sock) {
-          await this.sendDeletionAlertToBotOwner(sock, existingMessage, fromJid, 'Empty content replacement', hadMedia);
-        } else {
-          console.log(`⚠️ [Antidelete] No socket available for deletion alert`);
-        }
-        console.log(`══════════════════════════════════════════════════════════`);
-      } 
-      // Check for new empty content messages and search for recent messages from same chat
-      else if ((!messageContent || messageContent.trim() === '') && messageType === 'unknown' && !message.key.fromMe) {
-        console.log(`🚨 [Antidelete] EMPTY CONTENT MESSAGE DETECTED - SEARCHING FOR RECENT DELETIONS!`);
-        console.log(`══════════════════════════════════════════════════════════`);
-        console.log(`   🆔 Empty Message ID: ${messageId}`);
         console.log(`   💬 Chat: ${chatType} (${fromJid})`);
         console.log(`   🕐 Detection Time: ${timestamp}`);
-        console.log(`   🔄 Detection Method: Empty content message`);
 
-        // Search for recent messages from the same chat that have content
-        const recentMessages = Array.from(this.messageStore.values())
-          .filter(msg => 
-            msg.fromJid === fromJid && 
-            msg.content && 
-            msg.content.trim() !== '' &&
-            !msg.originalMessage.key.fromMe &&
-            (Date.now() - msg.timestamp) < 60000 // Within last 60 seconds
-          )
-          .sort((a, b) => b.timestamp - a.timestamp); // Most recent first
+        // Look for existing message with same ID that has media content
+        const existingMessage = this.messageStore.get(messageId);
+        if (existingMessage && this.hasMediaContent(existingMessage.originalMessage)) {
+          const mediaInfo = this.getDetailedMediaInfo(existingMessage.originalMessage);
+          console.log(`✅ [Antidelete] FOUND MEDIA MESSAGE TO RESTORE!`);
+          console.log(`      📱 Media Type: ${mediaInfo.type}`);
+          console.log(`      🔗 Media URL: ${mediaInfo.url ? 'Present' : 'None'}`);
+          console.log(`      📏 File Size: ${mediaInfo.size || 'Unknown'} bytes`);
+          console.log(`      🎭 MIME Type: ${mediaInfo.mimetype || 'Unknown'}`);
 
-        if (recentMessages.length > 0) {
-          const mostRecentMessage = recentMessages[0];
-          console.log(`✅ [Antidelete] FOUND RECENT MESSAGE TO RESTORE!`);
-          console.log(`   📝 Recent Message Content: "${mostRecentMessage.content}"`);
-          console.log(`   🆔 Recent Message ID: ${mostRecentMessage.id}`);
-          console.log(`   👤 Original Sender: ${mostRecentMessage.senderJid}`);
-          console.log(`   ⏱️ Time Since Message: ${Date.now() - mostRecentMessage.timestamp}ms`);
-
-          // Check if the recent message had media
-          const recentHadMedia = this.hasMediaContent(mostRecentMessage.originalMessage);
-          
-          if (recentHadMedia) {
-            const recentMediaInfo = this.getDetailedMediaInfo(mostRecentMessage.originalMessage);
-            console.log(`🎬 [Antidelete] RECENT DELETED MESSAGE CONTAINED MEDIA!`);
-            console.log(`      📱 Media Type: ${recentMediaInfo.type}`);
-            console.log(`      📏 File Size: ${recentMediaInfo.size || 'Unknown'} bytes`);
-            console.log(`      🎭 MIME Type: ${recentMediaInfo.mimetype || 'Unknown'}`);
-            
-            // Try to save and forward the media
+          if (sock) {
             try {
-              const savedMedia = await this.extractAndSaveMedia(mostRecentMessage.originalMessage);
-              if (savedMedia.path && fs.existsSync(savedMedia.path)) {
-                console.log(`💾 [Antidelete] Recent media saved to: ${savedMedia.path}`);
-                
-                // Forward the saved media to bot owner first
-                if (sock) {
-                  await this.forwardMediaToBotOwner(sock, savedMedia, recentMediaInfo, mostRecentMessage);
-                }
-              } else {
-                console.log(`⚠️ [Antidelete] Recent media file not saved or doesn't exist`);
-              }
-            } catch (mediaError) {
-              console.error(`❌ [Antidelete] Failed to save recent deleted media:`, mediaError);
+              // Download and forward media using URL
+              await this.downloadAndForwardMediaFromUrl(sock, mediaInfo, existingMessage);
+              
+              // Send deletion alert
+              await this.sendDeletionAlertToBotOwner(sock, existingMessage, fromJid, 'Media deletion detected', true);
+              
+              // Clean up: remove the message from store after successful forwarding
+              this.messageStore.delete(messageId);
+              console.log(`🧹 [Antidelete] Cleaned up stored message ${messageId} after forwarding`);
+            } catch (error) {
+              console.error(`❌ [Antidelete] Failed to process deleted media:`, error);
             }
           }
-          
-          // Send deletion alert to bot owner only
-          if (sock) {
-            await this.sendDeletionAlertToBotOwner(sock, mostRecentMessage, fromJid, 'Empty content detection', recentHadMedia);
-          }
         } else {
-          console.log(`❌ [Antidelete] NO RECENT MESSAGES FOUND TO RESTORE`);
-          console.log(`   📊 Total stored messages: ${this.messageStore.size}`);
-          console.log(`   🔍 Searched for messages from: ${fromJid}`);
+          // Search for recent messages from the same chat
+          const recentMessages = Array.from(this.messageStore.values())
+            .filter(msg => 
+              msg.fromJid === fromJid && 
+              (msg.content && msg.content.trim() !== '' || this.hasMediaContent(msg.originalMessage)) &&
+              !msg.originalMessage.key.fromMe &&
+              (Date.now() - msg.timestamp) < 60000 // Within last 60 seconds
+            )
+            .sort((a, b) => b.timestamp - a.timestamp); // Most recent first
+
+          if (recentMessages.length > 0) {
+            const mostRecentMessage = recentMessages[0];
+            console.log(`✅ [Antidelete] FOUND RECENT MESSAGE TO RESTORE!`);
+            console.log(`   🆔 Recent Message ID: ${mostRecentMessage.id}`);
+            console.log(`   📝 Recent Message Content: "${mostRecentMessage.content}"`);
+
+            const recentHadMedia = this.hasMediaContent(mostRecentMessage.originalMessage);
+            if (recentHadMedia && sock) {
+              const recentMediaInfo = this.getDetailedMediaInfo(mostRecentMessage.originalMessage);
+              console.log(`🎬 [Antidelete] RECENT MESSAGE HAD MEDIA!`);
+              
+              try {
+                await this.downloadAndForwardMediaFromUrl(sock, recentMediaInfo, mostRecentMessage);
+                await this.sendDeletionAlertToBotOwner(sock, mostRecentMessage, fromJid, 'Recent media deletion', true);
+                
+                // Clean up the recent message after forwarding
+                this.messageStore.delete(mostRecentMessage.id);
+                console.log(`🧹 [Antidelete] Cleaned up recent message ${mostRecentMessage.id} after forwarding`);
+              } catch (error) {
+                console.error(`❌ [Antidelete] Failed to process recent deleted media:`, error);
+              }
+            } else if (sock) {
+              await this.sendDeletionAlertToBotOwner(sock, mostRecentMessage, fromJid, 'Recent text deletion', false);
+              this.messageStore.delete(mostRecentMessage.id);
+            }
+          } else {
+            console.log(`❌ [Antidelete] NO RECENT MESSAGES FOUND TO RESTORE`);
+          }
         }
         console.log(`══════════════════════════════════════════════════════════`);
+        
+        // Don't store empty content messages
+        return;
       }
 
-      // Store or update in memory
-      this.messageStore.set(messageId, {
-        id: messageId,
-        fromJid,
-        senderJid,
-        content: messageContent,
-        type: messageType,
-        timestamp: Date.now(),
-        originalMessage: message
-      });
+      // Only store messages with actual content or media
+      if (messageContent.trim() !== '' || this.hasMediaContent(message)) {
+        this.messageStore.set(messageId, {
+          id: messageId,
+          fromJid,
+          senderJid,
+          content: messageContent,
+          type: messageType,
+          timestamp: Date.now(),
+          originalMessage: message
+        });
+      }
 
       // Comprehensive logging
       console.log(`📨 [Antidelete] INCOMING MESSAGE`);
@@ -901,6 +841,123 @@ export class AntideleteService {
     this.saveMessageStore();
   }
 
+  // Download and forward media using URL
+  private async downloadAndForwardMediaFromUrl(sock: WASocket, mediaInfo: any, originalMessage: StoredMessage): Promise<void> {
+    try {
+      const botOwnerJid = sock.user?.id;
+      if (!botOwnerJid) {
+        console.log(`❌ [Antidelete] Cannot forward media - bot owner JID not found`);
+        return;
+      }
+
+      if (!mediaInfo.url) {
+        console.log(`❌ [Antidelete] Cannot download media - no URL found`);
+        return;
+      }
+
+      console.log(`📥 [Antidelete] Downloading media from URL: ${mediaInfo.url.substring(0, 50)}...`);
+
+      // Download media from URL
+      const response = await fetch(mediaInfo.url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const mediaBuffer = Buffer.from(await response.arrayBuffer());
+      const senderName = originalMessage.originalMessage?.pushName || 'Unknown';
+      const sizeInKB = Math.round(mediaBuffer.length / 1024);
+      const caption = `🚨 *DELETED MEDIA RECOVERED* 🚨\n\n🗑️ *Deleted by:* ${senderName}\n📎 *Type:* ${mediaInfo.type}\n💬 *Caption:* ${mediaInfo.caption || 'None'}\n📏 *Size:* ${sizeInKB}KB\n\n📞 *Owner:* +254704897825`;
+
+      console.log(`📤 [Antidelete] Forwarding ${mediaInfo.type} media (${sizeInKB}KB) to bot owner...`);
+
+      try {
+        switch (mediaInfo.type) {
+          case 'image':
+            await sock.sendMessage(botOwnerJid, {
+              image: mediaBuffer,
+              caption: caption,
+              mimetype: mediaInfo.mimetype || 'image/jpeg'
+            });
+            console.log(`✅ [Antidelete] Image forwarded successfully`);
+            break;
+
+          case 'video':
+            await sock.sendMessage(botOwnerJid, {
+              video: mediaBuffer,
+              caption: caption,
+              mimetype: mediaInfo.mimetype || 'video/mp4'
+            });
+            console.log(`✅ [Antidelete] Video forwarded successfully`);
+            break;
+
+          case 'audio':
+            await sock.sendMessage(botOwnerJid, {
+              audio: mediaBuffer,
+              caption: caption,
+              mimetype: mediaInfo.mimetype || 'audio/mpeg'
+            });
+            console.log(`✅ [Antidelete] Audio forwarded successfully`);
+            break;
+
+          case 'sticker':
+            await sock.sendMessage(botOwnerJid, {
+              sticker: mediaBuffer,
+              mimetype: mediaInfo.mimetype || 'image/webp'
+            });
+            // Send caption separately for stickers
+            await sock.sendMessage(botOwnerJid, { text: caption });
+            console.log(`✅ [Antidelete] Sticker forwarded successfully`);
+            break;
+
+          case 'document':
+            const fileName = `recovered_${originalMessage.id}.${this.getFileExtension(mediaInfo.type)}`;
+            await sock.sendMessage(botOwnerJid, {
+              document: mediaBuffer,
+              fileName: fileName,
+              caption: caption,
+              mimetype: mediaInfo.mimetype || 'application/octet-stream'
+            });
+            console.log(`✅ [Antidelete] Document forwarded successfully`);
+            break;
+
+          default:
+            // Fallback to document
+            const defaultFileName = `recovered_${originalMessage.id}.bin`;
+            await sock.sendMessage(botOwnerJid, {
+              document: mediaBuffer,
+              fileName: defaultFileName,
+              caption: caption,
+              mimetype: 'application/octet-stream'
+            });
+            console.log(`✅ [Antidelete] Unknown media type forwarded as document`);
+            break;
+        }
+
+        console.log(`✅ [Antidelete] Media forwarded to bot owner successfully!`);
+        
+      } catch (sendError) {
+        console.error('❌ [Antidelete] Error sending media message:', sendError);
+        
+        // Fallback: try to send as document
+        try {
+          const fallbackFileName = `recovered_${originalMessage.id}_${mediaInfo.type}.bin`;
+          await sock.sendMessage(botOwnerJid, {
+            document: mediaBuffer,
+            fileName: fallbackFileName,
+            caption: caption,
+            mimetype: 'application/octet-stream'
+          });
+          console.log(`✅ [Antidelete] Media forwarded as fallback document`);
+        } catch (fallbackError) {
+          console.error('❌ [Antidelete] Fallback document send also failed:', fallbackError);
+        }
+      }
+
+    } catch (error) {
+      console.error('❌ [Antidelete] Critical error in downloadAndForwardMediaFromUrl:', error);
+    }
+  }
+
   // Forward saved media to bot owner
   private async forwardMediaToBotOwner(sock: WASocket, savedMedia: { type: string, path: string }, mediaInfo: any, originalMessage: StoredMessage): Promise<void> {
     try {
@@ -987,6 +1044,10 @@ export class AntideleteService {
 
         console.log(`✅ [Antidelete] Media forwarded to bot owner successfully!`);
         
+        // Clean up the stored message after successful forwarding
+        this.messageStore.delete(originalMessage.id);
+        console.log(`🧹 [Antidelete] Cleaned up stored message ${originalMessage.id} after forwarding`);
+        
       } catch (sendError) {
         console.error('❌ [Antidelete] Error sending media message:', sendError);
         
@@ -1000,6 +1061,10 @@ export class AntideleteService {
             mimetype: 'application/octet-stream'
           });
           console.log(`✅ [Antidelete] Media forwarded as fallback document`);
+          
+          // Clean up after fallback success too
+          this.messageStore.delete(originalMessage.id);
+          console.log(`🧹 [Antidelete] Cleaned up stored message ${originalMessage.id} after fallback forwarding`);
         } catch (fallbackError) {
           console.error('❌ [Antidelete] Fallback document send also failed:', fallbackError);
         }
