@@ -73,9 +73,10 @@ export default function Dashboard() {
     queryKey: ["/api/server/info"],
   });
 
-  // Fetch bot instances for guest users  
+  // Fetch bot instances - ADMIN ONLY (prevents privilege escalation)
   const { data: botInstances = [], isLoading: botsLoading } = useQuery({
     queryKey: ["/api/bot-instances"],
+    enabled: isAdmin
   });
 
   // Fetch pending bots for admin
@@ -95,9 +96,10 @@ export default function Dashboard() {
     queryKey: ["/api/activities"],
   });
 
-  // Fetch commands for command management
+  // Fetch commands - ADMIN ONLY (prevents access to command system)
   const { data: commands = [], isLoading: commandsLoading } = useQuery({
     queryKey: ["/api/commands"],
+    enabled: isAdmin
   });
 
   // Fetch God registry for admin
@@ -535,7 +537,7 @@ export default function Dashboard() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="max-w-2xl mx-auto">
             {/* Guest Registration Section */}
             <Card className="bg-card border-border">
               <CardHeader className="border-b border-border">
@@ -567,65 +569,6 @@ export default function Dashboard() {
                     <i className="fas fa-rocket mr-2"></i>
                     Register Your Bot
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Guest Bot Instances */}
-            <Card className="bg-card border-border">
-              <CardHeader className="border-b border-border">
-                <CardTitle className="text-lg font-semibold text-foreground">Your Bot Instances</CardTitle>
-                <p className="text-muted-foreground text-sm mt-1">View and monitor your installed bot instances</p>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {botsLoading ? (
-                    <div className="text-center py-4">
-                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                    </div>
-                  ) : (botInstances as any[]).length === 0 ? (
-                    <div className="text-center py-4">
-                      <p className="text-muted-foreground">No bot instances yet</p>
-                      <p className="text-xs text-muted-foreground mt-1">Upload credentials to create your first bot</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {(botInstances as any[]).slice(0, 5).map((bot: any) => (
-                        <div key={bot.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-md" data-testid={`bot-instance-${bot.id}`}>
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                              <i className="fas fa-robot text-primary"></i>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-foreground">{bot.name}</p>
-                              <p className="text-xs text-muted-foreground">{bot.phoneNumber || 'No phone number'}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className={`text-xs px-2 py-1 rounded ${
-                              bot.status === 'online' ? 'text-green-400 bg-green-500/10' :
-                              bot.status === 'offline' ? 'text-gray-400 bg-gray-500/10' :
-                              bot.status === 'loading' ? 'text-blue-400 bg-blue-500/10' :
-                              bot.status === 'qr_code' ? 'text-yellow-400 bg-yellow-500/10' :
-                              'text-red-400 bg-red-500/10'
-                            }`}>
-                              {bot.status.replace('_', ' ').toUpperCase()}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-
-                      {(botInstances as any[]).length > 5 && (
-                        <div className="text-center pt-3">
-                          <Link href="/bot-instances">
-                            <a className="text-primary hover:text-primary/80 text-sm font-medium" data-testid="link-view-all-bots">
-                              View All {(botInstances as any[]).length} Bots
-                            </a>
-                          </Link>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
