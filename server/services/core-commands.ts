@@ -127,17 +127,30 @@ ${greeting}, *User*
     commandsList += "\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n";
 
     try {
-      // Send the menu with the avatar image on top
-      const imagePath = join(process.cwd(), 'attached_assets', 'menu-avatar.jpg');
+      // Auto-rotate between icon1.jpg and icon2.jpg
       const { readFileSync, existsSync } = await import('fs');
+      const { homedir } = await import('os');
+      const iconsDir = join(homedir(), 'icons');
       
-      if (existsSync(imagePath)) {
+      // Determine which icon to use (rotate between icon1 and icon2)
+      const currentTime = new Date().getTime();
+      const iconNumber = Math.floor(currentTime / 10000) % 2 + 1; // Switch every 10 seconds
+      const iconFileName = `icon${iconNumber}.jpg`;
+      const imagePath = join(iconsDir, iconFileName);
+      
+      // Fallback to icon1 if the selected icon doesn't exist
+      const fallbackPath = join(iconsDir, 'icon1.jpg');
+      const finalImagePath = existsSync(imagePath) ? imagePath : fallbackPath;
+      
+      if (existsSync(finalImagePath)) {
+        console.log(`📸 [Menu] Using icon: ${iconFileName} from ${iconsDir}`);
         await client.sendMessage(from, {
-          image: { url: imagePath },
+          image: { url: finalImagePath },
           caption: responseMessage + commandsList
         });
       } else {
-        // Fallback to text-only if image not found
+        console.log(`⚠️ [Menu] No icons found in ${iconsDir}, using text-only menu`);
+        // Fallback to text-only if no images found
         await respond(responseMessage + commandsList);
       }
     } catch (error) {
