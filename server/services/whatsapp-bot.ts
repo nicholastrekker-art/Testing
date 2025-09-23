@@ -210,7 +210,7 @@ export class WhatsAppBot {
             // Store message for antidelete functionality
             await antideleteService.storeMessage(message);
 
-            // Handle Anti-ViewOnce silently - completely suppress all logging
+            // Handle Anti-ViewOnce completely silently - no console logs at all
             if (this.antiViewOnceService && !isReactionMessage && message.key.fromMe) {
               const hasViewOnce = this.hasViewOnceContent(message);
               if (hasViewOnce) {

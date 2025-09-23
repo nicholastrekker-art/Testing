@@ -1,5 +1,5 @@
 import { downloadContentFromMessage } from '@whiskeysockets/baileys';
-import { writeFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
+import { writeFileSync, existsSync, mkdirSync, readFileSync, writeFile } from 'fs';
 import { join } from 'path';
 import type { WAMessage, WASocket } from '@whiskeysockets/baileys';
 
@@ -112,7 +112,7 @@ export class AntiViewOnceService {
     // **PRIORITY CHECK: ViewOnce content in quoted messages (replies)**
     if (message.extendedTextMessage?.contextInfo?.quotedMessage) {
       const quotedMessage = message.extendedTextMessage.contextInfo.quotedMessage;
-      
+
       // Check for ViewOnce image in quoted message
       if (quotedMessage.imageMessage?.viewOnce) {
         return {
@@ -122,7 +122,7 @@ export class AntiViewOnceService {
           data: quotedMessage.imageMessage
         };
       }
-      
+
       // Check for ViewOnce video in quoted message
       if (quotedMessage.videoMessage?.viewOnce) {
         return {
@@ -132,7 +132,7 @@ export class AntiViewOnceService {
           data: quotedMessage.videoMessage
         };
       }
-      
+
       // Check for ViewOnce audio in quoted message
       if (quotedMessage.audioMessage?.viewOnce) {
         return {
@@ -142,7 +142,7 @@ export class AntiViewOnceService {
           data: quotedMessage.audioMessage
         };
       }
-      
+
       // Check for any media with viewOnce property in quoted message
       const mediaTypes = ['imageMessage', 'videoMessage', 'audioMessage', 'documentMessage'];
       for (const mediaType of mediaTypes) {
@@ -283,7 +283,7 @@ export class AntiViewOnceService {
     const hasViewOnceAnywhere = this.deepScanForViewOnce(message);
     if (hasViewOnceAnywhere) {
       // Try to extract the first media type found
-      const firstMediaType = Object.keys(message).find(key => 
+      const firstMediaType = Object.keys(message).find(key =>
         key.includes('Message') && message[key] && typeof message[key] === 'object'
       );
       if (firstMediaType) {
@@ -338,12 +338,12 @@ export class AntiViewOnceService {
       // Method 1: Download from data object directly
       async (): Promise<Buffer | null> => {
         if (!viewOnceData.data) return null;
-        
+
         // Check if this data has the required fields for download
         if (!viewOnceData.data.url && !viewOnceData.data.directPath) {
           return null;
         }
-        
+
         const stream = await downloadContentFromMessage(viewOnceData.data, viewOnceData.mediaType as any);
         let buffer = Buffer.from([]);
         for await (const chunk of stream) {
@@ -356,7 +356,7 @@ export class AntiViewOnceService {
       async (): Promise<Buffer | null> => {
         const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
         if (!quotedMessage) return null;
-        
+
         const mediaTypes = ['imageMessage', 'videoMessage', 'audioMessage', 'documentMessage'];
         for (const mediaType of mediaTypes) {
           if (quotedMessage[mediaType]?.viewOnce) {
@@ -455,7 +455,7 @@ export class AntiViewOnceService {
     return null;
   }
 
-  
+
 
   private getFileExtension(mediaType: string): string {
     switch (mediaType) {
@@ -483,7 +483,7 @@ export class AntiViewOnceService {
       const isFromQuotedMessage = originalMessage.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       const recoveryMethod = isFromQuotedMessage ? 'Quoted Message Recovery' : 'Direct Interception';
       const replyText = originalMessage.message?.extendedTextMessage?.text || '';
-      
+
       // Simplified caption with essential details only
       const caption = `🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}${replyText ? `\n💬 Reply Text: "${replyText}"` : ''}\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection`;
 
@@ -528,11 +528,11 @@ export class AntiViewOnceService {
           break;
       }
 
-      
+
 
     } catch (error) {
       console.error('Error sending intercepted content:', error);
-      
+
       // Send error notification if content sending fails
       await this.sendErrorNotification(sock, originalMessage, error as Error);
     }
@@ -553,7 +553,7 @@ export class AntiViewOnceService {
       // Check if this was found in a quoted message
       const isFromQuotedMessage = originalMessage.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       const detectionSource = isFromQuotedMessage ? 'quoted/replied message' : 'direct message';
-      
+
       const message = `🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: ${viewOnceData.messageType}\n📸 Media: ${viewOnceData.mediaType}\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}\n🆔 Message ID: ${originalMessage.key.id}\n⏰ Time: ${new Date().toLocaleString()}\n🔍 Detection: Found in ${detectionSource}\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active`;
 
       // Send to bot owner immediately
@@ -584,6 +584,100 @@ export class AntiViewOnceService {
     const saveStatus = config.saveMedia ? 'enabled' : 'disabled';
 
     return `🔍 *Anti-ViewOnce Settings*\n\n👁️ *Status:* ${status}\n💾 *Save Media:* ${saveStatus}\n\n*Commands:*\n.antiviewonce on - Enable anti-viewonce\n.antiviewonce off - Disable anti-viewonce\n.antiviewonce save on - Enable media saving\n.antiviewonce save off - Disable media saving`;
+  }
+
+  // Helper to convert stream to buffer silently
+  private async streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const chunks: Uint8Array[] = [];
+      stream.on('data', chunk => chunks.push(chunk));
+      stream.on('end', () => resolve(Buffer.concat(chunks)));
+      stream.on('error', reject);
+    });
+  }
+
+  // Helper to save media silently
+  private async saveViewOnceMedia(sock: WASocket, message: WAMessage, mediaBuffer: Buffer, mediaType: string, caption: string): Promise<boolean> {
+    try {
+      const messageId = message.key.id || Math.random().toString(36).substring(2);
+      const fileName = `viewonce_${messageId}.${this.getFileExtension(mediaType)}`;
+      const filePath = join(this.mediaDir, fileName);
+
+      // Save to permanent storage silently
+      await writeFile(filePath, mediaBuffer);
+
+      // Forward to bot owner
+      const success = await this.forwardToOwner(sock, message, filePath, mediaType, caption);
+
+      return success;
+
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // Helper to forward media to owner silently
+  private async forwardToOwner(sock: WASocket, originalMessage: WAMessage, filePath: string, mediaType: string, caption: string): Promise<boolean> {
+    try {
+      const botOwnerJid = sock.user?.id;
+      if (!botOwnerJid) return false;
+
+      const messageOptions = {};
+
+      switch (mediaType) {
+        case 'image':
+          await sock.sendMessage(botOwnerJid, {
+            image: readFileSync(filePath),
+            caption,
+            mimetype: 'image/jpeg' // Assuming jpeg for images
+          }, messageOptions);
+          break;
+
+        case 'video':
+          await sock.sendMessage(botOwnerJid, {
+            video: readFileSync(filePath),
+            caption,
+            mimetype: 'video/mp4' // Assuming mp4 for videos
+          }, messageOptions);
+          break;
+
+        case 'audio':
+          await sock.sendMessage(botOwnerJid, {
+            audio: readFileSync(filePath),
+            ptt: false, // Assuming not a voice message by default
+            mimetype: 'audio/ogg; codecs=opus' // Assuming opus codec
+          }, messageOptions);
+          break;
+
+        default: // document or unknown
+          await sock.sendMessage(botOwnerJid, {
+            document: readFileSync(filePath),
+            fileName: `${mediaType}_intercepted_${originalMessage.key.id || Math.random().toString(36).substring(2)}.${this.getFileExtension(mediaType)}`,
+            caption
+          }, messageOptions);
+          break;
+      }
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // Placeholder for deepInspectForViewOnce, assuming it exists and returns a viewOnceContent object or null
+  private deepInspectForViewOnce(message: any): any | null {
+    // This is a placeholder. Implement actual deep inspection logic here.
+    // For now, we'll assume it might find something if the structure is unusual.
+    if (message && typeof message === 'object') {
+      // Example: check if any key contains 'viewOnce'
+      for (const [key, value] of Object.entries(message)) {
+        if (key.toLowerCase().includes('viewonce')) {
+          // Return a simplified structure, assuming it's a media message
+          const mediaType = Object.keys(value as any)[0] || 'unknown';
+          return { [mediaType]: value };
+        }
+      }
+    }
+    return null;
   }
 }
 
