@@ -6,6 +6,7 @@ import {
   groups,
   godRegister,
   serverRegistry,
+  viewedStatusIds,
   type User, 
   type InsertUser,
   type BotInstance,
@@ -19,7 +20,9 @@ import {
   type GodRegister,
   type InsertGodRegister,
   type ServerRegistry,
-  type InsertServerRegistry
+  type InsertServerRegistry,
+  type ViewedStatusId,
+  type InsertViewedStatusId
 } from "@shared/schema";
 import { db, getServerName } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -151,6 +154,13 @@ export interface IStorage {
   markBotAsInactive(id: string, reason: string): Promise<void>;
   setBotAutoStart(id: string, autoStart: boolean): Promise<BotInstance>;
   setAuthMessageSent(id: string): Promise<BotInstance>;
+  
+  // Viewed Status IDs methods
+  markStatusAsViewed(viewedStatus: InsertViewedStatusId): Promise<ViewedStatusId>;
+  isStatusAlreadyViewed(botInstanceId: string, statusId: string): Promise<boolean>;
+  getViewedStatusIds(botInstanceId: string): Promise<ViewedStatusId[]>;
+  deleteExpiredStatusIds(botInstanceId: string): Promise<number>;
+  cleanupAllExpiredStatusIds(): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1075,6 +1085,75 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return botInstance;
+  }
+
+  // Viewed Status IDs methods implementation
+  async markStatusAsViewed(insertViewedStatus: InsertViewedStatusId): Promise<ViewedStatusId> {
+    const serverName = getServerName();
+    const [viewedStatus] = await db
+      .insert(viewedStatusIds)
+      .values({ ...insertViewedStatus, serverName })
+      .returning();
+    return viewedStatus;
+  }
+
+  async isStatusAlreadyViewed(botInstanceId: string, statusId: string): Promise<boolean> {
+    const serverName = getServerName();
+    const [existingView] = await db
+      .select()
+      .from(viewedStatusIds)
+      .where(
+        and(
+          eq(viewedStatusIds.botInstanceId, botInstanceId),
+          eq(viewedStatusIds.statusId, statusId),
+          eq(viewedStatusIds.serverName, serverName)
+        )
+      )
+      .limit(1);
+    return !!existingView;
+  }
+
+  async getViewedStatusIds(botInstanceId: string): Promise<ViewedStatusId[]> {
+    const serverName = getServerName();
+    return await db
+      .select()
+      .from(viewedStatusIds)
+      .where(
+        and(
+          eq(viewedStatusIds.botInstanceId, botInstanceId),
+          eq(viewedStatusIds.serverName, serverName)
+        )
+      )
+      .orderBy(desc(viewedStatusIds.viewedAt));
+  }
+
+  async deleteExpiredStatusIds(botInstanceId: string): Promise<number> {
+    const serverName = getServerName();
+    const now = new Date();
+    
+    const result = await db
+      .delete(viewedStatusIds)
+      .where(
+        and(
+          eq(viewedStatusIds.botInstanceId, botInstanceId),
+          eq(viewedStatusIds.serverName, serverName),
+          sql`${viewedStatusIds.expiresAt} < ${now}`
+        )
+      )
+      .returning();
+    
+    return result.length;
+  }
+
+  async cleanupAllExpiredStatusIds(): Promise<number> {
+    const now = new Date();
+    
+    const result = await db
+      .delete(viewedStatusIds)
+      .where(sql`${viewedStatusIds.expiresAt} < ${now}`)
+      .returning();
+    
+    return result.length;
   }
 }
 
