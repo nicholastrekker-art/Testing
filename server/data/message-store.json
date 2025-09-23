@@ -1,15 +1,66 @@
 {
-  "3EB0CF65F567F7D66DA753": {
+  "3EB0FF7B2905601B1C08D7": {
     "content": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀",
     "mediaType": "",
     "mediaPath": "",
     "sender": "254799257758:21@s.whatsapp.net",
     "group": null,
-    "timestamp": "2025-09-23T15:45:49.623Z",
+    "timestamp": "2025-09-23T15:59:24.252Z",
     "fullMessage": {
       "extendedTextMessage": {
         "text": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀"
       }
+    }
+  },
+  "9DF0BDFBC6A72037BB38B157BB94DAB3": {
+    "content": "Hey",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-23T16:00:39.087Z",
+    "fullMessage": {
+      "conversation": "Hey"
+    }
+  },
+  "AB710BCE767F1D5048321679E1565483": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-23T16:01:07.089Z",
+    "fullMessage": {
+      "protocolMessage": {
+        "key": {
+          "remoteJid": "254799257758@s.whatsapp.net",
+          "fromMe": true,
+          "id": "9DF0BDFBC6A72037BB38B157BB94DAB3"
+        },
+        "type": "REVOKE"
+      }
+    }
+  },
+  "917FC6EFE53C61D8FDA50517B9ECE4A5": {
+    "content": "Hey",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-23T16:04:11.242Z",
+    "fullMessage": {
+      "conversation": "Hey"
+    }
+  },
+  "0E32CE6A121D19166213FB4A86DD3AB8": {
+    "content": "Yowh",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254799257758@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-23T16:04:11.803Z",
+    "fullMessage": {
+      "conversation": "Yowh"
     }
   }
 }
