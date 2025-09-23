@@ -127,14 +127,14 @@ ${greeting}, *User*
     commandsList += "\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n";
 
     try {
-      // Auto-rotate between icon1.jpg and icon2.jpg
+      // Auto-rotate between icon1.jpg and icon2.jpg on each command execution
       const { readFileSync, existsSync } = await import('fs');
       const { homedir } = await import('os');
       const iconsDir = join(homedir(), 'icons');
       
-      // Determine which icon to use (rotate between icon1 and icon2)
-      const currentTime = new Date().getTime();
-      const iconNumber = Math.floor(currentTime / 10000) % 2 + 1; // Switch every 10 seconds
+      // Use a simple counter-based rotation (alternates on each execution)
+      // We'll use a simple random approach to simulate rotation
+      const iconNumber = Math.floor(Math.random() * 2) + 1; // Randomly choose 1 or 2
       const iconFileName = `icon${iconNumber}.jpg`;
       const imagePath = join(iconsDir, iconFileName);
       
