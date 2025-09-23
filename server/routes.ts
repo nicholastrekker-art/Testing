@@ -1219,7 +1219,10 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         'autoView': 'autoViewStatus', 
         'autoReact': 'autoReact',
         'typingIndicator': 'typingMode',
-        'chatGPT': 'chatgptEnabled'
+        'chatGPT': 'chatgptEnabled',
+        'alwaysOnline': 'alwaysOnline',
+        'autoRecording': 'presenceMode',
+        'presenceAutoSwitch': 'presenceAutoSwitch'
       };
       
       const dbField = featureMap[feature];
@@ -1231,6 +1234,9 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       const updates: any = {};
       if (dbField === 'typingMode') {
         updates[dbField] = enabled ? 'typing' : 'none';
+      } else if (dbField === 'presenceMode') {
+        // For auto recording feature
+        updates[dbField] = enabled ? 'recording' : 'available';
       } else {
         updates[dbField] = enabled;
       }

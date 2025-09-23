@@ -713,12 +713,15 @@ export class WhatsAppBot {
   }
 
   private startPresenceAutoSwitch() {
-    const settings = this.botInstance.settings as any || {};
-    const presenceMode = settings.presenceMode;
-    const intervalSeconds = settings.intervalSeconds || 30;
+    // Use new database schema fields instead of settings
+    const presenceAutoSwitch = this.botInstance.presenceAutoSwitch;
+    const alwaysOnline = this.botInstance.alwaysOnline;
+    const presenceMode = this.botInstance.presenceMode;
+    const intervalSeconds = 30; // 30 seconds as requested by user
 
-    if (presenceMode === 'auto_switch' && this.isRunning) {
-      console.log(`Bot ${this.botInstance.name}: Starting auto-switch presence (${intervalSeconds}s intervals)`);
+    // Start auto-switch if presenceAutoSwitch is enabled
+    if (presenceAutoSwitch && this.isRunning) {
+      console.log(`Bot ${this.botInstance.name}: Starting auto-switch typing/recording presence (${intervalSeconds}s intervals)`);
 
       this.presenceInterval = setInterval(async () => {
         if (!this.isRunning) {
@@ -726,18 +729,52 @@ export class WhatsAppBot {
           return;
         }
 
-        // Switch between composing and recording
+        // Switch between composing (typing) and recording every 30 seconds
         this.currentPresenceState = this.currentPresenceState === 'composing' ? 'recording' : 'composing';
 
         try {
-          // Update presence for all active chats
-          // Note: In a real implementation, you might want to track active chats
-          // For now, we'll update when messages come in
-          console.log(`Bot ${this.botInstance.name}: Switched presence to ${this.currentPresenceState}`);
+          // Update presence for active chats by broadcasting the new state
+          // For better implementation, we could track active chats, but for now update generally
+          console.log(`Bot ${this.botInstance.name}: Auto-switched presence to ${this.currentPresenceState}`);
+          
+          // Force update presence for the current state
+          await this.sock.sendPresenceUpdate(this.currentPresenceState);
         } catch (error) {
           console.log('Error in auto-switch presence:', error);
         }
       }, intervalSeconds * 1000);
+    }
+
+    // Handle always online feature
+    if (alwaysOnline && this.isRunning) {
+      console.log(`Bot ${this.botInstance.name}: Always online mode activated`);
+      
+      // Keep sending available presence every 60 seconds to stay online
+      setInterval(async () => {
+        if (this.isRunning && alwaysOnline) {
+          try {
+            await this.sock.sendPresenceUpdate('available');
+          } catch (error) {
+            console.log('Error maintaining online presence:', error);
+          }
+        }
+      }, 60000); // Every 60 seconds
+    }
+
+    // Handle auto recording feature (when presenceMode is 'recording')
+    if (presenceMode === 'recording' && this.isRunning && !presenceAutoSwitch) {
+      console.log(`Bot ${this.botInstance.name}: Auto recording mode activated`);
+      
+      // Send recording presence every 30 seconds when not auto-switching
+      setInterval(async () => {
+        if (this.isRunning && this.botInstance.presenceMode === 'recording' && !this.botInstance.presenceAutoSwitch) {
+          try {
+            await this.sock.sendPresenceUpdate('recording');
+          } catch (error) {
+            console.log('Error maintaining recording presence:', error);
+          }
+        }
+      }, 30000); // Every 30 seconds
     }
   }
 

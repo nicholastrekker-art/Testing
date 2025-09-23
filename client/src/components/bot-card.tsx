@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { BotFeaturesModal } from "@/components/bot-features-modal";
+import { useState } from "react";
 
 interface BotCardProps {
   bot: {
@@ -21,6 +23,11 @@ interface BotCardProps {
     approvalDate?: string;
     expirationMonths?: number;
     settings?: any;
+    // New presence fields
+    alwaysOnline?: boolean;
+    presenceMode?: string;
+    presenceAutoSwitch?: boolean;
+    serverName: string;
   };
 }
 
@@ -39,6 +46,7 @@ export default function BotCard({ bot }: BotCardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isAdmin, token } = useAuth();
+  const [showFeaturesModal, setShowFeaturesModal] = useState(false);
 
   // Feature toggle mutation
   const toggleFeatureMutation = useMutation({
@@ -426,11 +434,26 @@ export default function BotCard({ bot }: BotCardProps) {
           <button className="bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm hover:bg-muted/80 transition-colors" data-testid={`button-analytics-${bot.id}`}>
             <i className="fas fa-chart-line"></i>
           </button>
+          <button 
+            onClick={() => setShowFeaturesModal(true)}
+            className="bg-blue-600 text-white py-2 px-3 rounded-md text-sm hover:bg-blue-700 transition-colors" 
+            data-testid={`button-features-${bot.id}`}
+          >
+            <i className="fas fa-sliders-h mr-1"></i>
+            Features
+          </button>
           <button className="bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm hover:bg-muted/80 transition-colors" data-testid={`button-settings-${bot.id}`}>
             <i className="fas fa-cog"></i>
           </button>
         </div>
       </CardContent>
+      
+      {/* Bot Features Modal */}
+      <BotFeaturesModal 
+        bot={bot as any}
+        isOpen={showFeaturesModal}
+        onClose={() => setShowFeaturesModal(false)}
+      />
     </Card>
   );
 }
