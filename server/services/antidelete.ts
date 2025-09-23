@@ -37,8 +37,11 @@ export class AntideleteService {
     // Ensure directories exist
     this.ensureDirectories();
 
-    // Load stored messages from local storage
+    // Clear stored messages from previous sessions
     this.loadMessageStore();
+    
+    // Also clear any old temp media files from previous sessions
+    this.clearTempMedia();
 
     // Start periodic cleanup every minute
     setInterval(() => this.cleanTempFolderIfLarge(), 60 * 1000);
@@ -94,6 +97,23 @@ export class AntideleteService {
     }
   }
 
+  private clearTempMedia(): void {
+    try {
+      if (fs.existsSync(this.tempMediaDir)) {
+        const files = fs.readdirSync(this.tempMediaDir);
+        for (const file of files) {
+          const filePath = path.join(this.tempMediaDir, file);
+          fs.unlinkSync(filePath);
+        }
+        if (files.length > 0) {
+          console.log(`🧹 Cleared ${files.length} temp media files from previous session`);
+        }
+      }
+    } catch (err) {
+      console.error('Error clearing temp media:', err);
+    }
+  }
+
   private loadAntideleteConfig(): AntideleteConfig {
     try {
       if (!fs.existsSync(this.configPath)) {
@@ -116,13 +136,15 @@ export class AntideleteService {
   private loadMessageStore(): void {
     try {
       if (fs.existsSync(this.messageStorePath)) {
-        const data = fs.readFileSync(this.messageStorePath, 'utf8');
-        const storedMessages = JSON.parse(data);
-        this.messageStore = new Map(Object.entries(storedMessages));
-        console.log(`Loaded ${this.messageStore.size} stored messages for antidelete`);
+        // Delete the existing message store file instead of loading it
+        fs.unlinkSync(this.messageStorePath);
+        console.log('🗑️ Deleted old stored messages from previous session');
       }
+      // Always start with a fresh, empty message store
+      this.messageStore = new Map();
+      console.log('✨ Started with fresh message store for antidelete');
     } catch (err) {
-      console.error('Error loading message store:', err);
+      console.error('Error clearing message store:', err);
       this.messageStore = new Map();
     }
   }
