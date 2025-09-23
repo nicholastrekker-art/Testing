@@ -1,46 +1,142 @@
 {
-  "3EB0641792C17593330363": {
-    "id": "3EB0641792C17593330363",
+  "3EB0A3466D32728CC7E8B5": {
+    "id": "3EB0A3466D32728CC7E8B5",
     "fromJid": "254799257758:21@s.whatsapp.net",
     "senderJid": "self",
     "content": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀",
     "type": "extendedTextMessage",
-    "timestamp": 1758649925167,
+    "timestamp": 1758650740355,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758:21@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0641792C17593330363"
+        "id": "3EB0A3466D32728CC7E8B5"
       },
       "message": {
         "extendedTextMessage": {
           "text": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀"
         }
       },
-      "messageTimestamp": "1758649922",
+      "messageTimestamp": "1758650739",
       "status": "PENDING"
     }
   },
-  "A5FC53199FF331D34B47365C4096D9C2": {
-    "id": "A5FC53199FF331D34B47365C4096D9C2",
+  "1FD35808409E091C1AEE19718D0A3010": {
+    "id": "1FD35808409E091C1AEE19718D0A3010",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".memu",
+    "type": "conversation",
+    "timestamp": 1758650766854,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "1FD35808409E091C1AEE19718D0A3010"
+      },
+      "messageTimestamp": 1758650765,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".memu"
+      }
+    }
+  },
+  "3EB00E3651D705EB9244DE": {
+    "id": "3EB00E3651D705EB9244DE",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "❌ Command .memu not found. Type .help to see available commands.",
+    "type": "extendedTextMessage",
+    "timestamp": 1758650770261,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB00E3651D705EB9244DE"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "❌ Command .memu not found. Type .help to see available commands."
+        }
+      },
+      "messageTimestamp": "1758650767",
+      "status": "SERVER_ACK"
+    }
+  },
+  "2EB1FC5A73BB51392A745D98486CE912": {
+    "id": "2EB1FC5A73BB51392A745D98486CE912",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".menu",
+    "type": "conversation",
+    "timestamp": 1758650772852,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "2EB1FC5A73BB51392A745D98486CE912"
+      },
+      "messageTimestamp": 1758650771,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".menu"
+      }
+    }
+  },
+  "3EB031DDE05B89D758E962": {
+    "id": "3EB031DDE05B89D758E962",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "\nGood Night 🌙, *User*\n\n╭━❮ TREKKERMD LIFETIME BOT ❯━╮ \n┃ *👤ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃ *🥏ᴘʀᴇғɪx:* *[ . ]*\n┃ *🕒ᴛɪᴍᴇ:* 21:06:13\n┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* 36 \n┃ *📆ᴅᴀᴛᴇ:* 23/09/2025\n┃ *🧑‍💻ᴍᴏᴅᴇ:* Public\n┃ *📼ʀᴀᴍ:* 21.2GB/62.8GB\n┃ *⏳ᴜᴘᴛɪᴍᴇ:* 45 seconds\n╰─────────────━┈⊷\n> *Stay humble, hustle hard.*\n\n\n*╭━❮ 𝐀𝐃𝐌𝐈𝐍 ❯━╮*\n┃✰ ᴀᴅᴅᴄᴍᴅ\n┃✰ ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n┃✰ ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n╰─────────────━┈⊷\n*╭━❮ 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 ❯━╮*\n┃✰ ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 ❯━╮*\n┃✰ ғᴀᴄᴇʙᴏᴏᴋ\n┃✰ ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n┃✰ ᴘʟᴀʏ\n┃✰ ᴛɪᴋᴛᴏᴋ\n┃✰ ᴠɪᴅᴇᴏ\n╰─────────────━┈⊷\n*╭━❮ 𝐅𝐔𝐍 ❯━╮*\n┃✰ ᴀᴅᴠɪᴄᴇ\n┃✰ ᴀɴɢʀʏ\n┃✰ ᴅᴀʀᴇ\n┃✰ ғᴀᴄᴛ\n┃✰ ʜᴀᴘᴘʏ\n┃✰ ʟᴏᴠᴇ\n┃✰ ǫᴜᴏᴛᴇ𝚜\n┃✰ 𝚜ᴀᴅ\n┃✰ ᴛʀɪᴠɪᴀ\n┃✰ ᴛʀᴜᴛʜ\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 ❯━╮*\n┃✰ ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐑𝐎𝐔𝐏 ❯━╮*\n┃✰ ᴅᴇᴍᴏᴛᴇ\n┃✰ ɢʀᴏᴜᴘɪɴғᴏ\n┃✰ ɪɴᴠɪᴛᴇ\n┃✰ ᴋɪᴄᴋ\n┃✰ ᴘʀᴏᴍᴏᴛᴇ\n┃✰ ᴛᴀɢᴀʟʟ\n╰─────────────━┈⊷\n*╭━❮ 𝐒𝐘𝐒𝐓𝐄𝐌 ❯━╮*\n┃✰ ᴄᴏᴍᴍᴀɴᴅ𝚜\n┃✰ ғᴇᴛᴄʜ\n┃✰ ʜᴇʟᴘ\n┃✰ ʟɪ𝚜ᴛ\n┃✰ ᴍᴇɴᴜ\n┃✰ ᴏᴡɴᴇʀ\n┃✰ ᴘɪɴɢ\n┃✰ 𝚜ᴛᴀᴛᴜ𝚜\n┃✰ ᴜᴘᴛɪᴍᴇ\n╰─────────────━┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n",
+    "type": "imageMessage",
+    "timestamp": 1758650775545,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB031DDE05B89D758E962"
+      },
+      "message": {
+        "imageMessage": {
+          "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m233/AQMkAh-FHJNVgoi3gadK5nL_ZmBkzSYzXV5RCF6GPg5VkAZOM-7SBy7GP1Us9FTkVRx3-Ti7Gjk2_yA6grlnytJmycM9dUHpnPZDG8cH7A?ccb=9-4&oh=01_Q5Aa2gHpl4vV4ZAzichgZW1eDTDh8QazAlXUrtZVeYYGjyZyxg&oe=68FA473A&_nc_sid=e6ed6c&mms3=true",
+          "mimetype": "image/jpeg",
+          "caption": "\nGood Night 🌙, *User*\n\n╭━❮ TREKKERMD LIFETIME BOT ❯━╮ \n┃ *👤ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃ *🥏ᴘʀᴇғɪx:* *[ . ]*\n┃ *🕒ᴛɪᴍᴇ:* 21:06:13\n┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* 36 \n┃ *📆ᴅᴀᴛᴇ:* 23/09/2025\n┃ *🧑‍💻ᴍᴏᴅᴇ:* Public\n┃ *📼ʀᴀᴍ:* 21.2GB/62.8GB\n┃ *⏳ᴜᴘᴛɪᴍᴇ:* 45 seconds\n╰─────────────━┈⊷\n> *Stay humble, hustle hard.*\n\n\n*╭━❮ 𝐀𝐃𝐌𝐈𝐍 ❯━╮*\n┃✰ ᴀᴅᴅᴄᴍᴅ\n┃✰ ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n┃✰ ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n╰─────────────━┈⊷\n*╭━❮ 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 ❯━╮*\n┃✰ ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 ❯━╮*\n┃✰ ғᴀᴄᴇʙᴏᴏᴋ\n┃✰ ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n┃✰ ᴘʟᴀʏ\n┃✰ ᴛɪᴋᴛᴏᴋ\n┃✰ ᴠɪᴅᴇᴏ\n╰─────────────━┈⊷\n*╭━❮ 𝐅𝐔𝐍 ❯━╮*\n┃✰ ᴀᴅᴠɪᴄᴇ\n┃✰ ᴀɴɢʀʏ\n┃✰ ᴅᴀʀᴇ\n┃✰ ғᴀᴄᴛ\n┃✰ ʜᴀᴘᴘʏ\n┃✰ ʟᴏᴠᴇ\n┃✰ ǫᴜᴏᴛᴇ𝚜\n┃✰ 𝚜ᴀᴅ\n┃✰ ᴛʀɪᴠɪᴀ\n┃✰ ᴛʀᴜᴛʜ\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 ❯━╮*\n┃✰ ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐑𝐎𝐔𝐏 ❯━╮*\n┃✰ ᴅᴇᴍᴏᴛᴇ\n┃✰ ɢʀᴏᴜᴘɪɴғᴏ\n┃✰ ɪɴᴠɪᴛᴇ\n┃✰ ᴋɪᴄᴋ\n┃✰ ᴘʀᴏᴍᴏᴛᴇ\n┃✰ ᴛᴀɢᴀʟʟ\n╰─────────────━┈⊷\n*╭━❮ 𝐒𝐘𝐒𝐓𝐄𝐌 ❯━╮*\n┃✰ ᴄᴏᴍᴍᴀɴᴅ𝚜\n┃✰ ғᴇᴛᴄʜ\n┃✰ ʜᴇʟᴘ\n┃✰ ʟɪ𝚜ᴛ\n┃✰ ᴍᴇɴᴜ\n┃✰ ᴏᴡɴᴇʀ\n┃✰ ᴘɪɴɢ\n┃✰ 𝚜ᴛᴀᴛᴜ𝚜\n┃✰ ᴜᴘᴛɪᴍᴇ\n╰─────────────━┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n",
+          "fileSha256": "PUP2BLgYhq2TJosKuAbAlHm/6d6ch0XQOTE6InDQTNM=",
+          "fileLength": "158197",
+          "mediaKey": "aapcADhQTxA9qgSS9i9SWj/nBy29IInQS5SlLw8Iw6o=",
+          "fileEncSha256": "bWgpn8MxkW14kVLhZ99oMSfnA5akJYE4ZxY7sE+4paY=",
+          "directPath": "/o1/v/t24/f2/m233/AQMkAh-FHJNVgoi3gadK5nL_ZmBkzSYzXV5RCF6GPg5VkAZOM-7SBy7GP1Us9FTkVRx3-Ti7Gjk2_yA6grlnytJmycM9dUHpnPZDG8cH7A?ccb=9-4&oh=01_Q5Aa2gHpl4vV4ZAzichgZW1eDTDh8QazAlXUrtZVeYYGjyZyxg&oe=68FA473A&_nc_sid=e6ed6c",
+          "mediaKeyTimestamp": "1758650773"
+        }
+      },
+      "messageTimestamp": "1758650773",
+      "status": "SERVER_ACK"
+    }
+  },
+  "A51059B4AEF7840D81543390ACA1EFD4": {
+    "id": "A51059B4AEF7840D81543390ACA1EFD4",
     "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "254704897825@s.whatsapp.net",
-    "content": "Yowh",
+    "content": "Vipy",
     "type": "unknown",
-    "timestamp": 1758649967938,
+    "timestamp": 1758650794518,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": false,
-        "id": "A5FC53199FF331D34B47365C4096D9C2",
+        "id": "A51059B4AEF7840D81543390ACA1EFD4",
         "senderLid": "7198767878239@lid"
       },
-      "messageTimestamp": 1758649966,
+      "messageTimestamp": 1758650793,
       "pushName": "Trekker inc",
       "broadcast": false,
       "verifiedBizName": "Trekker inc",
       "message": {
-        "conversation": "Yowh",
+        "conversation": "Vipy",
         "messageContextInfo": {
           "deviceListMetadata": {
             "senderTimestamp": "1758607263",
@@ -48,25 +144,25 @@
             "recipientTimestamp": "1758464429"
           },
           "deviceListMetadataVersion": 2,
-          "messageSecret": "/8SzazZNvSCTxqWAdFolKakLdL3Tn5IUhiSP5NnU034="
+          "messageSecret": "/5AS5zYdApPTtTyuVCEZgxQc7HqAkVys4rNu23h28JI="
         }
       }
     }
   },
-  "B30F50C4CECA208AC0040BFA51F31604": {
-    "id": "B30F50C4CECA208AC0040BFA51F31604",
+  "44B1B457945035532C73AF95BA857351": {
+    "id": "44B1B457945035532C73AF95BA857351",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1758649966790,
+    "timestamp": 1758650791844,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "B30F50C4CECA208AC0040BFA51F31604"
+        "id": "44B1B457945035532C73AF95BA857351"
       },
-      "messageTimestamp": 1758649965,
+      "messageTimestamp": 1758650790,
       "broadcast": false,
       "status": 2,
       "message": {
@@ -74,12 +170,12 @@
           "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
           "peerDataOperationRequestResponseMessage": {
             "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
-            "stanzaId": "3EB05158333A22E8A9EB45",
+            "stanzaId": "3EB0BC333888157F11D4B6",
             "peerDataOperationResult": [
               {
                 "mediaUploadResult": "SUCCESS",
                 "placeholderMessageResendResponse": {
-                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNUZDNTMxOTlGRjMzMUQzNEI0NzM2NUM0MDk2RDlDMhIGCgRZb3doGOe8y8YGigMg/8SzazZNvSCTxqWAdFolKakLdL3Tn5IUhiSP5NnU037yAxYKFAELkNKO+AwYdKhKeWSvVn1aEHtLiAQA"
+                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNTEwNTlCNEFFRjc4NDBEODE1NDMzOTBBQ0ExRUZENBIGCgRWaXB5GKDDy8YGigMg/5AS5zYdApPTtTyuVCEZgxQc7HqAkVys4rNu23h28JLyAxYKFAELdpnU4azei+9s5mtz8sXy/K6DiAQA"
                 }
               }
             ]
@@ -88,143 +184,43 @@
       }
     }
   },
-  "A5AB09FC4E0F687462404A1594558B0F": {
-    "id": "A5AB09FC4E0F687462404A1594558B0F",
+  "3EB0C32CA6CAD965FA2CE6": {
+    "id": "3EB0C32CA6CAD965FA2CE6",
     "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "254704897825@s.whatsapp.net",
-    "content": "",
-    "type": "unknown",
-    "timestamp": 1758649971552,
+    "senderJid": "self",
+    "content": "🚨 *DELETED MESSAGE RESTORED* 🚨\n\n👤 Originally sent by: Unknown\n🗑️ Deleted by: 254704897825\n🕐 Original time: 9/23/2025, 6:06:32 PM\n🕐 Restored time: 9/23/2025, 6:06:33 PM\n📝 Content type: conversation\n\n💬 Original message:\n\"Vipy\"",
+    "type": "extendedTextMessage",
+    "timestamp": 1758650795773,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": false,
-        "id": "A5AB09FC4E0F687462404A1594558B0F",
-        "senderLid": "7198767878239@lid"
+        "fromMe": true,
+        "id": "3EB0C32CA6CAD965FA2CE6"
       },
-      "messageTimestamp": 1758649970,
-      "pushName": "Trekker inc",
-      "broadcast": false,
       "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "A5FC53199FF331D34B47365C4096D9C2"
-          },
-          "type": "REVOKE"
-        },
-        "messageContextInfo": {
-          "deviceListMetadata": {
-            "senderTimestamp": "1758607263",
-            "recipientKeyHash": "BFW3nRHj+W0ZJQ==",
-            "recipientTimestamp": "1758464429"
-          },
-          "deviceListMetadataVersion": 2
+        "extendedTextMessage": {
+          "text": "🚨 *DELETED MESSAGE RESTORED* 🚨\n\n👤 Originally sent by: Unknown\n🗑️ Deleted by: 254704897825\n🕐 Original time: 9/23/2025, 6:06:32 PM\n🕐 Restored time: 9/23/2025, 6:06:33 PM\n📝 Content type: conversation\n\n💬 Original message:\n\"Vipy\""
         }
       },
-      "verifiedBizName": "Trekker inc"
-    }
-  },
-  "17BF4E4E3B50C7AE157A5AC19891AAA5": {
-    "id": "17BF4E4E3B50C7AE157A5AC19891AAA5",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": ". menu",
-    "type": "conversation",
-    "timestamp": 1758649991953,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "17BF4E4E3B50C7AE157A5AC19891AAA5"
-      },
-      "messageTimestamp": 1758649990,
-      "pushName": "Team Grill🙃",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "conversation": ". menu"
-      }
-    }
-  },
-  "3EB03E6280F4DA67F94903": {
-    "id": "3EB03E6280F4DA67F94903",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "\nGood Evening ⛅, *User*\n\n╭━❮ TREKKERMD LIFETIME BOT ❯━╮ \n┃ *👤ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃ *🥏ᴘʀᴇғɪx:* *[ . ]*\n┃ *🕒ᴛɪᴍᴇ:* 20:53:12\n┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* 36 \n┃ *📆ᴅᴀᴛᴇ:* 23/09/2025\n┃ *🧑‍💻ᴍᴏᴅᴇ:* Public\n┃ *📼ʀᴀᴍ:* 23.1GB/62.8GB\n┃ *⏳ᴜᴘᴛɪᴍᴇ:* 1 minute, 20 seconds\n╰─────────────━┈⊷\n> *Progress, not perfection.*\n\n\n*╭━❮ 𝐀𝐃𝐌𝐈𝐍 ❯━╮*\n┃✰ ᴀᴅᴅᴄᴍᴅ\n┃✰ ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n┃✰ ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n╰─────────────━┈⊷\n*╭━❮ 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 ❯━╮*\n┃✰ ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 ❯━╮*\n┃✰ ғᴀᴄᴇʙᴏᴏᴋ\n┃✰ ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n┃✰ ᴘʟᴀʏ\n┃✰ ᴛɪᴋᴛᴏᴋ\n┃✰ ᴠɪᴅᴇᴏ\n╰─────────────━┈⊷\n*╭━❮ 𝐅𝐔𝐍 ❯━╮*\n┃✰ ᴀᴅᴠɪᴄᴇ\n┃✰ ᴀɴɢʀʏ\n┃✰ ᴅᴀʀᴇ\n┃✰ ғᴀᴄᴛ\n┃✰ ʜᴀᴘᴘʏ\n┃✰ ʟᴏᴠᴇ\n┃✰ ǫᴜᴏᴛᴇ𝚜\n┃✰ 𝚜ᴀᴅ\n┃✰ ᴛʀɪᴠɪᴀ\n┃✰ ᴛʀᴜᴛʜ\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 ❯━╮*\n┃✰ ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐑𝐎𝐔𝐏 ❯━╮*\n┃✰ ᴅᴇᴍᴏᴛᴇ\n┃✰ ɢʀᴏᴜᴘɪɴғᴏ\n┃✰ ɪɴᴠɪᴛᴇ\n┃✰ ᴋɪᴄᴋ\n┃✰ ᴘʀᴏᴍᴏᴛᴇ\n┃✰ ᴛᴀɢᴀʟʟ\n╰─────────────━┈⊷\n*╭━❮ 𝐒𝐘𝐒𝐓𝐄𝐌 ❯━╮*\n┃✰ ᴄᴏᴍᴍᴀɴᴅ𝚜\n┃✰ ғᴇᴛᴄʜ\n┃✰ ʜᴇʟᴘ\n┃✰ ʟɪ𝚜ᴛ\n┃✰ ᴍᴇɴᴜ\n┃✰ ᴏᴡɴᴇʀ\n┃✰ ᴘɪɴɢ\n┃✰ 𝚜ᴛᴀᴛᴜ𝚜\n┃✰ ᴜᴘᴛɪᴍᴇ\n╰─────────────━┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n",
-    "type": "imageMessage",
-    "timestamp": 1758649994809,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB03E6280F4DA67F94903"
-      },
-      "message": {
-        "imageMessage": {
-          "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m269/AQO5fzYfy_EfL7a2MumGkr4ugan4H8N_pMyeO_buBa-JYgXmYJhiKSjG_aNR-o-oo-YbdweSfNXW3eATHeHDvuOIE_EE56QmKx2oFgspGg?ccb=9-4&oh=01_Q5Aa2gG0QWfkp3MRimmdZm2kl8oKMRF-zqmbmcKLasvrpnLibQ&oe=68FA6014&_nc_sid=e6ed6c&mms3=true",
-          "mimetype": "image/jpeg",
-          "caption": "\nGood Evening ⛅, *User*\n\n╭━❮ TREKKERMD LIFETIME BOT ❯━╮ \n┃ *👤ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃ *🥏ᴘʀᴇғɪx:* *[ . ]*\n┃ *🕒ᴛɪᴍᴇ:* 20:53:12\n┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* 36 \n┃ *📆ᴅᴀᴛᴇ:* 23/09/2025\n┃ *🧑‍💻ᴍᴏᴅᴇ:* Public\n┃ *📼ʀᴀᴍ:* 23.1GB/62.8GB\n┃ *⏳ᴜᴘᴛɪᴍᴇ:* 1 minute, 20 seconds\n╰─────────────━┈⊷\n> *Progress, not perfection.*\n\n\n*╭━❮ 𝐀𝐃𝐌𝐈𝐍 ❯━╮*\n┃✰ ᴀᴅᴅᴄᴍᴅ\n┃✰ ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n┃✰ ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n╰─────────────━┈⊷\n*╭━❮ 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 ❯━╮*\n┃✰ ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 ❯━╮*\n┃✰ ғᴀᴄᴇʙᴏᴏᴋ\n┃✰ ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n┃✰ ᴘʟᴀʏ\n┃✰ ᴛɪᴋᴛᴏᴋ\n┃✰ ᴠɪᴅᴇᴏ\n╰─────────────━┈⊷\n*╭━❮ 𝐅𝐔𝐍 ❯━╮*\n┃✰ ᴀᴅᴠɪᴄᴇ\n┃✰ ᴀɴɢʀʏ\n┃✰ ᴅᴀʀᴇ\n┃✰ ғᴀᴄᴛ\n┃✰ ʜᴀᴘᴘʏ\n┃✰ ʟᴏᴠᴇ\n┃✰ ǫᴜᴏᴛᴇ𝚜\n┃✰ 𝚜ᴀᴅ\n┃✰ ᴛʀɪᴠɪᴀ\n┃✰ ᴛʀᴜᴛʜ\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 ❯━╮*\n┃✰ ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐑𝐎𝐔𝐏 ❯━╮*\n┃✰ ᴅᴇᴍᴏᴛᴇ\n┃✰ ɢʀᴏᴜᴘɪɴғᴏ\n┃✰ ɪɴᴠɪᴛᴇ\n┃✰ ᴋɪᴄᴋ\n┃✰ ᴘʀᴏᴍᴏᴛᴇ\n┃✰ ᴛᴀɢᴀʟʟ\n╰─────────────━┈⊷\n*╭━❮ 𝐒𝐘𝐒𝐓𝐄𝐌 ❯━╮*\n┃✰ ᴄᴏᴍᴍᴀɴᴅ𝚜\n┃✰ ғᴇᴛᴄʜ\n┃✰ ʜᴇʟᴘ\n┃✰ ʟɪ𝚜ᴛ\n┃✰ ᴍᴇɴᴜ\n┃✰ ᴏᴡɴᴇʀ\n┃✰ ᴘɪɴɢ\n┃✰ 𝚜ᴛᴀᴛᴜ𝚜\n┃✰ ᴜᴘᴛɪᴍᴇ\n╰─────────────━┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n",
-          "fileSha256": "b0GXECKbezAOHVJhcwKrMiUIf3al3jrTVGfP/OkLXg8=",
-          "fileLength": "127956",
-          "mediaKey": "zq33etpz542ybooNjYlQuRBAyfHVM5PSsy3gPP86Gvc=",
-          "fileEncSha256": "3PWGfFFJRLwfQ+I1SyTCN7Bb9oS1jGOvrZFFNCBMH3A=",
-          "directPath": "/o1/v/t24/f2/m269/AQO5fzYfy_EfL7a2MumGkr4ugan4H8N_pMyeO_buBa-JYgXmYJhiKSjG_aNR-o-oo-YbdweSfNXW3eATHeHDvuOIE_EE56QmKx2oFgspGg?ccb=9-4&oh=01_Q5Aa2gG0QWfkp3MRimmdZm2kl8oKMRF-zqmbmcKLasvrpnLibQ&oe=68FA6014&_nc_sid=e6ed6c",
-          "mediaKeyTimestamp": "1758649992"
-        }
-      },
-      "messageTimestamp": "1758649992",
+      "messageTimestamp": "1758650793",
       "status": "SERVER_ACK"
     }
   },
-  "A5E6B38F7674D25C08E25DB2F824F2BF": {
-    "id": "A5E6B38F7674D25C08E25DB2F824F2BF",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "254704897825@s.whatsapp.net",
-    "content": "Shiet",
-    "type": "unknown",
-    "timestamp": 1758650005620,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": false,
-        "id": "A5E6B38F7674D25C08E25DB2F824F2BF",
-        "senderLid": "7198767878239@lid"
-      },
-      "messageTimestamp": 1758650004,
-      "pushName": "Trekker inc",
-      "broadcast": false,
-      "message": {
-        "conversation": "Shiet",
-        "messageContextInfo": {
-          "deviceListMetadata": {
-            "senderTimestamp": "1758607263",
-            "recipientKeyHash": "BFW3nRHj+W0ZJQ==",
-            "recipientTimestamp": "1758464429"
-          },
-          "deviceListMetadataVersion": 2,
-          "messageSecret": "VusLPmDyBLewZMAVlb6l8XemS43bj27SiNSi2maveIg="
-        }
-      },
-      "verifiedBizName": "Trekker inc"
-    }
-  },
-  "A5FEF7519D7D395281576CB6292B898D": {
-    "id": "A5FEF7519D7D395281576CB6292B898D",
+  "A53BC6D09023DFC7FE769B81A2106127": {
+    "id": "A53BC6D09023DFC7FE769B81A2106127",
     "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "254704897825@s.whatsapp.net",
     "content": "",
     "type": "unknown",
-    "timestamp": 1758650021772,
+    "timestamp": 1758650818177,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": false,
-        "id": "A5FEF7519D7D395281576CB6292B898D",
+        "id": "A53BC6D09023DFC7FE769B81A2106127",
         "senderLid": "7198767878239@lid"
       },
-      "messageTimestamp": 1758650020,
+      "messageTimestamp": 1758650816,
       "pushName": "Trekker inc",
       "broadcast": false,
       "message": {
@@ -232,7 +228,7 @@
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "A5E6B38F7674D25C08E25DB2F824F2BF"
+            "id": "A51059B4AEF7840D81543390ACA1EFD4"
           },
           "type": "REVOKE"
         },
@@ -244,29 +240,50 @@
           },
           "deviceListMetadataVersion": 2
         }
-      },
-      "verifiedBizName": "Trekker inc"
+      }
     }
   },
-  "A552ACF07814A78C37AFA0CBE7967976": {
-    "id": "A552ACF07814A78C37AFA0CBE7967976",
+  "3EB0E8D918D59BED825933": {
+    "id": "3EB0E8D918D59BED825933",
+    "fromJid": "254799257758:21@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🚨 *DELETED MESSAGE DETECTED* 🚨\n\n👤 Originally sent by: Trekker inc\n💬 Chat: Private (254704897825)\n🔍 Detection Method: Empty content detection\n🕐 Original time: 9/23/2025, 6:06:34 PM\n🕐 Detection time: 9/23/2025, 6:06:58 PM\n📝 Message type: unknown\n\n💬 Original message content:\n\"Vipy\"\n\n⚠️ *Note:* Message was likely deleted by the sender.",
+    "type": "extendedTextMessage",
+    "timestamp": 1758650819726,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758:21@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0E8D918D59BED825933"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "🚨 *DELETED MESSAGE DETECTED* 🚨\n\n👤 Originally sent by: Trekker inc\n💬 Chat: Private (254704897825)\n🔍 Detection Method: Empty content detection\n🕐 Original time: 9/23/2025, 6:06:34 PM\n🕐 Detection time: 9/23/2025, 6:06:58 PM\n📝 Message type: unknown\n\n💬 Original message content:\n\"Vipy\"\n\n⚠️ *Note:* Message was likely deleted by the sender."
+        }
+      },
+      "messageTimestamp": "1758650818",
+      "status": "PENDING"
+    }
+  },
+  "A5E7D01A66C572B9F44D80906463B63D": {
+    "id": "A5E7D01A66C572B9F44D80906463B63D",
     "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "254704897825@s.whatsapp.net",
-    "content": "Sielewi",
+    "content": "Siko poa",
     "type": "unknown",
-    "timestamp": 1758650174350,
+    "timestamp": 1758650849952,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": false,
-        "id": "A552ACF07814A78C37AFA0CBE7967976",
+        "id": "A5E7D01A66C572B9F44D80906463B63D",
         "senderLid": "7198767878239@lid"
       },
-      "messageTimestamp": 1758650173,
+      "messageTimestamp": 1758650848,
       "pushName": "Trekker inc",
       "broadcast": false,
       "message": {
-        "conversation": "Sielewi",
+        "conversation": "Siko poa",
         "messageContextInfo": {
           "deviceListMetadata": {
             "senderTimestamp": "1758607263",
@@ -274,27 +291,26 @@
             "recipientTimestamp": "1758464429"
           },
           "deviceListMetadataVersion": 2,
-          "messageSecret": "R9JaJpojkeKfHJfhtSApMTP9RUYESLTScN/XMwN4iJc="
+          "messageSecret": "BbdozGRwq9B+CjhXCeodq0bpdgN2sHaHOv8CwHtm+VQ="
         }
-      },
-      "verifiedBizName": "Trekker inc"
+      }
     }
   },
-  "A52CBEAFC65A33DE604D87812E629B5B": {
-    "id": "A52CBEAFC65A33DE604D87812E629B5B",
+  "A5E24626115DAB04D3D2F29201436BC1": {
+    "id": "A5E24626115DAB04D3D2F29201436BC1",
     "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "254704897825@s.whatsapp.net",
     "content": "",
     "type": "unknown",
-    "timestamp": 1758650189563,
+    "timestamp": 1758650882597,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": false,
-        "id": "A52CBEAFC65A33DE604D87812E629B5B",
+        "id": "A5E24626115DAB04D3D2F29201436BC1",
         "senderLid": "7198767878239@lid"
       },
-      "messageTimestamp": 1758650188,
+      "messageTimestamp": 1758650881,
       "pushName": "Trekker inc",
       "broadcast": false,
       "message": {
@@ -302,7 +318,7 @@
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "A552ACF07814A78C37AFA0CBE7967976"
+            "id": "A5E7D01A66C572B9F44D80906463B63D"
           },
           "type": "REVOKE"
         },
@@ -314,8 +330,29 @@
           },
           "deviceListMetadataVersion": 2
         }
+      }
+    }
+  },
+  "3EB00F1A20DF65743F6B45": {
+    "id": "3EB00F1A20DF65743F6B45",
+    "fromJid": "254799257758:21@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🚨 *DELETED MESSAGE DETECTED* 🚨\n\n👤 Originally sent by: Trekker inc\n💬 Chat: Private (254704897825)\n🔍 Detection Method: Empty content detection\n🕐 Original time: 9/23/2025, 6:07:29 PM\n🕐 Detection time: 9/23/2025, 6:08:02 PM\n📝 Message type: unknown\n\n💬 Original message content:\n\"Siko poa\"\n\n⚠️ *Note:* Message was likely deleted by the sender.",
+    "type": "extendedTextMessage",
+    "timestamp": 1758650883916,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758:21@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB00F1A20DF65743F6B45"
       },
-      "verifiedBizName": "Trekker inc"
+      "message": {
+        "extendedTextMessage": {
+          "text": "🚨 *DELETED MESSAGE DETECTED* 🚨\n\n👤 Originally sent by: Trekker inc\n💬 Chat: Private (254704897825)\n🔍 Detection Method: Empty content detection\n🕐 Original time: 9/23/2025, 6:07:29 PM\n🕐 Detection time: 9/23/2025, 6:08:02 PM\n📝 Message type: unknown\n\n💬 Original message content:\n\"Siko poa\"\n\n⚠️ *Note:* Message was likely deleted by the sender."
+        }
+      },
+      "messageTimestamp": "1758650882",
+      "status": "PENDING"
     }
   }
 }
