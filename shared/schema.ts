@@ -46,6 +46,9 @@ export const botInstances = pgTable("bot_instances", {
   autoViewStatus: boolean("auto_view_status").default(true),
   autoReact: boolean("auto_react").default(true),
   typingMode: text("typing_mode").default("recording"), // none, typing, recording, both
+  presenceMode: text("presence_mode").default("available"), // available, unavailable, composing, recording
+  alwaysOnline: boolean("always_online").default(false),
+  presenceAutoSwitch: boolean("presence_auto_switch").default(false), // switches between typing/recording every 30s
   chatgptEnabled: boolean("chatgpt_enabled").default(false),
   lastActivity: timestamp("last_activity"),
   messagesCount: integer("messages_count").default(0),
@@ -102,11 +105,23 @@ export const groups = pgTable("groups", {
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
+// Table to track viewed status IDs
+export const viewedStatusIds = pgTable("viewed_status_ids", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  botInstanceId: varchar("bot_instance_id").notNull(),
+  statusId: text("status_id").notNull(), // WhatsApp status ID
+  statusSender: text("status_sender").notNull(), // Who posted the status
+  viewedAt: timestamp("viewed_at").default(sql`CURRENT_TIMESTAMP`),
+  expiresAt: timestamp("expires_at").notNull(), // When status expires (24h from posting)
+  serverName: text("server_name").notNull(),
+});
+
 // Relations
 export const botInstancesRelations = relations(botInstances, ({ many }) => ({
   commands: many(commands),
   activities: many(activities),
   groups: many(groups),
+  viewedStatusIds: many(viewedStatusIds),
 }));
 
 export const commandsRelations = relations(commands, ({ one }) => ({
@@ -126,6 +141,13 @@ export const activitiesRelations = relations(activities, ({ one }) => ({
 export const groupsRelations = relations(groups, ({ one }) => ({
   botInstance: one(botInstances, {
     fields: [groups.botInstanceId],
+    references: [botInstances.id],
+  }),
+}));
+
+export const viewedStatusIdsRelations = relations(viewedStatusIds, ({ one }) => ({
+  botInstance: one(botInstances, {
+    fields: [viewedStatusIds.botInstanceId],
     references: [botInstances.id],
   }),
 }));
@@ -172,6 +194,11 @@ export const insertServerRegistrySchema = createInsertSchema(serverRegistry).omi
   updatedAt: true,
 });
 
+export const insertViewedStatusIdSchema = createInsertSchema(viewedStatusIds).omit({
+  id: true,
+  viewedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -193,3 +220,6 @@ export type InsertGodRegister = z.infer<typeof insertGodRegisterSchema>;
 
 export type ServerRegistry = typeof serverRegistry.$inferSelect;
 export type InsertServerRegistry = z.infer<typeof insertServerRegistrySchema>;
+
+export type ViewedStatusId = typeof viewedStatusIds.$inferSelect;
+export type InsertViewedStatusId = z.infer<typeof insertViewedStatusIdSchema>;
