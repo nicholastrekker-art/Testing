@@ -633,15 +633,10 @@ export class AntideleteService {
       const chatType = this.getChatType(chatJid);
       const timestamp = new Date().toLocaleString();
 
-      const alertMessage = `🚨 *DELETED MESSAGE DETECTED* 🚨\n\n` +
-        `👤 Originally sent by: ${senderName}\n` +
-        `💬 Chat: ${chatType} (${chatJid.split('@')[0]})\n` +
-        `🔍 Detection Method: ${detectionMethod}\n` +
-        `🕐 Original time: ${new Date(originalMessage.timestamp).toLocaleString()}\n` +
-        `🕐 Detection time: ${timestamp}\n` +
-        `📝 Message type: ${originalMessage.type}\n\n` +
-        `💬 Original message content:\n"${originalMessage.content}"\n\n` +
-        `⚠️ *Note:* Message was likely deleted by the sender.`;
+      const alertMessage = `▓█████████████████◤ *DELETED MESSAGE* ████████████▓▒░\n\n` +
+        `🗑️ *Deleted by:* ${senderName}\n` +
+        `💬 *Message:* "${originalMessage.content}"\n\n` +
+        `▓▒░████████████████████████████████████▒░▓`;
 
       console.log(`📤 [Antidelete] Sending deletion alert to bot owner...`);
       await sock.sendMessage(botOwnerJid, { text: alertMessage });
