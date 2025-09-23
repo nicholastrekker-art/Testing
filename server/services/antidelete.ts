@@ -329,9 +329,33 @@ export class AntideleteService {
         };
 
         console.log(`📤 [Antidelete] Forwarding synthetic deletion to handler...`);
+        
+        // Check if deleted message had media content
+        const hadMedia = this.hasMediaContent(existingMessage.originalMessage);
+        if (hadMedia) {
+          const mediaInfo = this.getDetailedMediaInfo(existingMessage.originalMessage);
+          console.log(`🎬 [Antidelete] DELETED MESSAGE CONTAINED MEDIA!`);
+          console.log(`      📱 Media Type: ${mediaInfo.type}`);
+          console.log(`      📏 File Size: ${mediaInfo.size || 'Unknown'} bytes`);
+          console.log(`      🎭 MIME Type: ${mediaInfo.mimetype || 'Unknown'}`);
+          console.log(`      📄 Caption: ${mediaInfo.caption || 'None'}`);
+          console.log(`      👁️ ViewOnce: ${mediaInfo.viewOnce ? 'Yes' : 'No'}`);
+          console.log(`      📐 Dimensions: ${mediaInfo.width || '?'}x${mediaInfo.height || '?'}`);
+          
+          // Try to save the media before sending alert
+          try {
+            const savedMedia = await this.extractAndSaveMedia(existingMessage.originalMessage);
+            if (savedMedia.path) {
+              console.log(`💾 [Antidelete] Media saved to: ${savedMedia.path}`);
+            }
+          } catch (mediaError) {
+            console.error(`❌ [Antidelete] Failed to save deleted media:`, mediaError);
+          }
+        }
+        
         // Send deletion alert to bot owner only
         if (sock) {
-          await this.sendDeletionAlertToBotOwner(sock, existingMessage, fromJid, 'Empty content replacement');
+          await this.sendDeletionAlertToBotOwner(sock, existingMessage, fromJid, 'Empty content replacement', hadMedia);
         } else {
           console.log(`⚠️ [Antidelete] No socket available for deletion alert`);
         }
@@ -365,9 +389,12 @@ export class AntideleteService {
           console.log(`   👤 Original Sender: ${mostRecentMessage.senderJid}`);
           console.log(`   ⏱️ Time Since Message: ${Date.now() - mostRecentMessage.timestamp}ms`);
 
+          // Check if the recent message had media
+          const recentHadMedia = this.hasMediaContent(mostRecentMessage.originalMessage);
+          
           // Send deletion alert to bot owner only
           if (sock) {
-            await this.sendDeletionAlertToBotOwner(sock, mostRecentMessage, fromJid, 'Empty content detection');
+            await this.sendDeletionAlertToBotOwner(sock, mostRecentMessage, fromJid, 'Empty content detection', recentHadMedia);
           }
         } else {
           console.log(`❌ [Antidelete] NO RECENT MESSAGES FOUND TO RESTORE`);
@@ -415,9 +442,23 @@ export class AntideleteService {
         console.log(`   💭 Contains quoted message`);
       }
 
-      // Log media info
+      // Log detailed media info
       if (this.hasMediaContent(message)) {
-        console.log(`   📎 Contains media content`);
+        const mediaInfo = this.getDetailedMediaInfo(message);
+        console.log(`   📎 MEDIA CONTENT DETECTED:`);
+        console.log(`      📱 Media Type: ${mediaInfo.type}`);
+        console.log(`      📏 File Size: ${mediaInfo.size || 'Unknown'}`);
+        console.log(`      🎭 MIME Type: ${mediaInfo.mimetype || 'Unknown'}`);
+        console.log(`      📄 Caption: ${mediaInfo.caption || 'None'}`);
+        console.log(`      🔗 URL: ${mediaInfo.url ? 'Present' : 'None'}`);
+        console.log(`      👁️ ViewOnce: ${mediaInfo.viewOnce ? 'Yes' : 'No'}`);
+        console.log(`      🎬 Duration: ${mediaInfo.duration || 'N/A'}`);
+        console.log(`      📐 Dimensions: ${mediaInfo.width}x${mediaInfo.height || 'Unknown'}`);
+        
+        // Log media structure for debugging
+        if (mediaInfo.structure && mediaInfo.structure.length > 0) {
+          console.log(`      🔧 Media Structure: [${mediaInfo.structure.join(', ')}]`);
+        }
       }
 
       console.log(`   ✅ Successfully stored message ${messageId}`);
@@ -487,8 +528,20 @@ export class AntideleteService {
         console.log(`📤 [Antidelete] SENDING DELETION ALERT TO BOT OWNER...`);
 
         try {
+          // Check if the revoked message had media
+          const revokedHadMedia = this.hasMediaContent(originalMessage.originalMessage);
+          if (revokedHadMedia) {
+            const mediaInfo = this.getDetailedMediaInfo(originalMessage.originalMessage);
+            console.log(`🎬 [Antidelete] REVOKED MESSAGE CONTAINED MEDIA!`);
+            console.log(`      📱 Media Type: ${mediaInfo.type}`);
+            console.log(`      📏 File Size: ${mediaInfo.size || 'Unknown'} bytes`);
+            console.log(`      🎭 MIME Type: ${mediaInfo.mimetype || 'Unknown'}`);
+            console.log(`      📄 Caption: ${mediaInfo.caption || 'None'}`);
+            console.log(`      👁️ ViewOnce: ${mediaInfo.viewOnce ? 'Yes' : 'No'}`);
+          }
+          
           // Send deletion alert to bot owner only
-          await this.sendDeletionAlertToBotOwner(sock, originalMessage, revokerJid, 'Message revocation');
+          await this.sendDeletionAlertToBotOwner(sock, originalMessage, revokerJid, 'Message revocation', revokedHadMedia);
           console.log(`✅ [Antidelete] DELETION ALERT SENT TO BOT OWNER!`);
         } catch (alertError) {
           console.error(`❌ [Antidelete] Failed to send deletion alert:`, alertError);
@@ -612,6 +665,127 @@ export class AntideleteService {
     return false;
   }
 
+  // Helper to get detailed media information for logging
+  private getDetailedMediaInfo(message: WAMessage): any {
+    if (!message.message) return { type: 'none' };
+
+    const mediaInfo = {
+      type: 'unknown',
+      size: null,
+      mimetype: null,
+      caption: null,
+      url: null,
+      viewOnce: false,
+      duration: null,
+      width: null,
+      height: null,
+      structure: [] as string[]
+    };
+
+    // Check for different media types
+    if (message.message.imageMessage) {
+      mediaInfo.type = 'image';
+      mediaInfo.size = message.message.imageMessage.fileLength;
+      mediaInfo.mimetype = message.message.imageMessage.mimetype;
+      mediaInfo.caption = message.message.imageMessage.caption;
+      mediaInfo.url = message.message.imageMessage.url;
+      mediaInfo.viewOnce = message.message.imageMessage.viewOnce || false;
+      mediaInfo.width = message.message.imageMessage.width;
+      mediaInfo.height = message.message.imageMessage.height;
+      mediaInfo.structure.push('imageMessage');
+    }
+
+    if (message.message.videoMessage) {
+      mediaInfo.type = 'video';
+      mediaInfo.size = message.message.videoMessage.fileLength;
+      mediaInfo.mimetype = message.message.videoMessage.mimetype;
+      mediaInfo.caption = message.message.videoMessage.caption;
+      mediaInfo.url = message.message.videoMessage.url;
+      mediaInfo.viewOnce = message.message.videoMessage.viewOnce || false;
+      mediaInfo.duration = message.message.videoMessage.seconds;
+      mediaInfo.width = message.message.videoMessage.width;
+      mediaInfo.height = message.message.videoMessage.height;
+      mediaInfo.structure.push('videoMessage');
+    }
+
+    if (message.message.audioMessage) {
+      mediaInfo.type = 'audio';
+      mediaInfo.size = message.message.audioMessage.fileLength;
+      mediaInfo.mimetype = message.message.audioMessage.mimetype;
+      mediaInfo.url = message.message.audioMessage.url;
+      mediaInfo.viewOnce = message.message.audioMessage.viewOnce || false;
+      mediaInfo.duration = message.message.audioMessage.seconds;
+      mediaInfo.structure.push('audioMessage');
+    }
+
+    if (message.message.stickerMessage) {
+      mediaInfo.type = 'sticker';
+      mediaInfo.size = message.message.stickerMessage.fileLength;
+      mediaInfo.mimetype = message.message.stickerMessage.mimetype;
+      mediaInfo.url = message.message.stickerMessage.url;
+      mediaInfo.width = message.message.stickerMessage.width;
+      mediaInfo.height = message.message.stickerMessage.height;
+      mediaInfo.structure.push('stickerMessage');
+    }
+
+    if (message.message.documentMessage) {
+      mediaInfo.type = 'document';
+      mediaInfo.size = message.message.documentMessage.fileLength;
+      mediaInfo.mimetype = message.message.documentMessage.mimetype;
+      mediaInfo.caption = message.message.documentMessage.caption;
+      mediaInfo.url = message.message.documentMessage.url;
+      mediaInfo.structure.push('documentMessage');
+    }
+
+    if (message.message.locationMessage) {
+      mediaInfo.type = 'location';
+      mediaInfo.structure.push('locationMessage');
+    }
+
+    if (message.message.contactMessage) {
+      mediaInfo.type = 'contact';
+      mediaInfo.structure.push('contactMessage');
+    }
+
+    if (message.message.pollMessage) {
+      mediaInfo.type = 'poll';
+      mediaInfo.structure.push('pollMessage');
+    }
+
+    // Check for ViewOnce messages
+    if (message.message.viewOnceMessageV2?.message) {
+      mediaInfo.viewOnce = true;
+      mediaInfo.structure.push('viewOnceMessageV2');
+      
+      const viewOnceMsg = message.message.viewOnceMessageV2.message;
+      
+      if (viewOnceMsg.imageMessage) {
+        mediaInfo.type = 'viewonce-image';
+        mediaInfo.size = viewOnceMsg.imageMessage.fileLength;
+        mediaInfo.mimetype = viewOnceMsg.imageMessage.mimetype;
+        mediaInfo.caption = viewOnceMsg.imageMessage.caption;
+        mediaInfo.url = viewOnceMsg.imageMessage.url;
+        mediaInfo.width = viewOnceMsg.imageMessage.width;
+        mediaInfo.height = viewOnceMsg.imageMessage.height;
+        mediaInfo.structure.push('viewOnceImageMessage');
+      }
+      
+      if (viewOnceMsg.videoMessage) {
+        mediaInfo.type = 'viewonce-video';
+        mediaInfo.size = viewOnceMsg.videoMessage.fileLength;
+        mediaInfo.mimetype = viewOnceMsg.videoMessage.mimetype;
+        mediaInfo.caption = viewOnceMsg.videoMessage.caption;
+        mediaInfo.url = viewOnceMsg.videoMessage.url;
+        mediaInfo.duration = viewOnceMsg.videoMessage.seconds;
+        mediaInfo.width = viewOnceMsg.videoMessage.width;
+        mediaInfo.height = viewOnceMsg.videoMessage.height;
+        mediaInfo.structure.push('viewOnceVideoMessage');
+      }
+    }
+
+    return mediaInfo;
+  }
+
 
   // Helper to save the message store to a file
   private saveToFile(): void {
@@ -621,7 +795,7 @@ export class AntideleteService {
   }
 
   // Send deletion alert to bot owner
-  private async sendDeletionAlertToBotOwner(sock: WASocket, originalMessage: StoredMessage, chatJid: string, detectionMethod: string): Promise<void> {
+  private async sendDeletionAlertToBotOwner(sock: WASocket, originalMessage: StoredMessage, chatJid: string, detectionMethod: string, hadMedia: boolean = false): Promise<void> {
     try {
       const botOwnerJid = sock.user?.id;
       if (!botOwnerJid) {
@@ -633,10 +807,22 @@ export class AntideleteService {
       const chatType = this.getChatType(chatJid);
       const timestamp = new Date().toLocaleString();
 
-      const alertMessage = `🚨 *DELETED MESSAGE*🚨\n\n` +
+      let alertMessage = `🚨 *DELETED MESSAGE*🚨\n\n` +
         `🗑️ *Deleted by:* ${senderName}\n` +
-        `💬 *Message:* ░▒▓████◤ "${originalMessage.content}" ◢████▓▒░\n\n` +
-        `📞 *Owner:* +254704897825`;
+        `💬 *Message:* ░▒▓████◤ "${originalMessage.content}" ◢████▓▒░\n`;
+      
+      if (hadMedia) {
+        const mediaInfo = this.getDetailedMediaInfo(originalMessage.originalMessage);
+        alertMessage += `📎 *Media:* ${mediaInfo.type} (${mediaInfo.size ? Math.round(mediaInfo.size / 1024) + 'KB' : 'Unknown size'})\n`;
+        if (mediaInfo.mimetype) {
+          alertMessage += `🎭 *Type:* ${mediaInfo.mimetype}\n`;
+        }
+        if (mediaInfo.viewOnce) {
+          alertMessage += `👁️ *ViewOnce:* Yes\n`;
+        }
+      }
+      
+      alertMessage += `\n📞 *Owner:* +254704897825`;
 
       console.log(`📤 [Antidelete] Sending deletion alert to bot owner...`);
       await sock.sendMessage(botOwnerJid, { text: alertMessage });
