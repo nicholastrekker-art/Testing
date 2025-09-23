@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs, { existsSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { downloadContentFromMessage } from '@whiskeysockets/baileys';
@@ -13,6 +13,7 @@ interface StoredMessage {
   type: string;
   timestamp: number;
   originalMessage: WAMessage;
+  mediaInfo?: { type: string, path: string } | null;
 }
 
 interface AntideleteConfig {
@@ -295,10 +296,21 @@ export class AntideleteService {
       const chatType = this.getChatType(fromJid);
       const timestamp = new Date().toLocaleString();
 
+      // Extract and save media if present
+      let mediaInfo: { type: string, path: string } | null = null;
+      if (this.hasMediaContent(message)) {
+        try {
+          mediaInfo = await this.extractAndSaveMedia(message);
+          console.log(`📎 [Antidelete] Media extracted: ${mediaInfo.type} saved to ${mediaInfo.path}`);
+        } catch (error) {
+          console.error(`❌ [Antidelete] Failed to extract media:`, error);
+        }
+      }
+
       // Check if this message already exists in store with content but now has empty content
       const existingMessage = this.messageStore.get(messageId);
-      if (existingMessage && existingMessage.content && existingMessage.content.trim() !== '' && 
-          (!messageContent || messageContent.trim() === '')) {
+      if (existingMessage && (existingMessage.content && existingMessage.content.trim() !== '' || existingMessage.mediaInfo) && 
+          (!messageContent || messageContent.trim() === '') && !mediaInfo) {
         
         console.log(`🚨 [Antidelete] MESSAGE DELETION DETECTED VIA EMPTY CONTENT!`);
         console.log(`══════════════════════════════════════════════════════════`);
@@ -306,29 +318,10 @@ export class AntideleteService {
         console.log(`   👤 Original Sender: ${existingMessage.senderJid}`);
         console.log(`   💬 Chat: ${chatType} (${fromJid})`);
         console.log(`   📝 Original Content: "${existingMessage.content}"`);
+        console.log(`   📎 Original Media: ${existingMessage.mediaInfo ? existingMessage.mediaInfo.type : 'None'}`);
         console.log(`   🕐 Deletion Time: ${timestamp}`);
         console.log(`   🔄 Detection Method: Empty content replacement`);
 
-        // Create a synthetic revocation message to handle this deletion
-        const syntheticRevocationMessage = {
-          key: {
-            id: `synthetic_${Date.now()}`,
-            remoteJid: fromJid,
-            participant: message.key.participant
-          },
-          message: {
-            protocolMessage: {
-              key: {
-                id: messageId,
-                remoteJid: fromJid,
-                participant: message.key.participant
-              },
-              type: 0 // REVOKE type
-            }
-          }
-        };
-
-        console.log(`📤 [Antidelete] Forwarding synthetic deletion to handler...`);
         // Send deletion alert to bot owner only
         if (sock) {
           await this.sendDeletionAlertToBotOwner(sock, existingMessage, fromJid, 'Empty content replacement');
@@ -338,7 +331,7 @@ export class AntideleteService {
         console.log(`══════════════════════════════════════════════════════════`);
       } 
       // Check for new empty content messages and search for recent messages from same chat
-      else if ((!messageContent || messageContent.trim() === '') && messageType === 'unknown' && !message.key.fromMe) {
+      else if ((!messageContent || messageContent.trim() === '') && !mediaInfo && messageType === 'unknown' && !message.key.fromMe) {
         console.log(`🚨 [Antidelete] EMPTY CONTENT MESSAGE DETECTED - SEARCHING FOR RECENT DELETIONS!`);
         console.log(`══════════════════════════════════════════════════════════`);
         console.log(`   🆔 Empty Message ID: ${messageId}`);
@@ -346,12 +339,11 @@ export class AntideleteService {
         console.log(`   🕐 Detection Time: ${timestamp}`);
         console.log(`   🔄 Detection Method: Empty content message`);
 
-        // Search for recent messages from the same chat that have content
+        // Search for recent messages from the same chat that have content or media
         const recentMessages = Array.from(this.messageStore.values())
           .filter(msg => 
             msg.fromJid === fromJid && 
-            msg.content && 
-            msg.content.trim() !== '' &&
+            (msg.content && msg.content.trim() !== '' || msg.mediaInfo) &&
             !msg.originalMessage.key.fromMe &&
             (Date.now() - msg.timestamp) < 60000 // Within last 60 seconds
           )
@@ -361,6 +353,7 @@ export class AntideleteService {
           const mostRecentMessage = recentMessages[0];
           console.log(`✅ [Antidelete] FOUND RECENT MESSAGE TO RESTORE!`);
           console.log(`   📝 Recent Message Content: "${mostRecentMessage.content}"`);
+          console.log(`   📎 Recent Message Media: ${mostRecentMessage.mediaInfo ? mostRecentMessage.mediaInfo.type : 'None'}`);
           console.log(`   🆔 Recent Message ID: ${mostRecentMessage.id}`);
           console.log(`   👤 Original Sender: ${mostRecentMessage.senderJid}`);
           console.log(`   ⏱️ Time Since Message: ${Date.now() - mostRecentMessage.timestamp}ms`);
@@ -385,7 +378,8 @@ export class AntideleteService {
         content: messageContent,
         type: messageType,
         timestamp: Date.now(),
-        originalMessage: message
+        originalMessage: message,
+        mediaInfo
       });
 
       // Comprehensive logging
@@ -633,13 +627,42 @@ export class AntideleteService {
       const chatType = this.getChatType(chatJid);
       const timestamp = new Date().toLocaleString();
 
+      // Send text alert first
       const alertMessage = `🚨 *DELETED MESSAGE*🚨\n\n` +
         `🗑️ *Deleted by:* ${senderName}\n` +
-        `💬 *Message:* ░▒▓████◤ "${originalMessage.content}" ◢████▓▒░\n\n` +
+        `💬 *Message:* ░▒▓████◤ "${originalMessage.content}" ◢████▓▒░\n` +
+        `📎 *Media:* ${originalMessage.mediaInfo ? originalMessage.mediaInfo.type : 'None'}\n\n` +
         `📞 *Owner:* +254704897825`;
 
       console.log(`📤 [Antidelete] Sending deletion alert to bot owner...`);
       await sock.sendMessage(botOwnerJid, { text: alertMessage });
+
+      // Send media file if available
+      if (originalMessage.mediaInfo && originalMessage.mediaInfo.path && existsSync(originalMessage.mediaInfo.path)) {
+        try {
+          console.log(`📎 [Antidelete] Sending deleted media file: ${originalMessage.mediaInfo.type}`);
+          
+          if (originalMessage.mediaInfo.type === 'image') {
+            await sock.sendMessage(botOwnerJid, {
+              image: { url: originalMessage.mediaInfo.path },
+              caption: `🚨 *DELETED IMAGE*\nFrom: ${senderName}\nOriginal caption: ${originalMessage.content || 'No caption'}`
+            });
+          } else if (originalMessage.mediaInfo.type === 'video') {
+            await sock.sendMessage(botOwnerJid, {
+              video: { url: originalMessage.mediaInfo.path },
+              caption: `🚨 *DELETED VIDEO*\nFrom: ${senderName}\nOriginal caption: ${originalMessage.content || 'No caption'}`
+            });
+          } else if (originalMessage.mediaInfo.type === 'sticker') {
+            await sock.sendMessage(botOwnerJid, {
+              sticker: { url: originalMessage.mediaInfo.path }
+            });
+          }
+          
+          console.log(`✅ [Antidelete] Deleted media file sent to bot owner`);
+        } catch (mediaError) {
+          console.error(`❌ [Antidelete] Failed to send deleted media:`, mediaError);
+        }
+      }
 
       console.log(`✅ [Antidelete] DELETION ALERT SENT TO BOT OWNER!`);
       console.log(`   📤 Sent to bot owner: ${botOwnerJid.split('@')[0]}`);
