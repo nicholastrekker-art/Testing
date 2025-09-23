@@ -209,71 +209,114 @@ export class AntideleteService {
     let mediaPath = '';
     const messageId = message.key.id;
 
-    if (message.message?.imageMessage) {
-      mediaType = 'image';
-      try {
-        const buffer = await downloadContentFromMessage(message.message.imageMessage, 'image');
-        mediaPath = path.join(this.tempMediaDir, `${messageId}.jpg`);
-        const chunks: Buffer[] = [];
-        for await (const chunk of buffer) {
-          chunks.push(chunk);
+    if (!messageId) {
+      console.log('❌ [Antidelete] No message ID for media extraction');
+      return { type: mediaType, path: mediaPath };
+    }
+
+    try {
+      if (message.message?.imageMessage) {
+        mediaType = 'image';
+        try {
+          const buffer = await downloadContentFromMessage(message.message.imageMessage, 'image');
+          mediaPath = path.join(this.tempMediaDir, `${messageId}.jpg`);
+          const chunks: Buffer[] = [];
+          for await (const chunk of buffer) {
+            chunks.push(chunk);
+          }
+          await writeFile(mediaPath, Buffer.concat(chunks));
+          console.log(`✅ [Antidelete] Image saved: ${mediaPath}`);
+        } catch (err) {
+          console.error('❌ [Antidelete] Error downloading image:', err);
         }
-        await writeFile(mediaPath, Buffer.concat(chunks));
-      } catch (err) {
-        console.error('Error downloading image:', err);
-      }
-    } else if (message.message?.stickerMessage) {
-      mediaType = 'sticker';
-      try {
-        const buffer = await downloadContentFromMessage(message.message.stickerMessage, 'sticker');
-        mediaPath = path.join(this.tempMediaDir, `${messageId}.webp`);
-        const chunks: Buffer[] = [];
-        for await (const chunk of buffer) {
-          chunks.push(chunk);
+      } else if (message.message?.stickerMessage) {
+        mediaType = 'sticker';
+        try {
+          const buffer = await downloadContentFromMessage(message.message.stickerMessage, 'sticker');
+          mediaPath = path.join(this.tempMediaDir, `${messageId}.webp`);
+          const chunks: Buffer[] = [];
+          for await (const chunk of buffer) {
+            chunks.push(chunk);
+          }
+          await writeFile(mediaPath, Buffer.concat(chunks));
+          console.log(`✅ [Antidelete] Sticker saved: ${mediaPath}`);
+        } catch (err) {
+          console.error('❌ [Antidelete] Error downloading sticker:', err);
         }
-        await writeFile(mediaPath, Buffer.concat(chunks));
-      } catch (err) {
-        console.error('Error downloading sticker:', err);
-      }
-    } else if (message.message?.videoMessage) {
-      mediaType = 'video';
-      try {
-        const buffer = await downloadContentFromMessage(message.message.videoMessage, 'video');
-        mediaPath = path.join(this.tempMediaDir, `${messageId}.mp4`);
-        const chunks: Buffer[] = [];
-        for await (const chunk of buffer) {
-          chunks.push(chunk);
+      } else if (message.message?.videoMessage) {
+        mediaType = 'video';
+        try {
+          const buffer = await downloadContentFromMessage(message.message.videoMessage, 'video');
+          mediaPath = path.join(this.tempMediaDir, `${messageId}.mp4`);
+          const chunks: Buffer[] = [];
+          for await (const chunk of buffer) {
+            chunks.push(chunk);
+          }
+          await writeFile(mediaPath, Buffer.concat(chunks));
+          console.log(`✅ [Antidelete] Video saved: ${mediaPath}`);
+        } catch (err) {
+          console.error('❌ [Antidelete] Error downloading video:', err);
         }
-        await writeFile(mediaPath, Buffer.concat(chunks));
-      } catch (err) {
-        console.error('Error downloading video:', err);
-      }
-    } else if (message.message?.viewOnceMessageV2?.message?.imageMessage) {
-      mediaType = 'image';
-      try {
-        const buffer = await downloadContentFromMessage(message.message.viewOnceMessageV2.message.imageMessage, 'image');
-        mediaPath = path.join(this.tempMediaDir, `${messageId}-viewonce.jpg`);
-        const chunks: Buffer[] = [];
-        for await (const chunk of buffer) {
-          chunks.push(chunk);
+      } else if (message.message?.audioMessage) {
+        mediaType = 'audio';
+        try {
+          const buffer = await downloadContentFromMessage(message.message.audioMessage, 'audio');
+          mediaPath = path.join(this.tempMediaDir, `${messageId}.ogg`);
+          const chunks: Buffer[] = [];
+          for await (const chunk of buffer) {
+            chunks.push(chunk);
+          }
+          await writeFile(mediaPath, Buffer.concat(chunks));
+          console.log(`✅ [Antidelete] Audio saved: ${mediaPath}`);
+        } catch (err) {
+          console.error('❌ [Antidelete] Error downloading audio:', err);
         }
-        await writeFile(mediaPath, Buffer.concat(chunks));
-      } catch (err) {
-        console.error('Error downloading view-once image:', err);
-      }
-    } else if (message.message?.viewOnceMessageV2?.message?.videoMessage) {
-      mediaType = 'video';
-      try {
-        const buffer = await downloadContentFromMessage(message.message.viewOnceMessageV2.message.videoMessage, 'video');
-        mediaPath = path.join(this.tempMediaDir, `${messageId}-viewonce.mp4`);
-        const chunks: Buffer[] = [];
-        for await (const chunk of buffer) {
-          chunks.push(chunk);
+      } else if (message.message?.documentMessage) {
+        mediaType = 'document';
+        try {
+          const buffer = await downloadContentFromMessage(message.message.documentMessage, 'document');
+          const fileName = message.message.documentMessage.fileName || `${messageId}.bin`;
+          mediaPath = path.join(this.tempMediaDir, fileName);
+          const chunks: Buffer[] = [];
+          for await (const chunk of buffer) {
+            chunks.push(chunk);
+          }
+          await writeFile(mediaPath, Buffer.concat(chunks));
+          console.log(`✅ [Antidelete] Document saved: ${mediaPath}`);
+        } catch (err) {
+          console.error('❌ [Antidelete] Error downloading document:', err);
         }
-        await writeFile(mediaPath, Buffer.concat(chunks));
-      } catch (err) {
-        console.error('Error downloading view-once video:', err);
+      } else if (message.message?.viewOnceMessageV2?.message?.imageMessage) {
+        mediaType = 'image';
+        try {
+          const buffer = await downloadContentFromMessage(message.message.viewOnceMessageV2.message.imageMessage, 'image');
+          mediaPath = path.join(this.tempMediaDir, `${messageId}-viewonce.jpg`);
+          const chunks: Buffer[] = [];
+          for await (const chunk of buffer) {
+            chunks.push(chunk);
+          }
+          await writeFile(mediaPath, Buffer.concat(chunks));
+          console.log(`✅ [Antidelete] ViewOnce image saved: ${mediaPath}`);
+        } catch (err) {
+          console.error('❌ [Antidelete] Error downloading view-once image:', err);
+        }
+      } else if (message.message?.viewOnceMessageV2?.message?.videoMessage) {
+        mediaType = 'video';
+        try {
+          const buffer = await downloadContentFromMessage(message.message.viewOnceMessageV2.message.videoMessage, 'video');
+          mediaPath = path.join(this.tempMediaDir, `${messageId}-viewonce.mp4`);
+          const chunks: Buffer[] = [];
+          for await (const chunk of buffer) {
+            chunks.push(chunk);
+          }
+          await writeFile(mediaPath, Buffer.concat(chunks));
+          console.log(`✅ [Antidelete] ViewOnce video saved: ${mediaPath}`);
+        } catch (err) {
+          console.error('❌ [Antidelete] Error downloading view-once video:', err);
+        }
       }
+    } catch (error) {
+      console.error('❌ [Antidelete] General media extraction error:', error);
     }
 
     return { type: mediaType, path: mediaPath };
@@ -586,16 +629,17 @@ export class AntideleteService {
     const mediaTypes = [
       'imageMessage', 'videoMessage', 'audioMessage', 'documentMessage',
       'stickerMessage', 'locationMessage', 'contactMessage', 'liveLocationMessage',
-      'pollMessage', 'stickerMessage', 'viewOnceMessageV2'
+      'pollMessage', 'viewOnceMessageV2'
     ];
 
+    // Check for direct media types
     for (const type in message.message) {
       if (mediaTypes.includes(type)) {
-        // Check specifically for media attachments within viewOnce messages
+        // Special handling for viewOnce messages
         if (type === 'viewOnceMessageV2' && message.message[type]?.message) {
           const viewOnceMessage = message.message[type].message;
           const viewOnceKeys = Object.keys(viewOnceMessage);
-          if (viewOnceKeys.some(key => mediaTypes.includes(key))) {
+          if (viewOnceKeys.some(key => ['imageMessage', 'videoMessage', 'audioMessage'].includes(key))) {
             return true;
           }
         } else if (type !== 'viewOnceMessageV2') {
@@ -603,6 +647,16 @@ export class AntideleteService {
         }
       }
     }
+
+    // Check for messages that might contain downloadable content
+    if (message.message.imageMessage?.url || 
+        message.message.videoMessage?.url ||
+        message.message.audioMessage?.url ||
+        message.message.documentMessage?.url ||
+        message.message.stickerMessage?.url) {
+      return true;
+    }
+
     return false;
   }
 
@@ -627,40 +681,82 @@ export class AntideleteService {
       const chatType = this.getChatType(chatJid);
       const timestamp = new Date().toLocaleString();
 
-      // Send text alert first
-      const alertMessage = `🚨 *DELETED MESSAGE*🚨\n\n` +
-        `🗑️ *Deleted by:* ${senderName}\n` +
-        `💬 *Message:* ░▒▓████◤ "${originalMessage.content}" ◢████▓▒░\n` +
-        `📎 *Media:* ${originalMessage.mediaInfo ? originalMessage.mediaInfo.type : 'None'}\n\n` +
-        `📞 *Owner:* +254704897825`;
+      // Improved alert message with more details
+      const alertMessage = `🚨 *DELETED MESSAGE DETECTED* 🚨\n\n` +
+        `👤 *Sender:* ${senderName}\n` +
+        `💬 *Chat:* ${chatType}\n` +
+        `📅 *Time:* ${timestamp}\n` +
+        `🔍 *Detection:* ${detectionMethod}\n\n` +
+        `📝 *Original Message:*\n"${originalMessage.content || '[No text content]'}"\n\n` +
+        `📎 *Media:* ${originalMessage.mediaInfo ? `${originalMessage.mediaInfo.type.toUpperCase()} file` : 'None'}\n\n` +
+        `🆔 *Message ID:* ${originalMessage.id}\n` +
+        `📞 *TrekkerMD:* +254704897825`;
 
-      console.log(`📤 [Antidelete] Sending deletion alert to bot owner...`);
-      await sock.sendMessage(botOwnerJid, { text: alertMessage });
+      console.log(`📤 [Antidelete] Sending deletion alert to bot owner (${botOwnerJid})...`);
+      
+      // Send the text alert first
+      await sock.sendMessage(botOwnerJid, { 
+        text: alertMessage,
+        quoted: originalMessage.originalMessage
+      });
 
-      // Send media file if available
-      if (originalMessage.mediaInfo && originalMessage.mediaInfo.path && existsSync(originalMessage.mediaInfo.path)) {
+      console.log(`✅ [Antidelete] Text alert sent successfully`);
+
+      // Send media file if available and exists
+      if (originalMessage.mediaInfo && originalMessage.mediaInfo.path && originalMessage.mediaInfo.type) {
+        // Wait a moment before sending media
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         try {
-          console.log(`📎 [Antidelete] Sending deleted media file: ${originalMessage.mediaInfo.type}`);
-          
-          if (originalMessage.mediaInfo.type === 'image') {
-            await sock.sendMessage(botOwnerJid, {
-              image: { url: originalMessage.mediaInfo.path },
-              caption: `🚨 *DELETED IMAGE*\nFrom: ${senderName}\nOriginal caption: ${originalMessage.content || 'No caption'}`
-            });
-          } else if (originalMessage.mediaInfo.type === 'video') {
-            await sock.sendMessage(botOwnerJid, {
-              video: { url: originalMessage.mediaInfo.path },
-              caption: `🚨 *DELETED VIDEO*\nFrom: ${senderName}\nOriginal caption: ${originalMessage.content || 'No caption'}`
-            });
-          } else if (originalMessage.mediaInfo.type === 'sticker') {
-            await sock.sendMessage(botOwnerJid, {
-              sticker: { url: originalMessage.mediaInfo.path }
-            });
+          // Check if file exists
+          if (existsSync(originalMessage.mediaInfo.path)) {
+            console.log(`📎 [Antidelete] Sending deleted media file: ${originalMessage.mediaInfo.type} from ${originalMessage.mediaInfo.path}`);
+            
+            const mediaCaption = `🚨 *DELETED ${originalMessage.mediaInfo.type.toUpperCase()}*\n\n` +
+              `👤 From: ${senderName}\n` +
+              `📅 Deleted: ${timestamp}\n` +
+              `📝 Caption: ${originalMessage.content || 'No caption'}\n\n` +
+              `📞 TrekkerMD: +254704897825`;
+
+            if (originalMessage.mediaInfo.type === 'image') {
+              await sock.sendMessage(botOwnerJid, {
+                image: { url: originalMessage.mediaInfo.path },
+                caption: mediaCaption
+              });
+            } else if (originalMessage.mediaInfo.type === 'video') {
+              await sock.sendMessage(botOwnerJid, {
+                video: { url: originalMessage.mediaInfo.path },
+                caption: mediaCaption
+              });
+            } else if (originalMessage.mediaInfo.type === 'audio') {
+              await sock.sendMessage(botOwnerJid, {
+                audio: { url: originalMessage.mediaInfo.path },
+                caption: mediaCaption
+              });
+            } else if (originalMessage.mediaInfo.type === 'sticker') {
+              await sock.sendMessage(botOwnerJid, {
+                sticker: { url: originalMessage.mediaInfo.path }
+              });
+              // Send caption separately for stickers
+              await sock.sendMessage(botOwnerJid, { text: mediaCaption });
+            } else if (originalMessage.mediaInfo.type === 'document') {
+              await sock.sendMessage(botOwnerJid, {
+                document: { url: originalMessage.mediaInfo.path },
+                caption: mediaCaption,
+                fileName: `deleted_${originalMessage.id}_document`
+              });
+            }
+            
+            console.log(`✅ [Antidelete] Deleted media file sent successfully`);
+          } else {
+            console.log(`⚠️ [Antidelete] Media file not found: ${originalMessage.mediaInfo.path}`);
           }
-          
-          console.log(`✅ [Antidelete] Deleted media file sent to bot owner`);
         } catch (mediaError) {
           console.error(`❌ [Antidelete] Failed to send deleted media:`, mediaError);
+          // Send error message to owner
+          await sock.sendMessage(botOwnerJid, {
+            text: `⚠️ *Media Recovery Failed*\n\nThe deleted ${originalMessage.mediaInfo.type} could not be recovered due to: ${mediaError instanceof Error ? mediaError.message : 'Unknown error'}`
+          });
         }
       }
 
@@ -668,6 +764,7 @@ export class AntideleteService {
       console.log(`   📤 Sent to bot owner: ${botOwnerJid.split('@')[0]}`);
       console.log(`   📊 Alert message length: ${alertMessage.length} characters`);
       console.log(`   🎯 Alert ID: ${Date.now()}`);
+      console.log(`   🔍 Detection method: ${detectionMethod}`);
 
     } catch (error) {
       console.error('❌ [Antidelete] CRITICAL ERROR sending deletion alert to bot owner:', error);
@@ -675,9 +772,19 @@ export class AntideleteService {
         chatJid,
         originalMessageId: originalMessage.id,
         detectionMethod,
+        botOwnerJid: sock.user?.id,
         error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
         timestamp: new Date().toISOString()
       });
+
+      // Try to send a simplified error message to the owner
+      try {
+        const errorMessage = `❌ *Antidelete Error*\n\nFailed to send deletion alert for message from ${originalMessage.originalMessage?.pushName || 'Unknown'}\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        await sock.sendMessage(sock.user?.id || '', { text: errorMessage });
+      } catch (fallbackError) {
+        console.error('❌ [Antidelete] Failed to send fallback error message:', fallbackError);
+      }
     }
   }
 
