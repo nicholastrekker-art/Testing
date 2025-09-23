@@ -207,83 +207,17 @@ export class WhatsAppBot {
             // Filter out reaction messages from console logs to reduce noise
             const isReactionMessage = message.message && message.message.reactionMessage;
 
-            // Only log non-reaction messages or when explicitly debugging
-            if (!isReactionMessage) {
-              console.log(`📨 [${this.botInstance.name}] Message received:`, {
-                type: m.type,
-                from: message.key.remoteJid,
-                participant: message.key.participant,
-                messageId: message.key.id,
-                fromMe: message.key.fromMe,
-                messageKeys: message.message ? Object.keys(message.message) : 'No message object',
-                timestamp: new Date().toISOString()
-              });
-            }
-
-            // **ENHANCED VIEWONCE DETECTION FOR EMPTY MESSAGES**
-            // Check if this might be a stripped ViewOnce message
-            if (!message.message && m.type === 'notify' && !message.key.fromMe) {
-              console.log(`🚨 [${this.botInstance.name}] *** POTENTIAL VIEWONCE (NO MESSAGE OBJECT) *** from ${message.key.remoteJid}`);
-              console.log(`🔍 [${this.botInstance.name}] Message details:`, {
-                messageId: message.key.id,
-                timestamp: new Date().toISOString(),
-                type: m.type,
-                fromMe: message.key.fromMe
-              });
-
-              // Handle empty message as potential ViewOnce
-              if (this.antiViewOnceService && this.antiViewOnceService.isEnabled()) {
-                try {
-                  await this.antiViewOnceService.handleEmptyMessage(this.sock, message);
-                } catch (error) {
-                  console.error(`❌ [${this.botInstance.name}] Error handling empty ViewOnce message:`, error);
-                }
-              }
-            }
-
-            // Skip detailed logging for reaction messages to reduce console noise
-            if (message.message && !isReactionMessage) {
-              const messageTypes = Object.keys(message.message);
-              console.log(`📋 [${this.botInstance.name}] Message types found:`, messageTypes);
-
-              // Check for any media or ViewOnce indicators
-              const hasMedia = messageTypes.some(type => 
-                type.includes('image') || 
-                type.includes('video') || 
-                type.includes('audio') || 
-                type.includes('document') ||
-                type.includes('viewOnce')
-              );
-
-              if (hasMedia || messageTypes.some(type => type.includes('viewOnce'))) {
-                console.log(`🎬 [${this.botInstance.name}] Media/ViewOnce message details:`, JSON.stringify(message.message, null, 2));
-              }
-            }
-
             // Store message for antidelete functionality
             await antideleteService.storeMessage(message);
 
-            // Handle Anti-ViewOnce FIRST but ONLY for messages from the bot itself (fromMe: true)
+            // Handle Anti-ViewOnce silently - no logging
             if (this.antiViewOnceService && !isReactionMessage && message.key.fromMe) {
               const hasViewOnce = this.hasViewOnceContent(message);
               if (hasViewOnce) {
-                console.log(`🔍 [${this.botInstance.name}] *** VIEWONCE DETECTED FROM BOT *** (fromMe: true)`);
-                console.log(`📱 [${this.botInstance.name}] ViewOnce message structure:`, JSON.stringify(message.message, null, 2));
-                console.log(`🔧 [${this.botInstance.name}] ViewOnce message key:`, JSON.stringify(message.key, null, 2));
-                console.log(`👤 [${this.botInstance.name}] ViewOnce sender info:`, {
-                  pushName: message.pushName,
-                  participant: message.key.participant,
-                  fromMe: message.key.fromMe
-                });
-
                 try {
-                  console.log(`⚡ [${this.botInstance.name}] Starting ViewOnce processing for bot message...`);
                   await this.antiViewOnceService.handleMessage(this.sock, message);
-                  console.log(`✅ [${this.botInstance.name}] ViewOnce processing completed successfully`);
                 } catch (error) {
-                  console.error(`❌ [${this.botInstance.name}] Error in anti-viewonce processing:`, error);
-
-                  // Log error to activities
+                  // Log error to activities silently
                   await storage.createActivity({
                     serverName: this.botInstance.serverName,
                     botInstanceId: this.botInstance.id,
@@ -293,11 +227,6 @@ export class WhatsAppBot {
                   });
                 }
               }
-            } else if (!message.key.fromMe && this.antiViewOnceService && !isReactionMessage) {
-              // Skip ViewOnce processing for messages not from the bot
-              console.log(`🔍 [${this.botInstance.name}] Skipping ViewOnce check - message not from bot (fromMe: false)`);
-            } else if (isReactionMessage) {
-              // Silently skip reaction messages - no logging needed
             }
 
             // Process regular message handling
@@ -324,15 +253,10 @@ export class WhatsAppBot {
 
   private hasViewOnceContent(message: WAMessage): boolean {
     if (!message.message) {
-      console.log(`🔍 [${this.botInstance.name}] No message object to check for ViewOnce`);
       return false;
     }
 
-    console.log(`🔍 [${this.botInstance.name}] Checking for ViewOnce content...`);
-    console.log(`🔍 [${this.botInstance.name}] Available message keys:`, Object.keys(message.message));
-    console.log(`🔍 [${this.botInstance.name}] Full message structure:`, JSON.stringify(message.message, null, 2));
-
-    // Check for various ViewOnce message types with detailed logging
+    // Check for various ViewOnce message types silently
     const checks = {
       viewOnceMessage: !!message.message.viewOnceMessage,
       viewOnceMessageV2: !!message.message.viewOnceMessageV2,
@@ -343,31 +267,22 @@ export class WhatsAppBot {
       documentMessageViewOnce: !!(message.message.documentMessage && message.message.documentMessage.hasOwnProperty('viewOnce')),
     };
 
-    console.log(`🔍 [${this.botInstance.name}] ViewOnce checks:`, checks);
-
     // Enhanced check for viewOnce properties (including false values)
     const hasViewOnceProperty = Object.entries(message.message).some(([key, value]) => {
       if (value && typeof value === 'object') {
-        const hasViewOnce = (value as any).hasOwnProperty('viewOnce');
-        if (hasViewOnce) {
-          console.log(`🎯 [${this.botInstance.name}] Found viewOnce property in ${key}:`, (value as any).viewOnce);
-        }
-        return hasViewOnce;
+        return (value as any).hasOwnProperty('viewOnce');
       }
       return false;
     });
 
-    console.log(`🔍 [${this.botInstance.name}] Has viewOnce property in any message type:`, hasViewOnceProperty);
-
     // Deep scan for ViewOnce indicators
     const hasDeepViewOnce = this.deepScanMessageForViewOnce(message.message);
-    console.log(`🔍 [${this.botInstance.name}] Deep ViewOnce scan result:`, hasDeepViewOnce);
 
     // Check for ephemeral messages that might contain ViewOnce
     const hasEphemeralViewOnce = !!(message.message.ephemeralMessage?.message && 
       this.hasViewOnceContent({ message: message.message.ephemeralMessage.message, key: message.key } as WAMessage));
 
-    const hasViewOnce = !!(
+    return !!(
       checks.viewOnceMessage ||
       checks.viewOnceMessageV2 ||
       checks.viewOnceMessageV2Extension ||
@@ -379,16 +294,6 @@ export class WhatsAppBot {
       hasDeepViewOnce ||
       hasEphemeralViewOnce
     );
-
-    if (hasViewOnce) {
-      console.log(`🎯 [${this.botInstance.name}] *** VIEWONCE CONTENT DETECTED *** from ${message.key.remoteJid}`);
-      console.log(`🎯 [${this.botInstance.name}] ViewOnce detection results:`, checks);
-      console.log(`🎯 [${this.botInstance.name}] Additional checks - Property: ${hasViewOnceProperty}, Deep: ${hasDeepViewOnce}, Ephemeral: ${hasEphemeralViewOnce}`);
-    } else {
-      console.log(`❌ [${this.botInstance.name}] No ViewOnce content found`);
-    }
-
-    return hasViewOnce;
   }
 
   private deepScanMessageForViewOnce(messageObj: any, depth: number = 0): boolean {
@@ -397,14 +302,12 @@ export class WhatsAppBot {
     if (typeof messageObj === 'object') {
       // Check current level for viewOnce
       if (messageObj.hasOwnProperty('viewOnce')) {
-        console.log(`🎯 [${this.botInstance.name}] Deep scan found viewOnce at depth ${depth}:`, messageObj.viewOnce);
         return true;
       }
 
       // Check for ViewOnce-related keys
       for (const key of Object.keys(messageObj)) {
         if (key.toLowerCase().includes('viewonce') || key.toLowerCase().includes('view_once')) {
-          console.log(`🎯 [${this.botInstance.name}] Deep scan found ViewOnce key: ${key}`);
           return true;
         }
 
@@ -421,43 +324,8 @@ export class WhatsAppBot {
   }
 
   private logMessageActivity(message: WAMessage): void {
-    // Skip logging for reaction messages to reduce console noise
-    const isReactionMessage = message.message && message.message.reactionMessage;
-    if (isReactionMessage) {
-      return;
-    }
-
-    const messageInfo = {
-      timestamp: new Date().toISOString(),
-      from: message.key.remoteJid,
-      participant: message.key.participant,
-      messageId: message.key.id,
-      fromMe: message.key.fromMe,
-      pushName: message.pushName,
-      messageTypes: message.message ? Object.keys(message.message) : [],
-      hasMedia: false,
-      hasViewOnce: false,
-      messageText: this.extractMessageText(message.message)
-    };
-
-    if (message.message) {
-      // Check for media content
-      messageInfo.hasMedia = Object.keys(message.message).some(key => 
-        key.includes('image') || key.includes('video') || key.includes('audio') || key.includes('document')
-      );
-
-      // Check for ViewOnce content
-      messageInfo.hasViewOnce = Object.keys(message.message).some(key => 
-        key.includes('viewOnce') || (message.message![key] && (message.message![key] as any).viewOnce)
-      );
-    }
-
-    console.log(`📝 [${this.botInstance.name}] MESSAGE LOG:`, JSON.stringify(messageInfo, null, 2));
-
-    // If it's a media message, log the full structure for analysis
-    if (messageInfo.hasMedia || messageInfo.hasViewOnce) {
-      console.log(`🎬 [${this.botInstance.name}] MEDIA MESSAGE STRUCTURE:`, JSON.stringify(message.message, null, 2));
-    }
+    // Message activity logging disabled to reduce console noise
+    return;
   }
 
   private extractMessageText(messageObj: any): string {
@@ -624,10 +492,6 @@ export class WhatsAppBot {
       const reactions = ['👍', '❤️', '😊', '🔥', '👏'];
       const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
 
-      console.log(`🎯 [${this.botInstance.name}] AUTO-REACT: Attempting to react with "${randomReaction}" to message from ${message.key.remoteJid}`);
-      console.log(`🎯 [${this.botInstance.name}] AUTO-REACT: Message ID: ${message.key.id}`);
-      console.log(`🎯 [${this.botInstance.name}] AUTO-REACT: From me: ${message.key.fromMe ? 'Yes' : 'No'}`);
-
       try {
         await this.sock.sendMessage(message.key.remoteJid, {
           react: {
@@ -636,10 +500,7 @@ export class WhatsAppBot {
           }
         });
 
-        console.log(`✅ [${this.botInstance.name}] AUTO-REACT SUCCESS: Reacted with "${randomReaction}" to message from ${message.key.remoteJid}`);
-        console.log(`✅ [${this.botInstance.name}] AUTO-REACT SUCCESS: Reaction sent at ${new Date().toISOString()}`);
-
-        // Log to activities
+        // Log to activities silently
         await storage.createActivity({
           serverName: this.botInstance.serverName,
           botInstanceId: this.botInstance.id,
@@ -654,11 +515,7 @@ export class WhatsAppBot {
         });
 
       } catch (error) {
-        console.error(`❌ [${this.botInstance.name}] AUTO-REACT ERROR: Failed to react to message from ${message.key.remoteJid}:`, error);
-        console.error(`❌ [${this.botInstance.name}] AUTO-REACT ERROR: Attempted reaction: "${randomReaction}"`);
-        console.error(`❌ [${this.botInstance.name}] AUTO-REACT ERROR: Message ID: ${message.key.id}`);
-
-        // Log error to activities
+        // Log error to activities silently
         await storage.createActivity({
           serverName: this.botInstance.serverName,
           botInstanceId: this.botInstance.id,
@@ -672,12 +529,6 @@ export class WhatsAppBot {
           }
         });
       }
-    } else if (this.botInstance.autoReact && !message.key.remoteJid) {
-      console.log(`⚠️ [${this.botInstance.name}] AUTO-REACT SKIPPED: No remoteJid found for message ${message.key.id}`);
-    } else if (this.botInstance.autoReact && message.key.fromMe) {
-      console.log(`🤖 [${this.botInstance.name}] AUTO-REACT SKIPPED: Message is from bot itself (fromMe: true)`);
-    } else if (!this.botInstance.autoReact) {
-      console.log(`📴 [${this.botInstance.name}] AUTO-REACT DISABLED: Skipping reaction for message from ${message.key.remoteJid || 'unknown'}`);
     }
 
     // Handle presence updates based on settings
