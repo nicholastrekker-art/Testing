@@ -329,11 +329,11 @@ export class AntideleteService {
         };
 
         console.log(`📤 [Antidelete] Forwarding synthetic deletion to handler...`);
-        // Handle this as a message deletion
+        // Send deletion alert to bot owner only
         if (sock) {
-          await this.handleMessageRevocation(sock, syntheticRevocationMessage as any);
+          await this.sendDeletionAlertToBotOwner(sock, existingMessage, fromJid, 'Empty content replacement');
         } else {
-          console.log(`⚠️ [Antidelete] No socket available for synthetic deletion handling`);
+          console.log(`⚠️ [Antidelete] No socket available for deletion alert`);
         }
         console.log(`══════════════════════════════════════════════════════════`);
       } 
@@ -365,7 +365,7 @@ export class AntideleteService {
           console.log(`   👤 Original Sender: ${mostRecentMessage.senderJid}`);
           console.log(`   ⏱️ Time Since Message: ${Date.now() - mostRecentMessage.timestamp}ms`);
 
-          // Send restoration message to bot owner
+          // Send deletion alert to bot owner only
           if (sock) {
             await this.sendDeletionAlertToBotOwner(sock, mostRecentMessage, fromJid, 'Empty content detection');
           }
@@ -484,14 +484,14 @@ export class AntideleteService {
         console.log(`   ⏱️ Time Since Original: ${Date.now() - originalMessage.timestamp}ms`);
 
         // Log the restoration attempt
-        console.log(`🔄 [Antidelete] ATTEMPTING TO RESTORE DELETED MESSAGE...`);
+        console.log(`📤 [Antidelete] SENDING DELETION ALERT TO BOT OWNER...`);
 
         try {
-          // Send the deleted message back to the chat
-          await this.forwardDeletedMessage(sock, originalMessage, revokerJid, participantJid);
-          console.log(`✅ [Antidelete] MESSAGE SUCCESSFULLY RESTORED!`);
-        } catch (restoreError) {
-          console.error(`❌ [Antidelete] Failed to restore message:`, restoreError);
+          // Send deletion alert to bot owner only
+          await this.sendDeletionAlertToBotOwner(sock, originalMessage, revokerJid, 'Message revocation');
+          console.log(`✅ [Antidelete] DELETION ALERT SENT TO BOT OWNER!`);
+        } catch (alertError) {
+          console.error(`❌ [Antidelete] Failed to send deletion alert:`, alertError);
         }
       } else {
         console.log(`❌ [Antidelete] ORIGINAL MESSAGE NOT FOUND IN STORE!`);
@@ -663,61 +663,7 @@ export class AntideleteService {
     }
   }
 
-  // Forward the deleted message to the bot owner
-  private async forwardDeletedMessage(sock: WASocket, originalMessage: StoredMessage, chatJid: string, participantJid?: string): Promise<void> {
-    try {
-      const senderName = originalMessage.originalMessage?.pushName || 'Unknown';
-      
-      // Determine who deleted the message
-      let deletedBy = 'Someone';
-      if (participantJid) {
-        deletedBy = `${participantJid.split('@')[0]}`;
-      } else if (originalMessage.senderJid === 'self') {
-        deletedBy = 'Bot Owner (self)';
-      } else if (originalMessage.senderJid && originalMessage.senderJid !== chatJid) {
-        // In a group, the sender might have deleted their own message
-        deletedBy = `${originalMessage.senderJid.split('@')[0]} (sender)`;
-      } else {
-        // In private chat, the other person deleted the message
-        deletedBy = `${chatJid.split('@')[0]}`;
-      }
-      
-      const timestamp = new Date().toLocaleString();
-
-      console.log(`📤 [Antidelete] FORWARDING DELETED MESSAGE`);
-      console.log(`   📍 Target Chat: ${chatJid}`);
-      console.log(`   👤 Original Sender: ${senderName}`);
-      console.log(`   🗑️ Deleted By: ${deletedBy}`);
-      console.log(`   📝 Content Type: ${originalMessage.type}`);
-      console.log(`   📏 Content Length: ${originalMessage.content.length} characters`);
-
-      let restoredContent = `🚨 *DELETED MESSAGE RESTORED* 🚨\n\n`;
-      restoredContent += `👤 Originally sent by: ${senderName}\n`;
-      restoredContent += `🗑️ Deleted by: ${deletedBy}\n`;
-      restoredContent += `🕐 Original time: ${new Date(originalMessage.timestamp).toLocaleString()}\n`;
-      restoredContent += `🕐 Restored time: ${timestamp}\n`;
-      restoredContent += `📝 Content type: ${originalMessage.type}\n\n`;
-      restoredContent += `💬 Original message:\n"${originalMessage.content}"`;
-
-      console.log(`📨 [Antidelete] Sending restoration message...`);
-      await sock.sendMessage(chatJid, { text: restoredContent });
-
-      console.log(`✅ [Antidelete] MESSAGE RESTORATION SUCCESSFUL!`);
-      console.log(`   📤 Sent to: ${this.getChatType(chatJid)}`);
-      console.log(`   📊 Message length: ${restoredContent.length} characters`);
-      console.log(`   🎯 Restoration ID: ${Date.now()}`);
-
-    } catch (error) {
-      console.error('❌ [Antidelete] CRITICAL ERROR forwarding deleted message:', error);
-      console.error('❌ [Antidelete] Forward error details:', {
-        chatJid,
-        participantJid,
-        originalMessageId: originalMessage.id,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
-      });
-    }
-  }
+  
 }
 
 // Export singleton instance
