@@ -1,66 +1,99 @@
 {
-  "3EB0FF7B2905601B1C08D7": {
+  "3EB0FA3F95C28984BCAF3F": {
     "content": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀",
     "mediaType": "",
     "mediaPath": "",
     "sender": "254799257758:21@s.whatsapp.net",
     "group": null,
-    "timestamp": "2025-09-23T15:59:24.252Z",
+    "timestamp": "2025-09-23T16:11:04.189Z",
     "fullMessage": {
       "extendedTextMessage": {
         "text": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀"
       }
     }
   },
-  "9DF0BDFBC6A72037BB38B157BB94DAB3": {
+  "982AB7113FC2CEDF20516A32B52ADA80": {
     "content": "Hey",
     "mediaType": "",
     "mediaPath": "",
     "sender": "254799257758@s.whatsapp.net",
     "group": null,
-    "timestamp": "2025-09-23T16:00:39.087Z",
+    "timestamp": "2025-09-23T16:12:00.705Z",
     "fullMessage": {
       "conversation": "Hey"
     }
   },
-  "AB710BCE767F1D5048321679E1565483": {
+  "A580D95CDA30EDE39D83E9E898F0AB79": {
+    "content": "",
+    "mediaType": "",
+    "mediaPath": "",
+    "sender": "254704897825@s.whatsapp.net",
+    "group": null,
+    "timestamp": "2025-09-23T16:15:57.948Z"
+  },
+  "6999A7B40C495E0006760D05448F82E8": {
     "content": "",
     "mediaType": "",
     "mediaPath": "",
     "sender": "254799257758@s.whatsapp.net",
     "group": null,
-    "timestamp": "2025-09-23T16:01:07.089Z",
+    "timestamp": "2025-09-23T16:16:10.443Z",
     "fullMessage": {
       "protocolMessage": {
-        "key": {
-          "remoteJid": "254799257758@s.whatsapp.net",
-          "fromMe": true,
-          "id": "9DF0BDFBC6A72037BB38B157BB94DAB3"
-        },
-        "type": "REVOKE"
+        "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+        "peerDataOperationRequestResponseMessage": {
+          "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+          "stanzaId": "3EB0C9B278FB76A6894587",
+          "peerDataOperationResult": [
+            {
+              "mediaUploadResult": "SUCCESS",
+              "placeholderMessageResendResponse": {
+                "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNTgwRDk1Q0RBMzBFREUzOUQ4M0U5RTg5OEYwQUI3ORIGCgRZb3doGLyPy8YGigMgfXELDDsN6wjF1DldT5/FxQSfOPM5bk5/GeA0BsytS7LyAxYKFAEL1JmkWJmXVI8HM7imSrHwJIhjiAQA"
+              }
+            }
+          ]
+        }
       }
     }
   },
-  "917FC6EFE53C61D8FDA50517B9ECE4A5": {
-    "content": "Hey",
+  "A501867D56BDF3FDB6383D946289B9DF": {
+    "content": "Rada",
     "mediaType": "",
     "mediaPath": "",
-    "sender": "254799257758@s.whatsapp.net",
+    "sender": "254704897825@s.whatsapp.net",
     "group": null,
-    "timestamp": "2025-09-23T16:04:11.242Z",
+    "timestamp": "2025-09-23T16:16:48.823Z",
     "fullMessage": {
-      "conversation": "Hey"
+      "conversation": "Rada",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "senderTimestamp": "1758607263",
+          "recipientKeyHash": "BFW3nRHj+W0ZJQ==",
+          "recipientTimestamp": "1758464429"
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": "xI3mY7mzAtBKuf7N31kx7eQ4KML+bmlQUuZ21JJ3/HA="
+      }
     }
   },
-  "0E32CE6A121D19166213FB4A86DD3AB8": {
-    "content": "Yowh",
+  "A59A91D2EC97E7494C8FD98DD9E7522F": {
+    "content": "Rada",
     "mediaType": "",
     "mediaPath": "",
-    "sender": "254799257758@s.whatsapp.net",
+    "sender": "254704897825@s.whatsapp.net",
     "group": null,
-    "timestamp": "2025-09-23T16:04:11.803Z",
+    "timestamp": "2025-09-23T16:17:10.822Z",
     "fullMessage": {
-      "conversation": "Yowh"
+      "conversation": "Rada",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "senderTimestamp": "1758607263",
+          "recipientKeyHash": "BFW3nRHj+W0ZJQ==",
+          "recipientTimestamp": "1758464429"
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": "AlyU8CUiAalAb75qw5DMmz7EXWp1HB5Lqv3AqxjEykc="
+      }
     }
   }
 }
