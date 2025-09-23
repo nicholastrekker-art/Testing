@@ -1,5 +1,7 @@
 {
   "enabled": true,
   "reactOn": true,
-  "throttleDelay": 3000
+  "throttleDelay": 3000,
+  "lastStatusView": 1758608072147,
+  "lastStatusReact": 1758608072148
 }
