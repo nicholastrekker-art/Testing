@@ -127,30 +127,37 @@ ${greeting}, *User*
     commandsList += "\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n";
 
     try {
-      // Auto-rotate between icon1.jpg and icon2.jpg on each command execution
-      const { readFileSync, existsSync } = await import('fs');
+      // Auto-rotate through all available icons in ~/icons/ directory
+      const { readFileSync, existsSync, readdirSync } = await import('fs');
       const { homedir } = await import('os');
       const iconsDir = join(homedir(), 'icons');
       
-      // Use a simple counter-based rotation (alternates on each execution)
-      // We'll use a simple random approach to simulate rotation
-      const iconNumber = Math.floor(Math.random() * 2) + 1; // Randomly choose 1 or 2
-      const iconFileName = `icon${iconNumber}.jpg`;
-      const imagePath = join(iconsDir, iconFileName);
-      
-      // Fallback to icon1 if the selected icon doesn't exist
-      const fallbackPath = join(iconsDir, 'icon1.jpg');
-      const finalImagePath = existsSync(imagePath) ? imagePath : fallbackPath;
-      
-      if (existsSync(finalImagePath)) {
-        console.log(`📸 [Menu] Using icon: ${iconFileName} from ${iconsDir}`);
-        await client.sendMessage(from, {
-          image: { url: finalImagePath },
-          caption: responseMessage + commandsList
-        });
+      // Check if icons directory exists
+      if (existsSync(iconsDir)) {
+        // Get all icon files in the directory (supports .jpg, .jpeg, .png)
+        const iconFiles = readdirSync(iconsDir).filter(file => 
+          file.toLowerCase().match(/\.(jpg|jpeg|png)$/i)
+        ).sort(); // Sort to ensure consistent order
+        
+        if (iconFiles.length > 0) {
+          // Randomly select one of the available icons
+          const randomIndex = Math.floor(Math.random() * iconFiles.length);
+          const selectedIcon = iconFiles[randomIndex];
+          const imagePath = join(iconsDir, selectedIcon);
+          
+          console.log(`📸 [Menu] Using icon: ${selectedIcon} (${randomIndex + 1}/${iconFiles.length}) from ${iconsDir}`);
+          console.log(`📂 [Menu] Available icons: ${iconFiles.join(', ')}`);
+          
+          await client.sendMessage(from, {
+            image: { url: imagePath },
+            caption: responseMessage + commandsList
+          });
+        } else {
+          console.log(`⚠️ [Menu] No valid image files found in ${iconsDir}, using text-only menu`);
+          await respond(responseMessage + commandsList);
+        }
       } else {
-        console.log(`⚠️ [Menu] No icons found in ${iconsDir}, using text-only menu`);
-        // Fallback to text-only if no images found
+        console.log(`⚠️ [Menu] Icons directory ${iconsDir} doesn't exist, using text-only menu`);
         await respond(responseMessage + commandsList);
       }
     } catch (error) {
