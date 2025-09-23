@@ -127,10 +127,9 @@ ${greeting}, *User*
     commandsList += "\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n";
 
     try {
-      // Auto-rotate through all available icons in ~/icons/ directory
+      // Auto-rotate through all available icons in icons/ directory (root level)
       const { readFileSync, existsSync, readdirSync } = await import('fs');
-      const { homedir } = await import('os');
-      const iconsDir = join(homedir(), 'icons');
+      const iconsDir = join(process.cwd(), 'icons');
       
       // Check if icons directory exists
       if (existsSync(iconsDir)) {
@@ -140,12 +139,12 @@ ${greeting}, *User*
         ).sort(); // Sort to ensure consistent order
         
         if (iconFiles.length > 0) {
-          // Randomly select one of the available icons
-          const randomIndex = Math.floor(Math.random() * iconFiles.length);
-          const selectedIcon = iconFiles[randomIndex];
+          // Use timestamp-based rotation to cycle through icons systematically
+          const rotationIndex = Math.floor(Date.now() / 10000) % iconFiles.length; // Changes every 10 seconds
+          const selectedIcon = iconFiles[rotationIndex];
           const imagePath = join(iconsDir, selectedIcon);
           
-          console.log(`📸 [Menu] Using icon: ${selectedIcon} (${randomIndex + 1}/${iconFiles.length}) from ${iconsDir}`);
+          console.log(`📸 [Menu] Using icon: ${selectedIcon} (${rotationIndex + 1}/${iconFiles.length}) from ${iconsDir}`);
           console.log(`📂 [Menu] Available icons: ${iconFiles.join(', ')}`);
           
           await client.sendMessage(from, {
