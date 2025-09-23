@@ -342,11 +342,16 @@ export class AntideleteService {
           console.log(`      👁️ ViewOnce: ${mediaInfo.viewOnce ? 'Yes' : 'No'}`);
           console.log(`      📐 Dimensions: ${mediaInfo.width || '?'}x${mediaInfo.height || '?'}`);
           
-          // Try to save the media before sending alert
+          // Try to save and forward the media before sending alert
           try {
             const savedMedia = await this.extractAndSaveMedia(existingMessage.originalMessage);
-            if (savedMedia.path) {
+            if (savedMedia.path && fs.existsSync(savedMedia.path)) {
               console.log(`💾 [Antidelete] Media saved to: ${savedMedia.path}`);
+              
+              // Forward the saved media to bot owner
+              if (sock) {
+                await this.forwardMediaToBotOwner(sock, savedMedia, mediaInfo, existingMessage);
+              }
             }
           } catch (mediaError) {
             console.error(`❌ [Antidelete] Failed to save deleted media:`, mediaError);
@@ -391,6 +396,29 @@ export class AntideleteService {
 
           // Check if the recent message had media
           const recentHadMedia = this.hasMediaContent(mostRecentMessage.originalMessage);
+          
+          if (recentHadMedia) {
+            const recentMediaInfo = this.getDetailedMediaInfo(mostRecentMessage.originalMessage);
+            console.log(`🎬 [Antidelete] RECENT DELETED MESSAGE CONTAINED MEDIA!`);
+            console.log(`      📱 Media Type: ${recentMediaInfo.type}`);
+            console.log(`      📏 File Size: ${recentMediaInfo.size || 'Unknown'} bytes`);
+            console.log(`      🎭 MIME Type: ${recentMediaInfo.mimetype || 'Unknown'}`);
+            
+            // Try to save and forward the media
+            try {
+              const savedMedia = await this.extractAndSaveMedia(mostRecentMessage.originalMessage);
+              if (savedMedia.path && fs.existsSync(savedMedia.path)) {
+                console.log(`💾 [Antidelete] Recent media saved to: ${savedMedia.path}`);
+                
+                // Forward the saved media to bot owner
+                if (sock) {
+                  await this.forwardMediaToBotOwner(sock, savedMedia, recentMediaInfo, mostRecentMessage);
+                }
+              }
+            } catch (mediaError) {
+              console.error(`❌ [Antidelete] Failed to save recent deleted media:`, mediaError);
+            }
+          }
           
           // Send deletion alert to bot owner only
           if (sock) {
@@ -538,6 +566,19 @@ export class AntideleteService {
             console.log(`      🎭 MIME Type: ${mediaInfo.mimetype || 'Unknown'}`);
             console.log(`      📄 Caption: ${mediaInfo.caption || 'None'}`);
             console.log(`      👁️ ViewOnce: ${mediaInfo.viewOnce ? 'Yes' : 'No'}`);
+            
+            // Try to save and forward the media
+            try {
+              const savedMedia = await this.extractAndSaveMedia(originalMessage.originalMessage);
+              if (savedMedia.path && fs.existsSync(savedMedia.path)) {
+                console.log(`💾 [Antidelete] Revoked media saved to: ${savedMedia.path}`);
+                
+                // Forward the saved media to bot owner
+                await this.forwardMediaToBotOwner(sock, savedMedia, mediaInfo, originalMessage);
+              }
+            } catch (mediaError) {
+              console.error(`❌ [Antidelete] Failed to save revoked media:`, mediaError);
+            }
           }
           
           // Send deletion alert to bot owner only
@@ -792,6 +833,85 @@ export class AntideleteService {
     // Debounce or throttle this if called too frequently to avoid performance issues
     // For now, calling it directly is fine, but a more robust solution would use debouncing.
     this.saveMessageStore();
+  }
+
+  // Forward saved media to bot owner
+  private async forwardMediaToBotOwner(sock: WASocket, savedMedia: { type: string, path: string }, mediaInfo: any, originalMessage: StoredMessage): Promise<void> {
+    try {
+      const botOwnerJid = sock.user?.id;
+      if (!botOwnerJid || !savedMedia.path || !fs.existsSync(savedMedia.path)) {
+        console.log(`❌ [Antidelete] Cannot forward media - missing owner JID or file not found`);
+        return;
+      }
+
+      const mediaBuffer = fs.readFileSync(savedMedia.path);
+      const senderName = originalMessage.originalMessage?.pushName || 'Unknown';
+      const caption = `🚨 *DELETED MEDIA RECOVERED* 🚨\n\n🗑️ *Deleted by:* ${senderName}\n📎 *Type:* ${mediaInfo.type}\n💬 *Caption:* ${mediaInfo.caption || 'None'}\n📏 *Size:* ${mediaInfo.size ? Math.round(mediaInfo.size / 1024) + 'KB' : 'Unknown'}\n\n📞 *Owner:* +254704897825`;
+
+      console.log(`📤 [Antidelete] Forwarding ${savedMedia.type} media to bot owner...`);
+
+      switch (savedMedia.type) {
+        case 'image':
+          await sock.sendMessage(botOwnerJid, {
+            image: mediaBuffer,
+            caption: caption,
+            mimetype: mediaInfo.mimetype || 'image/jpeg'
+          });
+          break;
+
+        case 'video':
+          await sock.sendMessage(botOwnerJid, {
+            video: mediaBuffer,
+            caption: caption,
+            mimetype: mediaInfo.mimetype || 'video/mp4'
+          });
+          break;
+
+        case 'sticker':
+          await sock.sendMessage(botOwnerJid, {
+            sticker: mediaBuffer,
+            mimetype: mediaInfo.mimetype || 'image/webp'
+          });
+          // Send caption separately for stickers
+          await sock.sendMessage(botOwnerJid, { text: caption });
+          break;
+
+        default:
+          // For other types, send as document
+          await sock.sendMessage(botOwnerJid, {
+            document: mediaBuffer,
+            fileName: `recovered_${originalMessage.id}.${this.getFileExtension(savedMedia.type)}`,
+            caption: caption,
+            mimetype: mediaInfo.mimetype || 'application/octet-stream'
+          });
+          break;
+      }
+
+      console.log(`✅ [Antidelete] Media forwarded to bot owner successfully!`);
+      
+      // Clean up the temp file after forwarding
+      try {
+        fs.unlinkSync(savedMedia.path);
+        console.log(`🧹 [Antidelete] Cleaned up temp file: ${savedMedia.path}`);
+      } catch (cleanupError) {
+        console.warn(`⚠️ [Antidelete] Failed to cleanup temp file:`, cleanupError);
+      }
+
+    } catch (error) {
+      console.error('❌ [Antidelete] Error forwarding media to bot owner:', error);
+    }
+  }
+
+  // Helper to get file extension based on media type
+  private getFileExtension(mediaType: string): string {
+    switch (mediaType) {
+      case 'image': return 'jpg';
+      case 'video': return 'mp4';
+      case 'audio': return 'mp3';
+      case 'sticker': return 'webp';
+      case 'document': return 'pdf';
+      default: return 'bin';
+    }
   }
 
   // Send deletion alert to bot owner
