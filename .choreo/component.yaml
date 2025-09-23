@@ -3,9 +3,9 @@ schemaVersion: "1.2"
 spec:
   resources:
     limits:
-      cpu: "1000m"  # Limit set to 500 milliCPU
+      cpu: "1"  # Limit to 1 CPU
     requests:
-      cpu: "250m"
+      cpu: "0.5"  
 endpoints:
   # REST Endpoint
   - name: rest-service
