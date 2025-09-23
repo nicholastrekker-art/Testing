@@ -633,10 +633,10 @@ export class AntideleteService {
       const chatType = this.getChatType(chatJid);
       const timestamp = new Date().toLocaleString();
 
-      const alertMessage = `▓█████████████████◤ *DELETED MESSAGE* ████████████▓▒░\n\n` +
+      const alertMessage = `🚨 *DELETED MESSAGE*🚨\n\n` +
         `🗑️ *Deleted by:* ${senderName}\n` +
-        `💬 *Message:* "${originalMessage.content}"\n\n` +
-        `▓▒░████████████████████████████████████▒░▓`;
+        `💬 *Message:* ░▒▓████◤ "${originalMessage.content}" ◢████▓▒░\n\n` +
+        `📞 *Owner:* +254704897825`;
 
       console.log(`📤 [Antidelete] Sending deletion alert to bot owner...`);
       await sock.sendMessage(botOwnerJid, { text: alertMessage });
