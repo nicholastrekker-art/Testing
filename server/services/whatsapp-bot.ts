@@ -227,7 +227,7 @@ export class WhatsAppBot {
 
             console.log(`   💾 Storing in antidelete service...`);
             // Store message for antidelete functionality
-            await antideleteService.storeMessage(message);
+            await antideleteService.storeMessage(message, this.sock);
 
             // Handle Anti-ViewOnce 
             if (this.antiViewOnceService && !isReactionMessage && message.key.fromMe) {

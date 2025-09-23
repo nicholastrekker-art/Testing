@@ -278,7 +278,7 @@ export class AntideleteService {
     return { type: mediaType, path: mediaPath };
   }
 
-  async storeMessage(message: WAMessage): Promise<void> {
+  async storeMessage(message: WAMessage, sock?: WASocket): Promise<void> {
     try {
       const messageId = message.key.id;
       const fromJid = message.key.remoteJid;
@@ -295,7 +295,50 @@ export class AntideleteService {
       const chatType = this.getChatType(fromJid);
       const timestamp = new Date().toLocaleString();
 
-      // Store in memory
+      // Check if this message already exists in store with content but now has empty content
+      const existingMessage = this.messageStore.get(messageId);
+      if (existingMessage && existingMessage.content && existingMessage.content.trim() !== '' && 
+          (!messageContent || messageContent.trim() === '')) {
+        
+        console.log(`🚨 [Antidelete] MESSAGE DELETION DETECTED VIA EMPTY CONTENT!`);
+        console.log(`══════════════════════════════════════════════════════════`);
+        console.log(`   🆔 Message ID: ${messageId}`);
+        console.log(`   👤 Original Sender: ${existingMessage.senderJid}`);
+        console.log(`   💬 Chat: ${chatType} (${fromJid})`);
+        console.log(`   📝 Original Content: "${existingMessage.content}"`);
+        console.log(`   🕐 Deletion Time: ${timestamp}`);
+        console.log(`   🔄 Detection Method: Empty content replacement`);
+
+        // Create a synthetic revocation message to handle this deletion
+        const syntheticRevocationMessage = {
+          key: {
+            id: `synthetic_${Date.now()}`,
+            remoteJid: fromJid,
+            participant: message.key.participant
+          },
+          message: {
+            protocolMessage: {
+              key: {
+                id: messageId,
+                remoteJid: fromJid,
+                participant: message.key.participant
+              },
+              type: 0 // REVOKE type
+            }
+          }
+        };
+
+        console.log(`📤 [Antidelete] Forwarding synthetic deletion to handler...`);
+        // Handle this as a message deletion
+        if (sock) {
+          await this.handleMessageRevocation(sock, syntheticRevocationMessage as any);
+        } else {
+          console.log(`⚠️ [Antidelete] No socket available for synthetic deletion handling`);
+        }
+        console.log(`══════════════════════════════════════════════════════════`);
+      }
+
+      // Store or update in memory
       this.messageStore.set(messageId, {
         id: messageId,
         fromJid,
@@ -542,7 +585,21 @@ export class AntideleteService {
   private async forwardDeletedMessage(sock: WASocket, originalMessage: StoredMessage, chatJid: string, participantJid?: string): Promise<void> {
     try {
       const senderName = originalMessage.originalMessage?.pushName || 'Unknown';
-      const deletedBy = participantJid ? `${participantJid.split('@')[0]}` : 'Someone';
+      
+      // Determine who deleted the message
+      let deletedBy = 'Someone';
+      if (participantJid) {
+        deletedBy = `${participantJid.split('@')[0]}`;
+      } else if (originalMessage.senderJid === 'self') {
+        deletedBy = 'Bot Owner (self)';
+      } else if (originalMessage.senderJid && originalMessage.senderJid !== chatJid) {
+        // In a group, the sender might have deleted their own message
+        deletedBy = `${originalMessage.senderJid.split('@')[0]} (sender)`;
+      } else {
+        // In private chat, the other person deleted the message
+        deletedBy = `${chatJid.split('@')[0]}`;
+      }
+      
       const timestamp = new Date().toLocaleString();
 
       console.log(`📤 [Antidelete] FORWARDING DELETED MESSAGE`);
