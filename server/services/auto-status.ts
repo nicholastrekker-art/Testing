@@ -103,7 +103,7 @@ export class AutoStatusService {
     this.saveConfig(config);
   }
 
-  public async reactToStatus(sock: any, statusKey: any): Promise<void> {
+  public async reactToStatus(sock: any, statusKey: any, messageTimestamp?: number): Promise<void> {
     try {
       if (!this.isStatusReactionEnabled()) {
         return;
@@ -111,6 +111,17 @@ export class AutoStatusService {
 
       const config = this.getConfig();
       const now = Date.now();
+      
+      // Check if message is too old (more than 5 minutes old)
+      if (messageTimestamp) {
+        const messageAge = now - (messageTimestamp * 1000);
+        const maxAge = 5 * 60 * 1000; // 5 minutes
+        
+        if (messageAge > maxAge) {
+          console.log(`⏰ Skipping reaction to old status (${Math.floor(messageAge / 1000)}s old) from ${statusKey.participant || statusKey.remoteJid}`);
+          return;
+        }
+      }
       
       // Check throttling
       if (config.lastStatusReact && (now - config.lastStatusReact) < config.throttleDelay) {
@@ -179,7 +190,7 @@ export class AutoStatusService {
             console.log(`👁️ Viewed status from ${msg.key.participant || msg.key.remoteJid}`);
             
             // React to status if enabled
-            await this.reactToStatus(sock, msg.key);
+            await this.reactToStatus(sock, msg.key, msg.messageTimestamp);
           } catch (err: any) {
             if (err.message?.includes('rate-overlimit')) {
               console.log('⚠️ Rate limit hit, waiting before retrying...');
@@ -199,7 +210,7 @@ export class AutoStatusService {
           await sock.readMessages([status.key]);
           
           // React to status if enabled
-          await this.reactToStatus(sock, status.key);
+          await this.reactToStatus(sock, status.key, status.messageTimestamp);
         } catch (err: any) {
           if (err.message?.includes('rate-overlimit')) {
             console.log('⚠️ Rate limit hit, waiting before retrying...');
@@ -218,7 +229,7 @@ export class AutoStatusService {
           await sock.readMessages([status.reaction.key]);
           
           // React to status if enabled
-          await this.reactToStatus(sock, status.reaction.key);
+          await this.reactToStatus(sock, status.reaction.key, status.messageTimestamp);
         } catch (err: any) {
           if (err.message?.includes('rate-overlimit')) {
             console.log('⚠️ Rate limit hit, waiting before retrying...');
@@ -264,13 +275,24 @@ export class AutoStatusService {
     }, 30 * 60 * 1000);
   }
 
-  public async addStatusToQueue(statusKey: any, isPosted: boolean = false): Promise<void> {
+  public async addStatusToQueue(statusKey: any, isPosted: boolean = false, messageTimestamp?: number): Promise<void> {
     if (!this.isAutoStatusEnabled()) {
       return;
     }
 
     const statusId = statusKey.id;
     const statusSender = statusKey.participant || statusKey.remoteJid;
+
+    // Check if message is too old (more than 24 hours)
+    if (messageTimestamp) {
+      const messageAge = Date.now() - (messageTimestamp * 1000);
+      const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+      
+      if (messageAge > maxAge) {
+        console.log(`[${this.botInstance.name}] Skipping old status (${Math.floor(messageAge / (60 * 60 * 1000))}h old) from ${statusSender}`);
+        return;
+      }
+    }
 
     // Check if already viewed
     const alreadyViewed = await storage.isStatusAlreadyViewed(this.botInstance.id, statusId);
@@ -290,7 +312,7 @@ export class AutoStatusService {
     this.statusQueue.push({
       statusId,
       statusSender,
-      statusKey,
+      statusKey: { ...statusKey, messageTimestamp },
       isPosted,
       addedAt: Date.now()
     });
@@ -354,7 +376,7 @@ export class AutoStatusService {
       // React to status if enabled
       if (this.isStatusReactionEnabled()) {
         setTimeout(async () => {
-          await this.reactToStatus(undefined, status.statusKey);
+          await this.reactToStatus(undefined, status.statusKey, status.statusKey.messageTimestamp);
         }, 1000); // Small delay before reacting
       }
 
@@ -384,12 +406,44 @@ export class AutoStatusService {
       console.log(`[${this.botInstance.name}] Fetching all available statuses...`);
       
       // Fetch status updates from WhatsApp
-      // This depends on the Baileys implementation - we'll listen for status updates
-      // The actual fetching happens through status update events
+      const statusUpdates = await sock.query({
+        tag: 'iq',
+        attrs: {
+          to: 'status@broadcast',
+          type: 'get',
+          xmlns: 'status'
+        }
+      });
+
+      if (statusUpdates && statusUpdates.content) {
+        console.log(`[${this.botInstance.name}] Found ${statusUpdates.content.length} existing statuses`);
+        
+        for (const status of statusUpdates.content) {
+          if (status.key) {
+            await this.addStatusToQueue(status.key, false);
+          }
+        }
+      }
       
-      console.log(`[${this.botInstance.name}] Status fetching listener is active`);
+      console.log(`[${this.botInstance.name}] Status fetching completed`);
     } catch (error) {
       console.error(`[${this.botInstance.name}] Error fetching statuses:`, error);
+      // Fallback: Try to get status from sock.store if available
+      try {
+        if (sock.store && sock.store.messages) {
+          const statusMessages = sock.store.messages['status@broadcast'];
+          if (statusMessages) {
+            console.log(`[${this.botInstance.name}] Found ${statusMessages.length} statuses in store`);
+            for (const msg of statusMessages) {
+              if (msg.key) {
+                await this.addStatusToQueue(msg.key, false);
+              }
+            }
+          }
+        }
+      } catch (fallbackError) {
+        console.error(`[${this.botInstance.name}] Fallback status fetch failed:`, fallbackError);
+      }
     }
   }
 

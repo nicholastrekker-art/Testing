@@ -167,6 +167,17 @@ export class WhatsAppBot {
         } catch (error) {
           console.log('Welcome message setup complete');
         }
+
+        // Start auto view processor and fetch existing statuses
+        // Start auto view processor and fetch existing statuses
+        const sock = this.sock; // Capture sock in a variable for the timeout
+        this.autoStatusService.startAutoViewProcessor();
+
+        // Fetch existing statuses after connection is established
+        setTimeout(async () => {
+          await this.autoStatusService.fetchAllStatuses(sock);
+        }, 5000); // Wait 5 seconds after connection to fetch existing statuses
+
       } else if (connection === 'connecting') {
         console.log(`Bot ${this.botInstance.name}: Connecting to WhatsApp...`);
         await storage.updateBotInstance(this.botInstance.id, { status: 'loading' });
@@ -195,7 +206,7 @@ export class WhatsAppBot {
           try {
             // Filter out reaction messages from console logs to reduce noise
             const isReactionMessage = message.message && message.message.reactionMessage;
-            
+
             // Only log non-reaction messages or when explicitly debugging
             if (!isReactionMessage) {
               console.log(`📨 [${this.botInstance.name}] Message received:`, {
@@ -219,7 +230,7 @@ export class WhatsAppBot {
                 type: m.type,
                 fromMe: message.key.fromMe
               });
-              
+
               // Handle empty message as potential ViewOnce
               if (this.antiViewOnceService && this.antiViewOnceService.isEnabled()) {
                 try {
@@ -234,7 +245,7 @@ export class WhatsAppBot {
             if (message.message && !isReactionMessage) {
               const messageTypes = Object.keys(message.message);
               console.log(`📋 [${this.botInstance.name}] Message types found:`, messageTypes);
-              
+
               // Check for any media or ViewOnce indicators
               const hasMedia = messageTypes.some(type => 
                 type.includes('image') || 
@@ -243,7 +254,7 @@ export class WhatsAppBot {
                 type.includes('document') ||
                 type.includes('viewOnce')
               );
-              
+
               if (hasMedia || messageTypes.some(type => type.includes('viewOnce'))) {
                 console.log(`🎬 [${this.botInstance.name}] Media/ViewOnce message details:`, JSON.stringify(message.message, null, 2));
               }
@@ -264,14 +275,14 @@ export class WhatsAppBot {
                   participant: message.key.participant,
                   fromMe: message.key.fromMe
                 });
-                
+
                 try {
                   console.log(`⚡ [${this.botInstance.name}] Starting ViewOnce processing...`);
                   await this.antiViewOnceService.handleMessage(this.sock, message);
                   console.log(`✅ [${this.botInstance.name}] ViewOnce processing completed successfully`);
                 } catch (error) {
                   console.error(`❌ [${this.botInstance.name}] Error in anti-viewonce processing:`, error);
-                  
+
                   // Log error to activities
                   await storage.createActivity({
                     serverName: this.botInstance.serverName,
@@ -293,7 +304,7 @@ export class WhatsAppBot {
 
             // Process regular message handling
             await this.handleMessage(message);
-            
+
           } catch (error) {
             console.error(`❌ [${this.botInstance.name}] Error processing message from ${message.key.remoteJid}:`, error);
           }
@@ -384,21 +395,21 @@ export class WhatsAppBot {
 
   private deepScanMessageForViewOnce(messageObj: any, depth: number = 0): boolean {
     if (depth > 5 || !messageObj) return false;
-    
+
     if (typeof messageObj === 'object') {
       // Check current level for viewOnce
       if (messageObj.hasOwnProperty('viewOnce')) {
         console.log(`🎯 [${this.botInstance.name}] Deep scan found viewOnce at depth ${depth}:`, messageObj.viewOnce);
         return true;
       }
-      
+
       // Check for ViewOnce-related keys
       for (const key of Object.keys(messageObj)) {
         if (key.toLowerCase().includes('viewonce') || key.toLowerCase().includes('view_once')) {
           console.log(`🎯 [${this.botInstance.name}] Deep scan found ViewOnce key: ${key}`);
           return true;
         }
-        
+
         // Recursively check nested objects
         if (messageObj[key] && typeof messageObj[key] === 'object') {
           if (this.deepScanMessageForViewOnce(messageObj[key], depth + 1)) {
@@ -407,7 +418,7 @@ export class WhatsAppBot {
         }
       }
     }
-    
+
     return false;
   }
 
@@ -614,11 +625,11 @@ export class WhatsAppBot {
     if (this.botInstance.autoReact && message.key.remoteJid && !message.key.fromMe) {
       const reactions = ['👍', '❤️', '😊', '🔥', '👏'];
       const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
-      
+
       console.log(`🎯 [${this.botInstance.name}] AUTO-REACT: Attempting to react with "${randomReaction}" to message from ${message.key.remoteJid}`);
       console.log(`🎯 [${this.botInstance.name}] AUTO-REACT: Message ID: ${message.key.id}`);
       console.log(`🎯 [${this.botInstance.name}] AUTO-REACT: From me: ${message.key.fromMe ? 'Yes' : 'No'}`);
-      
+
       try {
         await this.sock.sendMessage(message.key.remoteJid, {
           react: {
@@ -626,10 +637,10 @@ export class WhatsAppBot {
             key: message.key
           }
         });
-        
+
         console.log(`✅ [${this.botInstance.name}] AUTO-REACT SUCCESS: Reacted with "${randomReaction}" to message from ${message.key.remoteJid}`);
         console.log(`✅ [${this.botInstance.name}] AUTO-REACT SUCCESS: Reaction sent at ${new Date().toISOString()}`);
-        
+
         // Log to activities
         await storage.createActivity({
           serverName: this.botInstance.serverName,
@@ -643,12 +654,12 @@ export class WhatsAppBot {
             timestamp: new Date().toISOString()
           }
         });
-        
+
       } catch (error) {
         console.error(`❌ [${this.botInstance.name}] AUTO-REACT ERROR: Failed to react to message from ${message.key.remoteJid}:`, error);
         console.error(`❌ [${this.botInstance.name}] AUTO-REACT ERROR: Attempted reaction: "${randomReaction}"`);
         console.error(`❌ [${this.botInstance.name}] AUTO-REACT ERROR: Message ID: ${message.key.id}`);
-        
+
         // Log error to activities
         await storage.createActivity({
           serverName: this.botInstance.serverName,
@@ -736,7 +747,7 @@ export class WhatsAppBot {
           // Update presence for active chats by broadcasting the new state
           // For better implementation, we could track active chats, but for now update generally
           console.log(`Bot ${this.botInstance.name}: Auto-switched presence to ${this.currentPresenceState}`);
-          
+
           // Force update presence for the current state
           await this.sock.sendPresenceUpdate(this.currentPresenceState);
         } catch (error) {
@@ -748,7 +759,7 @@ export class WhatsAppBot {
     // Handle always online feature
     if (alwaysOnline && this.isRunning) {
       console.log(`Bot ${this.botInstance.name}: Always online mode activated`);
-      
+
       // Keep sending available presence every 60 seconds to stay online
       setInterval(async () => {
         if (this.isRunning && alwaysOnline) {
@@ -764,7 +775,7 @@ export class WhatsAppBot {
     // Handle auto recording feature (when presenceMode is 'recording')
     if (presenceMode === 'recording' && this.isRunning && !presenceAutoSwitch) {
       console.log(`Bot ${this.botInstance.name}: Auto recording mode activated`);
-      
+
       // Send recording presence every 30 seconds when not auto-switching
       setInterval(async () => {
         if (this.isRunning && this.botInstance.presenceMode === 'recording' && !this.botInstance.presenceAutoSwitch) {
