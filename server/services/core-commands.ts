@@ -4,6 +4,7 @@ import { getAntiViewOnceService } from './antiviewonce.js';
 import moment from 'moment-timezone';
 import os from 'os';
 import axios from 'axios';
+import { join } from 'path';
 
 // Utility functions from the original commands
 const toFancyUppercaseFont = (text: string) => {
@@ -72,7 +73,7 @@ commandRegistry.register({
   description: 'Show bot menu with all commands',
   category: 'SYSTEM',
   handler: async (context: CommandContext) => {
-    const { respond, client, message } = context;
+    const { respond, client, message, from } = context;
 
     // Get commands from both registry and database
     const registryCommands = commandRegistry.getAllCommands();
@@ -125,7 +126,25 @@ ${greeting}, *User*
 
     commandsList += "\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n";
 
-    await respond(responseMessage + commandsList);
+    try {
+      // Send the menu with the avatar image on top
+      const imagePath = join(process.cwd(), 'attached_assets', 'menu-avatar.jpg');
+      const { readFileSync, existsSync } = await import('fs');
+      
+      if (existsSync(imagePath)) {
+        await client.sendMessage(from, {
+          image: { url: imagePath },
+          caption: responseMessage + commandsList
+        });
+      } else {
+        // Fallback to text-only if image not found
+        await respond(responseMessage + commandsList);
+      }
+    } catch (error) {
+      console.error('Error sending menu with image:', error);
+      // Fallback to text-only menu
+      await respond(responseMessage + commandsList);
+    }
   }
 });
 

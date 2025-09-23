@@ -524,11 +524,11 @@ export class WhatsAppBot {
 
   private async handleCommand(message: WAMessage, commandText: string) {
     const commandPrefix = process.env.BOT_PREFIX || '.';
-    const args = commandText.substring(commandPrefix.length).split(' ');
+    const args = commandText.substring(commandPrefix.length).trim().split(' ');
     const commandName = args[0].toLowerCase();
     const commandArgs = args.slice(1);
 
-    console.log(`Bot ${this.botInstance.name}: Processing command .${commandName} with args:`, commandArgs);
+    console.log(`Bot ${this.botInstance.name}: Processing command ${commandName} with args:`, commandArgs);
 
     // Check our command registry first
     const registeredCommand = commandRegistry.get(commandName);
