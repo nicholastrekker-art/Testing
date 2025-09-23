@@ -6,13 +6,13 @@ import { writeFile } from 'fs/promises';
 import type { WASocket, WAMessage } from '@whiskeysockets/baileys';
 
 interface StoredMessage {
+  id: string;
+  fromJid: string;
+  senderJid: string;
   content: string;
-  mediaType: string;
-  mediaPath: string;
-  sender: string;
-  group: string | null;
-  timestamp: string;
-  fullMessage: any; // Store the full message object for recovery attempts
+  type: string;
+  timestamp: number;
+  originalMessage: WAMessage;
 }
 
 interface AntideleteConfig {
@@ -39,7 +39,7 @@ export class AntideleteService {
 
     // Clear stored messages from previous sessions
     this.loadMessageStore();
-    
+
     // Also clear any old temp media files from previous sessions
     this.clearTempMedia();
 
@@ -281,49 +281,82 @@ export class AntideleteService {
   async storeMessage(message: WAMessage): Promise<void> {
     try {
       const messageId = message.key.id;
-      if (!messageId || this.processedMessages.has(messageId)) return;
+      const fromJid = message.key.remoteJid;
+      const senderJid = message.key.participant || message.key.fromMe ? 'self' : fromJid;
 
-      // Skip storing reaction messages to reduce noise
-      if (message.message?.reactionMessage) return;
+      if (!messageId || !fromJid) {
+        console.log(`⚠️ [Antidelete] Skipping message - Missing ID or JID | ID: ${messageId} | JID: ${fromJid}`);
+        return;
+      }
 
-      this.processedMessages.add(messageId);
+      // Extract message content
+      const messageContent = this.extractMessageContent(message);
+      const messageType = this.getMessageType(message);
+      const chatType = this.getChatType(fromJid);
+      const timestamp = new Date().toLocaleString();
 
-      const messageText = this.extractMessageText(message.message);
-      let mediaType = '';
-      let mediaPath = '';
+      // Store in memory
+      this.messageStore.set(messageId, {
+        id: messageId,
+        fromJid,
+        senderJid,
+        content: messageContent,
+        type: messageType,
+        timestamp: Date.now(),
+        originalMessage: message
+      });
 
-      // Check for media content and save it
+      // Comprehensive logging
+      console.log(`📨 [Antidelete] INCOMING MESSAGE`);
+      console.log(`   📍 Message ID: ${messageId}`);
+      console.log(`   👤 From: ${message.pushName || 'Unknown'} (${senderJid})`);
+      console.log(`   💬 Chat: ${chatType} (${fromJid})`);
+      console.log(`   📝 Type: ${messageType}`);
+      console.log(`   🕐 Time: ${timestamp}`);
+      console.log(`   📄 Content: ${messageContent.substring(0, 100)}${messageContent.length > 100 ? '...' : ''}`);
+      console.log(`   🔄 From Me: ${message.key.fromMe ? 'Yes' : 'No'}`);
+      console.log(`   📊 Store Size: ${this.messageStore.size} messages`);
+
+      // Log message structure for debugging
       if (message.message) {
-        const mediaInfo = await this.extractAndSaveMedia(message);
-        mediaType = mediaInfo.type;
-        mediaPath = mediaInfo.path;
+        const messageKeys = Object.keys(message.message);
+        console.log(`   🔧 Message Structure: [${messageKeys.join(', ')}]`);
       }
 
-      const messageData: StoredMessage = {
-        content: messageText,
-        mediaType,
-        mediaPath,
-        sender: message.key.participant || message.key.remoteJid || '',
-        group: message.key.remoteJid?.includes('@g.us') ? message.key.remoteJid : null,
-        timestamp: new Date().toISOString(),
-        fullMessage: message.message // Store the full message object for recovery attempts
-      };
-
-      this.messageStore.set(messageId, messageData);
-      this.saveMessageStore();
-
-      // Enhanced logging for antidelete
-      const senderInfo = message.key.participant ? 
-        `${message.pushName || 'Unknown'} (${message.key.participant.split('@')[0]})` : 
-        `${message.pushName || 'Unknown'} (${message.key.remoteJid?.split('@')[0]})`;
-      
-      const chatType = message.key.remoteJid?.includes('@g.us') ? 'Group' : 'Private';
-      
-      if (messageText || mediaType) {
-        console.log(`💾 [Antidelete] Message stored - From: ${senderInfo} | Chat: ${chatType} | Type: ${mediaType || 'text'} | Content: ${messageText ? messageText.substring(0, 50) + '...' : 'Media only'}`);
+      // Log reactions if present
+      if (message.message?.reactionMessage) {
+        console.log(`   😀 Reaction: ${message.message.reactionMessage.text} to message ${message.message.reactionMessage.key?.id}`);
       }
+
+      // Log quoted messages
+      if (message.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+        console.log(`   💭 Contains quoted message`);
+      }
+
+      // Log media info
+      if (this.hasMediaContent(message)) {
+        console.log(`   📎 Contains media content`);
+      }
+
+      console.log(`   ✅ Successfully stored message ${messageId}`);
+      console.log(`─────────────────────────────────────────────────────────`);
+
+      // Cleanup old messages (keep last 1000)
+      if (this.messageStore.size > 1000) {
+        const oldestKey = this.messageStore.keys().next().value;
+        this.messageStore.delete(oldestKey);
+        console.log(`🧹 [Antidelete] Cleaned up oldest message: ${oldestKey}`);
+      }
+
+      // Persist to file periodically
+      this.saveToFile();
     } catch (error) {
       console.error('❌ [Antidelete] Error storing message:', error);
+      console.error('❌ [Antidelete] Error details:', {
+        messageId: message.key?.id,
+        fromJid: message.key?.remoteJid,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   }
 
@@ -334,136 +367,216 @@ export class AntideleteService {
 
   async handleMessageRevocation(sock: WASocket, revocationMessage: WAMessage): Promise<void> {
     try {
-      const config = this.loadAntideleteConfig();
-      if (!config.enabled) {
-        console.log(`🔒 [Antidelete] Service disabled - ignoring deletion`);
+      const revokedMessageId = revocationMessage.message?.protocolMessage?.key?.id;
+      const revokerJid = revocationMessage.key?.remoteJid;
+      const participantJid = revocationMessage.key?.participant;
+      const timestamp = new Date().toLocaleString();
+
+      console.log(`🚨 [Antidelete] MESSAGE REVOCATION DETECTED!`);
+      console.log(`══════════════════════════════════════════════════════════`);
+      console.log(`   🆔 Revocation Message ID: ${revocationMessage.key?.id}`);
+      console.log(`   🎯 Target Message ID: ${revokedMessageId}`);
+      console.log(`   👤 Revoked by: ${participantJid || revokerJid}`);
+      console.log(`   💬 Chat: ${this.getChatType(revokerJid)} (${revokerJid})`);
+      console.log(`   🕐 Revocation Time: ${timestamp}`);
+      console.log(`   📊 Protocol Type: ${revocationMessage.message?.protocolMessage?.type}`);
+
+      if (!revokedMessageId || !revokerJid) {
+        console.log(`❌ [Antidelete] Invalid revocation - Missing message ID or JID`);
+        console.log(`   🔧 Debug Info:`);
+        console.log(`      - Revoked Message ID: ${revokedMessageId}`);
+        console.log(`      - Revoker JID: ${revokerJid}`);
+        console.log(`      - Full revocation structure:`, JSON.stringify(revocationMessage, null, 2));
         return;
       }
 
-      if (!revocationMessage.message?.protocolMessage?.key?.id) return;
+      // Check if we have the original message
+      const originalMessage = this.messageStore.get(revokedMessageId);
 
-      const messageId = revocationMessage.message.protocolMessage.key.id;
-      const deletedBy = revocationMessage.key.participant || revocationMessage.key.remoteJid || '';
+      if (originalMessage) {
+        console.log(`✅ [Antidelete] ORIGINAL MESSAGE FOUND IN STORE!`);
+        console.log(`   📝 Original Type: ${originalMessage.type}`);
+        console.log(`   📄 Original Content: ${originalMessage.content}`);
+        console.log(`   👤 Original Sender: ${originalMessage.senderJid}`);
+        console.log(`   🕐 Original Timestamp: ${new Date(originalMessage.timestamp).toLocaleString()}`);
+        console.log(`   ⏱️ Time Since Original: ${Date.now() - originalMessage.timestamp}ms`);
 
-      // Get bot's own WhatsApp ID with better detection
-      let ownerNumber = '';
-      if (sock.user?.id) {
-        const userId = sock.user.id;
-        if (userId.includes(':')) {
-          ownerNumber = userId.split(':')[0] + '@s.whatsapp.net';
-        } else if (userId.includes('@')) {
-          ownerNumber = userId;
-        } else {
-          ownerNumber = userId + '@s.whatsapp.net';
+        // Log the restoration attempt
+        console.log(`🔄 [Antidelete] ATTEMPTING TO RESTORE DELETED MESSAGE...`);
+
+        try {
+          // Send the deleted message back to the chat
+          await this.forwardDeletedMessage(sock, originalMessage, revokerJid, participantJid);
+          console.log(`✅ [Antidelete] MESSAGE SUCCESSFULLY RESTORED!`);
+        } catch (restoreError) {
+          console.error(`❌ [Antidelete] Failed to restore message:`, restoreError);
+        }
+      } else {
+        console.log(`❌ [Antidelete] ORIGINAL MESSAGE NOT FOUND IN STORE!`);
+        console.log(`   🔍 Searched for ID: ${revokedMessageId}`);
+        console.log(`   📊 Store contains ${this.messageStore.size} messages`);
+        console.log(`   🗂️ Available message IDs: [${Array.from(this.messageStore.keys()).slice(0, 10).join(', ')}${this.messageStore.size > 10 ? '...' : ''}]`);
+
+        // Check if it might be a partial match
+        const similarIds = Array.from(this.messageStore.keys()).filter(id =>
+          id.includes(revokedMessageId.substring(0, 8)) || revokedMessageId.includes(id.substring(0, 8))
+        );
+
+        if (similarIds.length > 0) {
+          console.log(`   🔍 Similar message IDs found: [${similarIds.join(', ')}]`);
         }
       }
 
-      console.log(`🗑️ [Antidelete] Message deletion detected by ${deletedBy.split('@')[0]}`);
+      // Log server revocation request details
+      console.log(`📡 [Antidelete] SERVER REVOCATION REQUEST DETAILS:`);
+      console.log(`   🌐 Request from server: ${sock.user?.id || 'Unknown'}`);
+      console.log(`   🔧 Socket connection: ${sock.ws?.readyState === 1 ? 'Active' : 'Inactive'}`);
+      console.log(`   📊 Total stored messages: ${this.messageStore.size}`);
 
-      if (!ownerNumber || deletedBy.includes(sock.user?.id || '') || deletedBy === ownerNumber) {
-        console.log(`⚠️ [Antidelete] Ignoring deletion (bot owner deleted own message)`);
-        return;
-      }
+      console.log(`══════════════════════════════════════════════════════════`);
 
-      const original = this.getStoredMessage(messageId);
-      if (!original) {
-        console.log(`❌ [Antidelete] No backup found for deleted message ${messageId}`);
-        return;
-      }
-
-      const sender = original.sender;
-      const senderName = sender.split('@')[0];
-      const chatType = original.group ? 'group chat' : 'private chat';
-      console.log(`🔍 [Antidelete] Recovering deleted message from ${senderName} in ${chatType}`);
-      let groupName = '';
-
-      if (original.group) {
-        try {
-          const groupMetadata = await sock.groupMetadata(original.group);
-          groupName = groupMetadata.subject;
-        } catch (err) {
-          console.error('Error getting group metadata:', err);
-        }
-      }
-
-      const time = new Date().toLocaleString('en-US', {
-        timeZone: 'Africa/Nairobi',
-        hour12: true,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
+    } catch (error) {
+      console.error('❌ [Antidelete] CRITICAL ERROR handling message revocation:', error);
+      console.error('❌ [Antidelete] Full error details:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        revocationMessage: revocationMessage,
+        timestamp: new Date().toISOString()
       });
+    }
+  }
 
-      let text = `*🔰 ANTIDELETE REPORT 🔰*\n\n` +
-        `*🗑️ Deleted By:* @${deletedBy.split('@')[0]}\n` +
-        `*👤 Sender:* @${senderName}\n` +
-        `*📱 Number:* ${sender}\n` +
-        `*🕒 Time:* ${time}\n`;
+  // Helper to get message type
+  private getMessageType(message: WAMessage): string {
+    if (!message.message) return 'empty';
+    const messageKeys = Object.keys(message.message);
+    if (messageKeys.length === 1) {
+      return messageKeys[0];
+    }
+    return 'unknown';
+  }
 
-      if (groupName) {
-        text += `*👥 Group:* ${groupName}\n`;
-      }
+  // Helper to get chat type
+  private getChatType(jid: string | undefined): string {
+    if (!jid) return 'unknown';
+    return jid.includes('@g.us') ? 'Group' : 'Private';
+  }
 
-      if (original.content) {
-        text += `\n*💬 Deleted Message:*\n${original.content}`;
-      }
+  // Helper to extract message content, including media captions
+  private extractMessageContent(message: WAMessage): string {
+    if (!message.message) return '';
+    let content = '';
 
-      await sock.sendMessage(ownerNumber, {
-        text,
-        mentions: [deletedBy, sender]
-      });
+    if (message.message.conversation) {
+      content = message.message.conversation;
+    } else if (message.message.extendedTextMessage?.text) {
+      content = message.message.extendedTextMessage.text;
+    } else if (message.message.imageMessage?.caption) {
+      content = message.message.imageMessage.caption;
+    } else if (message.message.videoMessage?.caption) {
+      content = message.message.videoMessage.caption;
+    } else if (message.message.audioMessage?.caption) {
+      content = message.message.audioMessage.caption;
+    } else if (message.message.stickerMessage?.caption) {
+      content = message.message.stickerMessage.caption;
+    } else if (message.message.documentMessage?.caption) {
+      content = message.message.documentMessage.caption;
+    } else if (message.message.viewOnceMessageV2?.message?.imageMessage?.caption) {
+      content = message.message.viewOnceMessageV2.message.imageMessage.caption;
+    } else if (message.message.viewOnceMessageV2?.message?.videoMessage?.caption) {
+      content = message.message.viewOnceMessageV2.message.videoMessage.caption;
+    } else if (message.message.templateButtonReplyMessage?.selectedDisplayText) {
+      content = `[Button Reply: ${message.message.templateButtonReplyMessage.selectedDisplayText}]`;
+    } else if (message.message.interactiveMessage?.body?.text) {
+      content = `[Interactive: ${message.message.interactiveMessage.body.text}]`;
+    } else if (message.message.buttonsResponseMessage?.selectedButtonId) {
+      content = `[Button Response: ${message.message.buttonsResponseMessage.selectedButtonId}]`;
+    } else if (message.message.listResponseMessage?.title) {
+      content = `[List Response: ${message.message.listResponseMessage.title}]`;
+    }
 
-      // Media sending
-      if (original.mediaType && fs.existsSync(original.mediaPath)) {
-        const mediaOptions = {
-          caption: `*Deleted ${original.mediaType}*\nFrom: @${senderName}`,
-          mentions: [sender]
-        };
+    // Include quoted message text if available
+    if (message.message.extendedTextMessage?.contextInfo?.quotedMessage && message.message.extendedTextMessage?.contextInfo?.quotedMessage.conversation) {
+      content = `"${message.message.extendedTextMessage.contextInfo.quotedMessage.conversation}"\n${content}`;
+    }
 
-        try {
-          switch (original.mediaType) {
-            case 'image':
-              await sock.sendMessage(ownerNumber, {
-                image: { url: original.mediaPath },
-                ...mediaOptions
-              });
-              break;
-            case 'sticker':
-              await sock.sendMessage(ownerNumber, {
-                sticker: { url: original.mediaPath },
-                ...mediaOptions
-              });
-              break;
-            case 'video':
-              await sock.sendMessage(ownerNumber, {
-                video: { url: original.mediaPath },
-                ...mediaOptions
-              });
-              break;
+    return content || '';
+  }
+
+  // Helper to check if a message contains any media content
+  private hasMediaContent(message: WAMessage): boolean {
+    if (!message.message) return false;
+
+    const mediaTypes = [
+      'imageMessage', 'videoMessage', 'audioMessage', 'documentMessage',
+      'stickerMessage', 'locationMessage', 'contactMessage', 'liveLocationMessage',
+      'pollMessage', 'stickerMessage', 'viewOnceMessageV2'
+    ];
+
+    for (const type in message.message) {
+      if (mediaTypes.includes(type)) {
+        // Check specifically for media attachments within viewOnce messages
+        if (type === 'viewOnceMessageV2' && message.message[type]?.message) {
+          const viewOnceMessage = message.message[type].message;
+          const viewOnceKeys = Object.keys(viewOnceMessage);
+          if (viewOnceKeys.some(key => mediaTypes.includes(key))) {
+            return true;
           }
-        } catch (err) {
-          await sock.sendMessage(ownerNumber, {
-            text: `⚠️ Error sending media: ${(err as Error).message}`
-          });
-        }
-
-        // Cleanup
-        try {
-          fs.unlinkSync(original.mediaPath);
-          console.log(`🧹 [Antidelete] Cleaned up temporary media file`);
-        } catch (err) {
-          console.error('❌ [Antidelete] Media cleanup error:', err);
+        } else if (type !== 'viewOnceMessageV2') {
+          return true;
         }
       }
+    }
+    return false;
+  }
 
-      this.messageStore.delete(messageId);
-      console.log(`✅ [Antidelete] Successfully recovered and forwarded deleted message to bot owner`);
 
-    } catch (err) {
-      console.error('❌ [Antidelete] Error in message recovery:', err);
+  // Helper to save the message store to a file
+  private saveToFile(): void {
+    // Debounce or throttle this if called too frequently to avoid performance issues
+    // For now, calling it directly is fine, but a more robust solution would use debouncing.
+    this.saveMessageStore();
+  }
+
+  // Forward the deleted message to the bot owner
+  private async forwardDeletedMessage(sock: WASocket, originalMessage: StoredMessage, chatJid: string, participantJid?: string): Promise<void> {
+    try {
+      const senderName = originalMessage.originalMessage?.pushName || 'Unknown';
+      const deletedBy = participantJid ? `${participantJid.split('@')[0]}` : 'Someone';
+      const timestamp = new Date().toLocaleString();
+
+      console.log(`📤 [Antidelete] FORWARDING DELETED MESSAGE`);
+      console.log(`   📍 Target Chat: ${chatJid}`);
+      console.log(`   👤 Original Sender: ${senderName}`);
+      console.log(`   🗑️ Deleted By: ${deletedBy}`);
+      console.log(`   📝 Content Type: ${originalMessage.type}`);
+      console.log(`   📏 Content Length: ${originalMessage.content.length} characters`);
+
+      let restoredContent = `🚨 *DELETED MESSAGE RESTORED* 🚨\n\n`;
+      restoredContent += `👤 Originally sent by: ${senderName}\n`;
+      restoredContent += `🗑️ Deleted by: ${deletedBy}\n`;
+      restoredContent += `🕐 Original time: ${new Date(originalMessage.timestamp).toLocaleString()}\n`;
+      restoredContent += `🕐 Restored time: ${timestamp}\n`;
+      restoredContent += `📝 Content type: ${originalMessage.type}\n\n`;
+      restoredContent += `💬 Original message:\n"${originalMessage.content}"`;
+
+      console.log(`📨 [Antidelete] Sending restoration message...`);
+      await sock.sendMessage(chatJid, { text: restoredContent });
+
+      console.log(`✅ [Antidelete] MESSAGE RESTORATION SUCCESSFUL!`);
+      console.log(`   📤 Sent to: ${this.getChatType(chatJid)}`);
+      console.log(`   📊 Message length: ${restoredContent.length} characters`);
+      console.log(`   🎯 Restoration ID: ${Date.now()}`);
+
+    } catch (error) {
+      console.error('❌ [Antidelete] CRITICAL ERROR forwarding deleted message:', error);
+      console.error('❌ [Antidelete] Forward error details:', {
+        chatJid,
+        participantJid,
+        originalMessageId: originalMessage.id,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
     }
   }
 }

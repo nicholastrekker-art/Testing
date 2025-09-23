@@ -195,28 +195,50 @@ export class WhatsAppBot {
     this.sock.ev.on('messages.upsert', async (m: { messages: WAMessage[], type: string }) => {
       // Only process messages if the bot is actually running and connected
       if (!this.isRunning) {
+        console.log(`⚠️ [${this.botInstance.name}] Skipping message processing - bot not running`);
         return;
       }
+
+      console.log(`📨 [${this.botInstance.name}] MESSAGE BATCH RECEIVED`);
+      console.log(`   📊 Batch Type: ${m.type}`);
+      console.log(`   📈 Message Count: ${m.messages.length}`);
+      console.log(`   🕐 Processing Time: ${new Date().toLocaleString()}`);
 
       if (m.type === 'notify' || m.type === 'append') {
         // Handle auto status updates for status messages
         await this.autoStatusService.handleStatusUpdate(this.sock, m);
 
-        for (const message of m.messages) {
+        for (let i = 0; i < m.messages.length; i++) {
+          const message = m.messages[i];
+          
+          console.log(`📝 [${this.botInstance.name}] PROCESSING MESSAGE ${i + 1}/${m.messages.length}`);
+          console.log(`   🆔 Message ID: ${message.key.id}`);
+          console.log(`   👤 From: ${message.pushName || 'Unknown'} (${message.key.remoteJid})`);
+          console.log(`   🔄 From Me: ${message.key.fromMe ? 'Yes' : 'No'}`);
+          console.log(`   📅 Timestamp: ${message.messageTimestamp ? new Date(Number(message.messageTimestamp) * 1000).toLocaleString() : 'Unknown'}`);
+          
           try {
             // Filter out reaction messages from console logs to reduce noise
             const isReactionMessage = message.message && message.message.reactionMessage;
+            
+            if (isReactionMessage) {
+              console.log(`   😀 Reaction Message: ${message.message.reactionMessage.text} to ${message.message.reactionMessage.key?.id}`);
+            }
 
+            console.log(`   💾 Storing in antidelete service...`);
             // Store message for antidelete functionality
             await antideleteService.storeMessage(message);
 
-            // Handle Anti-ViewOnce completely silently - no console logs at all
+            // Handle Anti-ViewOnce 
             if (this.antiViewOnceService && !isReactionMessage && message.key.fromMe) {
               const hasViewOnce = this.hasViewOnceContent(message);
+              console.log(`   👁️ ViewOnce Check: ${hasViewOnce ? 'DETECTED' : 'None'}`);
               if (hasViewOnce) {
                 try {
+                  console.log(`   🔍 Processing ViewOnce message...`);
                   await this.antiViewOnceService.handleMessage(this.sock, message);
                 } catch (error) {
+                  console.error(`   ❌ ViewOnce processing error:`, error);
                   // Store error silently without any console logs
                   await storage.createActivity({
                     serverName: this.botInstance.serverName,
@@ -229,25 +251,83 @@ export class WhatsAppBot {
               }
             }
 
+            console.log(`   🎯 Processing regular message handling...`);
             // Process regular message handling
             await this.handleMessage(message);
+            
+            console.log(`   ✅ Message ${i + 1} processed successfully`);
 
           } catch (error) {
-            console.error(`❌ [${this.botInstance.name}] Error processing message from ${message.key.remoteJid}:`, error);
+            console.error(`❌ [${this.botInstance.name}] Error processing message ${i + 1} from ${message.key.remoteJid}:`, error);
+            console.error(`❌ [${this.botInstance.name}] Error details:`, {
+              messageId: message.key.id,
+              fromJid: message.key.remoteJid,
+              error: error instanceof Error ? error.message : 'Unknown error',
+              stack: error instanceof Error ? error.stack : 'No stack trace'
+            });
           }
         }
+        
+        console.log(`🎉 [${this.botInstance.name}] BATCH PROCESSING COMPLETE - ${m.messages.length} messages processed`);
+        console.log(`─────────────────────────────────────────────────────────`);
+      } else {
+        console.log(`⚠️ [${this.botInstance.name}] Skipping batch - type '${m.type}' not handled`);
       }
     });
 
     // Handle message revocation (deletion)
     this.sock.ev.on('messages.update', async (updates: { key: any; update: any }[]) => {
-      for (const { key, update } of updates) {
+      console.log(`🔄 [${this.botInstance.name}] MESSAGE UPDATES RECEIVED`);
+      console.log(`   📊 Update Count: ${updates.length}`);
+      console.log(`   🕐 Processing Time: ${new Date().toLocaleString()}`);
+      
+      for (let i = 0; i < updates.length; i++) {
+        const { key, update } = updates[i];
+        
+        console.log(`📝 [${this.botInstance.name}] PROCESSING UPDATE ${i + 1}/${updates.length}`);
+        console.log(`   🆔 Message ID: ${key.id}`);
+        console.log(`   💬 Chat: ${key.remoteJid}`);
+        console.log(`   👤 Participant: ${key.participant || 'N/A'}`);
+        console.log(`   🔧 Update Type: ${update.message?.protocolMessage?.type || 'Unknown'}`);
+        
+        // Log all update types for debugging
+        if (update.status) {
+          console.log(`   📊 Status Update: ${update.status}`);
+        }
+        
+        if (update.reactions) {
+          console.log(`   😀 Reactions Update: ${JSON.stringify(update.reactions)}`);
+        }
+        
+        if (update.pollUpdates) {
+          console.log(`   📊 Poll Updates: ${JSON.stringify(update.pollUpdates)}`);
+        }
+        
         // Check if this is a message deletion
         if (update.message?.protocolMessage?.type === Baileys.proto.Message.ProtocolMessage.Type.REVOKE) {
+          console.log(`🚨 [${this.botInstance.name}] MESSAGE REVOCATION DETECTED!`);
+          console.log(`   🎯 Target Message ID: ${update.message.protocolMessage.key?.id}`);
+          console.log(`   🗑️ Revocation Type: REVOKE`);
+          console.log(`   🔧 Protocol Message:`, JSON.stringify(update.message.protocolMessage, null, 2));
+          
           const revocationMessage = { key, message: update.message };
+          console.log(`   📤 Forwarding to antidelete service...`);
           await antideleteService.handleMessageRevocation(this.sock, revocationMessage);
+          console.log(`   ✅ Revocation handled by antidelete service`);
+        } else if (update.message?.protocolMessage) {
+          console.log(`   📡 Other Protocol Message:`, {
+            type: update.message.protocolMessage.type,
+            key: update.message.protocolMessage.key
+          });
+        } else {
+          console.log(`   ℹ️ Non-revocation update processed`);
         }
+        
+        console.log(`   ✅ Update ${i + 1} processed successfully`);
       }
+      
+      console.log(`🎉 [${this.botInstance.name}] MESSAGE UPDATES COMPLETE - ${updates.length} updates processed`);
+      console.log(`─────────────────────────────────────────────────────────`);
     });
   }
 
