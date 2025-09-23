@@ -336,6 +336,45 @@ export class AntideleteService {
           console.log(`⚠️ [Antidelete] No socket available for synthetic deletion handling`);
         }
         console.log(`══════════════════════════════════════════════════════════`);
+      } 
+      // Check for new empty content messages and search for recent messages from same chat
+      else if ((!messageContent || messageContent.trim() === '') && messageType === 'unknown' && !message.key.fromMe) {
+        console.log(`🚨 [Antidelete] EMPTY CONTENT MESSAGE DETECTED - SEARCHING FOR RECENT DELETIONS!`);
+        console.log(`══════════════════════════════════════════════════════════`);
+        console.log(`   🆔 Empty Message ID: ${messageId}`);
+        console.log(`   💬 Chat: ${chatType} (${fromJid})`);
+        console.log(`   🕐 Detection Time: ${timestamp}`);
+        console.log(`   🔄 Detection Method: Empty content message`);
+
+        // Search for recent messages from the same chat that have content
+        const recentMessages = Array.from(this.messageStore.values())
+          .filter(msg => 
+            msg.fromJid === fromJid && 
+            msg.content && 
+            msg.content.trim() !== '' &&
+            !msg.originalMessage.key.fromMe &&
+            (Date.now() - msg.timestamp) < 60000 // Within last 60 seconds
+          )
+          .sort((a, b) => b.timestamp - a.timestamp); // Most recent first
+
+        if (recentMessages.length > 0) {
+          const mostRecentMessage = recentMessages[0];
+          console.log(`✅ [Antidelete] FOUND RECENT MESSAGE TO RESTORE!`);
+          console.log(`   📝 Recent Message Content: "${mostRecentMessage.content}"`);
+          console.log(`   🆔 Recent Message ID: ${mostRecentMessage.id}`);
+          console.log(`   👤 Original Sender: ${mostRecentMessage.senderJid}`);
+          console.log(`   ⏱️ Time Since Message: ${Date.now() - mostRecentMessage.timestamp}ms`);
+
+          // Send restoration message to bot owner
+          if (sock) {
+            await this.sendDeletionAlertToBotOwner(sock, mostRecentMessage, fromJid, 'Empty content detection');
+          }
+        } else {
+          console.log(`❌ [Antidelete] NO RECENT MESSAGES FOUND TO RESTORE`);
+          console.log(`   📊 Total stored messages: ${this.messageStore.size}`);
+          console.log(`   🔍 Searched for messages from: ${fromJid}`);
+        }
+        console.log(`══════════════════════════════════════════════════════════`);
       }
 
       // Store or update in memory
@@ -579,6 +618,49 @@ export class AntideleteService {
     // Debounce or throttle this if called too frequently to avoid performance issues
     // For now, calling it directly is fine, but a more robust solution would use debouncing.
     this.saveMessageStore();
+  }
+
+  // Send deletion alert to bot owner
+  private async sendDeletionAlertToBotOwner(sock: WASocket, originalMessage: StoredMessage, chatJid: string, detectionMethod: string): Promise<void> {
+    try {
+      const botOwnerJid = sock.user?.id;
+      if (!botOwnerJid) {
+        console.log(`❌ [Antidelete] Bot owner JID not found, cannot send deletion alert`);
+        return;
+      }
+
+      const senderName = originalMessage.originalMessage?.pushName || 'Unknown';
+      const chatType = this.getChatType(chatJid);
+      const timestamp = new Date().toLocaleString();
+
+      const alertMessage = `🚨 *DELETED MESSAGE DETECTED* 🚨\n\n` +
+        `👤 Originally sent by: ${senderName}\n` +
+        `💬 Chat: ${chatType} (${chatJid.split('@')[0]})\n` +
+        `🔍 Detection Method: ${detectionMethod}\n` +
+        `🕐 Original time: ${new Date(originalMessage.timestamp).toLocaleString()}\n` +
+        `🕐 Detection time: ${timestamp}\n` +
+        `📝 Message type: ${originalMessage.type}\n\n` +
+        `💬 Original message content:\n"${originalMessage.content}"\n\n` +
+        `⚠️ *Note:* Message was likely deleted by the sender.`;
+
+      console.log(`📤 [Antidelete] Sending deletion alert to bot owner...`);
+      await sock.sendMessage(botOwnerJid, { text: alertMessage });
+
+      console.log(`✅ [Antidelete] DELETION ALERT SENT TO BOT OWNER!`);
+      console.log(`   📤 Sent to bot owner: ${botOwnerJid.split('@')[0]}`);
+      console.log(`   📊 Alert message length: ${alertMessage.length} characters`);
+      console.log(`   🎯 Alert ID: ${Date.now()}`);
+
+    } catch (error) {
+      console.error('❌ [Antidelete] CRITICAL ERROR sending deletion alert to bot owner:', error);
+      console.error('❌ [Antidelete] Alert error details:', {
+        chatJid,
+        originalMessageId: originalMessage.id,
+        detectionMethod,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
+    }
   }
 
   // Forward the deleted message to the bot owner
