@@ -12,6 +12,7 @@ import GuestPhoneVerification from "@/pages/guest/verification";
 import GuestBotManagement from "@/pages/guest/bot-management";
 import GuestCrossServer from "@/pages/guest/cross-server";
 import Sidebar from "@/components/sidebar";
+import ProtectedRoute from "@/components/protected-route";
 import { AuthProvider } from "@/hooks/use-auth";
 
 function Router() {
@@ -21,9 +22,21 @@ function Router() {
       <main className="flex-1 overflow-auto">
         <Switch>
           <Route path="/" component={Dashboard} />
-          <Route path="/bot-instances" component={BotInstances} />
-          <Route path="/commands" component={Commands} />
-          <Route path="/admin" component={AdminConsole} />
+          <Route path="/bot-instances">
+            <ProtectedRoute requireAdmin={true}>
+              <BotInstances />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/commands">
+            <ProtectedRoute requireAdmin={true}>
+              <Commands />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin">
+            <ProtectedRoute requireAdmin={true}>
+              <AdminConsole />
+            </ProtectedRoute>
+          </Route>
           <Route path="/guest/verification" component={GuestPhoneVerification} />
           <Route path="/guest/bot-management" component={GuestBotManagement} />
           <Route path="/guest/cross-server" component={GuestCrossServer} />
