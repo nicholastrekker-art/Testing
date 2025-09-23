@@ -384,7 +384,7 @@ export default function Dashboard() {
             <div className="text-center">
               <h3 className="text-2xl font-bold mb-2">🚀 TREKKER-MD LIFETIME BOT</h3>
               <p className="text-blue-100 mb-4">Ultra fast WhatsApp automation - No expiry, Lifetime access</p>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-sm">
                 <div className="bg-white/10 rounded-lg p-3">
                   <div className="flex items-center justify-center mb-2">
@@ -393,7 +393,7 @@ export default function Dashboard() {
                   <p className="font-medium">Telegram</p>
                   <p className="text-xs text-blue-100">@trekkermd_</p>
                 </div>
-                
+
                 <div className="bg-white/10 rounded-lg p-3">
                   <div className="flex items-center justify-center mb-2">
                     <i className="fab fa-whatsapp text-xl"></i>
@@ -401,7 +401,7 @@ export default function Dashboard() {
                   <p className="font-medium">WhatsApp</p>
                   <p className="text-xs text-blue-100">+254704897825</p>
                 </div>
-                
+
                 <div className="bg-white/10 rounded-lg p-3">
                   <div className="flex items-center justify-center mb-2">
                     <i className="fab fa-instagram text-xl"></i>
@@ -410,7 +410,7 @@ export default function Dashboard() {
                   <p className="text-xs text-blue-100">@nicholaso_tesla</p>
                 </div>
               </div>
-              
+
               <p className="text-xs text-blue-200 mt-4">
                 {isAdmin ? 'Admin access - Full system control' : 'Upload base64 credentials to deploy your bot instantly'}
               </p>
@@ -487,88 +487,52 @@ export default function Dashboard() {
             </Card>
 
             {/* Approved Bots Section */}
-            <Card className="bg-card border-border">
-              <CardHeader className="border-b border-border">
-                <CardTitle className="text-lg font-semibold text-foreground">✅ Approved Bot Instances</CardTitle>
-                <p className="text-muted-foreground text-sm mt-1">Active bots with auto-running capabilities</p>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  {approvedLoading ? (
-                    <div className="text-center py-4">
-                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                    </div>
-                  ) : (approvedBots as any[]).length === 0 ? (
-                    <div className="text-center py-4">
-                      <p className="text-muted-foreground">No approved bots yet</p>
-                    </div>
-                  ) : (
-                    (approvedBots as any[]).map((bot: any) => (
-                      <div key={bot.id} className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/20 rounded-md" data-testid={`approved-bot-${bot.id}`}>
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                            <i className="fas fa-robot text-green-500"></i>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{bot.name}</p>
-                            <p className="text-xs text-muted-foreground">{bot.phoneNumber || 'No phone number'}</p>
-                            <div className="flex items-center space-x-2 mt-1">
-                              <span className={`text-xs px-2 py-1 rounded ${
-                                bot.status === 'online' ? 'text-green-400 bg-green-500/10' :
-                                bot.status === 'offline' ? 'text-gray-400 bg-gray-500/10' :
-                                bot.status === 'loading' ? 'text-blue-400 bg-blue-500/10' :
-                                'text-red-400 bg-red-500/10'
-                              }`}>
-                                {bot.status.replace('_', ' ').toUpperCase()}
-                              </span>
-                              {bot.expirationMonths && (
-                                <span className="text-xs text-orange-400 bg-orange-500/10 px-2 py-1 rounded">
-                                  Expires: {bot.expirationMonths}mo
-                                </span>
-                              )}
+            {isAdmin && (
+              <Card className="bg-card border-border">
+                <CardHeader className="border-b border-border">
+                  <CardTitle className="text-lg font-semibold text-foreground">✅ Approved Bot Instances</CardTitle>
+                  <p className="text-muted-foreground text-sm mt-1">Active bots with auto-running capabilities</p>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    {approvedLoading ? (
+                      <div className="text-center py-4">
+                        <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                      </div>
+                    ) : (approvedBots as any[]).length === 0 ? (
+                      <div className="text-center py-4">
+                        <p className="text-muted-foreground">No approved bots yet</p>
+                      </div>
+                    ) : (
+                      (approvedBots as any[]).map((bot: any) => (
+                        <div key={bot.id} className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/20 rounded-md" data-testid={`approved-bot-${bot.id}`}>
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                              <i className="fas fa-robot text-green-500"></i>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-foreground">{bot.name}</p>
+                              <p className="text-xs text-muted-foreground">{bot.phoneNumber || 'No phone number'}</p>
                             </div>
                           </div>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-xs px-2 py-1 rounded bg-green-500/10 text-green-500">
+                              APPROVED
+                            </span>
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              bot.status === 'online' ? 'text-green-400 bg-green-500/10' :
+                              'text-gray-400 bg-gray-500/10'
+                            }`}>
+                              {bot.status?.toUpperCase() || 'UNKNOWN'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          {/* Restart Button - only show for error status */}
-                          {bot.status === 'error' && (
-                            <Button 
-                              size="sm"
-                              onClick={() => restartBotMutation.mutate(bot.id)}
-                              disabled={restartBotMutation.isPending}
-                              className="bg-yellow-600 hover:bg-yellow-700 text-white"
-                              data-testid={`button-restart-${bot.id}`}
-                            >
-                              {restartBotMutation.isPending ? 'Restarting...' : '🔄 Restart'}
-                            </Button>
-                          )}
-                          
-                          <Button 
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setSelectedBotForFeatures(bot)}
-                            data-testid={`button-features-${bot.id}`}
-                          >
-                            ⚙️ Features
-                          </Button>
-                          
-                          {/* Revoke Approval Button */}
-                          <Button 
-                            size="sm"
-                            onClick={() => revokeApprovalMutation.mutate(bot.id)}
-                            disabled={revokeApprovalMutation.isPending}
-                            className="bg-orange-600 hover:bg-orange-700 text-white"
-                            data-testid={`button-revoke-${bot.id}`}
-                          >
-                            {revokeApprovalMutation.isPending ? 'Revoking...' : '↓ Normal'}
-                          </Button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -650,7 +614,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                       ))}
-                      
+
                       {(botInstances as any[]).length > 5 && (
                         <div className="text-center pt-3">
                           <Link href="/bot-instances">
@@ -670,19 +634,19 @@ export default function Dashboard() {
       </div>
 
       <AddBotModal open={showAddBotModal} onClose={() => setShowAddBotModal(false)} />
-      
+
       {/* Command Management Modal */}
       <CommandManagement
         open={showCommandManagement}
         onClose={() => setShowCommandManagement(false)}
       />
-      
+
       {/* Guest Bot Registration Modal */}
       <GuestBotRegistration
         open={showGuestRegistration}
         onClose={() => setShowGuestRegistration(false)}
       />
-      
+
       {/* Admin Bot Management Modal */}
       {isAdmin && (
         <AdminBotManagement
@@ -700,12 +664,12 @@ export default function Dashboard() {
                 Manage Bot Features - {selectedBotForFeatures.name}
               </DialogTitle>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
                 Toggle features for this bot. Changes take effect immediately.
               </p>
-              
+
               {/* Feature toggles */}
               <div className="space-y-3">
                 {[
@@ -716,7 +680,7 @@ export default function Dashboard() {
                   { key: 'chatGPT', label: 'ChatGPT Integration', description: 'Enable AI responses for conversations' }
                 ].map((feature) => {
                   const currentValue = selectedBotForFeatures.settings?.features?.[feature.key] || false;
-                  
+
                   return (
                     <div key={feature.key} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div className="flex-1">
@@ -749,7 +713,7 @@ export default function Dashboard() {
                   );
                 })}
               </div>
-              
+
               <div className="flex justify-end space-x-2 pt-4">
                 <Button 
                   variant="outline" 
@@ -773,7 +737,7 @@ export default function Dashboard() {
                 Manage global phone number registrations across all tenants
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               {registryLoading ? (
                 <div className="flex justify-center py-8">
@@ -799,7 +763,7 @@ export default function Dashboard() {
                             Registered: {new Date(registration.registeredAt).toLocaleDateString()}
                           </p>
                         </div>
-                        
+
                         <div className="flex space-x-2">
                           <Button
                             variant="outline"
@@ -946,7 +910,7 @@ function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-  
+
   if (diffInMinutes < 1) return 'Just now';
   if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
   if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
