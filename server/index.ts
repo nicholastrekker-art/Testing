@@ -31,17 +31,12 @@ async function startScheduledBotMonitoring() {
   
   const checkApprovedBots = async () => {
     try {
-      log('🔍 Checking approved bots status...');
-      
       // Get all approved bots that should be auto-started
       const approvedBots = await storage.getBotInstancesForAutoStart();
       
       if (approvedBots.length === 0) {
-        log('📋 No approved bots found for monitoring');
         return;
       }
-      
-      log(`📊 Found ${approvedBots.length} approved bot(s) to monitor`);
       
       for (const bot of approvedBots) {
         try {
@@ -50,8 +45,6 @@ async function startScheduledBotMonitoring() {
           const isOnline = existingBot?.getStatus() === 'online';
           
           if (!existingBot || !isOnline) {
-            log(`🚀 Starting/restarting approved bot: ${bot.name} (${bot.id})`);
-            
             // Create activity log
             await storage.createActivity({
               botInstanceId: bot.id,
@@ -65,14 +58,8 @@ async function startScheduledBotMonitoring() {
               await botManager.createBot(bot.id, bot);
             }
             await botManager.startBot(bot.id);
-            
-            log(`✅ Scheduled restart completed for bot: ${bot.name}`);
-          } else {
-            log(`✓ Bot ${bot.name} is already online`);
           }
         } catch (error) {
-          log(`❌ Failed to restart bot ${bot.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-          
           // Log the error as an activity
           await storage.createActivity({
             botInstanceId: bot.id,
@@ -82,10 +69,8 @@ async function startScheduledBotMonitoring() {
           });
         }
       }
-      
-      log('✅ Scheduled bot monitoring check completed');
     } catch (error) {
-      log(`❌ Scheduled bot monitoring error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      // Silent error handling
     }
   };
   

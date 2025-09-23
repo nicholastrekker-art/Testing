@@ -18,14 +18,10 @@ class BotManager {
     
     if (existsSync(authDir)) {
       try {
-        console.log(`🧹 Clearing all container data for bot ${botId} (resetting to first deployment state)...`);
         rmSync(authDir, { recursive: true, force: true });
-        console.log(`✅ Container data cleared for bot ${botId} - fresh start guaranteed`);
       } catch (error) {
-        console.warn(`⚠️ Failed to clear container data for bot ${botId}:`, error);
+        // Silent error handling
       }
-    } else {
-      console.log(`📂 No existing container data found for bot ${botId} - starting fresh`);
     }
   }
 
@@ -47,14 +43,11 @@ class BotManager {
 
   async startBot(botId: string) {
     try {
-      console.log(`BotManager: Starting bot ${botId}...`);
-      
       // Check if bot is already running
       const existingBot = this.bots.get(botId);
       const currentStatus = existingBot?.getStatus();
       
       if (existingBot && currentStatus === 'online') {
-        console.log(`BotManager: Bot ${botId} is already online, not restarting`);
         return;
       }
 
@@ -66,7 +59,6 @@ class BotManager {
 
       // Only stop existing bot if it's offline (to restart it)
       if (existingBot && currentStatus === 'offline') {
-        console.log(`BotManager: Stopping offline bot ${botId} before restart`);
         await existingBot.stop();
         await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
       }
@@ -76,16 +68,11 @@ class BotManager {
         // Always clear session files for fresh start (like first deployment)
         this.clearBotSessionFiles(botId);
         
-        console.log(`BotManager: Creating new isolated bot instance for ${botId}`);
         const newBot = new WhatsAppBot(botInstance);
         this.bots.set(botId, newBot);
         
         // Start bot in isolated container
         await newBot.start();
-        
-        console.log(`BotManager: Bot ${botId} started successfully in isolated container with clean session`);
-      } else {
-        console.log(`BotManager: Bot ${botId} instance already exists and is healthy`);
       }
     } catch (error) {
       console.error(`BotManager: Failed to start bot ${botId}:`, error);
@@ -114,11 +101,8 @@ class BotManager {
 
   async restartBot(botId: string) {
     try {
-      console.log(`BotManager: Restarting bot ${botId} with fresh container...`);
-      
       const bot = this.bots.get(botId);
       if (bot) {
-        console.log(`BotManager: Stopping bot ${botId} for restart`);
         await bot.stop();
         await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds for complete shutdown
         
@@ -131,8 +115,6 @@ class BotManager {
       
       // Start fresh isolated instance
       await this.startBot(botId);
-      
-      console.log(`BotManager: Bot ${botId} restarted successfully with clean container`);
     } catch (error) {
       console.error(`BotManager: Failed to restart bot ${botId}:`, error);
       throw error;
@@ -147,7 +129,6 @@ class BotManager {
       
       // Clear all container data when destroying bot
       this.clearBotSessionFiles(botId);
-      console.log(`BotManager: Bot ${botId} destroyed and container data cleared`);
     }
   }
 
@@ -189,25 +170,19 @@ class BotManager {
   }
 
   async resumeBotsForServer(serverName: string) {
-    console.log(`BotManager: Resuming bots for server: ${serverName}`);
     try {
       // Get all approved bots for this server from database
       const serverBots = await storage.getBotInstancesForServer(serverName);
       const approvedBots = serverBots.filter(bot => bot.approvalStatus === 'approved');
       
-      console.log(`BotManager: Found ${approvedBots.length} approved bots for server ${serverName}`);
-      
       // Start each approved bot
       for (const bot of approvedBots) {
         try {
           await this.startBot(bot.id);
-          console.log(`BotManager: Resumed bot ${bot.name} (${bot.id})`);
         } catch (error) {
           console.error(`BotManager: Failed to resume bot ${bot.name} (${bot.id}):`, error);
         }
       }
-      
-      console.log(`BotManager: Finished resuming bots for server ${serverName}`);
     } catch (error) {
       console.error(`BotManager: Error resuming bots for server ${serverName}:`, error);
     }
