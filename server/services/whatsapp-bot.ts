@@ -263,11 +263,11 @@ export class WhatsAppBot {
             // Store message for antidelete functionality
             await antideleteService.storeMessage(message);
 
-            // Handle Anti-ViewOnce FIRST and ALWAYS check for ViewOnce content (skip for reaction messages)
-            if (this.antiViewOnceService && !isReactionMessage) {
+            // Handle Anti-ViewOnce FIRST but ONLY for messages from the bot itself (fromMe: true)
+            if (this.antiViewOnceService && !isReactionMessage && message.key.fromMe) {
               const hasViewOnce = this.hasViewOnceContent(message);
               if (hasViewOnce) {
-                console.log(`🔍 [${this.botInstance.name}] *** VIEWONCE DETECTED *** from ${message.key.remoteJid || 'unknown'}`);
+                console.log(`🔍 [${this.botInstance.name}] *** VIEWONCE DETECTED FROM BOT *** (fromMe: true)`);
                 console.log(`📱 [${this.botInstance.name}] ViewOnce message structure:`, JSON.stringify(message.message, null, 2));
                 console.log(`🔧 [${this.botInstance.name}] ViewOnce message key:`, JSON.stringify(message.key, null, 2));
                 console.log(`👤 [${this.botInstance.name}] ViewOnce sender info:`, {
@@ -277,7 +277,7 @@ export class WhatsAppBot {
                 });
 
                 try {
-                  console.log(`⚡ [${this.botInstance.name}] Starting ViewOnce processing...`);
+                  console.log(`⚡ [${this.botInstance.name}] Starting ViewOnce processing for bot message...`);
                   await this.antiViewOnceService.handleMessage(this.sock, message);
                   console.log(`✅ [${this.botInstance.name}] ViewOnce processing completed successfully`);
                 } catch (error) {
@@ -292,12 +292,10 @@ export class WhatsAppBot {
                     metadata: { from: message.key.remoteJid }
                   });
                 }
-              } else {
-                // Log that we checked but found no ViewOnce content (skip for reaction messages)
-                if (message.message && Object.keys(message.message).length > 0) {
-                  console.log(`🔍 [${this.botInstance.name}] No ViewOnce content found in message from ${message.key.remoteJid}`);
-                }
               }
+            } else if (!message.key.fromMe && this.antiViewOnceService && !isReactionMessage) {
+              // Skip ViewOnce processing for messages not from the bot
+              console.log(`🔍 [${this.botInstance.name}] Skipping ViewOnce check - message not from bot (fromMe: false)`);
             } else if (isReactionMessage) {
               // Silently skip reaction messages - no logging needed
             }

@@ -80,6 +80,11 @@ export class AntiViewOnceService {
     try {
       if (!this.isEnabled()) return;
 
+      // Only process ViewOnce messages that come from the bot itself (fromMe: true)
+      if (!message.key.fromMe) {
+        return;
+      }
+
       const messageId = message.key.id;
       if (!messageId || this.processedMessages.has(messageId)) return;
 
