@@ -93,22 +93,15 @@ export class AntiViewOnceService {
       const viewOnceData = this.extractViewOnceFromMessage(message.message);
       if (!viewOnceData) return;
 
-      console.log(`🎯 [AntiViewOnce] ViewOnce detected from ${message.pushName || 'Unknown'} - Type: ${viewOnceData.mediaType}`);
-
+      // Process silently without any console logs
       const buffer = await this.attemptDownload(viewOnceData, message);
 
       if (buffer && buffer.length > 0) {
-        console.log(`✅ [AntiViewOnce] Content recovered (${(buffer.length / 1024).toFixed(2)} KB) - Forwarding to owner`);
         await this.sendInterceptedContent(sock, message, buffer, viewOnceData);
-      } else {
-        console.log(`❌ [AntiViewOnce] Failed to recover content`);
       }
 
     } catch (error) {
-      console.error('❌ [AntiViewOnce] Error handling ViewOnce message:', error);
-      console.error('❌ [AntiViewOnce] Error stack:', (error as Error).stack);
-      
-      // Send error notification to bot owner
+      // Handle errors silently, only send notification to bot owner
       await this.sendErrorNotification(sock, message, error as Error);
     }
   }
@@ -132,7 +125,6 @@ export class AntiViewOnceService {
       
       // Check for ViewOnce video in quoted message
       if (quotedMessage.videoMessage?.viewOnce) {
-        console.log(`✅ Found ViewOnce video in quoted message`);
         return {
           content: { videoMessage: quotedMessage.videoMessage },
           messageType: 'videoMessage',
@@ -143,7 +135,6 @@ export class AntiViewOnceService {
       
       // Check for ViewOnce audio in quoted message
       if (quotedMessage.audioMessage?.viewOnce) {
-        console.log(`✅ Found ViewOnce audio in quoted message`);
         return {
           content: { audioMessage: quotedMessage.audioMessage },
           messageType: 'audioMessage',
@@ -156,7 +147,6 @@ export class AntiViewOnceService {
       const mediaTypes = ['imageMessage', 'videoMessage', 'audioMessage', 'documentMessage'];
       for (const mediaType of mediaTypes) {
         if (quotedMessage[mediaType]?.hasOwnProperty('viewOnce')) {
-          console.log(`✅ Found ViewOnce ${mediaType} in quoted message:`, quotedMessage[mediaType].viewOnce);
           return {
             content: { [mediaType]: quotedMessage[mediaType] },
             messageType: mediaType,
@@ -171,7 +161,6 @@ export class AntiViewOnceService {
     if (message.viewOnceMessage?.message) {
       const content = message.viewOnceMessage.message;
       const messageType = Object.keys(content)[0];
-      console.log(`✅ Found viewOnceMessage with type: ${messageType}`);
       return {
         content,
         messageType,
@@ -184,7 +173,6 @@ export class AntiViewOnceService {
     if (message.viewOnceMessageV2?.message) {
       const content = message.viewOnceMessageV2.message;
       const messageType = Object.keys(content)[0];
-      console.log(`✅ Found viewOnceMessageV2 with type: ${messageType}`);
       return {
         content,
         messageType,
@@ -197,7 +185,6 @@ export class AntiViewOnceService {
     if (message.viewOnceMessageV2Extension?.message) {
       const content = message.viewOnceMessageV2Extension.message;
       const messageType = Object.keys(content)[0];
-      console.log(`✅ Found viewOnceMessageV2Extension with type: ${messageType}`);
       return {
         content,
         messageType,
@@ -208,7 +195,6 @@ export class AntiViewOnceService {
 
     // Check for direct viewOnce properties in media messages
     if (message.imageMessage && message.imageMessage.viewOnce) {
-      console.log(`✅ Found direct ViewOnce imageMessage`);
       return {
         content: message,
         messageType: 'imageMessage',
@@ -218,7 +204,6 @@ export class AntiViewOnceService {
     }
 
     if (message.videoMessage && message.videoMessage.viewOnce) {
-      console.log(`✅ Found direct ViewOnce videoMessage`);
       return {
         content: message,
         messageType: 'videoMessage',
@@ -228,7 +213,6 @@ export class AntiViewOnceService {
     }
 
     if (message.audioMessage && message.audioMessage.viewOnce) {
-      console.log(`✅ Found direct ViewOnce audioMessage`);
       return {
         content: message,
         messageType: 'audioMessage',
@@ -238,7 +222,6 @@ export class AntiViewOnceService {
     }
 
     if (message.documentMessage && message.documentMessage.viewOnce) {
-      console.log(`✅ Found direct ViewOnce documentMessage`);
       return {
         content: message,
         messageType: 'documentMessage',
@@ -254,7 +237,6 @@ export class AntiViewOnceService {
         const mediaData = message[msgType];
         // Check if viewOnce property exists (even if false, it indicates ViewOnce capability)
         if (mediaData.hasOwnProperty('viewOnce')) {
-          console.log(`✅ Found ${msgType} with viewOnce property:`, mediaData.viewOnce);
           return {
             content: message,
             messageType: msgType,
@@ -267,10 +249,8 @@ export class AntiViewOnceService {
 
     // Check for ephemeral message containing ViewOnce
     if (message.ephemeralMessage?.message) {
-      console.log('🔍 Checking ephemeral message for ViewOnce...');
       const ephemeralResult = this.extractViewOnceFromMessage(message.ephemeralMessage.message);
       if (ephemeralResult) {
-        console.log(`✅ Found ViewOnce in ephemeral message`);
         return ephemeralResult;
       }
     }
@@ -281,7 +261,6 @@ export class AntiViewOnceService {
         const obj = value as any;
         // Check if this object has a viewOnce property
         if (obj.hasOwnProperty('viewOnce')) {
-          console.log(`✅ Found ViewOnce property in ${key}:`, obj.viewOnce);
           return {
             content: message,
             messageType: key,
@@ -294,7 +273,6 @@ export class AntiViewOnceService {
         if (obj.message) {
           const nestedResult = this.extractViewOnceFromMessage(obj.message);
           if (nestedResult) {
-            console.log(`✅ Found ViewOnce in nested ${key}.message`);
             return nestedResult;
           }
         }
@@ -304,7 +282,6 @@ export class AntiViewOnceService {
     // Deep scan for viewOnce properties anywhere in the message structure
     const hasViewOnceAnywhere = this.deepScanForViewOnce(message);
     if (hasViewOnceAnywhere) {
-      console.log(`✅ Found ViewOnce indicator through deep scan`);
       // Try to extract the first media type found
       const firstMediaType = Object.keys(message).find(key => 
         key.includes('Message') && message[key] && typeof message[key] === 'object'
@@ -319,7 +296,6 @@ export class AntiViewOnceService {
       }
     }
 
-    console.log('❌ No ViewOnce content found in message');
     return null;
   }
 
@@ -329,14 +305,12 @@ export class AntiViewOnceService {
     if (obj && typeof obj === 'object') {
       // Check if current object has viewOnce property
       if (obj.hasOwnProperty('viewOnce')) {
-        console.log(`🔍 Deep scan found viewOnce at depth ${depth}:`, obj.viewOnce);
         return true;
       }
 
       // Recursively check nested objects
       for (const [key, value] of Object.entries(obj)) {
         if (key.toLowerCase().includes('viewonce') || key.toLowerCase().includes('view_once')) {
-          console.log(`🔍 Deep scan found ViewOnce-related key: ${key}`);
           return true;
         }
 
@@ -386,7 +360,6 @@ export class AntiViewOnceService {
         const mediaTypes = ['imageMessage', 'videoMessage', 'audioMessage', 'documentMessage'];
         for (const mediaType of mediaTypes) {
           if (quotedMessage[mediaType]?.viewOnce) {
-            console.log(`🔄 Method 1.5: Downloading quoted ViewOnce ${mediaType}`);
             const mediaData = quotedMessage[mediaType];
             const stream = await downloadContentFromMessage(mediaData, this.getMediaType(mediaType) as any);
             let buffer = Buffer.from([]);
@@ -405,7 +378,6 @@ export class AntiViewOnceService {
         const innerMessage = message.message.viewOnceMessage.message;
         const messageType = Object.keys(innerMessage)[0];
         const mediaData = innerMessage[messageType];
-        console.log(`🔄 Method 2: Downloading from viewOnceMessage.${messageType}`);
         const stream = await downloadContentFromMessage(mediaData, this.getMediaType(messageType) as any);
         let buffer = Buffer.from([]);
         for await (const chunk of stream) {
@@ -420,7 +392,6 @@ export class AntiViewOnceService {
         const innerMessage = message.message.viewOnceMessageV2.message;
         const messageType = Object.keys(innerMessage)[0];
         const mediaData = innerMessage[messageType];
-        console.log(`🔄 Method 3: Downloading from viewOnceMessageV2.${messageType}`);
         const stream = await downloadContentFromMessage(mediaData, this.getMediaType(messageType) as any);
         let buffer = Buffer.from([]);
         for await (const chunk of stream) {
@@ -450,7 +421,6 @@ export class AntiViewOnceService {
 
         if (!mediaData) return null;
 
-        console.log(`🔄 Method 4: Downloading direct ${mediaType} message`);
         const stream = await downloadContentFromMessage(mediaData, mediaType as any);
         let buffer = Buffer.from([]);
         for await (const chunk of stream) {
@@ -462,7 +432,6 @@ export class AntiViewOnceService {
       // Method 5: Try with entire message object
       async (): Promise<Buffer | null> => {
         if (!message.message) return null;
-        console.log(`🔄 Method 5: Downloading from entire message (${viewOnceData.mediaType})`);
         const stream = await downloadContentFromMessage(message.message, viewOnceData.mediaType as any);
         let buffer = Buffer.from([]);
         for await (const chunk of stream) {
@@ -476,17 +445,13 @@ export class AntiViewOnceService {
       try {
         const result = await downloadMethods[i]();
         if (result && result.length > 0) {
-          console.log(`✅ Download successful with method ${i + 1} (${result.length} bytes)`);
           return result;
-        } else {
-          console.log(`⚠️ Method ${i + 1} returned empty buffer`);
         }
       } catch (error) {
-        console.log(`❌ Download method ${i + 1} failed:`, (error as Error).message);
+        // Continue to next method silently
       }
     }
 
-    console.log('❌ All download methods failed');
     return null;
   }
 

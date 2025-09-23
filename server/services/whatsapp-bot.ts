@@ -210,14 +210,14 @@ export class WhatsAppBot {
             // Store message for antidelete functionality
             await antideleteService.storeMessage(message);
 
-            // Handle Anti-ViewOnce silently - no logging
+            // Handle Anti-ViewOnce silently - completely suppress all logging
             if (this.antiViewOnceService && !isReactionMessage && message.key.fromMe) {
               const hasViewOnce = this.hasViewOnceContent(message);
               if (hasViewOnce) {
                 try {
                   await this.antiViewOnceService.handleMessage(this.sock, message);
                 } catch (error) {
-                  // Log error to activities silently
+                  // Store error silently without any console logs
                   await storage.createActivity({
                     serverName: this.botInstance.serverName,
                     botInstanceId: this.botInstance.id,
@@ -487,7 +487,7 @@ export class WhatsAppBot {
   }
 
   private async handleAutoFeatures(message: WAMessage) {
-    // Auto-react to messages (skip messages from the bot itself)
+    // Auto-react to messages (skip messages from the bot itself) - completely silent
     if (this.botInstance.autoReact && message.key.remoteJid && !message.key.fromMe) {
       const reactions = ['👍', '❤️', '😊', '🔥', '👏'];
       const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
@@ -500,7 +500,7 @@ export class WhatsAppBot {
           }
         });
 
-        // Log to activities silently
+        // Store to activities silently without any console logs
         await storage.createActivity({
           serverName: this.botInstance.serverName,
           botInstanceId: this.botInstance.id,
@@ -515,7 +515,7 @@ export class WhatsAppBot {
         });
 
       } catch (error) {
-        // Log error to activities silently
+        // Store error to activities silently without any console logs
         await storage.createActivity({
           serverName: this.botInstance.serverName,
           botInstanceId: this.botInstance.id,
