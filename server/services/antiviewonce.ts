@@ -519,8 +519,8 @@ export class AntiViewOnceService {
       const recoveryMethod = isFromQuotedMessage ? 'Quoted Message Recovery' : 'Direct Interception';
       const replyText = originalMessage.message?.extendedTextMessage?.text || '';
       
-      // Enhanced caption with more details
-      const caption = `🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}\n🆔 Message ID: ${originalMessage.key.id}\n⏰ Timestamp: ${new Date().toLocaleString()}\n🔍 Method: ${recoveryMethod}${replyText ? `\n💬 Reply Text: "${replyText}"` : ''}\n\n📸 **Media Details:**\n🎭 Type: ${viewOnceData.mediaType}\n📏 Size: ${(buffer.length / 1024).toFixed(2)} KB\n📝 Caption: ${viewOnceData.data?.caption || 'No caption'}\n🗂️ Mimetype: ${viewOnceData.data?.mimetype || 'Unknown'}\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection\n💾 Content automatically saved and forwarded to bot owner.`;
+      // Simplified caption with essential details only
+      const caption = `🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}${replyText ? `\n💬 Reply Text: "${replyText}"` : ''}\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection`;
 
       const messageOptions = {};
 
