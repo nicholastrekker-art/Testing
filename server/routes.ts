@@ -2597,6 +2597,313 @@ Thank you for using TREKKER-MD! 🚀
     }
   });
 
+  // Cross-Server Guest Bot Search - Find bot by phone number across all servers
+  app.post("/api/guest/search-server-bots", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      console.log(`🔍 Cross-server bot search for phone: ${cleanedPhone}`);
+
+      // Check God Registry to find hosting server
+      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      if (!globalRegistration) {
+        return res.json({ bots: [] });
+      }
+
+      const hostingServer = globalRegistration.tenancyName;
+      const currentServer = getServerName();
+
+      let bots = [];
+
+      if (hostingServer === currentServer) {
+        // Bot is on current server
+        const localBot = await storage.getBotByPhoneNumber(cleanedPhone);
+        if (localBot) {
+          bots.push({
+            ...maskBotDataForGuest(localBot, true),
+            crossServer: false,
+            hostingServer: currentServer,
+            canManage: true,
+            features: {
+              autoLike: localBot.autoLike || false,
+              autoReact: localBot.autoReact || false,
+              autoView: localBot.autoViewStatus || false,
+              chatGPT: localBot.chatgptEnabled || false,
+              alwaysOnline: localBot.alwaysOnline || false,
+              typingIndicator: localBot.typingMode !== 'none',
+              autoRecording: localBot.presenceMode === 'recording',
+              presenceAutoSwitch: localBot.presenceAutoSwitch || false
+            }
+          });
+        }
+      } else {
+        // Bot is on remote server - create virtual bot info
+        bots.push({
+          id: `remote_${cleanedPhone}`,
+          botId: `remote_${cleanedPhone}`,
+          name: `Bot (${cleanedPhone})`,
+          phoneNumber: cleanedPhone,
+          status: 'cross-server',
+          approvalStatus: 'approved', // Assume approved for cross-server
+          isActive: false,
+          isApproved: true,
+          canManage: true,
+          crossServer: true,
+          hostingServer: hostingServer,
+          serverName: hostingServer,
+          messagesCount: 0,
+          commandsCount: 0,
+          features: {
+            autoLike: false,
+            autoReact: false,
+            autoView: false,
+            chatGPT: false,
+            alwaysOnline: false,
+            typingIndicator: false,
+            autoRecording: false,
+            presenceAutoSwitch: false
+          }
+        });
+      }
+
+      res.json({ bots, hostingServer, currentServer });
+
+    } catch (error) {
+      console.error('Cross-server bot search error:', error);
+      res.status(500).json({ message: "Failed to search for bots" });
+    }
+  });
+
+  // Cross-Server Bot Action - Handle bot actions across servers
+  app.post("/api/guest/server-bot-action", async (req, res) => {
+    try {
+      const { action, botId, phoneNumber } = req.body;
+
+      if (!action || !botId || !phoneNumber) {
+        return res.status(400).json({ message: "Action, bot ID, and phone number are required" });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      console.log(`🎮 Cross-server bot action: ${action} for ${botId} (phone: ${cleanedPhone})`);
+
+      // Check God Registry to find hosting server
+      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      if (!globalRegistration) {
+        return res.status(404).json({ message: "Bot not found in any server" });
+      }
+
+      const hostingServer = globalRegistration.tenancyName;
+      const currentServer = getServerName();
+
+      if (hostingServer === currentServer) {
+        // Bot is on current server - handle locally
+        const botInstance = await storage.getBotInstance(botId);
+        if (!botInstance) {
+          return res.status(404).json({ message: "Bot not found" });
+        }
+
+        // Perform local bot action
+        let result = { success: true };
+        switch (action) {
+          case 'start':
+            await botManager.startBot(botId);
+            await storage.updateBotInstance(botId, { status: 'loading' });
+            break;
+          case 'stop':
+            await botManager.stopBot(botId);
+            await storage.updateBotInstance(botId, { status: 'offline' });
+            break;
+          case 'restart':
+            await botManager.restartBot(botId);
+            await storage.updateBotInstance(botId, { status: 'loading' });
+            break;
+          default:
+            throw new Error(`Unknown action: ${action}`);
+        }
+
+        await storage.createActivity({
+          botInstanceId: botId,
+          type: 'guest_bot_action',
+          description: `Bot ${action} by guest user ${cleanedPhone}`,
+          metadata: { action, guestPhone: cleanedPhone },
+          serverName: currentServer
+        });
+
+        res.json({ success: true, message: `Bot ${action} completed successfully` });
+      } else {
+        // Bot is on remote server - cross-server action not supported for now
+        res.status(400).json({
+          message: `Bot is hosted on ${hostingServer}. Cross-server bot actions are not yet supported.`,
+          hostingServer,
+          currentServer,
+          crossServer: true
+        });
+      }
+
+    } catch (error) {
+      console.error('Cross-server bot action error:', error);
+      res.status(500).json({ message: "Failed to perform bot action" });
+    }
+  });
+
+  // Cross-Server Bot Features - Update features on hosting server
+  app.post("/api/guest/server-bot-features", async (req, res) => {
+    try {
+      const { feature, enabled, botId, phoneNumber } = req.body;
+
+      if (!feature || enabled === undefined || !botId || !phoneNumber) {
+        return res.status(400).json({ message: "Feature, enabled status, bot ID, and phone number are required" });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      console.log(`🎛️ Cross-server feature update: ${feature} = ${enabled} for bot ${botId} (phone: ${cleanedPhone})`);
+
+      // Check God Registry to find hosting server
+      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      if (!globalRegistration) {
+        return res.status(404).json({ message: "Bot not found in any server" });
+      }
+
+      const hostingServer = globalRegistration.tenancyName;
+      const currentServer = getServerName();
+
+      if (hostingServer === currentServer) {
+        // Bot is on current server - update locally
+        const botInstance = await storage.getBotInstance(botId);
+        if (!botInstance) {
+          return res.status(404).json({ message: "Bot not found" });
+        }
+
+        if (botInstance.approvalStatus !== 'approved') {
+          return res.status(403).json({ 
+            message: "Only approved bots can have features updated",
+            approvalStatus: botInstance.approvalStatus
+          });
+        }
+
+        // Map feature names to database columns
+        const featureMap: Record<string, string> = {
+          'autoLike': 'autoLike',
+          'autoView': 'autoViewStatus', 
+          'autoReact': 'autoReact',
+          'chatGPT': 'chatgptEnabled',
+          'alwaysOnline': 'alwaysOnline',
+          'typingIndicator': 'typingMode',
+          'presenceAutoSwitch': 'presenceAutoSwitch'
+        };
+
+        const dbField = featureMap[feature];
+        if (!dbField) {
+          return res.status(400).json({ message: "Invalid feature name" });
+        }
+
+        // Prepare update object
+        const updateData: any = {};
+        if (feature === 'typingIndicator') {
+          updateData.typingMode = enabled ? 'typing' : 'none';
+        } else {
+          updateData[dbField] = enabled;
+        }
+
+        await storage.updateBotInstance(botId, updateData);
+        await storage.createActivity({
+          botInstanceId: botId,
+          type: 'guest_feature_update',
+          description: `${feature} ${enabled ? 'enabled' : 'disabled'} by guest user ${cleanedPhone}`,
+          metadata: { feature, enabled, guestPhone: cleanedPhone },
+          serverName: currentServer
+        });
+
+        res.json({ 
+          success: true, 
+          message: `${feature} ${enabled ? 'enabled' : 'disabled'} successfully`,
+          feature,
+          enabled
+        });
+      } else {
+        // Bot is on remote server - use cross-tenancy client
+        try {
+          const { crossTenancyClient } = await import('./services/crossTenancyClient');
+          
+          // Prepare update data for remote server
+          const featureMap: Record<string, string> = {
+            'autoLike': 'autoLike',
+            'autoView': 'autoViewStatus', 
+            'autoReact': 'autoReact',
+            'chatGPT': 'chatgptEnabled',
+            'alwaysOnline': 'alwaysOnline',
+            'typingIndicator': 'typingMode',
+            'presenceAutoSwitch': 'presenceAutoSwitch'
+          };
+
+          const dbField = featureMap[feature];
+          if (!dbField) {
+            return res.status(400).json({ message: "Invalid feature name" });
+          }
+
+          const updateData: any = {};
+          if (feature === 'typingIndicator') {
+            updateData.typingMode = enabled ? 'typing' : 'none';
+          } else {
+            updateData[dbField] = enabled;
+          }
+
+          // Make cross-server request to update feature
+          const result = await crossTenancyClient.updateBot(hostingServer, botId, updateData);
+
+          if (!result.success) {
+            throw new Error(result.error || 'Cross-server feature update failed');
+          }
+
+          // Log local activity for audit trail
+          await storage.createCrossTenancyActivity({
+            type: 'cross_server_feature_update',
+            description: `Cross-server ${feature} ${enabled ? 'enabled' : 'disabled'} for bot ${botId} on ${hostingServer}`,
+            metadata: { 
+              feature, 
+              enabled, 
+              guestPhone: cleanedPhone,
+              targetServer: hostingServer,
+              botId 
+            },
+            serverName: currentServer,
+            phoneNumber: cleanedPhone,
+            remoteTenancy: hostingServer
+          });
+
+          console.log(`✅ Cross-server feature update successful: ${feature} = ${enabled} on ${hostingServer}`);
+
+          res.json({ 
+            success: true, 
+            message: `${feature} ${enabled ? 'enabled' : 'disabled'} successfully on ${hostingServer}`,
+            feature,
+            enabled,
+            crossServer: true,
+            hostingServer
+          });
+
+        } catch (crossServerError) {
+          console.error(`❌ Cross-server feature update failed:`, crossServerError);
+          res.status(500).json({ 
+            message: `Failed to update feature on ${hostingServer}`,
+            error: crossServerError instanceof Error ? crossServerError.message : 'Unknown error',
+            crossServer: true,
+            hostingServer
+          });
+        }
+      }
+
+    } catch (error) {
+      console.error('Cross-server feature update error:', error);
+      res.status(500).json({ message: "Failed to update bot feature" });
+    }
+  });
+
   // Guest Bot Info - Get detailed bot information for authenticated guest
   app.get("/api/guest/bot/info", authenticateGuestWithBot, async (req: any, res) => {
     try {

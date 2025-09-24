@@ -274,7 +274,17 @@ export default function GuestBotManagement() {
       }
 
       const data = await response.json();
-      return data.bots || [];
+      console.log('Bot search response:', data);
+      
+      // Add server info to each bot
+      const bots = (data.bots || []).map((bot: any) => ({
+        ...bot,
+        hostingServer: data.hostingServer || bot.hostingServer || bot.serverName,
+        currentServer: data.currentServer,
+        crossServer: bot.crossServer || (data.hostingServer !== data.currentServer)
+      }));
+      
+      return bots;
     },
     enabled: currentStep === 'dashboard' && !!phoneNumber.trim() && !!guestToken,
   });
@@ -332,9 +342,10 @@ export default function GuestBotManagement() {
       return response.json();
     },
     onSuccess: (data) => {
+      const serverInfo = data.crossServer ? ` on ${data.hostingServer}` : '';
       toast({
         title: "Feature Updated",
-        description: `${data.feature} ${data.enabled ? 'enabled' : 'disabled'} successfully`,
+        description: `${data.feature} ${data.enabled ? 'enabled' : 'disabled'} successfully${serverInfo}`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/guest/server-bots", phoneNumber] });
     },
@@ -768,14 +779,26 @@ export default function GuestBotManagement() {
                         <CardHeader>
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-lg">{bot.name}</CardTitle>
-                            {getStatusBadge(bot.status, bot.approvalStatus)}
+                            <div className="flex items-center gap-2">
+                              {bot.crossServer && (
+                                <Badge variant="outline" className="bg-blue-50 text-blue-700 text-xs">
+                                  📡 {bot.hostingServer}
+                                </Badge>
+                              )}
+                              {getStatusBadge(bot.status, bot.approvalStatus)}
+                            </div>
                           </div>
                           <CardDescription>
                             {bot.phoneNumber}
+                            {bot.crossServer && (
+                              <span className="block text-xs text-blue-600 mt-1">
+                                🌍 Cross-server management enabled
+                              </span>
+                            )}
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                          {/* Feature toggles for active bots */}
+                          {/* Feature toggles - now work for all bots including cross-server */}
                           <div className="grid grid-cols-2 gap-2 text-xs mb-4">
                             <div className="flex justify-between items-center">
                               <span className="text-muted-foreground">Auto Like</span>
@@ -792,7 +815,7 @@ export default function GuestBotManagement() {
                             <div className="flex justify-between items-center">
                               <span className="text-muted-foreground">Auto View</span>
                               <button
-                                onClick={() => handleFeatureToggle('autoViewStatus', !bot.features?.autoView, bot)}
+                                onClick={() => handleFeatureToggle('autoView', !bot.features?.autoView, bot)}
                                 disabled={featureToggleMutation.isPending}
                                 className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
                                   bot.features?.autoView ? 'bg-primary justify-end' : 'bg-muted justify-start'
@@ -816,7 +839,7 @@ export default function GuestBotManagement() {
                             <div className="flex justify-between items-center">
                               <span className="text-muted-foreground">ChatGPT</span>
                               <button
-                                onClick={() => handleFeatureToggle('chatgptEnabled', !bot.features?.chatGPT, bot)}
+                                onClick={() => handleFeatureToggle('chatGPT', !bot.features?.chatGPT, bot)}
                                 disabled={featureToggleMutation.isPending}
                                 className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
                                   bot.features?.chatGPT ? 'bg-primary justify-end' : 'bg-muted justify-start'
@@ -853,37 +876,50 @@ export default function GuestBotManagement() {
 
                           {/* Action buttons */}
                           <div className="flex gap-2">
-                            {bot.status === 'offline' ? (
-                              <Button
-                                size="sm"
-                                onClick={() => handleBotAction('start', bot)}
-                                disabled={botActionMutation.isPending}
-                                className="flex-1"
-                              >
-                                <Play className="h-3 w-3 mr-1" />
-                                Start
-                              </Button>
+                            {bot.crossServer ? (
+                              <div className="flex-1 bg-blue-50 border border-blue-200 rounded-md p-2 text-center">
+                                <p className="text-xs text-blue-700">
+                                  🌐 Bot hosted on {bot.hostingServer}
+                                </p>
+                                <p className="text-xs text-blue-600 mt-1">
+                                  Features can be toggled above
+                                </p>
+                              </div>
                             ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleBotAction('stop', bot)}
-                                disabled={botActionMutation.isPending}
-                                className="flex-1"
-                              >
-                                <Square className="h-3 w-3 mr-1" />
-                                Stop
-                              </Button>
+                              <>
+                                {bot.status === 'offline' ? (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleBotAction('start', bot)}
+                                    disabled={botActionMutation.isPending}
+                                    className="flex-1"
+                                  >
+                                    <Play className="h-3 w-3 mr-1" />
+                                    Start
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleBotAction('stop', bot)}
+                                    disabled={botActionMutation.isPending}
+                                    className="flex-1"
+                                  >
+                                    <Square className="h-3 w-3 mr-1" />
+                                    Stop
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleBotAction('restart', bot)}
+                                  disabled={botActionMutation.isPending}
+                                  title="Restart bot"
+                                >
+                                  <RefreshCw className="h-3 w-3" />
+                                </Button>
+                              </>
                             )}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleBotAction('restart', bot)}
-                              disabled={botActionMutation.isPending}
-                              title="Restart bot"
-                            >
-                              <RefreshCw className="h-3 w-3" />
-                            </Button>
                           </div>
 
                           {/* Bot statistics */}
