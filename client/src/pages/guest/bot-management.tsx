@@ -349,10 +349,25 @@ export default function GuestBotManagement() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/guest/server-bots", phoneNumber] });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables) => {
+      let errorMessage = error.message;
+      let errorTitle = "Feature Update Failed";
+      
+      // Handle specific cross-server configuration errors
+      if (errorMessage.includes("Cross-server feature management is not available")) {
+        errorTitle = "Cross-Server Not Configured";
+        errorMessage = "Feature updates for cross-server bots require server configuration. Please contact the administrator or access the hosting server directly.";
+      } else if (errorMessage.includes("server not configured")) {
+        errorTitle = "Server Configuration Missing";
+        errorMessage = "The hosting server is not configured for cross-tenancy operations. Please contact the administrator.";
+      } else if (errorMessage.includes("Failed to update feature on")) {
+        errorTitle = "Remote Server Error";
+        errorMessage = "Unable to communicate with the hosting server. Please try again later or contact support.";
+      }
+      
       toast({
-        title: "Feature Update Failed", 
-        description: error.message,
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -798,7 +813,15 @@ export default function GuestBotManagement() {
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                          {/* Feature toggles - now work for all bots including cross-server */}
+                          {/* Feature toggles - with cross-server limitations notice */}
+                          {bot.crossServer && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-md p-2 mb-3">
+                              <p className="text-xs text-blue-700 font-medium">🌐 Cross-Server Bot</p>
+                              <p className="text-xs text-blue-600">
+                                Feature toggles require server connectivity
+                              </p>
+                            </div>
+                          )}
                           <div className="grid grid-cols-2 gap-2 text-xs mb-4">
                             <div className="flex justify-between items-center">
                               <span className="text-muted-foreground">Auto Like</span>

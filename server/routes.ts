@@ -2826,8 +2826,41 @@ Thank you for using TREKKER-MD! 🚀
           enabled
         });
       } else {
-        // Bot is on remote server - use cross-tenancy client
+        // Bot is on remote server - check if cross-tenancy is properly configured
         try {
+          const targetServerInfo = await storage.getServerByName(hostingServer);
+          
+          if (!targetServerInfo || !targetServerInfo.baseUrl || !targetServerInfo.sharedSecret) {
+            // Cross-server feature updates not supported due to missing configuration
+            console.log(`⚠️ Cross-server feature update not supported for ${hostingServer} - missing server configuration`);
+            
+            // Log the attempt for audit trail
+            await storage.createCrossTenancyActivity({
+              type: 'cross_server_feature_update_blocked',
+              description: `Cross-server ${feature} update blocked for bot ${botId} on ${hostingServer} - server not configured for cross-tenancy`,
+              metadata: { 
+                feature, 
+                enabled, 
+                guestPhone: cleanedPhone,
+                targetServer: hostingServer,
+                botId,
+                reason: 'Server configuration missing for cross-tenancy'
+              },
+              serverName: currentServer,
+              phoneNumber: cleanedPhone,
+              remoteTenancy: hostingServer
+            });
+
+            return res.status(400).json({
+              success: false,
+              message: `Cross-server feature management is not available for ${hostingServer}. Features can only be managed directly on the hosting server.`,
+              crossServer: true,
+              hostingServer,
+              reason: 'server_not_configured',
+              suggestion: `Please access ${hostingServer} directly to manage bot features.`
+            });
+          }
+
           const { crossTenancyClient } = await import('./services/crossTenancyClient');
           
           // Prepare update data for remote server
