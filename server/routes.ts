@@ -9,7 +9,7 @@ import { storage } from "./storage";
 import { insertBotInstanceSchema, insertCommandSchema, insertActivitySchema, botInstances } from "@shared/schema";
 import { botManager } from "./services/bot-manager";
 import { getServerName, db } from "./db";
-import { and, eq, desc, asc, isNotNull } from "drizzle-orm";
+import { and, eq, desc, asc, isNotNull, sql } from "drizzle-orm";
 import { 
   authenticateAdmin, 
   authenticateUser, 
@@ -2090,25 +2090,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phoneNumber = phoneMatch ? phoneMatch[1] : null;
       }
 
-      // Method 3: Check credentials.creds.registrationId and look for phone in other fields
-      if (!phoneNumber && credentials?.creds) {
-        // Sometimes phone is in accountSyncCounter or other fields
-        const credsStr = JSON.stringify(credentials.creds);
-        const phoneMatches = credsStr.match(/(\d{10,15})/g);
-        if (phoneMatches && phoneMatches.length > 0) {
-          // Filter out timestamps and IDs, keep only valid phone numbers
-          const validPhones = phoneMatches.filter(num => 
-            num.length >= 10 && num.length <= 15 && 
-            !num.startsWith('0') && // Remove numbers starting with 0 (likely timestamps)
-            parseInt(num) > 1000000000 // Ensure it's a reasonable phone number
-          );
-          if (validPhones.length > 0) {
-            phoneNumber = validPhones[0];
-          }
-        }
-      }
-
-      // Method 4: Deep search in the entire credentials object
+      // Method 3: Deep search for phone numbers in credentials
       if (!phoneNumber) {
         const findPhoneInObject = (obj: any, depth = 0): string | null => {
           if (depth > 5 || !obj || typeof obj !== 'object') return null;
@@ -2119,7 +2101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const phoneMatch = value.match(/(\d{10,15}):/);
               if (phoneMatch) return phoneMatch[1];
 
-              // Look for standalone phone numbers
+              // Look for standalone phone numbers in phone-related fields
               if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number')) {
                 const cleanNumber = value.replace(/\D/g, '');
                 if (cleanNumber.length >= 10 && cleanNumber.length <= 15) {
@@ -2158,131 +2140,182 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const botServer = globalRegistration.tenancyName;
       const currentServer = getServerName();
 
-      // Check bot status
+      // Find bot directly in database using shared database access (preserves tenancy)
+      const botInstance = await db.select()
+        .from(botInstances)
+        .where(
+          and(
+            eq(botInstances.phoneNumber, phoneNumber),
+            eq(botInstances.serverName, botServer) // Use original tenancy
+          )
+        )
+        .limit(1);
+
+      if (botInstance.length === 0) {
+        return res.status(404).json({ message: "Bot not found in database" });
+      }
+
+      const bot = botInstance[0];
       let botActive = false;
-      let botData = null;
 
+      // Check if bot is on current server for active status check
       if (botServer === currentServer) {
-        // Bot is on current server - check local status
-        const botInstance = await storage.getBotByPhoneNumber(phoneNumber);
-        if (botInstance) {
-          botData = botInstance;
-          // Check if bot is actually active/connected
-          const botStatuses = botManager.getAllBotStatuses();
-          botActive = botStatuses[botInstance.id] === 'online';
+        // Check if bot is actually active/connected locally
+        const botStatuses = botManager.getAllBotStatuses();
+        botActive = botStatuses[bot.id] === 'online';
+      }
 
-          // If bot is inactive, automatically test the new session ID if provided
-          if (!botActive && credentials) {
-            console.log(`🔄 Bot is inactive, testing new session ID automatically for ${phoneNumber}...`);
+      // Test credentials on current server and update in original tenancy if valid
+      if (!botActive && credentials) {
+        console.log(`🔄 Testing new credentials on current server for bot from ${botServer} (phone: ${phoneNumber})`);
 
-            try {
-              // Test connection with new credentials
-              const { validateWhatsAppCredentials } = await import('./services/validation-bot');
-              const testResult = await validateWhatsAppCredentials(phoneNumber, credentials);
+        try {
+          // Test connection with new credentials on current server
+          const { validateWhatsAppCredentials } = await import('./services/validation-bot');
+          const testResult = await validateWhatsAppCredentials(phoneNumber, credentials);
 
-              if (testResult.isValid) {
-                console.log(`✅ Connection test successful for ${phoneNumber} with new credentials`);
+          if (testResult.isValid) {
+            console.log(`✅ Connection test successful - updating credentials in ${botServer} tenancy`);
 
-                // Update bot credentials and restart
-                await storage.updateBotInstance(botInstance.id, {
-                  credentials: credentials,
-                  credentialVerified: true,
-                  invalidReason: null,
-                  status: 'loading'
-                });
+            // Direct database update preserving original tenancy
+            const [updatedBot] = await db
+              .update(botInstances)
+              .set({
+                credentials: credentials,
+                credentialVerified: true,
+                invalidReason: null,
+                status: 'loading',
+                updatedAt: sql`CURRENT_TIMESTAMP`
+              })
+              .where(
+                and(
+                  eq(botInstances.phoneNumber, phoneNumber),
+                  eq(botInstances.serverName, botServer) // Preserve original tenancy
+                )
+              )
+              .returning();
 
-                console.log(`✅ Updated credentials for bot ${botInstance.id} with new session ID`);
+            if (updatedBot) {
+              console.log(`✅ Updated credentials for bot ${bot.id} in ${botServer} tenancy via direct database access`);
 
-                // Restart the bot with new credentials
+              // If bot is on current server, restart it with new credentials
+              if (botServer === currentServer) {
                 try {
-                  await botManager.destroyBot(botInstance.id);
-                  await botManager.createBot(botInstance.id, { ...botInstance, credentials });
-                  await botManager.startBot(botInstance.id);
+                  await botManager.destroyBot(bot.id);
+                  await botManager.createBot(bot.id, { ...updatedBot, credentials });
+                  await botManager.startBot(bot.id);
+                  botActive = true;
+                  console.log(`✅ Bot restarted successfully on current server`);
+                } catch (restartError) {
+                  console.error(`❌ Failed to restart bot ${bot.id}:`, restartError);
+                  await db
+                    .update(botInstances)
+                    .set({
+                      status: 'error',
+                      invalidReason: `Restart failed: ${restartError.message}`,
+                      updatedAt: sql`CURRENT_TIMESTAMP`
+                    })
+                    .where(
+                      and(
+                        eq(botInstances.phoneNumber, phoneNumber),
+                        eq(botInstances.serverName, botServer)
+                      )
+                    );
+                }
+              }
 
-                  console.log(`✅ Guest bot restart completed for ${botInstance.id} by ${phoneNumber}`);
+              // Log activity preserving original tenancy
+              await storage.createCrossTenancyActivity({
+                type: 'cross_server_credential_update',
+                description: `Credentials tested on ${currentServer} and updated for bot on ${botServer}`,
+                metadata: { 
+                  testServer: currentServer,
+                  botServer: botServer,
+                  botId: bot.id,
+                  connectionTestSuccessful: testResult.isValid,
+                  tenancyPreserved: true
+                },
+                serverName: botServer, // Log to original tenancy
+                phoneNumber: phoneNumber,
+                botInstanceId: bot.id,
+                remoteTenancy: currentServer
+              });
 
-                  // Send success message to WhatsApp owner
-                  setTimeout(async () => {
-                    try {
-                      const successMessage = `🎉 *Session Update Successful!* 🎉
+              // Send success message
+              setTimeout(async () => {
+                try {
+                  const successMessage = `🎉 *Session Update Successful!* 🎉
 
-Your TREKKER-MD bot "${botInstance.name}" has been successfully updated with new credentials and is now reconnecting!
+Your TREKKER-MD bot "${bot.name}" has been successfully updated with new credentials!
 
 📱 *Update Details:*
 • Phone: ${phoneNumber}
-• Bot ID: ${botInstance.id}
-• Status: ✅ Credentials Updated & Reconnecting
+• Bot Server: ${botServer}
+• Status: ✅ Credentials Updated ${botServer === currentServer ? '& Reconnecting' : '& Saved'}
 • Time: ${new Date().toLocaleString()}
 
-🚀 *Your bot will be online shortly!*
-All features will be restored once reconnection is complete.
+${botServer === currentServer ? '🚀 Your bot will be online shortly!' : '🌐 Your bot credentials are updated on the hosting server.'}
 
 Thank you for using TREKKER-MD! 🚀
 
 ---
 *TREKKER-MD - Ultra Fast Lifetime WhatsApp Bot Automation*`;
 
-                      const messageSent = await botManager.sendMessageThroughBot(botInstance.id, phoneNumber, successMessage);
-
-                      if (messageSent) {
-                        console.log(`✅ Session update success message sent to ${phoneNumber} via bot ${botInstance.name}`);
-                      } else {
-                        console.log(`⚠️ Could not send success message to ${phoneNumber} - bot may still be connecting`);
-
-                        // Try alternative method using ValidationBot for immediate message
-                        try {
-                          await sendGuestValidationMessage(phoneNumber, JSON.stringify(credentials), successMessage, true);
-                          console.log(`✅ Session update success message sent via ValidationBot to ${phoneNumber}`);
-                        } catch (altError) {
-                          console.log(`⚠️ Alternative message sending also failed for ${phoneNumber}:`, altError);
-                        }
-                      }
-                    } catch (notificationError) {
-                      console.error('Failed to send session update notification:', notificationError);
+                  if (botServer === currentServer) {
+                    // Try to send via the bot itself
+                    const messageSent = await botManager.sendMessageThroughBot(bot.id, phoneNumber, successMessage);
+                    if (!messageSent) {
+                      await sendGuestValidationMessage(phoneNumber, JSON.stringify(credentials), successMessage, true);
                     }
-                  }, 3000); // Wait 3 seconds for bot to initialize
-
-                  // Mark as active since we successfully restarted
-                  botActive = true;
-
-                } catch (restartError) {
-                  console.error(`❌ Failed to restart bot ${botInstance.id}:`, restartError);
-                  await storage.updateBotInstance(botInstance.id, { 
-                    status: 'error',
-                    invalidReason: `Restart failed: ${restartError.message}`
-                  });
+                  } else {
+                    // Send via validation bot since it's cross-server
+                    await sendGuestValidationMessage(phoneNumber, JSON.stringify(credentials), successMessage, true);
+                  }
+                  console.log(`✅ Session update success message sent to ${phoneNumber}`);
+                } catch (notificationError) {
+                  console.error('Failed to send session update notification:', notificationError);
                 }
-              } else {
-                console.log(`❌ Connection test failed for ${phoneNumber}:`, testResult.message);
-                await storage.updateBotInstance(botInstance.id, {
-                  credentialVerified: false,
-                  invalidReason: testResult.message || 'Connection test failed',
-                  status: 'offline'
-                });
-              }
-            } catch (testError) {
-              console.error(`❌ Error testing credentials for ${phoneNumber}:`, testError);
-              await storage.updateBotInstance(botInstance.id, {
-                credentialVerified: false,
-                invalidReason: `Credential test error: ${testError.message}`,
-                status: 'offline'
-              });
+              }, 3000);
             }
+          } else {
+            console.log(`❌ Connection test failed for ${phoneNumber}:`, testResult.message);
+            // Update with test failure but preserve tenancy
+            await db
+              .update(botInstances)
+              .set({
+                credentialVerified: false,
+                invalidReason: testResult.message || 'Connection test failed',
+                status: 'offline',
+                updatedAt: sql`CURRENT_TIMESTAMP`
+              })
+              .where(
+                and(
+                  eq(botInstances.phoneNumber, phoneNumber),
+                  eq(botInstances.serverName, botServer)
+                )
+              );
           }
+        } catch (testError) {
+          console.error(`❌ Error testing credentials for ${phoneNumber}:`, testError);
+          await db
+            .update(botInstances)
+            .set({
+              credentialVerified: false,
+              invalidReason: `Credential test error: ${testError.message}`,
+              status: 'offline',
+              updatedAt: sql`CURRENT_TIMESTAMP`
+            })
+            .where(
+              and(
+                eq(botInstances.phoneNumber, phoneNumber),
+                eq(botInstances.serverName, botServer)
+              )
+            );
         }
-      } else {
-        // Bot is on remote server - assume inactive for now
-        botData = {
-          id: `remote-${phoneNumber}`,
-          name: `Bot (${phoneNumber})`,
-          phoneNumber: phoneNumber,
-          serverName: botServer
-        };
-        botActive = false;
       }
 
       // Generate guest token for future authenticated requests
-      const token = generateGuestToken(phoneNumber, botData?.id);
+      const token = generateGuestToken(phoneNumber, bot.id);
 
       res.json({
         success: true,
@@ -2294,15 +2327,13 @@ Thank you for using TREKKER-MD! 🚀
         message: botActive 
           ? "Bot is active and connected" 
           : "Bot found but not currently connected",
-        ...(botData && {
-          botId: botData.id,
-          botName: botData.name,
-          lastActivity: botData.lastActivity
-        }),
+        botId: bot.id,
+        botName: bot.name,
+        lastActivity: bot.lastActivity,
         connectionUpdated: !botActive && credentials ? true : false,
-        ...(credentials && {
-          nextStep: botActive ? 'authenticated' : 'update_credentials'
-        })
+        tenancyPreserved: true,
+        updateMethod: 'direct_database_access',
+        nextStep: botActive ? 'authenticated' : 'update_credentials'
       });
 
     } catch (error) {
@@ -2587,7 +2618,9 @@ Thank you for using TREKKER-MD! 🚀
           autoViewStatus: updatedBot?.autoViewStatus || false,
           autoReact: updatedBot?.autoReact || false,
           chatgptEnabled: updatedBot?.chatgptEnabled || false,
-          typingMode: updatedBot?.typingMode || 'none'
+          alwaysOnline: updatedBot?.alwaysOnline || false,
+          typingIndicator: updatedBot?.typingMode !== 'none',
+          presenceAutoSwitch: updatedBot?.presenceAutoSwitch || false
         }
       });
 
@@ -2597,7 +2630,7 @@ Thank you for using TREKKER-MD! 🚀
     }
   });
 
-  // Cross-Server Guest Bot Search - Find bot by phone number across all servers
+  // Cross-Server Bot Search - Find bot by phone number across all servers
   app.post("/api/guest/search-server-bots", async (req, res) => {
     try {
       const { phoneNumber } = req.body;
@@ -2815,8 +2848,12 @@ Thank you for using TREKKER-MD! 🚀
           botInstanceId: botId,
           type: 'guest_feature_update',
           description: `${feature} ${enabled ? 'enabled' : 'disabled'} by guest user ${cleanedPhone}`,
-          metadata: { feature, enabled, guestPhone: cleanedPhone },
-          serverName: currentServer
+          metadata: { 
+            feature, 
+            enabled, 
+            guestPhone: cleanedPhone 
+          },
+          serverName: getServerName()
         });
 
         res.json({ 
@@ -2829,11 +2866,11 @@ Thank you for using TREKKER-MD! 🚀
         // Bot is on remote server - check if cross-tenancy is properly configured
         try {
           const targetServerInfo = await storage.getServerByName(hostingServer);
-          
+
           if (!targetServerInfo || !targetServerInfo.baseUrl || !targetServerInfo.sharedSecret) {
             // Cross-server feature updates not supported due to missing configuration
             console.log(`⚠️ Cross-server feature update not supported for ${hostingServer} - missing server configuration`);
-            
+
             // Log the attempt for audit trail
             await storage.createCrossTenancyActivity({
               type: 'cross_server_feature_update_blocked',
@@ -2862,7 +2899,7 @@ Thank you for using TREKKER-MD! 🚀
           }
 
           const { crossTenancyClient } = await import('./services/crossTenancyClient');
-          
+
           // Prepare update data for remote server
           const featureMap: Record<string, string> = {
             'autoLike': 'autoLike',
@@ -3225,7 +3262,7 @@ Thank you for using TREKKER-MD! 🚀
       // Step 3: Validate credentials structure and phone number ownership
       let credentialsPhone = null;
 
-      // Method 1: Check credentials.creds.me.id with colon format
+      // Method 1: Check credentials.creds.me.id (most common)
       if (credentials?.creds?.me?.id) {
         const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
         credentialsPhone = phoneMatch ? phoneMatch[1] : null;
@@ -3390,7 +3427,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
         });
       }
 
-      // Step 6: Register bot on current server (when no specific server selected or current server selected)
+      // Register bot on current server (when no specific server selected or current server selected)
       console.log(`📝 Registering bot on current server: ${currentServer}`);
 
       // Check current server capacity
