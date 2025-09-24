@@ -1646,6 +1646,67 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
   // ======= GUEST AUTHENTICATION ENDPOINTS =======
 
+  // Guest Registration Check - Check if phone number is registered in God Registry
+  app.post("/api/guest/check-registration", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      const currentServer = getServerName();
+
+      console.log(`🔍 Checking registration for phone ${cleanedPhone} on server ${currentServer}`);
+
+      // Check God Registry to find if phone number is registered anywhere
+      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+
+      if (!globalRegistration) {
+        // Phone number is not registered anywhere
+        return res.json({
+          registered: false,
+          phoneNumber: cleanedPhone,
+          message: "Phone number not found in our system",
+          canRegister: true
+        });
+      }
+
+      const hostingServer = globalRegistration.tenancyName;
+      const isCurrentServer = hostingServer === currentServer;
+
+      if (isCurrentServer) {
+        // Phone number is registered on current server - check for actual bot
+        const bot = await storage.getBotByPhoneNumber(cleanedPhone);
+        
+        return res.json({
+          registered: true,
+          currentServer: true,
+          phoneNumber: cleanedPhone,
+          hasBot: !!bot,
+          bot: bot ? maskBotDataForGuest(bot, true) : null,
+          message: bot 
+            ? "Phone number found with existing bot on this server"
+            : "Phone number registered to this server but no bot found"
+        });
+      } else {
+        // Phone number is registered on different server
+        return res.status(400).json({
+          registered: true,
+          currentServer: false,
+          registeredTo: hostingServer,
+          phoneNumber: cleanedPhone,
+          message: `This phone number is registered to ${hostingServer}. Please use that server to manage your bot.`
+        });
+      }
+
+    } catch (error) {
+      console.error('Guest check registration error:', error);
+      res.status(500).json({ message: "Failed to check registration" });
+    }
+  });
+
   // Guest Bot Status Check - Check if bot exists and its status
   app.post("/api/guest/bot/status", async (req, res) => {
     try {
