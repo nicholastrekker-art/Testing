@@ -33,7 +33,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       presenceMode: 'none' as 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch',
       intervalSeconds: 30, // for auto_switch mode
       chatGPT: false
-    }
+    },
+    selectedServer: '' // Added to store the selected server
   });
 
   const [step, setStep] = useState(1); // 1: phone_number, 2: god_registry_check, 3: server_selection, 4: credentials, 5: features, 6: validation, 7: success, 8: existing_bot_management, 9: wrong_server, 10: server_full, 11: cross_tenancy_success
@@ -197,21 +198,21 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       if (data.type === 'existing_bot_found') {
         setExistingBotData(data.botDetails);
         setStep(8); // FIXED: Show existing bot management (step 8, not 4)
-        toast({ 
-          title: "Existing Bot Found", 
+        toast({
+          title: "Existing Bot Found",
           description: data.message || "Welcome back! You have a bot on this server."
         });
       } else if (data.type === 'cross_tenancy_registered') {
         setCrossTenancyData(data);
         setStep(11); // FIXED: Show cross-tenancy registration success (step 11, not 7)
-        toast({ 
-          title: "Auto-Distributed to Available Server", 
+        toast({
+          title: "Auto-Distributed to Available Server",
           description: data.message || "Your bot has been registered on an available server!"
         });
       } else {
         setStep(7); // FIXED: New registration success (step 7, not 3)
-        toast({ 
-          title: "Bot registration submitted", 
+        toast({
+          title: "Bot registration submitted",
           description: data.message || "Your bot is being validated..."
         });
       }
@@ -260,9 +261,12 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
   };
 
   // Step 3: Server selection
-  const handleServerSelection = (serverId: string) => {
-    setSelectedServer(serverId);
+  const handleServerSelection = (server: any) => {
+    console.log('Selected server:', server);
+    // Set the selected server in form data and move to credentials step
+    setFormData(prev => ({ ...prev, selectedServer: server.id })); // Use server.id as selectedServer
     setStep(4); // Go to credentials step
+    setShowServerSelection(false);
   };
 
   // Step 4-5: Continue to next step
@@ -306,7 +310,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     const cleanedFormData = {
       ...formData,
       phoneNumber: formData.phoneNumber.replace(/^\+/, ''),
-      selectedServer: selectedServer
+      selectedServer: selectedServer || formData.selectedServer // Use selectedServer state if available, otherwise from formData
     };
 
     setStep(6); // Show loading state
@@ -443,7 +447,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
         presenceMode: 'none' as 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch',
         intervalSeconds: 30,
         chatGPT: false
-      }
+      },
+      selectedServer: '' // Reset selected server
     });
     setStep(1);
   };
@@ -536,8 +541,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                 </CardContent>
               </Card>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 data-testid="button-check-phone"
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 text-lg rounded-lg shadow-lg transform transition hover:scale-[1.02]"
                 disabled={phoneCheckMutation.isPending}
@@ -615,7 +620,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                     {availableServers.map((server) => (
                       <div
                         key={server.id}
-                        onClick={() => handleServerSelection(server.id)}
+                        onClick={() => handleServerSelection(server)}
                         className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
                         data-testid={`server-option-${server.id}`}
                       >
@@ -639,7 +644,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                 </CardContent>
               </Card>
 
-              <Button 
+              <Button
                 onClick={handleBack}
                 variant="outline"
                 className="w-full"
@@ -698,8 +703,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
 
                   <div>
                     <Label className="text-sm font-medium">Choose Credential Type *</Label>
-                    <RadioGroup 
-                      value={formData.credentialType} 
+                    <RadioGroup
+                      value={formData.credentialType}
                       onValueChange={(value) => setFormData(prev => ({ ...prev, credentialType: value }))}
                       className="mt-2"
                     >
@@ -750,7 +755,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                 </CardContent>
               </Card>
 
-              <Button 
+              <Button
                 onClick={handleNextStep}
                 data-testid="button-next-step"
                 className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 text-lg rounded-lg shadow-lg transform transition hover:scale-[1.02]"
@@ -794,14 +799,14 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
-                      <Checkbox 
+                      <Checkbox
                         id="autoLike"
                         data-testid="checkbox-auto-like"
                         checked={formData.features.autoLike}
-                        onCheckedChange={(checked) => 
-                          setFormData(prev => ({ 
-                            ...prev, 
-                            features: { ...prev.features, autoLike: !!checked } 
+                        onCheckedChange={(checked) =>
+                          setFormData(prev => ({
+                            ...prev,
+                            features: { ...prev.features, autoLike: !!checked }
                           }))
                         }
                         className="mt-1"
@@ -813,14 +818,14 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                     </div>
 
                     <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
-                      <Checkbox 
+                      <Checkbox
                         id="autoReact"
                         data-testid="checkbox-auto-react"
                         checked={formData.features.autoReact}
-                        onCheckedChange={(checked) => 
-                          setFormData(prev => ({ 
-                            ...prev, 
-                            features: { ...prev.features, autoReact: !!checked } 
+                        onCheckedChange={(checked) =>
+                          setFormData(prev => ({
+                            ...prev,
+                            features: { ...prev.features, autoReact: !!checked }
                           }))
                         }
                         className="mt-1"
@@ -832,14 +837,14 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                     </div>
 
                     <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
-                      <Checkbox 
+                      <Checkbox
                         id="autoView"
                         data-testid="checkbox-auto-view"
                         checked={formData.features.autoView}
-                        onCheckedChange={(checked) => 
-                          setFormData(prev => ({ 
-                            ...prev, 
-                            features: { ...prev.features, autoView: !!checked } 
+                        onCheckedChange={(checked) =>
+                          setFormData(prev => ({
+                            ...prev,
+                            features: { ...prev.features, autoView: !!checked }
                           }))
                         }
                         className="mt-1"
@@ -857,10 +862,10 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                       </div>
                       <Select
                         value={formData.features.presenceMode}
-                        onValueChange={(value: 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch') => 
-                          setFormData(prev => ({ 
-                            ...prev, 
-                            features: { ...prev.features, presenceMode: value } 
+                        onValueChange={(value: 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch') =>
+                          setFormData(prev => ({
+                            ...prev,
+                            features: { ...prev.features, presenceMode: value }
                           }))
                         }
                       >
@@ -896,14 +901,14 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                     </div>
 
                     <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 md:col-span-2">
-                      <Checkbox 
+                      <Checkbox
                         id="chatGPT"
                         data-testid="checkbox-chatgpt"
                         checked={formData.features.chatGPT}
-                        onCheckedChange={(checked) => 
-                          setFormData(prev => ({ 
-                            ...prev, 
-                            features: { ...prev.features, chatGPT: !!checked } 
+                        onCheckedChange={(checked) =>
+                          setFormData(prev => ({
+                            ...prev,
+                            features: { ...prev.features, chatGPT: !!checked }
                           }))
                         }
                         className="mt-1"
@@ -917,7 +922,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                 </CardContent>
               </Card>
 
-              <Button 
+              <Button
                 onClick={handleNextStep}
                 data-testid="button-register-bot-final"
                 className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold py-3 text-lg rounded-lg shadow-lg transform transition hover:scale-[1.02]"
@@ -1021,8 +1026,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                   <div>
                     <span className="font-medium">Status:</span>
                     <div className={`inline-block ml-2 px-2 py-1 rounded-full text-xs ${
-                      existingBotData.isActive 
-                        ? 'bg-green-100 text-green-800' 
+                      existingBotData.isActive
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
                     }`}>
                       {existingBotData.status}
@@ -1031,8 +1036,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                   <div>
                     <span className="font-medium">Approval:</span>
                     <div className={`inline-block ml-2 px-2 py-1 rounded-full text-xs ${
-                      existingBotData.isApproved 
-                        ? 'bg-blue-100 text-blue-800' 
+                      existingBotData.isApproved
+                        ? 'bg-blue-100 text-blue-800'
                         : 'bg-yellow-100 text-yellow-800'
                     }`}>
                       {existingBotData.approvalStatus}
@@ -1071,7 +1076,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                   </div>
 
                   <div className="space-y-3">
-                    <Button 
+                    <Button
                       className="w-full bg-amber-600 hover:bg-amber-700 text-white"
                       onClick={() => {
                         // Close registration modal and redirect to search page for credential validation
@@ -1137,7 +1142,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                 <div className="space-y-3">
                   <h4 className="font-medium">Choose Your Action:</h4>
                   <div className="grid gap-3">
-                    <Button 
+                    <Button
                       onClick={async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -1239,7 +1244,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                       </div>
                     </Button>
 
-                    <Button 
+                    <Button
                       variant="outline"
                       onClick={() => {
                         // Stay on current server but show server selection for new registration
@@ -1258,7 +1263,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
               </CardContent>
             </Card>
 
-            <Button 
+            <Button
               onClick={handleBack}
               variant="outline"
               className="w-full"
@@ -1314,7 +1319,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
               </CardContent>
             </Card>
 
-            <Button 
+            <Button
               onClick={() => {
                 // Switch to the assigned server context
                 setSelectedServer(crossTenancyData.assignedServer);
@@ -1422,8 +1427,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
               </ul>
             </div>
 
-            <Button 
-              onClick={handleClose} 
+            <Button
+              onClick={handleClose}
               className="w-full bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700"
               data-testid="button-close-cross-tenancy"
             >

@@ -4187,19 +4187,27 @@ Thank you for using TREKKER-MD! 🚀`;
       // Get current tenant name
       const currentTenancyName = getServerName();
 
+      // IMPORTANT: Use selectedServer from frontend if provided, otherwise use current server
+      let targetServerName = selectedServer && selectedServer.trim() !== '' ? selectedServer.trim() : currentTenancyName;
+
+      console.log(`🎯 Registration request: Current server: ${currentTenancyName}, Selected server: ${selectedServer}, Target server: ${targetServerName}`);
+
       // Check global registration first using clean phone number
       const globalRegistration = await storage.checkGlobalRegistration(cleanPhoneNumber);
       if (globalRegistration) {
         // Phone number is already registered to another tenant
-        if (globalRegistration.tenancyName !== currentTenancyName) {
+        if (globalRegistration.tenancyName !== targetServerName) {
           return res.status(400).json({ 
             message: `This phone number is registered to ${globalRegistration.tenancyName}. Please go to ${globalRegistration.tenancyName} server to manage your bot.`,
             registeredTo: globalRegistration.tenancyName
           });
         }
 
-        // Phone number belongs to this tenant - check for existing bot using clean phone number
-        const existingBot = await storage.getBotByPhoneNumber(cleanPhoneNumber);
+        // Phone number belongs to target tenant - check for existing bot using clean phone number
+        const existingBot = targetServerName === currentTenancyName 
+          ? await storage.getBotByPhoneNumber(cleanPhoneNumber)
+          : null; // For cross-server, we can't easily check existing bots
+
         if (existingBot) {
           // User has a bot on this server - automatically update credentials instead of blocking
           console.log(`📱 Phone number ${cleanPhoneNumber} already registered, updating credentials for bot ${existingBot.id}`);
@@ -4296,76 +4304,89 @@ Thank you for using TREKKER-MD! 🚀`;
         }
       } else {
         // This is a new registration - global registration will be handled by createCrossServerRegistration
-        console.log(`📝 New registration for ${cleanPhoneNumber} will be handled by cross-server registration method`);
+        console.log(`📝 New registration for ${cleanPhoneNumber} will be handled by cross-server registration method on ${targetServerName}`);
       }
 
-      // Check if phone number already exists locally (redundant check but for safety)
-      const existingBot = await storage.getBotByPhoneNumber(cleanPhoneNumber);
-      if (existingBot) {
-        // Check if existing bot is active and has valid session
-        if (existingBot.approvalStatus === 'approved' && existingBot.status === 'online') {
-          return res.status(400).json({ 
-            message: "Your previous bot is active. Can't add new bot with same number." 
-          });
-        }
+      // Check if phone number already exists locally (only if target server is current server)
+      if (targetServerName === currentTenancyName) {
+        const existingBot = await storage.getBotByPhoneNumber(cleanPhoneNumber);
+        if (existingBot) {
+          // Check if existing bot is active and has valid session
+          if (existingBot.approvalStatus === 'approved' && existingBot.status === 'online') {
+            return res.status(400).json({ 
+              message: "Your previous bot is active. Can't add new bot with same number." 
+            });
+          }
 
-        // If bot is inactive, test connection and handle accordingly
-        if (existingBot.approvalStatus === 'approved' && existingBot.status !== 'online') {
-          // Try to test connection - if fails, delete old credentials
-          try {
-            // Test connection logic here
-            console.log(`Testing connection for existing bot ${existingBot.id}`);
-            // If connection test fails, we'll delete and allow new registration
-          } catch (error) {
-            console.log(`Connection test failed for ${existingBot.id}, allowing new registration`);
-            await storage.deleteBotInstance(existingBot.id);
+          // If bot is inactive, test connection and handle accordingly
+          if (existingBot.approvalStatus === 'approved' && existingBot.status !== 'online') {
+            // Try to test connection - if fails, delete old credentials
+            try {
+              // Test connection logic here
+              console.log(`Testing connection for existing bot ${existingBot.id}`);
+              // If connection test fails, we'll delete and allow new registration
+            } catch (error) {
+              console.log(`Connection test failed for ${existingBot.id}, allowing new registration`);
+              await storage.deleteBotInstance(existingBot.id);
+            }
           }
         }
       }
 
-      // Check bot count limit using strict validation (no auto-removal)
-      const botCountCheck = await storage.strictCheckBotCountLimit();
-      let targetServerName = currentTenancyName; // Default to current server
+      // Check bot count limit for target server
+      const botCountCheck = await storage.strictCheckBotCountLimit(targetServerName);
 
       if (!botCountCheck.canAdd) {
-        // Current server is full - try automatic cross-server registration
-        const availableServers = await storage.getAvailableServers();
+        // Target server is full - try to find alternative or show error
+        if (targetServerName === currentTenancyName) {
+          // Current server is full - try automatic cross-server registration
+          const availableServers = await storage.getAvailableServers();
 
-        if (availableServers.length > 0) {
-          // Automatically register on the first available server
-          const targetServer = availableServers[0];
-          targetServerName = targetServer.serverName;
+          if (availableServers.length > 0) {
+            // Automatically register on the first available server
+            const fallbackServer = availableServers[0];
+            targetServerName = fallbackServer.serverName;
 
-          console.log(`🔄 ${getServerName()} is full (${botCountCheck.currentCount}/${botCountCheck.maxCount}), automatically registering on ${targetServerName}`);
-
-          // Update global registration to point to the target server
-          await storage.updateGlobalRegistration(phoneNumber, targetServerName);
-
-          console.log(`✅ Cross-server registration: Bot will be registered on ${targetServerName} instead of ${getServerName()}`);
+            console.log(`🔄 ${currentTenancyName} is full (${botCountCheck.currentCount}/${botCountCheck.maxCount}), automatically registering on ${targetServerName}`);
+          } else {
+            // All servers are full - cannot proceed
+            return res.status(400).json({ 
+              message: `😞 All servers are currently full! Current server: ${currentTenancyName} (${botCountCheck.currentCount}/${botCountCheck.maxCount}). Please contact administrator for more capacity or try again later.`,
+              serverFull: true,
+              allServersFull: true,
+              currentServer: currentTenancyName,
+              capacity: {
+                current: botCountCheck.currentCount,
+                max: botCountCheck.maxCount
+              },
+              action: 'contact_admin'
+            });
+          }
         } else {
-          // All servers are full - cannot proceed
+          // Selected server is full
           return res.status(400).json({ 
-            message: `😞 All servers are currently full! Current server: ${getServerName()} (${botCountCheck.currentCount}/${botCountCheck.maxCount}). Please contact administrator for more capacity or try again later.`,
+            message: `😞 Selected server ${targetServerName} is full (${botCountCheck.currentCount}/${botCountCheck.maxCount}). Please choose a different server.`,
             serverFull: true,
-            allServersFull: true,
-            currentServer: getServerName(),
+            selectedServer: targetServerName,
             capacity: {
               current: botCountCheck.currentCount,
               max: botCountCheck.maxCount
             },
-            action: 'contact_admin'
+            action: 'select_different_server'
           });
         }
       }
 
       // Use atomic cross-server registration with rollback support
+      console.log(`🚀 Starting registration process for ${cleanPhoneNumber} on target server: ${targetServerName}`);
+      
       const registrationResult = await storage.createCrossServerRegistration(
-        phoneNumber,
+        cleanPhoneNumber, // Use cleaned phone number consistently
         targetServerName,
         {
           name: botName,
-          serverName: targetServerName,
-          phoneNumber: phoneNumber,
+          serverName: targetServerName, // Ensure bot is created with correct server name
+          phoneNumber: cleanPhoneNumber, // Use cleaned phone number
           credentials: credentials,
           status: 'pending_validation',
           approvalStatus: 'pending',
@@ -4388,13 +4409,14 @@ Thank you for using TREKKER-MD! 🚀`;
       }
 
       const botInstance = registrationResult.botInstance!;
+      console.log(`✅ Bot instance created: ${botInstance.id} on server ${botInstance.serverName}`);
 
       // Handle registration differently for cross-server vs same-server
       if (targetServerName !== currentTenancyName) {
         // Cross-server registration - no WhatsApp validation, just registry entry
-        console.log(`🔄 Cross-server registration: Creating registry entry for bot ${botInstance.id} on ${targetServerName}`);
+        console.log(`🌐 Cross-server registration: Bot ${botInstance.id} registered on ${targetServerName} (accessed from ${currentTenancyName})`);
 
-        // Mark credentials as verified without testing (assuming they're valid)
+        // Mark credentials as verified without testing (assuming they're valid for cross-server)
         await storage.updateBotCredentialStatusOnServer(botInstance.id, targetServerName, {
           credentialVerified: true,
           credentialPhone: cleanPhoneNumber,
@@ -4410,16 +4432,38 @@ Thank you for using TREKKER-MD! 🚀`;
         });
         console.log(`✅ Bot status set to dormant on server ${targetServerName} (cross-server registration)`);
 
+        // Send a cross-server notification message (best effort)
+        try {
+          const crossServerMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
+
+✅ Bot "${botName}" registered on ${targetServerName}
+📱 Phone: ${cleanPhoneNumber}
+📅 ${new Date().toLocaleString()}
+🌐 Registered from: ${currentTenancyName}
+
+⏳ Awaiting admin approval on ${targetServerName}
+📞 Activate: +254704897825
+
+🚀 Enjoy premium TREKKER-MD features once approved!`;
+
+          const credentialsBase64 = credentialType === 'base64' ? sessionId : Buffer.from(JSON.stringify(credentials)).toString('base64');
+          await sendGuestValidationMessage(cleanPhoneNumber, credentialsBase64, crossServerMessage);
+          console.log(`✅ Cross-server registration message sent to ${cleanPhoneNumber}`);
+        } catch (crossServerMessageError) {
+          console.warn(`⚠️ Failed to send cross-server registration message to ${cleanPhoneNumber}:`, crossServerMessageError);
+          // Don't fail the registration if message sending fails
+        }
+
       } else {
         // Same-server registration - test WhatsApp connection and send validation message
         try {
-          console.log(`🔄 Testing WhatsApp connection for guest bot ${botInstance.id}`);
+          console.log(`🔄 Testing WhatsApp connection for guest bot ${botInstance.id} on same server`);
 
           // Prepare validation message
           const validationMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
 
 ✅ Bot "${botName}" registered
-📱 Phone: ${phoneNumber}
+📱 Phone: ${cleanPhoneNumber}
 📅 ${new Date().toLocaleString()}
 
 ⏳ Awaiting admin approval
@@ -4430,8 +4474,8 @@ Thank you for using TREKKER-MD! 🚀`;
           // Send validation message using the bot's own credentials
           const credentialsBase64 = credentialType === 'base64' ? sessionId : Buffer.from(JSON.stringify(credentials)).toString('base64');
 
-          await sendGuestValidationMessage(phoneNumber, credentialsBase64, validationMessage);
-          console.log(`✅ Validation message sent successfully to ${phoneNumber}`);
+          await sendGuestValidationMessage(cleanPhoneNumber, credentialsBase64, validationMessage);
+          console.log(`✅ Validation message sent successfully to ${cleanPhoneNumber}`);
 
           // Mark credentials as verified since validation message was sent successfully
           await storage.updateBotCredentialStatus(botInstance.id, {
@@ -4451,8 +4495,8 @@ Thank you for using TREKKER-MD! 🚀`;
           console.error('Failed to validate WhatsApp connection:', validationError);
 
           // For same-server validation failures, rollback the registration
-          await storage.rollbackCrossServerRegistration(phoneNumber, botInstance.id, targetServerName);
-          console.log(`🔄 Rolled back failed registration for ${phoneNumber}`);
+          await storage.rollbackCrossServerRegistration(cleanPhoneNumber, botInstance.id, targetServerName);
+          console.log(`🔄 Rolled back failed registration for ${cleanPhoneNumber}`);
 
           return res.status(400).json({ 
             message: "Failed to validate WhatsApp credentials. Please check your session ID or creds.json file." 
@@ -4463,38 +4507,47 @@ Thank you for using TREKKER-MD! 🚀`;
       // Log activity on target server (cross-tenancy logging)
       await storage.createCrossTenancyActivity({
         type: 'registration',
-        description: `Guest bot registered${targetServerName !== currentTenancyName ? ' (cross-server)' : ' and validation message sent'} to ${phoneNumber}`,
+        description: `Guest bot registered${targetServerName !== currentTenancyName ? ` (cross-server from ${currentTenancyName})` : ' and validation message sent'} for ${cleanPhoneNumber}`,
         metadata: { 
-          phoneNumber, 
+          phoneNumber: cleanPhoneNumber, 
           credentialType, 
           phoneValidated: targetServerName === currentTenancyName, // Only validated for same-server
-          sourceServer: getServerName(),
+          sourceServer: currentTenancyName,
           targetServer: targetServerName,
-          crossServerRegistration: targetServerName !== currentTenancyName
+          crossServerRegistration: targetServerName !== currentTenancyName,
+          botName: botName
         },
         serverName: targetServerName, // Log to target server where bot was created
-        phoneNumber,
-        remoteTenancy: undefined
+        phoneNumber: cleanPhoneNumber,
+        remoteTenancy: targetServerName !== currentTenancyName ? currentTenancyName : undefined
       });
 
       broadcast({ 
         type: 'GUEST_BOT_REGISTERED', 
         data: { 
           botInstance: { ...botInstance, credentials: undefined }, // Don't broadcast credentials
-          phoneNumber 
+          phoneNumber: cleanPhoneNumber,
+          targetServer: targetServerName,
+          sourceServer: currentTenancyName
         } 
       });
 
       const crossServerMessage = targetServerName !== currentTenancyName 
-        ? ` Your bot was automatically registered on ${targetServerName} server because ${currentTenancyName} was full.`
+        ? ` Your bot was registered on ${targetServerName} server as selected.`
         : '';
 
       res.json({ 
         success: true, 
-        message: `Bot registered successfully!${targetServerName === currentTenancyName ? ' Validation message sent to your WhatsApp.' : ''}${crossServerMessage} Contact +254704897825 for activation.`,
+        message: `Bot registered successfully on ${targetServerName}!${targetServerName === currentTenancyName ? ' Validation message sent to your WhatsApp.' : ' Cross-server registration completed.'}${crossServerMessage} Contact +254704897825 for activation.`,
         botId: botInstance.id,
         serverUsed: targetServerName,
-        crossServerRegistration: targetServerName !== currentTenancyName
+        crossServerRegistration: targetServerName !== currentTenancyName,
+        registrationDetails: {
+          botName: botName,
+          phoneNumber: cleanPhoneNumber,
+          targetServer: targetServerName,
+          sourceServer: currentTenancyName
+        }
       });
 
     } catch (error) {
