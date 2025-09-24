@@ -52,6 +52,7 @@ export default function GuestBotManagement() {
   const [authenticatedBotId, setAuthenticatedBotId] = useState<string | null>(null);
   const [showSessionId, setShowSessionId] = useState(false);
   const [botInfo, setBotInfo] = useState<any>(null);
+  const [showPhoneEntry, setShowPhoneEntry] = useState(false);
 
   // Step 1: Session ID verification - Extract phone number and check bot status
   const verifySessionMutation = useMutation({
@@ -293,6 +294,7 @@ export default function GuestBotManagement() {
     setGuestToken(null);
     setAuthenticatedBotId(null);
     setBotInfo(null);
+    setShowPhoneEntry(false);
   };
 
   const getStatusBadge = (status: string, approvalStatus?: string) => {
@@ -366,7 +368,7 @@ export default function GuestBotManagement() {
         </Card>
 
         {/* Step 1: Session ID Entry */}
-        {currentStep === 'session' && (
+        {currentStep === 'session' && !showPhoneEntry && (
           <Card className="border-blue-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -418,18 +420,29 @@ export default function GuestBotManagement() {
                   </div>
                 </div>
               </div>
-              <Button 
-                onClick={handleSessionVerification}
-                disabled={verifySessionMutation.isPending}
-                size="lg"
-                className="w-full"
-              >
-                {verifySessionMutation.isPending ? (
-                  <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Verifying...</>
-                ) : (
-                  <><Shield className="h-4 w-4 mr-2" /> Verify Session & Check Connection</>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleSessionVerification}
+                  disabled={verifySessionMutation.isPending}
+                  size="lg"
+                  className="flex-1"
+                >
+                  {verifySessionMutation.isPending ? (
+                    <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Verifying...</>
+                  ) : (
+                    <><Shield className="h-4 w-4 mr-2" /> Verify Session & Check Connection</>
+                  )}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowPhoneEntry(true)}
+                  size="lg"
+                  className="flex items-center gap-2"
+                >
+                  <Phone className="h-4 w-4" />
+                  Use Phone Number
+                </Button>
+              </div>
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
@@ -437,6 +450,67 @@ export default function GuestBotManagement() {
                   and never share it with others.
                 </AlertDescription>
               </Alert>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Phone Number Entry Alternative */}
+        {currentStep === 'session' && showPhoneEntry && (
+          <Card className="border-green-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Phone className="h-6 w-6 text-green-600" />
+                Enter Phone Number
+              </CardTitle>
+              <CardDescription>
+                Enter your phone number to search for your bot
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Phone Number (with country code)</label>
+                <Input
+                  placeholder="+254700000000"
+                  value={phoneNumber}
+                  onChange={(e) => {
+                    const cleaned = e.target.value.replace(/[\s\-\(\)]/g, '');
+                    setPhoneNumber(cleaned);
+                  }}
+                  className="text-lg"
+                  autoFocus
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter your phone number with country code (+ will be removed automatically)
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => {
+                    if (!phoneNumber.trim()) {
+                      toast({
+                        title: "Phone number required",
+                        description: "Please enter your phone number",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+                    // Redirect to the search page for phone number based search
+                    window.location.href = '/guest/verification';
+                  }}
+                  size="lg"
+                  className="flex-1"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Search Bot by Phone
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowPhoneEntry(false)}
+                  size="lg"
+                >
+                  Back to Session ID
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -513,10 +587,11 @@ export default function GuestBotManagement() {
                     setCurrentStep('session');
                     setSessionId('');
                     setBotInfo(null);
+                    setShowPhoneEntry(false);
                   }}
                   size="lg"
                 >
-                  Start Over
+                  Back
                 </Button>
               </div>
             </CardContent>
