@@ -218,7 +218,7 @@ function maskBotDataForGuest(botData: any, includeFeatures: boolean = false): an
 }
 
 const upload = multer({ 
-  storage: multer.memoryStorage(),
+  storage:multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     if (file.originalname.endsWith('.json')) {
       cb(null, true);
