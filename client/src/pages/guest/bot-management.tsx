@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, Play, Square, RefreshCw, Settings, Trash2, ExternalLink, AlertTriangle, Shield, CheckCircle, Phone, Eye, EyeOff } from "lucide-react";
+import { Bot, Play, Square, RefreshCw, Settings, Trash2, ExternalLink, AlertTriangle, Shield, CheckCircle, Phone, Eye, EyeOff, Upload } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface BotInfo {
@@ -53,12 +53,13 @@ export default function GuestBotManagement() {
   const [authenticatedBotId, setAuthenticatedBotId] = useState<string | null>(null);
   const [showSessionId, setShowSessionId] = useState(false);
   const [foundBots, setFoundBots] = useState<BotInfo[]>([]);
+  const [botVerified, setBotVerified] = useState(false);
 
-  // Step 1: Phone number verification
-  const phoneCheckMutation = useMutation({
+  // Step 1: Phone number search - just find the bot, don't show details
+  const phoneSearchMutation = useMutation({
     mutationFn: async (phoneNumber: string) => {
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      const response = await fetch('/api/guest/verify-phone', {
+      const response = await fetch('/api/guest/search-bot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phoneNumber: cleanedPhone }),
@@ -66,17 +67,17 @@ export default function GuestBotManagement() {
       
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Phone number verification failed');
+        throw new Error(error.message || 'Bot search failed');
       }
       
       return response.json();
     },
     onSuccess: (data) => {
-      if (data.verified) {
+      if (data.botExists) {
         setCurrentStep('verification');
         toast({
-          title: "Phone Number Verified",
-          description: "Please provide your session ID to continue.",
+          title: "Bot Found",
+          description: "Please verify your ownership with session credentials.",
         });
       } else {
         toast({
@@ -88,7 +89,7 @@ export default function GuestBotManagement() {
     },
     onError: (error: Error) => {
       toast({
-        title: "Verification Failed",
+        title: "Search Failed",
         description: error.message,
         variant: "destructive"
       });
@@ -124,6 +125,7 @@ export default function GuestBotManagement() {
       }
     },
     onSuccess: () => {
+      setBotVerified(true);
       setCurrentStep('testing');
       toast({
         title: "Authentication Complete",
@@ -165,6 +167,7 @@ export default function GuestBotManagement() {
         // Now validate with backend to get proper token
         validateBotMutation.mutate({ phoneNumber, sessionId });
       } else {
+        // Credentials are expired - show link to update
         toast({
           title: "Credentials Expired",
           description: "Your session has expired. Please get a new session ID.",
@@ -175,7 +178,7 @@ export default function GuestBotManagement() {
     onError: (error: Error) => {
       toast({
         title: "Connection Failed",
-        description: "Credentials are expired or invalid. Please get a new session ID.",
+        description: "Credentials are expired or invalid. Please get a new session ID from the link below.",
         variant: "destructive"
       });
     },
@@ -325,7 +328,7 @@ export default function GuestBotManagement() {
       });
       return;
     }
-    phoneCheckMutation.mutate(phoneNumber);
+    phoneSearchMutation.mutate(phoneNumber);
   };
 
   const handleSessionVerification = () => {
@@ -355,6 +358,7 @@ export default function GuestBotManagement() {
     setGuestToken(null);
     setAuthenticatedBotId(null);
     setFoundBots([]);
+    setBotVerified(false);
   };
 
   const getStatusBadge = (status: string, approvalStatus?: string) => {
@@ -390,7 +394,7 @@ export default function GuestBotManagement() {
             </h1>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Manage your WhatsApp bots across all servers with secure authentication and real-time monitoring
+            Manage your WhatsApp bots with secure credential verification
           </p>
         </div>
 
@@ -399,10 +403,10 @@ export default function GuestBotManagement() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               {[
-                { step: 1, title: "Phone Verification", icon: Phone, active: currentStep === 'phone', completed: currentStep !== 'phone' },
-                { step: 2, title: "Session Verification", icon: Shield, active: currentStep === 'verification', completed: ['testing', 'dashboard'].includes(currentStep) },
-                { step: 3, title: "Connection Test", icon: RefreshCw, active: currentStep === 'testing', completed: currentStep === 'dashboard' },
-                { step: 4, title: "Bot Management", icon: Settings, active: currentStep === 'dashboard', completed: false },
+                { step: 1, title: "Find Bot", icon: Phone, active: currentStep === 'phone', completed: currentStep !== 'phone' },
+                { step: 2, title: "Verify Credentials", icon: Shield, active: currentStep === 'verification', completed: ['testing', 'dashboard'].includes(currentStep) },
+                { step: 3, title: "Test Connection", icon: RefreshCw, active: currentStep === 'testing', completed: currentStep === 'dashboard' },
+                { step: 4, title: "Manage Bot", icon: Settings, active: currentStep === 'dashboard', completed: false },
               ].map((item, index) => (
                 <div key={item.step} className="flex items-center">
                   <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
@@ -437,7 +441,7 @@ export default function GuestBotManagement() {
                 Enter Your Phone Number
               </CardTitle>
               <CardDescription>
-                Enter the phone number associated with your WhatsApp bot registration
+                Enter the phone number associated with your WhatsApp bot to search for it
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -452,17 +456,18 @@ export default function GuestBotManagement() {
                 />
                 <Button 
                   onClick={handlePhoneSubmit}
-                  disabled={phoneCheckMutation.isPending}
+                  disabled={phoneSearchMutation.isPending}
                   size="lg"
                   className="px-8"
                 >
-                  {phoneCheckMutation.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : "Verify"}
+                  {phoneSearchMutation.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : "Search Bot"}
                 </Button>
               </div>
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
                   Enter the phone number exactly as it was registered with your bot (including country code if used).
+                  We will not show your bot details until you verify ownership.
                 </AlertDescription>
               </Alert>
             </CardContent>
@@ -475,10 +480,10 @@ export default function GuestBotManagement() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-6 w-6 text-amber-600" />
-                Verify Your Session
+                Verify Bot Ownership
               </CardTitle>
               <CardDescription>
-                Paste your session ID (base64 credentials) to verify bot ownership for {phoneNumber}
+                Paste your session ID (base64 credentials) to verify you own the bot for {phoneNumber}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -501,17 +506,22 @@ export default function GuestBotManagement() {
                     showSessionId ? '' : 'filter blur-sm hover:filter-none focus:filter-none'
                   }`}
                 />
-                <p className="text-xs text-muted-foreground">
-                  This verifies that you own the bot registered with {phoneNumber}. Get your session ID from{" "}
-                  <a 
-                    href="https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline font-medium"
-                  >
-                    NEW SESSION ID
-                  </a>
-                </p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                    <strong>Need a new session ID?</strong> If your credentials are expired:
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <ExternalLink className="h-4 w-4" />
+                    <a 
+                      href="https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline font-medium"
+                    >
+                      Get NEW SESSION ID
+                    </a>
+                  </div>
+                </div>
               </div>
               
               <div className="flex gap-2">
@@ -524,7 +534,7 @@ export default function GuestBotManagement() {
                   {verifySessionMutation.isPending ? (
                     <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Verifying...</>
                   ) : (
-                    <><Shield className="h-4 w-4 mr-2" /> Verify Session</>
+                    <><Shield className="h-4 w-4 mr-2" /> Verify Ownership</>
                   )}
                 </Button>
                 <Button
@@ -569,15 +579,20 @@ export default function GuestBotManagement() {
                 <Alert variant="destructive">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
-                    Credentials are expired or invalid. Please get a new session ID from:{" "}
-                    <a 
-                      href="https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline font-medium"
-                    >
-                      NEW SESSION ID
-                    </a>
+                    <div className="space-y-2">
+                      <p>Credentials are expired or invalid. Please get a new session ID:</p>
+                      <div className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        <a 
+                          href="https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline font-medium"
+                        >
+                          Get NEW SESSION ID
+                        </a>
+                      </div>
+                    </div>
                   </AlertDescription>
                 </Alert>
               )}
@@ -649,7 +664,7 @@ export default function GuestBotManagement() {
                             {bot.phoneNumber}
                             {bot.serverName && (
                               <Badge variant="outline" className="ml-2">
-                                {bot.serverName}
+                                Server: Protected
                               </Badge>
                             )}
                           </CardDescription>
