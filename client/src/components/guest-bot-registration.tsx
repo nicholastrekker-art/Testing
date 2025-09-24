@@ -458,6 +458,11 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     onClose();
   };
 
+  const handleBack = () => {
+    // General back handler: decrement step, ensure it doesn't go below 1
+    setStep(prevStep => Math.max(prevStep - 1, 1));
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
@@ -601,38 +606,47 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
             </div>
 
             <Card className="border-l-4 border-l-green-500">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Available Servers</CardTitle>
-                <CardDescription>Select a server with available bot slots</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-3">
-                  {availableServers.map((server) => (
-                    <div
-                      key={server.id}
-                      onClick={() => handleServerSelection(server.id)}
-                      className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                      data-testid={`server-option-${server.id}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium">{server.name}</h4>
-                          <p className="text-sm text-muted-foreground">{server.description}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-green-600">
-                            {server.availableSlots} slots available
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {server.currentBots}/{server.maxBots} bots
-                          </p>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Available Servers</CardTitle>
+                  <CardDescription>Select a server with available bot slots</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-3">
+                    {availableServers.map((server) => (
+                      <div
+                        key={server.id}
+                        onClick={() => handleServerSelection(server.id)}
+                        className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                        data-testid={`server-option-${server.id}`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium">{server.name}</h4>
+                            <p className="text-sm text-muted-foreground">{server.description}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-green-600">
+                              {server.availableSlots} slots available
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {server.currentBots}/{server.maxBots} bots
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Button 
+                onClick={handleBack}
+                variant="outline"
+                className="w-full"
+                data-testid="button-back-step-3"
+              >
+                ← Back to Phone Number
+              </Button>
           </div>
         )}
 
@@ -1243,6 +1257,15 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                 </div>
               </CardContent>
             </Card>
+
+            <Button 
+              onClick={handleBack}
+              variant="outline"
+              className="w-full"
+              data-testid="button-back-step-9"
+            >
+              ← Back to Phone Number
+            </Button>
           </div>
         )}
 
