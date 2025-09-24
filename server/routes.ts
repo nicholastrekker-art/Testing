@@ -4951,16 +4951,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
       return res.status(501).json({ 
         message: 'Bot migration functionality is temporarily disabled for maintenance' 
       });
-
-      res.json({ 
-        success: true, 
-        botId: migrationResult.id,
-        sourceServer,
-        targetServer
-      });
     } catch (error) {
       console.error('Bot migration failed:', error);
-      res.status(500).json({ message: 'Migration failed', error: error.message });
+      res.status(500).json({ message: 'Migration failed', error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
@@ -4979,21 +4972,21 @@ Thank you for choosing TREKKER-MD! 🚀`;
       for (const botKey of botIds) {
         try {
           const [tenancy, botId] = botKey.split('-');
-          const client = new CrossTenancyClient(tenancy);
+          const client = new CrossTenancyClient();
 
           switch (operation) {
             case 'start':
-              await client.request(`/api/bots/${botId}/start`, 'POST');
-              break;
+              // await client.request(`/api/bots/${botId}/start`, 'POST');
+              throw new Error('Cross-tenancy operations temporarily disabled');
             case 'stop':
-              await client.request(`/api/bots/${botId}/stop`, 'POST');
-              break;
+              // await client.request(`/api/bots/${botId}/stop`, 'POST');
+              throw new Error('Cross-tenancy operations temporarily disabled');
             case 'restart':
-              await client.request(`/api/bots/${botId}/restart`, 'POST');
-              break;
+              // await client.request(`/api/bots/${botId}/restart`, 'POST');
+              throw new Error('Cross-tenancy operations temporarily disabled');
             case 'approve':
-              await client.request(`/api/bots/${botId}/approve`, 'POST');
-              break;
+              // await client.request(`/api/bots/${botId}/approve`, 'POST');
+              throw new Error('Cross-tenancy operations temporarily disabled');
             default:
               throw new Error(`Unknown operation: ${operation}`);
           }
@@ -5001,7 +4994,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           completedCount++;
         } catch (error) {
           console.error(`Batch operation failed for ${botKey}:`, error);
-          errors.push({ botKey, error: error.message });
+          errors.push({ botKey, error: error instanceof Error ? error.message : 'Unknown error' });
         }
       }
 
@@ -5012,7 +5005,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
       });
     } catch (error) {
       console.error('Batch operation failed:', error);
-      res.status(500).json({ message: 'Batch operation failed', error: error.message });
+      res.status(500).json({ message: 'Batch operation failed', error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
@@ -5371,7 +5364,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
         serverInfo: {
           serverName: targetServer,
           newBotCount: serverCheck.currentCount + 1,
-          maxBots: serverCheck.maxBotCount
+          maxBots: serverCheck.maxCount
         }
       });
 

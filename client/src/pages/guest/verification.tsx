@@ -81,18 +81,23 @@ export default function GuestPhoneVerification() {
     }
   });
 
-  // OTP verification mutation  
+  // Session ID verification mutation  
   const verifyOtpMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; otp: string }) => {
-      const response = await fetch('/api/guest/verify-otp', {
+      const cleanedPhone = data.phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      const response = await fetch('/api/guest/validate-existing-bot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ 
+          phoneNumber: cleanedPhone, 
+          sessionId: data.otp 
+        }),
       });
       
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Invalid verification code');
+        throw new Error(error.message || 'Session verification failed');
       }
       
       return response.json();
