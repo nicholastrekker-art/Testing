@@ -18,24 +18,24 @@ interface PhoneVerificationStep {
 
 export default function GuestPhoneVerification() {
   const { toast } = useToast();
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState("");
-  const [verificationStep, setVerificationStep] = useState<'phone' | 'otp' | 'verified'>('phone');
+  const [sessionId, setSessionId] = useState("");
+  const [verificationStep, setVerificationStep] = useState<'session' | 'verified' | 'inactive'>('session');
   const [isVerified, setIsVerified] = useState(false);
+  const [botInfo, setBotInfo] = useState<any>(null);
 
   const verificationSteps: PhoneVerificationStep[] = [
     {
       step: 1,
-      title: "Enter Phone Number",
-      description: "Provide the phone number associated with your WhatsApp bot",
-      icon: <Phone className="h-5 w-5" />,
-      completed: verificationStep !== 'phone'
+      title: "Enter Session ID",
+      description: "Paste your bot's Base64 session credentials to verify ownership",
+      icon: <Shield className="h-5 w-5" />,
+      completed: verificationStep !== 'session'
     },
     {
       step: 2,
-      title: "Verify Ownership", 
-      description: "Enter the session ID or credentials to verify bot ownership",
-      icon: <Shield className="h-5 w-5" />,
+      title: "Check Connection", 
+      description: "Verify if your bot is currently active and connected",
+      icon: <Phone className="h-5 w-5" />,
       completed: verificationStep === 'verified'
     },
     {
@@ -47,52 +47,13 @@ export default function GuestPhoneVerification() {
     }
   ];
 
-  // Phone verification mutation
-  const verifyPhoneMutation = useMutation({
-    mutationFn: async (phoneNumber: string) => {
-      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
-      const response = await fetch('/api/guest/verify-phone', {
+  // Session ID verification mutation
+  const verifySessionMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      const response = await fetch('/api/guest/verify-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber: cleanedPhone }),
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to verify phone number');
-      }
-      
-      return response.json();
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Phone Verified",
-        description: "Your phone number has been verified. You can now manage your bots.",
-      });
-      setVerificationStep('otp');
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Verification Failed",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Session ID verification mutation  
-  const verifyOtpMutation = useMutation({
-    mutationFn: async (data: { phoneNumber: string; otp: string }) => {
-      const cleanedPhone = data.phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
-      const response = await fetch('/api/guest/validate-existing-bot', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          phoneNumber: cleanedPhone, 
-          sessionId: data.otp 
-        }),
+        body: JSON.stringify({ sessionId: sessionId.trim() }),
       });
       
       if (!response.ok) {
@@ -102,13 +63,24 @@ export default function GuestPhoneVerification() {
       
       return response.json();
     },
-    onSuccess: () => {
-      setVerificationStep('verified');
-      setIsVerified(true);
-      toast({
-        title: "Verification Complete",
-        description: "You now have full access to bot management features.",
-      });
+    onSuccess: (data) => {
+      setBotInfo(data);
+      
+      if (data.botActive) {
+        setVerificationStep('verified');
+        setIsVerified(true);
+        toast({
+          title: "Bot Active!",
+          description: `Your bot ${data.phoneNumber} is connected and ready to manage.`,
+        });
+      } else {
+        setVerificationStep('inactive');
+        toast({
+          title: "Bot Inactive",
+          description: "Your bot is not currently connected. Please provide updated credentials.",
+          variant: "destructive"
+        });
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -119,37 +91,80 @@ export default function GuestPhoneVerification() {
     }
   });
 
-  const handlePhoneVerification = () => {
-    if (!phoneNumber.trim()) {
+  // Retry with new session ID
+  const retryVerificationMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      const response = await fetch('/api/guest/verify-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: sessionId.trim() }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Session verification failed');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setBotInfo(data);
+      
+      if (data.botActive) {
+        setVerificationStep('verified');
+        setIsVerified(true);
+        toast({
+          title: "Bot Active!",
+          description: `Your bot ${data.phoneNumber} is now connected and ready to manage.`,
+        });
+      } else {
+        toast({
+          title: "Bot Still Inactive",
+          description: "The bot is still not connected. Please ensure the credentials are current.",
+          variant: "destructive"
+        });
+      }
+    },
+    onError: (error: Error) => {
       toast({
-        title: "Phone Required",
-        description: "Please enter your phone number",
+        title: "Verification Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleSessionVerification = () => {
+    if (!sessionId.trim()) {
+      toast({
+        title: "Session ID Required",
+        description: "Please paste your bot's session credentials",
         variant: "destructive"
       });
       return;
     }
-    verifyPhoneMutation.mutate(phoneNumber);
+    verifySessionMutation.mutate(sessionId);
   };
 
-  const handleOtpVerification = () => {
-    if (!otp.trim()) {
+  const handleRetryVerification = () => {
+    if (!sessionId.trim()) {
       toast({
-        title: "Code Required", 
-        description: "Please enter the verification code",
+        title: "Session ID Required", 
+        description: "Please paste updated session credentials",
         variant: "destructive"
       });
       return;
     }
-    verifyOtpMutation.mutate({ phoneNumber, otp });
+    retryVerificationMutation.mutate(sessionId);
   };
 
   return (
     <div className="min-h-screen w-full p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">Phone Verification</h1>
+          <h1 className="text-3xl font-bold">Bot Session Verification</h1>
           <p className="text-muted-foreground">
-            Verify your phone number to access bot management features
+            Verify your bot ownership with session credentials to access management features
           </p>
         </div>
 
@@ -161,7 +176,7 @@ export default function GuestPhoneVerification() {
               Verification Process
             </CardTitle>
             <CardDescription>
-              Follow these steps to verify your phone number and access your bots
+              Follow these steps to verify your bot session and access management features
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -186,88 +201,92 @@ export default function GuestPhoneVerification() {
           </CardContent>
         </Card>
 
-        {/* Phone Number Input */}
-        {verificationStep === 'phone' && (
+        {/* Session ID Input */}
+        {verificationStep === 'session' && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Phone className="h-5 w-5" />
-                Enter Phone Number
+                <Shield className="h-5 w-5" />
+                Enter Session Credentials
               </CardTitle>
               <CardDescription>
-                Enter the phone number associated with your WhatsApp bot
+                Paste your bot's Base64 session credentials to verify ownership and check connection status
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+1234567890"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  data-testid="input-phone-number"
+                <Label htmlFor="session">Session ID / Base64 Credentials</Label>
+                <textarea
+                  id="session"
+                  placeholder="Paste your base64 session credentials here..."
+                  value={sessionId}
+                  onChange={(e) => setSessionId(e.target.value)}
+                  className="w-full h-32 p-3 border rounded-md resize-none font-mono text-sm"
+                  data-testid="input-session-id"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Include country code (e.g., +1 for US, +44 for UK)
+                  We'll extract the phone number and check if your bot is currently active
                 </p>
               </div>
               
               <Button
-                onClick={handlePhoneVerification}
-                disabled={verifyPhoneMutation.isPending}
+                onClick={handleSessionVerification}
+                disabled={verifySessionMutation.isPending}
                 className="w-full"
-                data-testid="button-verify-phone"
+                data-testid="button-verify-session"
               >
-                {verifyPhoneMutation.isPending ? "Verifying..." : "Verify Phone Number"}
+                {verifySessionMutation.isPending ? "Verifying..." : "Verify Session & Check Connection"}
               </Button>
             </CardContent>
           </Card>
         )}
 
-        {/* OTP Input */}
-        {verificationStep === 'otp' && (
-          <Card>
+        {/* Bot Inactive - Request New Session */}
+        {verificationStep === 'inactive' && (
+          <Card className="border-orange-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Enter Session ID
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                Bot Connection Inactive
               </CardTitle>
               <CardDescription>
-                Enter your bot's session ID (base64 credentials) to verify ownership
+                Your bot {botInfo?.phoneNumber} was found but is not currently connected. Please provide updated session credentials.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="otp">Session ID / Base64 Credentials</Label>
+                <Label htmlFor="newSession">Updated Session ID / Base64 Credentials</Label>
                 <textarea
-                  id="otp"
-                  placeholder="Paste your base64 session ID here..."
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  id="newSession"
+                  placeholder="Paste your updated base64 session credentials here..."
+                  value={sessionId}
+                  onChange={(e) => setSessionId(e.target.value)}
                   className="w-full h-32 p-3 border rounded-md resize-none font-mono text-sm"
-                  data-testid="input-session-id"
+                  data-testid="input-new-session-id"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  This verifies that you own the bot associated with the phone number
+                  Provide fresh session credentials to reactivate your bot connection
                 </p>
               </div>
               
               <div className="flex gap-2">
                 <Button
-                  onClick={handleOtpVerification}
-                  disabled={verifyOtpMutation.isPending}
+                  onClick={handleRetryVerification}
+                  disabled={retryVerificationMutation.isPending}
                   className="flex-1"
-                  data-testid="button-verify-session"
+                  data-testid="button-retry-verification"
                 >
-                  {verifyOtpMutation.isPending ? "Verifying..." : "Verify Session"}
+                  {retryVerificationMutation.isPending ? "Updating..." : "Update & Verify Connection"}
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => setVerificationStep('phone')}
+                  onClick={() => {
+                    setVerificationStep('session');
+                    setSessionId('');
+                    setBotInfo(null);
+                  }}
                 >
-                  Back
+                  Start Over
                 </Button>
               </div>
             </CardContent>
@@ -283,9 +302,9 @@ export default function GuestPhoneVerification() {
                   <CheckCircle className="h-8 w-8 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-green-800">Verification Complete!</h3>
+                  <h3 className="text-xl font-semibold text-green-800">Bot Connection Verified!</h3>
                   <p className="text-green-600 mt-1">
-                    Your phone number {phoneNumber} has been successfully verified.
+                    Your bot {botInfo?.phoneNumber} is active and ready to manage.
                   </p>
                 </div>
                 <div className="flex gap-2 justify-center">

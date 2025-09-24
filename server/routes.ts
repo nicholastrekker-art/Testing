@@ -1866,6 +1866,112 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     }
   });
 
+  // Guest Session Verification - Extract phone number from session ID and check bot status
+  app.post("/api/guest/verify-session", async (req, res) => {
+    try {
+      const { sessionId } = req.body;
+
+      if (!sessionId || typeof sessionId !== 'string' || sessionId.trim().length === 0) {
+        return res.status(400).json({ message: "Session ID is required" });
+      }
+
+      // Parse credentials from base64 encoded session ID
+      let credentials;
+      try {
+        const base64Data = sessionId.trim();
+
+        // Check Base64 size limit (5MB when decoded)
+        const estimatedSize = (base64Data.length * 3) / 4;
+        const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+
+        if (estimatedSize > maxSizeBytes) {
+          return res.status(400).json({ 
+            message: `Session ID too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
+          });
+        }
+
+        const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
+
+        if (decoded.length > maxSizeBytes) {
+          return res.status(400).json({ 
+            message: `Decoded session data too large (${(decoded.length / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
+          });
+        }
+
+        credentials = JSON.parse(decoded);
+      } catch (error) {
+        return res.status(400).json({ message: "Invalid session ID format. Please ensure it's properly encoded WhatsApp session data." });
+      }
+
+      // Extract phone number from credentials
+      let phoneNumber = null;
+
+      // Handle both credentials.creds.me.id and credentials.me.id for phone extraction
+      if (credentials && credentials.creds && credentials.creds.me && credentials.creds.me.id) {
+        const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
+        phoneNumber = phoneMatch ? phoneMatch[1] : null;
+      } else if (credentials && credentials.me && credentials.me.id) {
+        const phoneMatch = credentials.me.id.match(/^(\d+):/);
+        phoneNumber = phoneMatch ? phoneMatch[1] : null;
+      }
+
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Cannot extract phone number from session credentials" });
+      }
+
+      // Check if bot exists in global registry
+      const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
+      if (!globalRegistration) {
+        return res.status(404).json({ message: "No bot found with this phone number" });
+      }
+
+      const botServer = globalRegistration.tenancyName;
+      const currentServer = getServerName();
+
+      // Check bot status
+      let botActive = false;
+      let botData = null;
+
+      if (botServer === currentServer) {
+        // Bot is on current server - check local status
+        const botInstance = await storage.getBotByPhoneNumber(phoneNumber);
+        if (botInstance) {
+          botData = botInstance;
+          // Check if bot is actually active/connected
+          const botStatuses = botManager.getAllBotStatuses();
+          botActive = botStatuses[botInstance.id] === 'online';
+        }
+      } else {
+        // Bot is on another server - assume inactive for cross-server verification
+        botActive = false;
+      }
+
+      // Generate guest token for future authenticated requests
+      const token = generateGuestToken(phoneNumber, botData?.id);
+
+      res.json({
+        success: true,
+        phoneNumber: `+${phoneNumber}`,
+        botActive,
+        botServer,
+        crossServer: botServer !== currentServer,
+        token,
+        message: botActive 
+          ? "Bot is active and connected" 
+          : "Bot found but not currently connected",
+        ...(botData && {
+          botId: botData.id,
+          botName: botData.name,
+          lastActivity: botData.lastActivity
+        })
+      });
+
+    } catch (error) {
+      console.error('Guest session verification error:', error);
+      res.status(500).json({ message: "Failed to verify session" });
+    }
+  });
+
   // Guest OTP Verification - Verify code and get guest token
   app.post("/api/guest/auth/verify-otp", async (req, res) => {
     try {
