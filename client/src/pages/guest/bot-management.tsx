@@ -93,6 +93,22 @@ export default function GuestBotManagement() {
           title: "Bot Active!",
           description: `Your bot ${data.phoneNumber} is connected and ready to manage.`,
         });
+      } else if (data.connectionUpdated) {
+        // Session ID was automatically tested and bot is being updated
+        setCurrentStep('dashboard');
+        setAuthenticatedBotId(data.botId);
+        toast({
+          title: "Session Updated!",
+          description: `New session ID tested successfully! Your bot is reconnecting and a success message has been sent to your WhatsApp.`,
+        });
+        
+        // Clear the session input since update was successful
+        setSessionId("");
+        
+        // Refresh the bot data after a short delay
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ["/api/guest/server-bots", data.phoneNumber] });
+        }, 3000);
       } else {
         setCurrentStep('inactive');
         toast({
@@ -609,7 +625,7 @@ export default function GuestBotManagement() {
                 Bot Connection Inactive
               </CardTitle>
               <CardDescription>
-                Your bot {botInfo?.phoneNumber} was found but is not currently connected. Provide a NEW session ID - we'll test the new credentials, verify connection, and update your bot settings.
+                Your bot {botInfo?.phoneNumber} was found but is not currently connected. Enter a NEW session ID and we'll automatically test the connection and update your bot.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -637,13 +653,13 @@ export default function GuestBotManagement() {
                 </p>
                 <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200">
                   <p className="text-sm text-green-700 dark:text-green-300 mb-2">
-                    <strong>✅ What happens when you update:</strong>
+                    <strong>✅ What happens automatically:</strong>
                   </p>
                   <ul className="text-xs text-green-600 dark:text-green-400 space-y-1">
-                    <li>• We test your session ID connection</li>
+                    <li>• We test your new session ID connection</li>
+                    <li>• Bot credentials are safely updated if valid</li>
                     <li>• A success message is sent to your WhatsApp</li>
-                    <li>• Your bot credentials are safely updated</li>
-                    <li>• You can proceed to manage your bot</li>
+                    <li>• You're taken to the bot management dashboard</li>
                   </ul>
                 </div>
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
@@ -672,9 +688,9 @@ export default function GuestBotManagement() {
                   size="lg"
                 >
                   {updateSessionMutation.isPending ? (
-                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Testing NEW Session & Updating...</>
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Auto-Testing & Updating Session...</>
                   ) : (
-                    <><Upload className="h-4 w-4 mr-2" /> Test NEW Session & Update</>
+                    <><Upload className="h-4 w-4 mr-2" /> Auto-Test & Update Session</>
                   )}
                 </Button>
                 <Button
