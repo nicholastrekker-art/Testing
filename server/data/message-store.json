@@ -1,86 +1,24 @@
 {
-  "3EB09A74D952E0DAA38792": {
-    "id": "3EB09A74D952E0DAA38792",
-    "fromJid": "254799257758:24@s.whatsapp.net",
+  "3EB0C78F07BEADCEB628E1": {
+    "id": "3EB0C78F07BEADCEB628E1",
+    "fromJid": "254799257758:25@s.whatsapp.net",
     "senderJid": "self",
     "content": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀",
     "type": "extendedTextMessage",
-    "timestamp": 1758718614084,
+    "timestamp": 1758719837056,
     "originalMessage": {
       "key": {
-        "remoteJid": "254799257758:24@s.whatsapp.net",
+        "remoteJid": "254799257758:25@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB09A74D952E0DAA38792"
+        "id": "3EB0C78F07BEADCEB628E1"
       },
       "message": {
         "extendedTextMessage": {
           "text": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀"
         }
       },
-      "messageTimestamp": "1758718611",
+      "messageTimestamp": "1758719835",
       "status": "PENDING"
-    }
-  },
-  "AC1B3291EE2DA528DB2BB2C13A19D2CF": {
-    "id": "AC1B3291EE2DA528DB2BB2C13A19D2CF",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1758718619658,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "AC1B3291EE2DA528DB2BB2C13A19D2CF"
-      },
-      "messageTimestamp": 1758718618,
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "protocolMessage": {
-          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
-          "peerDataOperationRequestResponseMessage": {
-            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
-            "stanzaId": "3EB0CC2E6E6E76F2D1BF5F",
-            "peerDataOperationResult": [
-              {
-                "mediaUploadResult": "SUCCESS",
-                "placeholderMessageResendResponse": {
-                  "webMessageInfoBytes": "CkEKGzI1NDcwNDU4OTgxNEBzLndoYXRzYXBwLm5ldBABGiBBQ0EyNzM5QUYzMTY0NEMwMEQ2MDFDRkJEQjI0RUVCNxIuCgdOaXR1bWllmgIiGiB2nSqGZL1xMZZZkzKVxEA11liPuj2xu2xcxcBFwV+fpRiL0s/GBiACMIzSz8YGigMgdp0qhmS9cTGWWZMylcRANdZYj7o9sbtsXMXARcFfn6WaAxsyNTQ3OTkyNTc3NThAcy53aGF0c2FwcC5uZXSIBAA="
-                }
-              }
-            ]
-          }
-        }
-      }
-    }
-  },
-  "ACA2739AF31644C00D601CFBDB24EEB7": {
-    "id": "ACA2739AF31644C00D601CFBDB24EEB7",
-    "fromJid": "254704589814@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "Nitumie",
-    "type": "unknown",
-    "timestamp": 1758718620159,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704589814@s.whatsapp.net",
-        "fromMe": true,
-        "id": "ACA2739AF31644C00D601CFBDB24EEB7"
-      },
-      "message": {
-        "conversation": "Nitumie",
-        "messageContextInfo": {
-          "messageSecret": "dp0qhmS9cTGWWZMylcRANdZYj7o9sbtsXMXARcFfn6U="
-        }
-      },
-      "messageTimestamp": "1758718219",
-      "status": "SERVER_ACK",
-      "messageC2STimestamp": "1758718220",
-      "messageSecret": "dp0qhmS9cTGWWZMylcRANdZYj7o9sbtsXMXARcFfn6U=",
-      "originalSelfAuthorUserJidString": "254799257758@s.whatsapp.net",
-      "isMentionedInStatus": false
     }
   }
 }
