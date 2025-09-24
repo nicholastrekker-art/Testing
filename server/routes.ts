@@ -1231,20 +1231,19 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       }
 
       // Prepare update object
-      const updates: any = {};
-      if (dbField === 'typingMode') {
-        updates[dbField] = enabled ? 'typing' : 'none';
-      } else if (dbField === 'presenceMode') {
-        // For auto recording feature
-        updates[dbField] = enabled ? 'recording' : 'available';
+      const updateData: any = {};
+
+      // Handle special feature mappings
+      if (feature === 'typingIndicator') {
+        updateData.typingMode = enabled ? 'typing' : 'none';
       } else {
-        updates[dbField] = enabled;
+        updateData[feature] = enabled;
       }
 
       // Also update settings.features
       const currentSettings = (bot.settings as any) || {};
       const currentFeatures = (currentSettings.features as any) || {};
-      updates.settings = {
+      updateData.settings = {
         ...currentSettings,
         features: {
           ...currentFeatures,
@@ -1252,7 +1251,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         }
       };
 
-      await storage.updateBotInstance(id, updates);
+      await storage.updateBotInstance(id, updateData);
 
       // Log activity
       await storage.createActivity({
@@ -2459,7 +2458,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       // Decode and parse credentials
       let credentials;
       try {
-        const decoded = Buffer.from(sessionId.trim(), 'base64').toString('utf-8');
+        const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
         credentials = JSON.parse(decoded);
       } catch (error) {
         return res.status(400).json({ 
@@ -2607,7 +2606,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
               )
             )
             .orderBy(desc(botInstances.createdAt));
-          
+
           if (altBots.length > 0) {
             console.log(`📋 Found ${altBots.length} bot(s) using alternative format ${altPhone}`);
             bots.push(...altBots);
@@ -2893,7 +2892,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         return res.status(400).json({ message: "Phone number is required" });
       }
 
-      // Use tenancy resolution helper
+      // Use new tenancy resolution helper
       try {
         const resolution = await resolveBotByPhone(phoneNumber);
         const { bot, isLocal, serverName, canManage, needsProxy } = resolution;
@@ -3852,7 +3851,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
   // Bot Management for Existing Users
   app.post("/api/guest/manage-bot", upload.single('credsFile') as any, async (req, res) => {
     try {
-      const { phoneNumber, action, credentialType, sessionId, botId } = req.body;
+      const { phoneNumber, action, credentialType, sessionId, botId, targetServer } = req.body;
 
       if (!phoneNumber || !action || !botId) {
         return res.status(400).json({ message: "Phone number, action, and bot ID are required" });
@@ -4306,54 +4305,21 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
       const currentTenancyName = getServerName();
 
-      // Verify global registration to determine actual server location
+      // Verify global registration
       const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
-      if (!globalRegistration) {
-        return res.status(404).json({ 
-          message: "Phone number not registered to any server in the system" 
+      if (!globalRegistration || globalRegistration.tenancyName !== currentTenancyName) {
+        return res.status(400).json({ 
+          message: "Phone number not registered to this server or registered to " + globalRegistration?.tenancyName || 'another server' 
         });
       }
 
-      const actualServer = globalRegistration.tenancyName;
-      const isCurrentServer = actualServer === currentTenancyName;
+      // Get bot from source server using existing storage methods
+      const crossTenancyClient = new CrossTenancyClient();
 
-      // If the bot is on the current server, use regular management
-      if (isCurrentServer) {
-        if (!botId) {
-          return res.status(400).json({ message: "Bot ID is required for same-server operations" });
-        }
-
-        // Handle same-server operations directly
-        const { action } = req.body;
-        const botInstance = await storage.getBotInstance(botId);
-        if (!botInstance) {
-          return res.status(404).json({ message: "Bot not found" });
-        }
-
-        // Execute the same logic as in regular bot management
-        // (This would be a refactored function call in production code)
-        res.json({ message: `${action} action executed successfully`, botId, action });
-      }
-
-      // Handle cross-tenancy operations
-      switch (action) {
-        case 'update_credentials':
-          await handleCrossTenancyCredentialUpdate(req, res, globalRegistration);
-          break;
-
-        case 'start':
-        case 'stop':
-        case 'restart':
-          await handleCrossTenancyBotControl(req, res, globalRegistration, action);
-          break;
-
-        default:
-          res.status(400).json({ 
-            message: `Cross-tenancy action '${action}' not supported yet`,
-            suggestion: "Please contact the target server directly for this operation"
-          });
-      }
-
+      // For now, disable migration functionality until proper CrossTenancyClient integration
+      return res.status(501).json({ 
+        message: 'Bot migration functionality is temporarily disabled for maintenance' 
+      });
     } catch (error) {
       console.error('Cross-tenancy bot management error:', error);
       res.status(500).json({ message: "Failed to manage bot across tenancies" });

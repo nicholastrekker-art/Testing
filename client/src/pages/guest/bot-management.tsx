@@ -738,7 +738,7 @@ export default function GuestBotManagement() {
                 ) : (
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {inactiveBots.map((bot: BotInfo) => (
-                      <Card key={bot.id} className="border-gray-200">
+                      <Card key={bot.id} className="border-gray-200 hover:shadow-lg transition-shadow">
                         <CardHeader>
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-lg">{bot.name}</CardTitle>
@@ -747,25 +747,134 @@ export default function GuestBotManagement() {
                           <CardDescription>{bot.phoneNumber}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                          {/* Feature toggles for inactive bots */}
+                          <div className="grid grid-cols-2 gap-2 text-xs mb-4">
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">Auto Like</span>
+                              <button
+                                onClick={() => handleFeatureToggle('autoLike', !bot.features?.autoLike, bot)}
+                                disabled={featureToggleMutation.isPending || bot.approvalStatus !== 'approved'}
+                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                                  bot.features?.autoLike ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${bot.features?.autoLike ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+                              </button>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">Auto View</span>
+                              <button
+                                onClick={() => handleFeatureToggle('autoViewStatus', !bot.features?.autoView, bot)}
+                                disabled={featureToggleMutation.isPending || bot.approvalStatus !== 'approved'}
+                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                                  bot.features?.autoView ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${bot.features?.autoView ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+                              </button>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">Auto React</span>
+                              <button
+                                onClick={() => handleFeatureToggle('autoReact', !bot.features?.autoReact, bot)}
+                                disabled={featureToggleMutation.isPending || bot.approvalStatus !== 'approved'}
+                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                                  bot.features?.autoReact ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${bot.features?.autoReact ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+                              </button>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">ChatGPT</span>
+                              <button
+                                onClick={() => handleFeatureToggle('chatgptEnabled', !bot.features?.chatGPT, bot)}
+                                disabled={featureToggleMutation.isPending || bot.approvalStatus !== 'approved'}
+                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                                  bot.features?.chatGPT ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${bot.features?.chatGPT ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+                              </button>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">Always Online</span>
+                              <button
+                                onClick={() => handleFeatureToggle('alwaysOnline', !bot.features?.alwaysOnline, bot)}
+                                disabled={featureToggleMutation.isPending || bot.approvalStatus !== 'approved'}
+                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                                  bot.features?.alwaysOnline ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${bot.features?.alwaysOnline ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+                              </button>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">Typing Indicator</span>
+                              <button
+                                onClick={() => handleFeatureToggle('typingIndicator', !bot.features?.typingIndicator, bot)}
+                                disabled={featureToggleMutation.isPending || bot.approvalStatus !== 'approved'}
+                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                                  bot.features?.typingIndicator ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${bot.features?.typingIndicator ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Action buttons */}
                           <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() => handleBotAction('start', bot)}
-                              disabled={botActionMutation.isPending}
-                              className="flex-1"
-                            >
-                              <Play className="h-3 w-3 mr-1" />
-                              Start
-                            </Button>
+                            {bot.approvalStatus === 'approved' ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleBotAction('start', bot)}
+                                  disabled={botActionMutation.isPending}
+                                  className="flex-1"
+                                >
+                                  <Play className="h-3 w-3 mr-1" />
+                                  Start
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleBotAction('restart', bot)}
+                                  disabled={botActionMutation.isPending}
+                                  title="Restart bot"
+                                >
+                                  <RefreshCw className="h-3 w-3" />
+                                </Button>
+                              </>
+                            ) : (
+                              <Button
+                                size="sm"
+                                disabled
+                                className="flex-1"
+                                title="Bot must be approved to start"
+                              >
+                                <AlertTriangle className="h-3 w-3 mr-1" />
+                                Pending Approval
+                              </Button>
+                            )}
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => handleBotAction('delete', bot)}
                               disabled={botActionMutation.isPending}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
+
+                          {/* Status info */}
+                          {bot.approvalStatus !== 'approved' && (
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-2 text-xs">
+                              <p className="text-yellow-800 font-medium">⏳ Awaiting Admin Approval</p>
+                              <p className="text-yellow-600">Contact admin to activate this bot</p>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     ))}
