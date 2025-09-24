@@ -151,7 +151,7 @@ export class WhatsAppBot {
 
         // Send welcome message to the bot owner
         try {
-          const welcomeMessage = `🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot "${this.botInstance.name}" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀`;
+          const welcomeMessage = `╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  "${this.botInstance.name}" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝`;
 
           // Get the bot's own number and send welcome message
           const me = this.sock.user?.id;
