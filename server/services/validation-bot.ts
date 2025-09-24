@@ -28,8 +28,19 @@ export class ValidationBot {
 
   private saveCredentialsToAuthDir(credentials: string) {
     try {
-      // Parse base64 credentials
-      const credentialsData = JSON.parse(Buffer.from(credentials, 'base64').toString());
+      let credentialsData;
+      
+      // Try to parse as JSON first (for when credentials are already parsed)
+      try {
+        credentialsData = JSON.parse(credentials);
+      } catch (jsonError) {
+        // If JSON parse fails, try as base64
+        try {
+          credentialsData = JSON.parse(Buffer.from(credentials, 'base64').toString());
+        } catch (base64Error) {
+          throw new Error('Credentials must be valid JSON or base64-encoded JSON');
+        }
+      }
       
       // Save creds.json
       writeFileSync(
