@@ -1,1 +1,46 @@
-{}
+{
+  "3EB08A4D8826C30E322197": {
+    "id": "3EB08A4D8826C30E322197",
+    "fromJid": "254799257758:26@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀",
+    "type": "extendedTextMessage",
+    "timestamp": 1758725004458,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758:26@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB08A4D8826C30E322197"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀"
+        }
+      },
+      "messageTimestamp": "1758725002",
+      "status": "PENDING"
+    }
+  },
+  "3EB065AA27504F2BF28CFA": {
+    "id": "3EB065AA27504F2BF28CFA",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🎉 *Bot Approval Confirmed!* 🎉\n\nCongratulations! Your TREKKER-MD WhatsApp bot \"Trekker\" has been successfully approved and is now active!\n\n📱 *Bot Details:*\n• Name: Trekker\n• Phone: 254799257758\n• Status: ✅ Active & Online\n• Approval Date: 9/24/2025\n• Valid For: 3 months\n\n🚀 *Your bot is now live and ready to serve!*\n• All automation features are enabled\n• ChatGPT integration is active\n• Auto-like, auto-react, and status viewing are operational\n\nThank you for choosing TREKKER-MD! Your bot will remain active for 3 months from today.\n\n---\n*TREKKER-MD - Ultra Fast Lifetime WhatsApp Bot Automation*",
+    "type": "extendedTextMessage",
+    "timestamp": 1758725007512,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB065AA27504F2BF28CFA"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "🎉 *Bot Approval Confirmed!* 🎉\n\nCongratulations! Your TREKKER-MD WhatsApp bot \"Trekker\" has been successfully approved and is now active!\n\n📱 *Bot Details:*\n• Name: Trekker\n• Phone: 254799257758\n• Status: ✅ Active & Online\n• Approval Date: 9/24/2025\n• Valid For: 3 months\n\n🚀 *Your bot is now live and ready to serve!*\n• All automation features are enabled\n• ChatGPT integration is active\n• Auto-like, auto-react, and status viewing are operational\n\nThank you for choosing TREKKER-MD! Your bot will remain active for 3 months from today.\n\n---\n*TREKKER-MD - Ultra Fast Lifetime WhatsApp Bot Automation*"
+        }
+      },
+      "messageTimestamp": "1758725006",
+      "status": "PENDING"
+    }
+  }
+}
