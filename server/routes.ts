@@ -3013,20 +3013,23 @@ Thank you for using TREKKER-MD! 🚀
           if (credentials) {
             const validationMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
 
-✅ Bot "${botName}" registered
+✅ Bot "${botName}" registered successfully!
 📱 Phone: ${cleanedPhone}
 📅 ${new Date().toLocaleString()}
 🏢 Server: ${selectedServer}
 
-⏳ Awaiting admin approval
-📞 Activate: +254704897825
+⏳ Status: Awaiting admin approval
+📞 Contact: +254704897825 for activation
 
-🚀 Enjoy premium TREKKER-MD features once approved!`;
+🚀 Once approved, enjoy all premium TREKKER-MD features!
 
-            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), validationMessage, false);
+Thank you for choosing TREKKER-MD! 🚀`;
+
+            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), validationMessage, true);
+            console.log(`✅ Registration success message sent to ${cleanedPhone} on ${selectedServer}`);
           }
         } catch (messageError) {
-          console.warn('Failed to send registration success message:', messageError);
+          console.error('Failed to send registration success message:', messageError);
         }
 
         return res.json({
@@ -3096,20 +3099,23 @@ Thank you for using TREKKER-MD! 🚀
           if (credentials) {
             const validationMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
 
-✅ Bot "${botName}" registered
+✅ Bot "${botName}" registered successfully!
 📱 Phone: ${cleanedPhone}
 📅 ${new Date().toLocaleString()}
 🏢 Server: ${targetServer.serverName} (Auto-assigned)
 
-⏳ Awaiting admin approval
-📞 Activate: +254704897825
+⏳ Status: Awaiting admin approval
+📞 Contact: +254704897825 for activation
 
-🚀 Enjoy premium TREKKER-MD features once approved!`;
+🚀 Once approved, enjoy all premium TREKKER-MD features!
 
-            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), validationMessage, false);
+Thank you for choosing TREKKER-MD! 🚀`;
+
+            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), validationMessage, true);
+            console.log(`✅ Registration success message sent to ${cleanedPhone} on ${targetServer.serverName}`);
           }
         } catch (messageError) {
-          console.warn('Failed to send registration success message:', messageError);
+          console.error('Failed to send registration success message:', messageError);
         }
 
         return res.json({
@@ -3148,19 +3154,22 @@ Thank you for using TREKKER-MD! 🚀
         if (credentials) {
           const validationMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
 
-✅ Bot "${botName}" registered
+✅ Bot "${botName}" registered successfully!
 📱 Phone: ${cleanedPhone}
 📅 ${new Date().toLocaleString()}
 
-⏳ Awaiting admin approval
-📞 Activate: +254704897825
+⏳ Status: Awaiting admin approval
+📞 Contact: +254704897825 for activation
 
-🚀 Enjoy premium TREKKER-MD features once approved!`;
+🚀 Once approved, enjoy all premium TREKKER-MD features!
 
-          await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), validationMessage, false);
+Thank you for choosing TREKKER-MD! 🚀`;
+
+          await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), validationMessage, true);
+          console.log(`✅ Registration success message sent to ${cleanedPhone}`);
         }
       } catch (messageError) {
-        console.warn('Failed to send registration success message:', messageError);
+        console.error('Failed to send registration success message:', messageError);
       }
 
       res.json({
