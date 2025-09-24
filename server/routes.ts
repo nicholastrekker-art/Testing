@@ -2469,6 +2469,8 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
       const currentServer = getServerName();
 
+      console.log(`🔍 Searching for phone ${cleanedPhone} on server ${currentServer}`);
+
       // Search for bots with this phone number on current server
       const bots = await db.select()
         .from(botInstances)
@@ -2480,6 +2482,34 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         )
         .orderBy(desc(botInstances.createdAt));
 
+      console.log(`📋 Found ${bots.length} bot(s) for ${cleanedPhone} on ${currentServer}`);
+
+      if (bots.length === 0) {
+        // Also check with different phone number formats
+        const altFormats = [
+          `+${cleanedPhone}`,
+          cleanedPhone.startsWith('254') ? cleanedPhone.substring(3) : `254${cleanedPhone}`,
+        ];
+
+        for (const altPhone of altFormats) {
+          const altBots = await db.select()
+            .from(botInstances)
+            .where(
+              and(
+                eq(botInstances.phoneNumber, altPhone),
+                eq(botInstances.serverName, currentServer)
+              )
+            )
+            .orderBy(desc(botInstances.createdAt));
+          
+          if (altBots.length > 0) {
+            console.log(`📋 Found ${altBots.length} bot(s) using alternative format ${altPhone}`);
+            bots.push(...altBots);
+            break;
+          }
+        }
+      }
+
       if (bots.length === 0) {
         return res.json({
           bots: [],
@@ -2488,27 +2518,35 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         });
       }
 
-      // Return bot data without masking since user owns the phone number
+      // Return comprehensive bot data for proper management
       const botData = bots.map(bot => ({
         id: bot.id,
+        botId: bot.id, // Add botId for compatibility
         name: bot.name,
         phoneNumber: bot.phoneNumber,
         status: bot.status,
         approvalStatus: bot.approvalStatus,
-        serverName: bot.serverName,
+        serverName: 'Protected', // Mask server name for security
         lastActivity: bot.lastActivity,
-        messagesCount: bot.messagesCount,
-        commandsCount: bot.commandsCount,
-        autoLike: bot.autoLike,
-        autoViewStatus: bot.autoViewStatus,
-        autoReact: bot.autoReact,
-        typingMode: bot.typingMode,
-        chatgptEnabled: bot.chatgptEnabled,
-        alwaysOnline: bot.alwaysOnline,
-        presenceMode: bot.presenceMode,
-        presenceAutoSwitch: bot.presenceAutoSwitch,
-        credentialVerified: bot.credentialVerified,
-        autoStart: bot.autoStart,
+        messagesCount: bot.messagesCount || 0,
+        commandsCount: bot.commandsCount || 0,
+        isActive: bot.status === 'online',
+        isApproved: bot.approvalStatus === 'approved',
+        canManage: bot.approvalStatus === 'approved',
+        crossServer: false,
+        // Feature flags
+        features: {
+          autoLike: bot.autoLike || false,
+          autoView: bot.autoViewStatus || false,
+          autoReact: bot.autoReact || false,
+          chatGPT: bot.chatgptEnabled || false,
+          typingIndicator: bot.typingMode === 'typing',
+          alwaysOnline: bot.alwaysOnline || false,
+          autoRecording: bot.presenceMode === 'recording',
+        },
+        // Management info
+        credentialVerified: bot.credentialVerified || false,
+        autoStart: bot.autoStart || false,
         approvalDate: bot.approvalDate,
         expirationMonths: bot.expirationMonths,
         createdAt: bot.createdAt,

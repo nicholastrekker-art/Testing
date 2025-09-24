@@ -54,11 +54,13 @@ export default function GuestBotManagement() {
   const [foundBots, setFoundBots] = useState<BotInfo[]>([]);
   const [botVerified, setBotVerified] = useState(false);
 
-  // Step 1: Phone number search - just find the bot, don't show details
+  // Step 1: Phone number search using server-specific search
   const phoneSearchMutation = useMutation({
     mutationFn: async (phoneNumber: string) => {
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      const response = await fetch('/api/guest/search-bot', {
+      
+      // First try searching on current server
+      const response = await fetch('/api/guest/search-server-bots', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phoneNumber: cleanedPhone }),
@@ -69,19 +71,55 @@ export default function GuestBotManagement() {
         throw new Error(error.message || 'Bot search failed');
       }
 
-      return response.json();
+      const data = await response.json();
+      
+      if (data.bots && data.bots.length > 0) {
+        // Found bots on current server
+        setFoundBots(data.bots);
+        return { botExists: true, serverMatch: true, bots: data.bots };
+      } else {
+        // No bots found on current server, try fallback search
+        const fallbackResponse = await fetch('/api/guest/search-bot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber: cleanedPhone }),
+        });
+
+        if (fallbackResponse.ok) {
+          const fallbackData = await fallbackResponse.json();
+          if (fallbackData.botExists) {
+            return { botExists: true, serverMatch: false, crossServer: true, ...fallbackData };
+          }
+        }
+        
+        return { botExists: false };
+      }
     },
     onSuccess: (data) => {
       if (data.botExists) {
-        setCurrentStep('verification');
-        toast({
-          title: "Bot Found",
-          description: "Please verify your ownership with session credentials.",
-        });
+        if (data.serverMatch && data.bots && data.bots.length > 0) {
+          setCurrentStep('verification');
+          toast({
+            title: "Bot Found",
+            description: `Found ${data.bots.length} bot(s) on this server. Please verify your ownership.`,
+          });
+        } else if (data.crossServer) {
+          toast({
+            title: "Bot Found on Different Server",
+            description: "Your bot is registered on a different server. Cross-server management is limited.",
+            variant: "destructive"
+          });
+        } else {
+          setCurrentStep('verification');
+          toast({
+            title: "Bot Found",
+            description: "Please verify your ownership with session credentials.",
+          });
+        }
       } else {
         toast({
           title: "No Bot Found",
-          description: "No bot registered with this phone number.",
+          description: "No bot registered with this phone number on any server.",
           variant: "destructive"
         });
       }
@@ -221,30 +259,31 @@ export default function GuestBotManagement() {
     }
   });
 
-  // Get user's bots for dashboard
+  // Get user's bots for dashboard - prioritize found bots from search
   const { data: userBots = [], isLoading: loadingBots } = useQuery({
-    queryKey: ["/api/guest/my-bots", phoneNumber],
+    queryKey: ["/api/guest/server-bots", phoneNumber],
     queryFn: async () => {
-      if (!phoneNumber.trim() || currentStep !== 'dashboard' || !guestToken) return [];
+      if (!phoneNumber.trim() || currentStep !== 'dashboard') return foundBots;
 
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      const response = await fetch('/api/guest/my-bots', {
+      
+      // Use server-specific search to get current bots
+      const response = await fetch('/api/guest/search-server-bots', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${guestToken}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phoneNumber: cleanedPhone }),
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to fetch your bots');
+        // Fallback to found bots from initial search
+        return foundBots;
       }
 
-      return response.json();
+      const data = await response.json();
+      return data.bots || foundBots;
     },
-    enabled: currentStep === 'dashboard' && !!phoneNumber.trim() && !!guestToken,
+    enabled: currentStep === 'dashboard' && !!phoneNumber.trim(),
+    initialData: foundBots,
   });
 
   // Bot action mutation
