@@ -561,7 +561,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all available servers (Server1-Server100) with bot counts
+  // Get all available servers (Server1 to Server100) with bot counts
   app.get("/api/servers/list", async (req, res) => {
     try {
       const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
@@ -2505,9 +2505,19 @@ Thank you for using TREKKER-MD! 🚀
             break;
 
           case 'delete':
-            // Stop the bot first
-            await botManager.stopBot(botId);
-            await botManager.destroyBot(botId);
+            // Stop the bot first if running
+            try {
+              await botManager.stopBot(botId);
+            } catch (stopError) {
+              console.log(`Bot ${botId} was not running, proceeding with deletion`);
+            }
+
+            // Delete bot from bot manager
+            try {
+              await botManager.deleteBot(botId);
+            } catch (deleteError) {
+              console.log(`Bot ${botId} not in bot manager, proceeding with database deletion`);
+            }
 
             // Delete related data
             await storage.deleteBotRelatedData(botId);
@@ -2865,42 +2875,42 @@ Thank you for using TREKKER-MD! 🚀
       } else {
         // Bot is on remote server - check if cross-tenancy is properly configured
         try {
-          const targetServerInfo = await storage.getServerByName(hostingServer);
+          console.log(`🌐 Cross-server feature update: ${feature} = ${enabled} for bot on ${hostingServer} via shared database`);
 
-          if (!targetServerInfo || !targetServerInfo.baseUrl || !targetServerInfo.sharedSecret) {
-            // Cross-server feature updates not supported due to missing configuration
-            console.log(`⚠️ Cross-server feature update not supported for ${hostingServer} - missing server configuration`);
+          // Find the bot directly in the database using shared database access
+          const remoteBot = await db.select()
+            .from(botInstances)
+            .where(
+              and(
+                eq(botInstances.phoneNumber, cleanedPhone),
+                eq(botInstances.serverName, hostingServer) // Preserve original tenancy
+              )
+            )
+            .limit(1);
 
-            // Log the attempt for audit trail
-            await storage.createCrossTenancyActivity({
-              type: 'cross_server_feature_update_blocked',
-              description: `Cross-server ${feature} update blocked for bot ${botId} on ${hostingServer} - server not configured for cross-tenancy`,
-              metadata: { 
-                feature, 
-                enabled, 
-                guestPhone: cleanedPhone,
-                targetServer: hostingServer,
-                botId,
-                reason: 'Server configuration missing for cross-tenancy'
-              },
-              serverName: currentServer,
-              phoneNumber: cleanedPhone,
-              remoteTenancy: hostingServer
-            });
-
-            return res.status(400).json({
+          if (remoteBot.length === 0) {
+            return res.status(404).json({
               success: false,
-              message: `Cross-server feature management is not available for ${hostingServer}. Features can only be managed directly on the hosting server.`,
+              message: `Bot not found on ${hostingServer}`,
               crossServer: true,
-              hostingServer,
-              reason: 'server_not_configured',
-              suggestion: `Please access ${hostingServer} directly to manage bot features.`
+              hostingServer
             });
           }
 
-          const { crossTenancyClient } = await import('./services/crossTenancyClient');
+          const bot = remoteBot[0];
 
-          // Prepare update data for remote server
+          // Check bot approval status
+          if (bot.approvalStatus !== 'approved') {
+            return res.status(403).json({
+              success: false,
+              message: `Only approved bots can have features updated`,
+              approvalStatus: bot.approvalStatus,
+              crossServer: true,
+              hostingServer
+            });
+          }
+
+          // Map feature names to database columns
           const featureMap: Record<string, string> = {
             'autoLike': 'autoLike',
             'autoView': 'autoViewStatus', 
@@ -2916,6 +2926,7 @@ Thank you for using TREKKER-MD! 🚀
             return res.status(400).json({ message: "Invalid feature name" });
           }
 
+          // Prepare update object
           const updateData: any = {};
           if (feature === 'typingIndicator') {
             updateData.typingMode = enabled ? 'typing' : 'none';
@@ -2923,30 +2934,45 @@ Thank you for using TREKKER-MD! 🚀
             updateData[dbField] = enabled;
           }
 
-          // Make cross-server request to update feature
-          const result = await crossTenancyClient.updateBot(hostingServer, botId, updateData);
+          // Update bot features directly in database while preserving tenancy
+          const [updatedBot] = await db
+            .update(botInstances)
+            .set({
+              ...updateData,
+              updatedAt: sql`CURRENT_TIMESTAMP`
+            })
+            .where(
+              and(
+                eq(botInstances.phoneNumber, cleanedPhone),
+                eq(botInstances.serverName, hostingServer) // Preserve original tenancy
+              )
+            )
+            .returning();
 
-          if (!result.success) {
-            throw new Error(result.error || 'Cross-server feature update failed');
+          if (!updatedBot) {
+            throw new Error(`Failed to update bot ${bot.id} on ${hostingServer}`);
           }
 
-          // Log local activity for audit trail
+          console.log(`✅ Updated bot ${bot.id} feature ${feature} = ${enabled} on ${hostingServer} via direct database access`);
+
+          // Log cross-tenancy activity preserving original tenancy
           await storage.createCrossTenancyActivity({
-            type: 'cross_server_feature_update',
-            description: `Cross-server ${feature} ${enabled ? 'enabled' : 'disabled'} for bot ${botId} on ${hostingServer}`,
+            type: 'cross_server_feature_update_direct',
+            description: `Cross-server ${feature} ${enabled ? 'enabled' : 'disabled'} for bot ${bot.id} on ${hostingServer} via shared database`,
             metadata: { 
               feature, 
               enabled, 
               guestPhone: cleanedPhone,
               targetServer: hostingServer,
-              botId 
+              botId: bot.id,
+              updateMethod: 'direct_database_access',
+              tenancyPreserved: true
             },
-            serverName: currentServer,
+            serverName: hostingServer, // Log to original tenancy
             phoneNumber: cleanedPhone,
-            remoteTenancy: hostingServer
+            botInstanceId: bot.id,
+            remoteTenancy: currentServer
           });
-
-          console.log(`✅ Cross-server feature update successful: ${feature} = ${enabled} on ${hostingServer}`);
 
           res.json({ 
             success: true, 
@@ -2954,7 +2980,9 @@ Thank you for using TREKKER-MD! 🚀
             feature,
             enabled,
             crossServer: true,
-            hostingServer
+            hostingServer,
+            updateMethod: 'direct_database_access',
+            tenancyPreserved: true
           });
 
         } catch (crossServerError) {
