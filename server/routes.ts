@@ -4294,21 +4294,16 @@ Thank you for using TREKKER-MD! 🚀`;
           console.log(`🔄 Testing WhatsApp connection for guest bot ${botInstance.id}`);
 
           // Prepare validation message
-          const validationMessage = `🎉 Welcome to TREKKER-MD!
+          const validationMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
 
-Your bot "${botName}" has been successfully registered and is awaiting admin approval.
-
+✅ Bot "${botName}" registered
 📱 Phone: ${phoneNumber}
-🤖 Bot Name: ${botName}
-📅 Registered: ${new Date().toLocaleString()}
+📅 ${new Date().toLocaleString()}
 
-Next Steps:
-✅ Your credentials have been validated
-⏳ Your bot is now dormant and awaiting approval
-📞 Call or message +254704897825 to activate your bot
-🚀 Once approved, enjoy all premium TREKKER-MD features!
+⏳ Awaiting admin approval
+📞 Activate: +254704897825
 
-Thank you for choosing TREKKER-MD! 🚀`;
+🚀 Enjoy premium TREKKER-MD features once approved!`;
 
           // Send validation message using the bot's own credentials
           const credentialsBase64 = credentialType === 'base64' ? sessionId : Buffer.from(JSON.stringify(credentials)).toString('base64');
