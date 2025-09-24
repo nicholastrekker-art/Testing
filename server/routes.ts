@@ -1902,7 +1902,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         return res.status(400).json({ message: "Invalid session ID format. Please ensure it's properly encoded WhatsApp session data." });
       }
 
-      // Extract phone number from credentials
+      // Extract phone number from credentials - handle both credential formats
       let phoneNumber = null;
 
       // Handle both credentials.creds.me.id and credentials.me.id for phone extraction
@@ -1915,7 +1915,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       }
 
       if (!phoneNumber) {
-        return res.status(400).json({ message: "Cannot extract phone number from session credentials" });
+        return res.status(400).json({ message: "Cannot extract phone number from session credentials. Invalid credential format." });
       }
 
       // Check if bot exists in global registry
@@ -2583,11 +2583,28 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         });
       }
 
-      // Validate phone number ownership from new credentials
-      const credentialsPhone = credentials.creds?.me?.id?.match(/^(\d+):/)?.[1];
-      if (!credentialsPhone || credentialsPhone !== cleanedPhone) {
+      // Validate phone number ownership from new credentials - extract only clean phone number
+      let credentialsPhone = null;
+      
+      // Handle both credentials.creds.me.id and credentials.me.id formats
+      if (credentials.creds?.me?.id) {
+        const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
+        credentialsPhone = phoneMatch ? phoneMatch[1] : null;
+      } else if (credentials.me?.id) {
+        const phoneMatch = credentials.me.id.match(/^(\d+):/);
+        credentialsPhone = phoneMatch ? phoneMatch[1] : null;
+      }
+
+      if (!credentialsPhone) {
         return res.status(400).json({
-          message: "New session ID does not match your phone number"
+          message: "Cannot extract phone number from session credentials"
+        });
+      }
+
+      // Compare only the clean phone numbers (ignore the suffix after colon)
+      if (credentialsPhone !== cleanedPhone) {
+        return res.status(400).json({
+          message: `Phone number mismatch. Session belongs to +${credentialsPhone} but you provided +${cleanedPhone}`
         });
       }
 
@@ -3321,7 +3338,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         return res.status(400).json({ message: "Invalid session ID format. Please ensure it's properly encoded WhatsApp session data." });
       }
 
-      // Validate phone number ownership from credentials
+      // Validate phone number ownership from credentials - extract only clean phone number
       let credentialsPhone = null;
 
       // Handle both credentials.creds.me.id and credentials.me.id for phone extraction
@@ -3337,9 +3354,10 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         return res.status(400).json({ message: "Invalid session ID format - missing phone number data" });
       }
 
+      // Compare only the clean phone numbers (ignore the suffix after colon like :23@s.whatsapp.net)
       if (credentialsPhone !== cleanedPhone) {
         return res.status(400).json({
-          message: "Session ID does not match the provided phone number. You must provide the original session ID for this bot."
+          message: `Phone number mismatch. Session belongs to +${credentialsPhone} but you provided +${cleanedPhone}. The numbers must match.`
         });
       }
 
