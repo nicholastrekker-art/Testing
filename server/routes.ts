@@ -764,13 +764,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/stats", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const stats = await storage.getDashboardStats();
-      
+
       // Add additional admin-specific stats
       const allBots = await storage.getAllBotInstances();
       const approvedBots = allBots.filter(bot => bot.approvalStatus === 'approved');
       const pendingBots = allBots.filter(bot => bot.approvalStatus === 'pending');
       const onlineBots = allBots.filter(bot => bot.status === 'online');
-      
+
       const adminStats = {
         ...stats,
         totalBots: allBots.length,
@@ -781,7 +781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         guestBots: allBots.filter(bot => bot.isGuest).length,
         regularBots: allBots.filter(bot => !bot.isGuest).length
       };
-      
+
       res.json(adminStats);
     } catch (error) {
       console.error("Admin stats error:", error);
@@ -1723,7 +1723,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
       // Delete old registration
       await storage.deleteGlobalRegistration(phoneNumber);
-      
+
       // Create new registration with updated tenancy
       await storage.addGlobalRegistration(phoneNumber, tenancyName);
 
@@ -1801,7 +1801,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       if (isCurrentServer) {
         // Phone number is registered on current server - check for actual bot
         const bot = await storage.getBotByPhoneNumber(cleanedPhone);
-        
+
         return res.json({
           registered: true,
           currentServer: true,
@@ -2355,7 +2355,7 @@ Thank you for using TREKKER-MD! 🚀
         const botInstance = await storage.getBotByPhoneNumber(cleanedPhone);
         if (botInstance) {
           botId = botInstance.id;
-          setGuestBotId(cleanedPhone, botId);
+          setGuestBotId(cleanedPhone, botInstance.id);
         }
       }
 
@@ -2537,7 +2537,7 @@ Thank you for using TREKKER-MD! 🚀
       const guestPhone = req.guest.phoneNumber;
       const botId = req.guest.botId;
 
-      const validFeatures = ['autoLike', 'autoViewStatus', 'autoReact', 'chatgptEnabled'];
+      const validFeatures = ['autoLike', 'autoViewStatus', 'autoReact', 'chatgptEnabled', 'alwaysOnline', 'presenceAutoSwitch'];
       if (!feature || !validFeatures.includes(feature)) {
         return res.status(400).json({ 
           message: "Invalid feature", 
@@ -3481,7 +3481,7 @@ Thank you for using TREKKER-MD! 🚀`;
           enabled, 
           guestUser: cleanedPhone 
         },
-        serverName: currentServer
+        serverName: getServerName()
       });
 
       console.log(`✅ Feature ${feature} updated to ${enabled} for bot ${botId} by ${cleanedPhone}`);
@@ -4127,343 +4127,324 @@ Thank you for using TREKKER-MD! 🚀`;
   // Guest Bot Registration
   app.post("/api/guest/register-bot", upload.single('credsFile') as any, async (req, res) => {
     try {
-      const { botName, phoneNumber, credentialType, sessionId, features, selectedServer } = req.body;
+      console.log('🎯 Guest bot registration request received');
+      console.log('📋 Form data:', {
+        botName: req.body.botName,
+        phoneNumber: req.body.phoneNumber,
+        credentialType: req.body.credentialType,
+        hasSessionId: !!req.body.sessionId,
+        hasCredsFile: !!req.file,
+        features: req.body.features,
+        selectedServer: req.body.selectedServer // CRITICAL: Log selectedServer
+      });
 
+      const { botName, phoneNumber, credentialType, features, selectedServer } = req.body;
+      let { sessionId } = req.body;
+
+      // Validate required fields
       if (!botName || !phoneNumber) {
-        return res.status(400).json({ message: "Bot name and phone number are required" });
+        return res.status(400).json({
+          success: false,
+          message: "Bot name and phone number are required"
+        });
       }
 
-      // Clean the phone number early - remove + prefix and ensure we only use the numeric part
-      const cleanPhoneNumber = phoneNumber.replace(/^\+/, '').replace(/[^\d]/g, '');
+      // Clean phone number
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
 
-      // Parse credentials first (before any phone number checks)
-      let credentials = null;
-
-      // Handle credentials based on type
-      if (credentialType === 'base64' && sessionId) {
-        try {
-          const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
-          const parsedCreds = JSON.parse(decoded);
-          credentials = parsedCreds;
-        } catch (error) {
-          return res.status(400).json({ message: "Invalid base64 session ID format" });
-        }
-      } else if (credentialType === 'file' && req.file) {
-        try {
-          const fileContent = req.file.buffer.toString('utf-8');
-          credentials = JSON.parse(fileContent);
-        } catch (error) {
-          return res.status(400).json({ message: "Invalid creds.json file format" });
-        }
-      } else {
-        return res.status(400).json({ message: "Valid credentials are required" });
+      // Validate phone number format
+      if (!/^\d{10,15}$/.test(cleanedPhone)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid phone number format. Please enter a valid phone number with country code."
+        });
       }
 
-      // Validate phone number ownership - extract clean phone number from credentials
-      if (credentials && credentials.me && credentials.me.id) {
-        // Extract clean phone number from credentials (format: "254704897825:33@s.whatsapp.net")
-        const credentialsPhoneMatch = credentials.me.id.match(/^(\d+):/); 
-        const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
+      console.log(`📱 Processing registration for phone: ${cleanedPhone}`);
+      console.log(`🎯 Target server: ${selectedServer || 'current server'}`);
 
-        if (!credentialsPhone || credentialsPhone !== cleanPhoneNumber) {
-          return res.status(400).json({ 
-            message: "You are not the owner of this credentials file. The phone number in the session does not match your input." 
-          });
-        }
-      } else {
-        return res.status(400).json({ message: "Invalid credentials format - missing phone number data" });
-      }
+      // Step 1: Check if phone number already exists in God Registry
+      const existingRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      if (existingRegistration) {
+        const hostingServer = existingRegistration.tenancyName;
+        const currentServer = getServerName();
 
-      // Parse features if provided
-      let botFeatures = {};
-      if (features) {
-        try {
-          botFeatures = JSON.parse(features);
-        } catch (error) {
-          console.warn('Invalid features JSON:', error);
-        }
-      }
+        console.log(`📍 Phone ${cleanedPhone} found in God Registry on server: ${hostingServer}`);
 
-      // Get current tenant name
-      const currentTenancyName = getServerName();
-
-      // IMPORTANT: Use selectedServer from frontend if provided, otherwise use current server
-      let targetServerName = selectedServer && selectedServer.trim() !== '' ? selectedServer.trim() : currentTenancyName;
-
-      console.log(`🎯 Registration request: Current server: ${currentTenancyName}, Selected server: ${selectedServer}, Target server: ${targetServerName}`);
-
-      // Check global registration first using clean phone number
-      const globalRegistration = await storage.checkGlobalRegistration(cleanPhoneNumber);
-      if (globalRegistration) {
-        // Phone number is already registered to another tenant
-        if (globalRegistration.tenancyName !== targetServerName) {
-          return res.status(400).json({ 
-            message: `This phone number is registered to ${globalRegistration.tenancyName}. Please go to ${globalRegistration.tenancyName} server to manage your bot.`,
-            registeredTo: globalRegistration.tenancyName
-          });
-        }
-
-        // Phone number belongs to target tenant - check for existing bot using clean phone number
-        const existingBot = targetServerName === currentTenancyName 
-          ? await storage.getBotByPhoneNumber(cleanPhoneNumber)
-          : null; // For cross-server, we can't easily check existing bots
-
-        if (existingBot) {
-          // User has a bot on this server - automatically update credentials instead of blocking
-          console.log(`📱 Phone number ${cleanPhoneNumber} already registered, updating credentials for bot ${existingBot.id}`);
-
-          // Update the existing bot's credentials automatically
-          let credentialsSaved = false;
-          let messageSent = false;
-
-          try {
-            // Save credentials to bot's auth directory
-            const authDir = path.join(process.cwd(), 'auth', `bot_${existingBot.id}`);
-            if (!fs.existsSync(authDir)) {
-              fs.mkdirSync(authDir, { recursive: true });
-            }
-
-            // Save the new credentials to creds.json
-            fs.writeFileSync(
-              path.join(authDir, 'creds.json'), 
-              JSON.stringify(credentials, null, 2)
-            );
-            credentialsSaved = true;
-            console.log(`✅ Credentials updated for existing bot ${existingBot.id} (${phoneNumber})`);
-          } catch (fileError) {
-            console.error('Failed to save credentials to file:', fileError);
-            return res.status(500).json({
+        if (hostingServer === currentServer) {
+          // Phone exists on current server - check for existing bot
+          const existingBot = await storage.getBotByPhoneNumber(cleanedPhone);
+          if (existingBot) {
+            console.log(`🤖 Existing bot found: ${existingBot.name}`);
+            return res.json({
               success: false,
-              message: "Failed to update credentials. Please try again later."
-            });
-          }
-
-          // Send authentication message with updated credentials
-          const authMessage = `🔐 Your bot credentials have been successfully updated! Your bot "${existingBot.name}" is now ready to use with the new credentials.`;
-
-          try {
-            // Convert credentials to base64 for sending message
-            const credentialsBase64 = credentialType === 'base64' ? sessionId : Buffer.from(JSON.stringify(credentials)).toString('base64');
-            await sendGuestValidationMessage(cleanPhoneNumber, credentialsBase64, authMessage, true);
-            messageSent = true;
-            console.log(`✅ Updated authentication message sent to ${cleanPhoneNumber}`);
-          } catch (messageError) {
-            console.error('Failed to send authentication message:', messageError);
-            messageSent = false;
-          }
-
-          // Update bot credential status
-          await storage.updateBotCredentialStatus(existingBot.id, {
-            credentialVerified: true,
-            credentialPhone: cleanPhoneNumber,
-            invalidReason: undefined,
-            credentials: credentials
-          });
-
-          // Update bot features if provided
-          if (botFeatures && Object.keys(botFeatures).length > 0) {
-            await storage.updateBotInstance(existingBot.id, {
-              settings: JSON.stringify({ features: botFeatures })
-            });
-          }
-
-          // Create comprehensive activity log
-          await storage.createActivity({
-            botInstanceId: existingBot.id,
-            type: 'credential_update',
-            description: 'Guest automatically updated credentials for existing bot registration',
-            metadata: { 
-              verifiedPhone: cleanPhoneNumber,
-              guestAction: true,
-              credentialsSaved,
-              messageSent,
-              autoUpdate: true,
-              failureReason: messageSent ? null : 'Message sending failed'
-            },
-            serverName: getServerName()
-          });
-
-          const responseMessage = messageSent 
-            ? "Credentials automatically updated! Your existing bot now has new credentials. Check your WhatsApp for updated authentication instructions."
-            : "Credentials automatically updated! Your existing bot now has new credentials and is ready to use.";
-
-          return res.json({
-            success: true,
-            type: 'credentials_updated',
-            message: responseMessage,
-            botDetails: {
-              id: existingBot.id,
-              name: existingBot.name,
-              phoneNumber: cleanPhoneNumber,
-              status: existingBot.status,
-              updated: true
-            },
-            credentialsSaved,
-            messageSent
-          });
-        }
-      } else {
-        // This is a new registration - global registration will be handled by createCrossServerRegistration
-        console.log(`📝 New registration for ${cleanPhoneNumber} will be handled by cross-server registration method on ${targetServerName}`);
-      }
-
-      // Check if phone number already exists locally (only if target server is current server)
-      if (targetServerName === currentTenancyName) {
-        const existingBot = await storage.getBotByPhoneNumber(cleanPhoneNumber);
-        if (existingBot) {
-          // Check if existing bot is active and has valid session
-          if (existingBot.approvalStatus === 'approved' && existingBot.status === 'online') {
-            return res.status(400).json({ 
-              message: "Your previous bot is active. Can't add new bot with same number." 
-            });
-          }
-
-          // If bot is inactive, test connection and handle accordingly
-          if (existingBot.approvalStatus === 'approved' && existingBot.status !== 'online') {
-            // Try to test connection - if fails, delete old credentials
-            try {
-              // Test connection logic here
-              console.log(`Testing connection for existing bot ${existingBot.id}`);
-              // If connection test fails, we'll delete and allow new registration
-            } catch (error) {
-              console.log(`Connection test failed for ${existingBot.id}, allowing new registration`);
-              await storage.deleteBotInstance(existingBot.id);
-            }
-          }
-        }
-      }
-
-      // Check bot count limit for target server
-      const botCountCheck = await storage.strictCheckBotCountLimit(targetServerName);
-
-      if (!botCountCheck.canAdd) {
-        // Target server is full - try to find alternative or show error
-        if (targetServerName === currentTenancyName) {
-          // Current server is full - try automatic cross-server registration
-          const availableServers = await storage.getAvailableServers();
-
-          if (availableServers.length > 0) {
-            // Automatically register on the first available server
-            const fallbackServer = availableServers[0];
-            targetServerName = fallbackServer.serverName;
-
-            console.log(`🔄 ${currentTenancyName} is full (${botCountCheck.currentCount}/${botCountCheck.maxCount}), automatically registering on ${targetServerName}`);
-          } else {
-            // All servers are full - cannot proceed
-            return res.status(400).json({ 
-              message: `😞 All servers are currently full! Current server: ${currentTenancyName} (${botCountCheck.currentCount}/${botCountCheck.maxCount}). Please contact administrator for more capacity or try again later.`,
-              serverFull: true,
-              allServersFull: true,
-              currentServer: currentTenancyName,
-              capacity: {
-                current: botCountCheck.currentCount,
-                max: botCountCheck.maxCount
-              },
-              action: 'contact_admin'
+              type: 'existing_bot_found',
+              message: `Welcome back! You already have a bot "${existingBot.name}" registered with this phone number.`,
+              botDetails: maskBotDataForGuest(existingBot, true)
             });
           }
         } else {
-          // Selected server is full
-          return res.status(400).json({ 
-            message: `😞 Selected server ${targetServerName} is full (${botCountCheck.currentCount}/${botCountCheck.maxCount}). Please choose a different server.`,
-            serverFull: true,
-            selectedServer: targetServerName,
-            capacity: {
-              current: botCountCheck.currentCount,
-              max: botCountCheck.maxCount
-            },
-            action: 'select_different_server'
+          // Phone exists on different server - cannot register duplicate
+          return res.status(400).json({
+            success: false,
+            message: `This phone number is already registered on ${hostingServer}. Each phone number can only be used once across all servers.`
           });
         }
       }
 
-      // Use atomic cross-server registration with rollback support
-      console.log(`🚀 Starting registration process for ${cleanPhoneNumber} on target server: ${targetServerName}`);
-      
-      const registrationResult = await storage.createCrossServerRegistration(
-        cleanPhoneNumber, // Use cleaned phone number consistently
-        targetServerName,
-        {
-          name: botName,
-          serverName: targetServerName, // Ensure bot is created with correct server name
-          phoneNumber: cleanPhoneNumber, // Use cleaned phone number
-          credentials: credentials,
-          status: 'pending_validation',
-          approvalStatus: 'pending',
-          isGuest: true,
-          settings: { features: botFeatures },
-          // Map features to individual columns
-          autoLike: (botFeatures as any).autoLike || false,
-          autoViewStatus: (botFeatures as any).autoView || false,
-          autoReact: (botFeatures as any).autoReact || false,
-          typingMode: (botFeatures as any).typingIndicator ? 'typing' : 'none',
-          chatgptEnabled: (botFeatures as any).chatGPT || false
+      // Step 2: Parse and validate credentials
+      let credentials = null;
+      if (credentialType === 'base64' && sessionId) {
+        try {
+          credentials = JSON.parse(Buffer.from(sessionId.trim(), 'base64').toString('utf-8'));
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid session ID format. Please ensure you're providing valid base64-encoded credentials."
+          });
         }
-      );
-
-      if (!registrationResult.success) {
+      } else if (credentialType === 'file' && req.file) {
+        try {
+          credentials = JSON.parse(req.file.buffer.toString('utf-8'));
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid credentials file format. Please upload a valid JSON file."
+          });
+        }
+      } else {
         return res.status(400).json({
-          message: registrationResult.error || "Failed to register bot",
-          serverFull: registrationResult.error?.includes('capacity') || false
+          success: false,
+          message: "Please provide credentials either as base64 session ID or upload a credentials file."
         });
       }
 
-      const botInstance = registrationResult.botInstance!;
-      console.log(`✅ Bot instance created: ${botInstance.id} on server ${botInstance.serverName}`);
-
-      // Handle registration differently for cross-server vs same-server
-      if (targetServerName !== currentTenancyName) {
-        // Cross-server registration - no WhatsApp validation, just registry entry
-        console.log(`🌐 Cross-server registration: Bot ${botInstance.id} registered on ${targetServerName} (accessed from ${currentTenancyName})`);
-
-        // Mark credentials as verified without testing (assuming they're valid for cross-server)
-        await storage.updateBotCredentialStatusOnServer(botInstance.id, targetServerName, {
-          credentialVerified: true,
-          credentialPhone: cleanPhoneNumber,
-          autoStart: false, // Don't auto-start cross-server registrations
-          invalidReason: undefined
+      // Step 3: Validate credentials structure and phone number ownership
+      const credentialsPhoneMatch = credentials?.creds?.me?.id?.match(/^(\d+):/);
+      if (!credentialsPhoneMatch || credentialsPhoneMatch[1] !== cleanedPhone) {
+        return res.status(400).json({
+          success: false,
+          message: `Credentials phone number mismatch. The session belongs to +${credentialsPhoneMatch?.[1] || 'unknown'} but you provided +${cleanedPhone}.`
         });
-        console.log(`✅ Credentials marked as verified for bot ${botInstance.id} on server ${targetServerName} (cross-server)`);
+      }
 
-        // Update bot status to dormant (awaiting approval) without validation
-        await storage.updateBotInstanceOnServer(botInstance.id, targetServerName, { 
-          status: 'dormant',
-          lastActivity: new Date()
-        });
-        console.log(`✅ Bot status set to dormant on server ${targetServerName} (cross-server registration)`);
+      console.log(`✅ Credentials validated for phone: ${cleanedPhone}`);
 
-        // Send a cross-server notification message (best effort)
+      // Step 4: Prepare bot data
+      const parsedFeatures = features ? JSON.parse(features) : {};
+      const botData = {
+        name: botName,
+        phoneNumber: cleanedPhone,
+        credentials,
+        status: 'loading',
+        approvalStatus: 'pending',
+        autoLike: parsedFeatures.autoLike || false,
+        autoViewStatus: parsedFeatures.autoView || false,
+        autoReact: parsedFeatures.autoReact || false,
+        chatgptEnabled: parsedFeatures.chatGPT || false,
+        presenceMode: parsedFeatures.presenceMode || 'none',
+        autoStart: true,
+        credentialVerified: true,
+        isGuest: true,
+        messagesCount: 0,
+        commandsCount: 0
+      };
+
+      console.log(`📊 Bot data prepared:`, {
+        name: botData.name,
+        phone: botData.phoneNumber,
+        features: {
+          autoLike: botData.autoLike,
+          autoReact: botData.autoReact,
+          autoView: botData.autoViewStatus,
+          chatGPT: botData.chatgptEnabled
+        }
+      });
+
+      const currentServer = getServerName();
+
+      // Step 5: Handle server selection - CRITICAL FIX
+      if (selectedServer && selectedServer !== currentServer) {
+        console.log(`🌍 Cross-server registration requested: ${currentServer} → ${selectedServer}`);
+
+        // Verify target server exists and has capacity
+        const targetServerInfo = await storage.getServerByName(selectedServer);
+        if (!targetServerInfo) {
+          return res.status(400).json({
+            success: false,
+            message: `Selected server "${selectedServer}" does not exist.`
+          });
+        }
+
+        // Check target server capacity
+        const targetCapacityCheck = await storage.strictCheckBotCountLimit(selectedServer);
+        if (!targetCapacityCheck.canAdd) {
+          return res.status(400).json({
+            success: false,
+            message: `Selected server "${selectedServer}" is at capacity (${targetCapacityCheck.currentCount}/${targetCapacityCheck.maxCount}). Please choose a different server.`
+          });
+        }
+
+        console.log(`✅ Target server ${selectedServer} has capacity: ${targetCapacityCheck.currentCount}/${targetCapacityCheck.maxCount}`);
+
+        // Perform cross-server registration to selected server
+        const crossServerResult = await storage.createCrossServerRegistration(
+          cleanedPhone,
+          selectedServer,
+          botData
+        );
+
+        if (!crossServerResult.success) {
+          return res.status(500).json({
+            success: false,
+            message: crossServerResult.error || "Cross-server registration failed"
+          });
+        }
+
+        console.log(`✅ Bot successfully registered on selected server: ${selectedServer}`);
+
+        // Send success message to the user via WhatsApp
         try {
-          const crossServerMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
+          if (credentials) {
+            const validationMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
 
-✅ Bot "${botName}" registered on ${targetServerName}
-📱 Phone: ${cleanPhoneNumber}
+✅ Bot "${botName}" registered
+📱 Phone: ${cleanedPhone}
 📅 ${new Date().toLocaleString()}
-🌐 Registered from: ${currentTenancyName}
+🏢 Server: ${selectedServer}
 
-⏳ Awaiting admin approval on ${targetServerName}
+⏳ Awaiting admin approval
 📞 Activate: +254704897825
 
 🚀 Enjoy premium TREKKER-MD features once approved!`;
 
-          const credentialsBase64 = credentialType === 'base64' ? sessionId : Buffer.from(JSON.stringify(credentials)).toString('base64');
-          await sendGuestValidationMessage(cleanPhoneNumber, credentialsBase64, crossServerMessage);
-          console.log(`✅ Cross-server registration message sent to ${cleanPhoneNumber}`);
-        } catch (crossServerMessageError) {
-          console.warn(`⚠️ Failed to send cross-server registration message to ${cleanPhoneNumber}:`, crossServerMessageError);
-          // Don't fail the registration if message sending fails
+            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), validationMessage, false);
+          }
+        } catch (messageError) {
+          console.warn('Failed to send registration success message:', messageError);
         }
 
-      } else {
-        // Same-server registration - test WhatsApp connection and send validation message
-        try {
-          console.log(`🔄 Testing WhatsApp connection for guest bot ${botInstance.id} on same server`);
+        return res.json({
+          success: true,
+          type: 'cross_tenancy_registered',
+          message: `Registration successful! Your bot has been registered on ${selectedServer} as requested.`,
+          botDetails: maskBotDataForGuest(crossServerResult.botInstance!, true),
+          originalServer: currentServer,
+          assignedServer: selectedServer,
+          availableSlots: targetCapacityCheck.maxCount - targetCapacityCheck.currentCount - 1,
+          serverUrl: targetServerInfo.serverUrl,
+          nextSteps: [
+            `Your bot "${botName}" is now registered on ${selectedServer}`,
+            `Contact +254704897825 to activate your bot`,
+            `Once approved, you can manage your bot from any server`,
+            `Cross-server management ensures the best performance`
+          ]
+        });
+      }
 
-          // Prepare validation message
+      // Step 6: Register bot on current server (when no specific server selected or current server selected)
+      console.log(`📝 Registering bot on current server: ${currentServer}`);
+
+      // Check current server capacity
+      const capacityCheck = await storage.strictCheckBotCountLimit();
+      if (!capacityCheck.canAdd) {
+        console.log(`🚫 Current server ${currentServer} is at capacity`);
+
+        // Server is full - attempt auto-assignment to available server
+        const availableServers = await storage.getAvailableServers();
+        if (availableServers.length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: `All servers are at capacity. Please try again later or contact support.`,
+            serverFull: true,
+            allServersFull: true
+          });
+        }
+
+        // Select the server with the most available slots
+        const targetServer = availableServers.reduce((prev, current) => {
+          const prevAvailable = prev.maxBotCount - (prev.currentBotCount || 0);
+          const currentAvailable = current.maxBotCount - (current.currentBotCount || 0);
+          return currentAvailable > prevAvailable ? current : prev;
+        });
+
+        console.log(`🌍 Auto-selecting target server: ${targetServer.serverName}`);
+
+        // Perform cross-server registration
+        const crossServerResult = await storage.createCrossServerRegistration(
+          cleanedPhone,
+          targetServer.serverName,
+          botData
+        );
+
+        if (!crossServerResult.success) {
+          return res.status(500).json({
+            success: false,
+            message: crossServerResult.error || "Cross-server registration failed"
+          });
+        }
+
+        console.log(`✅ Bot successfully auto-assigned to ${targetServer.serverName}`);
+
+        // Send success message to the user via WhatsApp
+        try {
+          if (credentials) {
+            const validationMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
+
+✅ Bot "${botName}" registered
+📱 Phone: ${cleanedPhone}
+📅 ${new Date().toLocaleString()}
+🏢 Server: ${targetServer.serverName} (Auto-assigned)
+
+⏳ Awaiting admin approval
+📞 Activate: +254704897825
+
+🚀 Enjoy premium TREKKER-MD features once approved!`;
+
+            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), validationMessage, false);
+          }
+        } catch (messageError) {
+          console.warn('Failed to send registration success message:', messageError);
+        }
+
+        return res.json({
+          success: true,
+          type: 'cross_tenancy_registered',
+          message: `Registration successful! Your bot has been automatically assigned to ${targetServer.serverName} for optimal performance.`,
+          botDetails: maskBotDataForGuest(crossServerResult.botInstance!, true),
+          originalServer: currentServer,
+          assignedServer: targetServer.serverName,
+          availableSlots: targetServer.maxBotCount - (targetServer.currentBotCount || 0) - 1,
+          serverUrl: targetServer.serverUrl,
+          nextSteps: [
+            `Your bot "${botName}" is now registered on ${targetServer.serverName}`,
+            `Contact +254704897825 to activate your bot`,
+            `Once approved, you can manage your bot from any server`,
+            `Cross-server management ensures the best performance`
+          ]
+        });
+      }
+
+      // Add to global registration first
+      await storage.addGlobalRegistration(cleanedPhone, currentServer);
+
+      // Create bot instance on current server
+      const newBot = await storage.createBotInstance(botData);
+
+      console.log(`✅ Bot registered successfully:`, {
+        botId: newBot.id,
+        name: newBot.name,
+        server: currentServer,
+        status: newBot.status
+      });
+
+      // Send success message to the user via WhatsApp
+      try {
+        if (credentials) {
           const validationMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
 
 ✅ Bot "${botName}" registered
-📱 Phone: ${cleanPhoneNumber}
+📱 Phone: ${cleanedPhone}
 📅 ${new Date().toLocaleString()}
 
 ⏳ Awaiting admin approval
@@ -4471,1024 +4452,64 @@ Thank you for using TREKKER-MD! 🚀`;
 
 🚀 Enjoy premium TREKKER-MD features once approved!`;
 
-          // Send validation message using the bot's own credentials
-          const credentialsBase64 = credentialType === 'base64' ? sessionId : Buffer.from(JSON.stringify(credentials)).toString('base64');
-
-          await sendGuestValidationMessage(cleanPhoneNumber, credentialsBase64, validationMessage);
-          console.log(`✅ Validation message sent successfully to ${cleanPhoneNumber}`);
-
-          // Mark credentials as verified since validation message was sent successfully
-          await storage.updateBotCredentialStatus(botInstance.id, {
-            credentialVerified: true,
-            credentialPhone: cleanPhoneNumber,
-            autoStart: true,
-            invalidReason: undefined
-          });
-          console.log(`✅ Credentials marked as verified for bot ${botInstance.id}`);
-
-          // Update bot status to pending (awaiting approval)
-          await storage.updateBotInstance(botInstance.id, { 
-            status: 'dormant',
-            lastActivity: new Date()
-          });
-        } catch (validationError) {
-          console.error('Failed to validate WhatsApp connection:', validationError);
-
-          // For same-server validation failures, rollback the registration
-          await storage.rollbackCrossServerRegistration(cleanPhoneNumber, botInstance.id, targetServerName);
-          console.log(`🔄 Rolled back failed registration for ${cleanPhoneNumber}`);
-
-          return res.status(400).json({ 
-            message: "Failed to validate WhatsApp credentials. Please check your session ID or creds.json file." 
-          });
+          await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), validationMessage, false);
         }
+      } catch (messageError) {
+        console.warn('Failed to send registration success message:', messageError);
       }
 
-      // Log activity on target server (cross-tenancy logging)
-      await storage.createCrossTenancyActivity({
-        type: 'registration',
-        description: `Guest bot registered${targetServerName !== currentTenancyName ? ` (cross-server from ${currentTenancyName})` : ' and validation message sent'} for ${cleanPhoneNumber}`,
-        metadata: { 
-          phoneNumber: cleanPhoneNumber, 
-          credentialType, 
-          phoneValidated: targetServerName === currentTenancyName, // Only validated for same-server
-          sourceServer: currentTenancyName,
-          targetServer: targetServerName,
-          crossServerRegistration: targetServerName !== currentTenancyName,
-          botName: botName
-        },
-        serverName: targetServerName, // Log to target server where bot was created
-        phoneNumber: cleanPhoneNumber,
-        remoteTenancy: targetServerName !== currentTenancyName ? currentTenancyName : undefined
-      });
-
-      broadcast({ 
-        type: 'GUEST_BOT_REGISTERED', 
-        data: { 
-          botInstance: { ...botInstance, credentials: undefined }, // Don't broadcast credentials
-          phoneNumber: cleanPhoneNumber,
-          targetServer: targetServerName,
-          sourceServer: currentTenancyName
-        } 
-      });
-
-      const crossServerMessage = targetServerName !== currentTenancyName 
-        ? ` Your bot was registered on ${targetServerName} server as selected.`
-        : '';
-
-      res.json({ 
-        success: true, 
-        message: `Bot registered successfully on ${targetServerName}!${targetServerName === currentTenancyName ? ' Validation message sent to your WhatsApp.' : ' Cross-server registration completed.'}${crossServerMessage} Contact +254704897825 for activation.`,
-        botId: botInstance.id,
-        serverUsed: targetServerName,
-        crossServerRegistration: targetServerName !== currentTenancyName,
-        registrationDetails: {
-          botName: botName,
-          phoneNumber: cleanPhoneNumber,
-          targetServer: targetServerName,
-          sourceServer: currentTenancyName
-        }
+      res.json({
+        success: true,
+        message: "Your TREKKER-MD bot has been registered successfully and is awaiting admin approval!",
+        botDetails: maskBotDataForGuest(newBot, true),
+        botId: newBot.id
       });
 
     } catch (error) {
       console.error('Guest bot registration error:', error);
-      res.status(500).json({ message: "Failed to register bot" });
-    }
-  });
 
-  // Bot Management for Existing Users
-  app.post("/api/guest/manage-bot", upload.single('credsFile') as any, async (req, res) => {
-    try {
-      const { phoneNumber, action, credentialType, sessionId, botId, targetServer } = req.body;
+      // Enhanced error handling with specific messages
+      let errorMessage = "Registration failed. Please try again.";
 
-      if (!phoneNumber || !action || !botId) {
-        return res.status(400).json({ message: "Phone number, action, and bot ID are required" });
-      }
-
-      const currentTenancyName = getServerName();
-
-      // Verify global registration
-      const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
-      if (!globalRegistration || globalRegistration.tenancyName !== currentTenancyName) {
-        return res.status(400).json({ 
-          message: "Phone number not registered to this server or registered to " + globalRegistration?.tenancyName || 'another server' 
-        });
-      }
-
-      // Get the bot instance
-      const botInstance = await storage.getBotInstance(botId);
-      if (!botInstance || botInstance.phoneNumber !== phoneNumber) {
-        return res.status(404).json({ message: "Bot not found or phone number mismatch" });
-      }
-
-      switch (action) {
-        case 'restart':
-          if (botInstance.approvalStatus !== 'approved') {
-            return res.status(400).json({ message: "Bot must be approved before it can be restarted" });
-          }
-
-          // Check if bot is expired
-          if (botInstance.approvalDate && botInstance.expirationMonths) {
-            const approvalDate = new Date(botInstance.approvalDate);
-            const expirationDate = new Date(approvalDate);
-            expirationDate.setMonth(expirationDate.getMonth() + botInstance.expirationMonths);
-            const now = new Date();
-
-            if (now > expirationDate) {
-              return res.status(400).json({ 
-                message: "Bot has expired. Please contact admin for renewal.",
-                expired: true
-              });
-            }
-          }
-
-          // Restart the bot
-          try {
-            await botManager.destroyBot(botId);
-          } catch (error) {
-            console.log('Bot was not running, creating new instance');
-          }
-
-          await botManager.createBot(botId, botInstance);
-          await storage.updateBotInstance(botId, { status: 'loading' });
-
-          await storage.createActivity({
-            botInstanceId: botId,
-            type: 'restart',
-            description: `Bot restarted by user via management interface`,
-            serverName: getServerName()
-          });
-
-          res.json({ 
-            success: true, 
-            message: "Bot restart initiated",
-            botStatus: 'loading'
-          });
-          break;
-
-        case 'update_credentials':
-          let newCredentials = null;
-
-          if (credentialType === 'base64' && sessionId) {
-            try {
-              const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
-              newCredentials = JSON.parse(decoded);
-            } catch (error) {
-              return res.status(400).json({ message: "Invalid base64 session ID format" });
-            }
-          } else if (credentialType === 'file' && req.file) {
-            try {
-              const fileContent = req.file.buffer.toString('utf-8');
-              newCredentials = JSON.parse(fileContent);
-            } catch (error) {
-              return res.status(400).json({ message: "Invalid creds.json file format" });
-            }
-          } else {
-            return res.status(400).json({ message: "Valid credentials are required for update" });
-          }
-
-          // Validate credentials structure and content
-          const { WhatsAppBot } = await import('./services/whatsapp-bot');
-          const validation = WhatsAppBot.validateCredentials(newCredentials);
-          if (!validation.valid) {
-            return res.status(400).json({ 
-              message: `Invalid credentials: ${validation.error}` 
-            });
-          }
-
-          // Validate phone number ownership
-          if (newCredentials && newCredentials.creds && newCredentials.creds.me && newCredentials.creds.me.id) {
-            const credentialsPhoneMatch = newCredentials.creds.me.id.match(/^(\d+):/);
-            const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
-            const inputPhone = phoneNumber.replace(/^\+/, '');
-
-            if (!credentialsPhone || credentialsPhone !== inputPhone) {
-              return res.status(400).json({ 
-                message: "Credentials don't match your phone number" 
-              });
-            }
-          } else {
-            return res.status(400).json({ 
-              message: "Unable to verify phone number in credentials" 
-            });
-          }
-
-          // Update credentials
-          await storage.updateBotInstance(botId, { 
-            credentials: newCredentials,
-            status: 'offline' // Reset to offline for reactivation
-          });
-
-          await storage.createActivity({
-            botInstanceId: botId,
-            type: 'credentials_update',
-            description: `Bot credentials updated by user`,
-            metadata: { credentialType },
-            serverName: getServerName()
-          });
-
-          // Send success message to user via WhatsApp if bot is running
-          let messageSent = false;
-          try {
-            const successMessage = `✅ *TREKKER-MD Bot Credentials Updated Successfully!*\n\n` +
-              `🔑 Your bot credentials have been updated and verified.\n` +
-              `🤖 Bot ID: ${botInstance.name}\n` +
-              `📞 Phone: ${phoneNumber}\n` +
-              `🌐 Server: ${getServerName()}\n\n` +
-              `Your bot is now ready to be restarted. Visit your management panel to start your bot.\n\n` +
-              `💫 *TREKKER-MD - Advanced WhatsApp Bot*`;
-
-            // Try to send message through existing bot manager if bot is running
-            messageSent = await botManager.sendMessageThroughBot(botId, phoneNumber, successMessage);
-
-            if (messageSent) {
-              console.log(`✅ Success message sent to ${phoneNumber} after credential update`);
-            } else {
-              console.log(`ℹ️ Bot not running, success message not sent to ${phoneNumber}`);
-            }
-          } catch (messageError) {
-            console.warn(`⚠️ Failed to send success message to ${phoneNumber}:`, messageError);
-            // Don't fail the credential update if message sending fails
-          }
-
-          const responseMessage = messageSent 
-            ? "Credentials updated successfully. Bot can now be restarted. A confirmation message has been sent to your WhatsApp."
-            : "Credentials updated successfully. Bot can now be restarted.";
-
-          res.json({ 
-            success: true, 
-            message: responseMessage
-          });
-          break;
-
-        case 'start':
-          if (botInstance.approvalStatus !== 'approved') {
-            return res.status(400).json({ message: "Bot must be approved before it can be started" });
-          }
-
-          // Check if bot is expired
-          if (botInstance.approvalDate && botInstance.expirationMonths) {
-            const approvalDate = new Date(botInstance.approvalDate);
-            const expirationDate = new Date(approvalDate);
-            expirationDate.setMonth(expirationDate.getMonth() + botInstance.expirationMonths);
-            const now = new Date();
-
-            if (now > expirationDate) {
-              return res.status(400).json({ 
-                message: "Bot has expired. Please contact admin for renewal.",
-                expired: true
-              });
-            }
-          }
-
-          // Start the bot
-          try {
-            await botManager.startBot(botId);
-            await storage.updateBotInstance(botId, { status: 'loading' });
-
-            await storage.createActivity({
-              botInstanceId: botId,
-              type: 'start',
-              description: `Bot started by user via management interface`,
-              serverName: getServerName()
-            });
-
-            res.json({ 
-              success: true, 
-              message: "Bot start initiated",
-              botStatus: 'loading'
-            });
-          } catch (error) {
-            console.error('Error starting bot:', error);
-            res.status(500).json({ message: "Failed to start bot" });
-          }
-          break;
-
-        case 'stop':
-          if (botInstance.approvalStatus !== 'approved') {
-            return res.status(400).json({ message: "Bot must be approved before it can be stopped" });
-          }
-
-          try {
-            await botManager.stopBot(botId);
-            await storage.updateBotInstance(botId, { status: 'offline' });
-
-            await storage.createActivity({
-              botInstanceId: botId,
-              type: 'stop',
-              description: `Bot stopped by user via management interface`,
-              serverName: getServerName()
-            });
-
-            res.json({ 
-              success: true, 
-              message: "Bot stopped successfully"
-            });
-          } catch (error) {
-            console.error('Error stopping bot:', error);
-            res.status(500).json({ message: "Failed to stop bot" });
-          }
-          break;
-
-        default:
-          res.status(400).json({ message: "Invalid action specified" });
-      }
-
-    } catch (error) {
-      console.error('Bot management error:', error);
-      res.status(500).json({ message: "Failed to manage bot" });
-    }
-  });
-
-  // Helper functions for cross-tenancy operations
-  async function handleCrossTenancyCredentialUpdate(req: any, res: any, globalRegistration: any) {
-    const { phoneNumber, credentialType, sessionId } = req.body;
-    const targetServer = globalRegistration.tenancyName;
-    const currentServer = getServerName();
-
-    try {
-      let newCredentials = null;
-
-      // Parse credentials based on type
-      if (credentialType === 'base64' && sessionId) {
-        try {
-          const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
-          newCredentials = JSON.parse(decoded);
-        } catch (error) {
-          return res.status(400).json({ message: "Invalid base64 session ID format" });
+      if (error instanceof Error) {
+        if (error.message.includes('already registered')) {
+          errorMessage = "This phone number is already registered. Each phone can only be used once.";
+        } else if (error.message.includes('capacity') || error.message.includes('full')) {
+          errorMessage = "Server capacity reached. Please try again later.";
+        } else if (error.message.includes('credentials')) {
+          errorMessage = "Invalid credentials provided. Please check your session ID or file.";
         }
-      } else if (credentialType === 'file' && req.file) {
-        try {
-          const fileContent = req.file.buffer.toString('utf-8');
-          newCredentials = JSON.parse(fileContent);
-        } catch (error) {
-          return res.status(400).json({ message: "Invalid creds.json file format" });
-        }
-      } else {
-        return res.status(400).json({ message: "Valid credentials are required for update" });
       }
 
-      // Validate credentials structure
-      const { WhatsAppBot } = await import('./services/whatsapp-bot');
-      const validation = WhatsAppBot.validateCredentials(newCredentials);
-      if (!validation.valid) {
-        return res.status(400).json({ 
-          message: `Invalid credentials: ${validation.error}` 
-        });
-      }
-
-      // Validate phone number ownership
-      if (newCredentials?.creds?.me?.id) {
-        const credentialsPhoneMatch = newCredentials.creds.me.id.match(/^(\d+):/);
-        const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
-        const inputPhone = phoneNumber.replace(/^\+/, '');
-
-        if (!credentialsPhone || credentialsPhone !== inputPhone) {
-          return res.status(400).json({ 
-            message: "Credentials don't match your phone number" 
-          });
-        }
-      } else {
-        return res.status(400).json({ 
-          message: "Unable to verify phone number in credentials" 
-        });
-      }
-
-      // Store the credential update request in a cross-tenancy table for the target server
-      await storage.createActivity({
-        botInstanceId: 'cross-tenancy-request',
-        type: 'cross_tenancy_credential_update',
-        description: `Credential update request from ${currentServer} for phone ${phoneNumber} on ${targetServer}`,
-        metadata: { 
-          phoneNumber,
-          targetServer,
-          sourceServer: currentServer,
-          credentialType,
-          credentialsData: newCredentials,
-          requestTimestamp: new Date().toISOString()
-        },
-        serverName: currentServer
+      res.status(500).json({
+        success: false,
+        message: errorMessage
       });
-
-      // For now, simulate cross-tenancy support
-      // In a real implementation, this would make an API call to the target server
-      res.json({
-        success: true,
-        message: `Cross-tenancy credential update initiated for ${targetServer}. The credentials have been prepared for transfer.`,
-        crossTenancy: true,
-        targetServer,
-        sourceServer: currentServer,
-        phoneNumber,
-        nextSteps: [
-          `Your credentials will be updated on ${targetServer}`,
-          `You can now manage your bot from ${targetServer}`,
-          `The bot may take a few moments to restart with new credentials`,
-          `Check the bot status on the target server dashboard`
-        ]
-      });
-
-    } catch (error) {
-      console.error('Cross-tenancy credential update error:', error);
-      res.status(500).json({ message: "Failed to process cross-tenancy credential update" });
-    }
-  }
-
-  async function handleCrossTenancyBotControl(req: any, res: any, globalRegistration: any, action: string) {
-    const { phoneNumber } = req.body;
-    const targetServer = globalRegistration.tenancyName;
-    const currentServer = getServerName();
-
-    try {
-      // FIXED: Implement real cross-tenancy bot control instead of just logging
-
-      // Find the actual bot on the target server
-      const targetBot = await storage.getBotByPhoneNumber(phoneNumber);
-      if (!targetBot) {
-        return res.status(404).json({ 
-          message: `Bot with phone number ${phoneNumber} not found on ${targetServer}`,
-          crossTenancy: true,
-          targetServer,
-          sourceServer: currentServer
-        });
-      }
-
-      // Execute the actual bot control operation
-      const { botManager } = await import('./services/bot-manager');
-      let operationResult;
-      let operationStatus = 'failed';
-
-      switch (action) {
-        case 'start':
-          try {
-            await botManager.startBot(targetBot.id);
-            await storage.updateBotInstance(targetBot.id, { status: 'online' });
-            operationResult = `Bot ${targetBot.name} started successfully`;
-            operationStatus = 'success';
-          } catch (error) {
-            operationResult = `Failed to start bot: ${error instanceof Error ? error.message : 'Unknown error'}`;
-          }
-          break;
-
-        case 'stop':
-          try {
-            await botManager.stopBot(targetBot.id);
-            await storage.updateBotInstance(targetBot.id, { status: 'offline' });
-            operationResult = `Bot ${targetBot.name} stopped successfully`;
-            operationStatus = 'success';
-          } catch (error) {
-            operationResult = `Failed to stop bot: ${error instanceof Error ? error.message : 'Unknown error'}`;
-          }
-          break;
-
-        case 'restart':
-          try {
-            await botManager.restartBot(targetBot.id);
-            await storage.updateBotInstance(targetBot.id, { status: 'online' });
-            operationResult = `Bot ${targetBot.name} restarted successfully`;
-            operationStatus = 'success';
-          } catch (error) {
-            operationResult = `Failed to restart bot: ${error instanceof Error ? error.message : 'Unknown error'}`;
-          }
-          break;
-
-        default:
-          operationResult = `Invalid action: ${action}`;
-      }
-
-      // Log the actual operation (not just a request)
-      await storage.createActivity({
-        botInstanceId: targetBot.id,
-        type: `cross_tenancy_${action}`,
-        description: `Cross-tenancy ${action}: ${operationResult}`,
-        metadata: { 
-          phoneNumber,
-          targetServer,
-          sourceServer: currentServer,
-          action,
-          operationStatus,
-          executedTimestamp: new Date().toISOString()
-        },
-        serverName: currentServer
-      });
-
-      if (operationStatus === 'success') {
-        res.json({
-          success: true,
-          message: operationResult,
-          crossTenancy: true,
-          targetServer,
-          sourceServer: currentServer,
-          phoneNumber,
-          action,
-          botId: targetBot.id,
-          botName: targetBot.name,
-          actuallyExecuted: true
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: operationResult,
-          crossTenancy: true,
-          targetServer,
-          sourceServer: currentServer,
-          phoneNumber,
-          action
-        });
-      }
-
-    } catch (error) {
-      console.error(`Cross-tenancy ${action} error:`, error);
-      res.status(500).json({ message: `Failed to process cross-tenancy ${action} operation` });
-    }
-  }
-
-  // ======= MASTER CONTROL PANEL ENDPOINTS =======
-
-  // Get all tenancies from God Registry
-  app.get("/api/master/tenancies", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const registrations = await storage.getAllGlobalRegistrations();
-      
-      // Group by tenancy and count bots
-      const tenancies = registrations.reduce((acc, reg) => {
-        if (!acc[reg.tenancyName]) {
-          acc[reg.tenancyName] = {
-            tenancy: reg.tenancyName,
-            botCount: 0,
-            lastActivity: reg.registeredAt
-          };
-        }
-        acc[reg.tenancyName].botCount++;
-        if (new Date(reg.registeredAt) > new Date(acc[reg.tenancyName].lastActivity)) {
-          acc[reg.tenancyName].lastActivity = reg.registeredAt;
-        }
-        return acc;
-      }, {} as any);
-
-      res.json(Object.values(tenancies));
-    } catch (error) {
-      console.error('Master tenancies error:', error);
-      res.status(500).json({ message: "Failed to fetch tenancies" });
     }
   });
 
-  // Get cross-tenancy bots from God Registry
-  app.get("/api/master/cross-tenancy-bots", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const registrations = await storage.getAllGlobalRegistrations();
-      const currentServer = getServerName();
-
-      // Create bot info from God Registry
-      const crossTenancyBots = await Promise.all(
-        registrations.map(async (reg) => {
-          let botDetails = null;
-          
-          // If bot is on current server, get full details
-          if (reg.tenancyName === currentServer) {
-            try {
-              botDetails = await storage.getBotByPhoneNumber(reg.phoneNumber);
-            } catch (error) {
-              console.warn(`Could not get bot details for ${reg.phoneNumber}:`, error);
-            }
-          }
-
-          return {
-            id: botDetails?.id || `registry-${reg.phoneNumber}`,
-            name: botDetails?.name || `Bot (${reg.phoneNumber})`,
-            phoneNumber: reg.phoneNumber,
-            tenancy: reg.tenancyName,
-            status: botDetails?.status || 'unknown',
-            approvalStatus: botDetails?.approvalStatus || 'unknown',
-            registeredAt: reg.registeredAt,
-            isLocal: reg.tenancyName === currentServer,
-            lastActivity: botDetails?.lastActivity || null,
-            messagesCount: botDetails?.messagesCount || 0,
-            commandsCount: botDetails?.commandsCount || 0
-          };
-        })
-      );
-
-      res.json(crossTenancyBots);
-    } catch (error) {
-      console.error('Master cross-tenancy bots error:', error);
-      res.status(500).json({ message: "Failed to fetch cross-tenancy bots" });
-    }
-  });
-
-  // Get all approved bots across tenancies
-  app.get("/api/master/approved-bots", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const currentServer = getServerName();
-      
-      // Get local approved bots
-      const localBots = await storage.getApprovedBots();
-      
-      // Get all registrations to find other tenancies
-      const registrations = await storage.getAllGlobalRegistrations();
-      
-      // Create comprehensive bot list
-      const approvedBots = await Promise.all(
-        registrations.map(async (reg) => {
-          let botDetails = null;
-          
-          if (reg.tenancyName === currentServer) {
-            try {
-              botDetails = await storage.getBotByPhoneNumber(reg.phoneNumber);
-            } catch (error) {
-              console.warn(`Could not get bot details for ${reg.phoneNumber}:`, error);
-            }
-          }
-
-          return {
-            id: botDetails?.id || `registry-${reg.phoneNumber}`,
-            name: botDetails?.name || `Bot (${reg.phoneNumber})`,
-            phoneNumber: reg.phoneNumber,
-            tenancy: reg.tenancyName,
-            status: botDetails?.status || 'unknown',
-            approvalStatus: botDetails?.approvalStatus || 'unknown',
-            isLocal: reg.tenancyName === currentServer,
-            lastActivity: botDetails?.lastActivity || null,
-            messagesCount: botDetails?.messagesCount || 0,
-            commandsCount: botDetails?.commandsCount || 0
-          };
-        })
-      );
-
-      // Filter only approved bots
-      const filteredBots = approvedBots.filter(bot => 
-        bot.approvalStatus === 'approved' || bot.tenancy !== currentServer
-      );
-
-      res.json(filteredBots);
-    } catch (error) {
-      console.error('Master approved bots error:', error);
-      res.status(500).json({ message: "Failed to fetch approved bots" });
-    }
-  });
-
-  // Master Control Panel API routes - Cross-tenancy management using God Registry
-  app.post("/api/master/bot-action", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const { action, botId, tenancy, data } = req.body;
-      const currentServer = getServerName();
-
-      // Validate required fields - botId is required for most actions except bulk operations
-      if (!action || !tenancy) {
-        return res.status(400).json({ message: "Missing required fields: action and tenancy are required" });
-      }
-
-      // botId is required for individual bot actions
-      if (!botId && !['sync', 'disconnect', 'bulk_start', 'bulk_stop'].includes(action)) {
-        return res.status(400).json({ message: "Missing required fields: botId is required for this action" });
-      }
-
-      // Handle actions for local tenancy
-      if (tenancy === currentServer) {
-        switch (action) {
-          case 'approve':
-            if (!botId) return res.status(400).json({ message: "Bot ID required" });
-
-            const botInstance = await storage.getBotInstance(botId);
-            if (!botInstance) {
-              return res.status(404).json({ message: "Bot not found" });
-            }
-
-            const duration = data?.duration || 6; // Default 6 months
-            const approvalDate = new Date().toISOString();
-
-            await storage.updateBotInstance(botId, {
-              approvalStatus: 'approved',
-              status: 'offline',
-              approvalDate,
-              expirationMonths: duration
-            });
-
-            await storage.createActivity({
-              botInstanceId: botId,
-              type: 'master_approval',
-              description: `Bot approved via master control panel for ${duration} months`,
-              metadata: { action: 'approve', duration, approvedBy: 'master_admin' },
-              serverName: getServerName()
-            });
-
-            broadcast({ 
-              type: 'BOT_APPROVED_MASTER', 
-              data: { botId, name: botInstance.name, tenancy } 
-            });
-
-            break;
-
-          case 'reject':
-            if (!botId) return res.status(400).json({ message: "Bot ID required" });
-
-            await storage.updateBotInstance(botId, {
-              approvalStatus: 'rejected',
-              status: 'rejected'
-            });
-
-            await storage.createActivity({
-              botInstanceId: botId,
-              type: 'master_rejection',
-              description: 'Bot rejected via master control panel',
-              metadata: { action: 'reject', rejectedBy: 'master_admin' },
-              serverName: getServerName()
-            });
-
-            break;
-
-          case 'start':
-            if (!botId) return res.status(400).json({ message: "Bot ID required" });
-            await botManager.startBot(botId);
-            break;
-
-          case 'stop':
-            if (!botId) return res.status(400).json({ message: "Bot ID required" });
-            await botManager.stopBot(botId);
-            break;
-
-          case 'delete':
-            if (!botId) return res.status(400).json({ message: "Bot ID required" });
-
-            const botToDelete = await storage.getBotInstance(botId);
-            if (botToDelete) {
-              // Stop bot if running
-              await botManager.stopBot(botId);
-
-              // Delete from god registry
-              await storage.deleteGlobalRegistration(botToDelete.phoneNumber || '');
-
-              // Delete bot instance
-              await storage.deleteBotInstance(botId);
-
-              await storage.createActivity({
-                botInstanceId: 'system-master-control',
-                type: 'master_deletion',
-                description: `Bot ${botToDelete.name} deleted via master control panel`,
-                metadata: { action: 'delete', phoneNumber: botToDelete.phoneNumber, deletedBy: 'master_admin' },
-                serverName: getServerName()
-              });
-            }
-            break;
-
-          default:
-            return res.status(400).json({ message: "Unknown action" });
-        }
-
-        res.json({ success: true, message: `Action ${action} completed successfully` });
-      } else {
-        // Handle actions for remote tenancies via God Registry
-        console.log(`Cross-tenancy action ${action} on ${tenancy} for bot ${botId}`);
-
-        // Log the cross-tenancy action attempt (using system placeholder for bot_instance_id)
-        await storage.createActivity({
-          botInstanceId: 'system-master-control',
-          type: 'master_cross_tenancy',
-          description: `Cross-tenancy action ${action} attempted on ${tenancy}`,
-          metadata: { action, tenancy, botId, initiatedBy: 'master_admin' },
-          serverName: getServerName()
-        });
-
-        res.json({ 
-          success: true, 
-          message: `Cross-tenancy action ${action} logged for ${tenancy}`,
-          note: "Cross-tenancy actions are logged in God Registry" 
-        });
-      }
-    } catch (error) {
-      console.error('Failed to perform bot action:', error);
-      res.status(500).json({ message: "Failed to perform action" });
-    }
-  });
-
-  // Server capacity management endpoints
-  app.get("/api/server/capacity", async (req, res) => {
-    try {
-      const serverName = getServerName();
-      const maxBots = parseInt(process.env.BOTCOUNT || '10');
-      const currentBots = await storage.getAllBotInstances();
-      const approvedBots = currentBots.filter(bot => bot.approvalStatus === 'approved');
-
-      res.json({
-        serverName,
-        maxBots,
-        currentBots: currentBots.length,
-        approvedBots: approvedBots.length,
-        availableSlots: maxBots - approvedBots.length,
-        isFull: approvedBots.length >= maxBots,
-        capacity: `${approvedBots.length}/${maxBots}`
-      });
-    } catch (error) {
-      console.error('Failed to get server capacity:', error);
-      res.status(500).json({ message: "Failed to get server capacity" });
-    }
-  });
-
-  // Get available alternative servers for guests when current server is full
-  app.get("/api/guest/alternative-servers", async (req, res) => {
-    try {
-      const registrations = await storage.getAllGlobalRegistrations();
-      const currentTenancy = getServerName();
-
-      // Group by tenancy and count bots
-      const tenancyStats = registrations.reduce((acc, reg) => {
-        if (!acc[reg.tenancyName]) {
-          acc[reg.tenancyName] = {
-            name: reg.tenancyName,
-            botCount: 0,
-            isCurrentServer: reg.tenancyName === currentTenancy
-          };
-        }
-        acc[reg.tenancyName].botCount++;
-        return acc;
-      }, {} as any);
-
-      // Add default capacity info (assuming 20 max for now, can be made configurable)
-      const alternativeServers = Object.values(tenancyStats).map((server: any) => ({
-        ...server,
-        maxBots: 20, // This could be made configurable per server
-        availableSlots: Math.max(0, 20 - server.botCount),
-        isFull: server.botCount >= 20,
-        capacity: `${server.botCount}/20`
-      })).filter((server: any) => !server.isCurrentServer && !server.isFull);
-
-      res.json({
-        currentServer: {
-          name: currentTenancy,
-          isFull: true,
-          capacity: `${tenancyStats[currentTenancy]?.botCount || 0}/20`
-        },
-        alternativeServers
-      });
-    } catch (error) {
-      console.error('Failed to get alternative servers:', error);
-      res.status(500).json({ message: "Failed to get alternative servers" });
-    }
-  });
-
-  // Server Registry API endpoints for multi-tenancy
+  // Get available servers for registration
   app.get("/api/servers/available", async (req, res) => {
     try {
       const availableServers = await storage.getAvailableServers();
+
+      const serverList = availableServers.map(server => ({
+        id: server.serverName, // Use serverName as ID for compatibility
+        name: server.serverName, // This is what should be sent as selectedServer
+        description: server.description || `Server ${server.serverName} - Available for new bots`,
+        currentBots: server.currentBotCount || 0,
+        maxBots: server.maxBotCount,
+        availableSlots: server.maxBotCount - (server.currentBotCount || 0),
+        serverUrl: server.serverUrl
+      }));
+
       res.json({
-        servers: availableServers.map(server => ({
-          serverName: server.serverName,
-          currentBots: server.currentBotCount || 0,
-          maxBots: server.maxBotCount,
-          availableSlots: server.maxBotCount - (server.currentBotCount || 0),
-          serverUrl: server.serverUrl,
-          description: server.description,
-          serverStatus: server.serverStatus
-        }))
+        servers: serverList,
+        count: serverList.length
       });
     } catch (error) {
-      console.error('Failed to get available servers:', error);
-      res.status(500).json({ message: "Failed to retrieve available servers" });
-    }
-  });
-
-  app.get("/api/servers/all", async (req, res) => {
-    try {
-      const allServers = await storage.getAllServers();
-      res.json({
-        servers: allServers.map(server => ({
-          serverName: server.serverName,
-          currentBots: server.currentBotCount || 0,
-          maxBots: server.maxBotCount,
-          availableSlots: server.maxBotCount - (server.currentBotCount || 0),
-          serverUrl: server.serverUrl,
-          description: server.description,
-          serverStatus: server.serverStatus
-        }))
-      });
-    } catch (error) {
-      console.error('Failed to get all servers:', error);
-      res.status(500).json({ message: "Failed to retrieve servers" });
-    }
-  });
-
-  // Cross-server bot registration endpoint
-  app.post("/api/cross-server/register-bot", upload.single('credsFile') as any, async (req, res) => {
-    try {
-      const { targetServer, botName, phoneNumber, credentialType, sessionId, features } = req.body;
-
-      if (!targetServer || !botName || !phoneNumber) {
-        return res.status(400).json({ message: "Target server, bot name and phone number are required" });
-      }
-
-      // Check if target server exists and has capacity
-      const serverCheck = await storage.strictCheckBotCountLimit(targetServer);
-      if (!serverCheck.canAdd) {
-        return res.status(400).json({ 
-          message: `Selected server ${targetServer} is now full (${serverCheck.currentCount}/${serverCheck.maxCount} bots). Please select another server.`
-        });
-      }
-
-      // Check global registration to prevent duplicate registrations
-      const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
-      if (globalRegistration) {
-        return res.status(400).json({ 
-          message: `This phone number is already registered on ${globalRegistration.tenancyName}. Please go to that server to manage your bot.`,
-          registeredTo: globalRegistration.tenancyName
-        });
-      }
-
-      // Process credentials (similar to guest registration logic)
-      let credentials = null;
-      if (credentialType === 'base64' && sessionId) {
-        try {
-          const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
-          credentials = JSON.parse(decoded);
-        } catch (error) {
-          return res.status(400).json({ message: "Invalid base64 session ID format" });
-        }
-      } else if (credentialType === 'file' && req.file) {
-        try {
-          const fileContent = req.file.buffer.toString('utf-8');
-          credentials = JSON.parse(fileContent);
-        } catch (error) {
-          return res.status(400).json({ message: "Invalid creds.json file format" });
-        }
-      } else {
-        return res.status(400).json({ message: "Valid credentials are required" });
-      }
-
-      // Validate phone number ownership
-      if (credentials && credentials.me && credentials.me.id) {
-        const credentialsPhoneMatch = credentials.me.id.match(/^(\d+):/);
-        const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
-        const inputPhone = phoneNumber.replace(/^\+/, '');
-
-        if (!credentialsPhone || credentialsPhone !== inputPhone) {
-          return res.status(400).json({ 
-            message: "You are not the owner of this credentials file. The phone number in the session does not match your input." 
-          });
-        }
-      } else {
-        return res.status(400).json({ message: "Invalid credentials format - missing phone number data" });
-      }
-
-      // Parse features if provided
-      let botFeatures = {};
-      if (features) {
-        try {
-          botFeatures = JSON.parse(features);
-        } catch (error) {
-          console.warn('Invalid features JSON:', error);
-        }
-      }
-
-      // Create bot instance on target server
-      const botInstance = await storage.createBotInstance({
-        name: botName,
-        phoneNumber: phoneNumber,
-        credentials: credentials,
-        status: 'dormant',
-        approvalStatus: 'pending',
-        isGuest: true,
-        settings: { features: botFeatures },
-        autoLike: (botFeatures as any).autoLike || false,
-        autoViewStatus: (botFeatures as any).autoView || false,
-        autoReact: (botFeatures as any).autoReact || false,
-        typingMode: (botFeatures as any).typingIndicator ? 'typing' : 'none',
-        chatgptEnabled: (botFeatures as any).chatGPT || false,
-        serverName: targetServer // Register under target server
-      });
-
-      // Add to global registry under target server
-      await storage.addGlobalRegistration(phoneNumber, targetServer);
-
-      // Log activity for cross-server registration
-      await storage.createActivity({
-        botInstanceId: botInstance.id,
-        type: 'cross_server_registration',
-        description: `Bot registered on ${targetServer} via cross-server registration from ${getServerName()}`,
-        metadata: { 
-          originalServer: getServerName(),
-          targetServer,
-          phoneNumber,
-          credentialType 
-        },
-        serverName: targetServer
-      });
-
-      // Update server bot count
-      await storage.updateServerBotCount(targetServer, serverCheck.currentCount + 1);
-
-      res.json({ 
-        success: true, 
-        message: `Bot successfully registered on ${targetServer}! Your bot is awaiting admin approval.`,
-        botId: botInstance.id,
-        targetServer: targetServer,
-        serverInfo: {
-          serverName: targetServer,
-          newBotCount: serverCheck.currentCount + 1,
-          maxBots: serverCheck.maxBotCount
-        }
-      });
-
-    } catch (error) {
-      console.error('Cross-server bot registration error:', error);
-      res.status(500).json({ message: "Failed to register bot on target server" });
+      console.error('Available servers error:', error);
+      res.status(500).json({ message: "Failed to fetch available servers" });
     }
   });
 

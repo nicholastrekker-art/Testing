@@ -263,8 +263,9 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
   // Step 3: Server selection
   const handleServerSelection = (server: any) => {
     console.log('Selected server:', server);
-    // Set the selected server in form data and move to credentials step
-    setFormData(prev => ({ ...prev, selectedServer: server.id })); // Use server.id as selectedServer
+    // Set the selected server in form data and state, and move to credentials step
+    setSelectedServer(server.name); // Use server.name (e.g., "Server2")
+    setFormData(prev => ({ ...prev, selectedServer: server.name })); // Use server.name as selectedServer
     setStep(4); // Go to credentials step
     setShowServerSelection(false);
   };
