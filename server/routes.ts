@@ -735,6 +735,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ======= ADMIN ENDPOINTS =======
+
+  // Admin Bot Instances - Get all bot instances (Admin only)
+  app.get("/api/admin/bot-instances", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const bots = await storage.getAllBotInstances();
+      res.json(bots);
+    } catch (error) {
+      console.error("Admin bot instances error:", error);
+      res.status(500).json({ message: "Failed to fetch bot instances" });
+    }
+  });
+
+  // Admin Activities - Get all activities across all bots (Admin only)
+  app.get("/api/admin/activities", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const activities = await storage.getRecentActivities(limit);
+      res.json(activities);
+    } catch (error) {
+      console.error("Admin activities error:", error);
+      res.status(500).json({ message: "Failed to fetch activities" });
+    }
+  });
+
+  // Admin Stats - Get comprehensive admin statistics (Admin only)
+  app.get("/api/admin/stats", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const stats = await storage.getDashboardStats();
+      
+      // Add additional admin-specific stats
+      const allBots = await storage.getAllBotInstances();
+      const approvedBots = allBots.filter(bot => bot.approvalStatus === 'approved');
+      const pendingBots = allBots.filter(bot => bot.approvalStatus === 'pending');
+      const onlineBots = allBots.filter(bot => bot.status === 'online');
+      
+      const adminStats = {
+        ...stats,
+        totalBots: allBots.length,
+        approvedBots: approvedBots.length,
+        pendingBots: pendingBots.length,
+        onlineBots: onlineBots.length,
+        offlineBots: allBots.length - onlineBots.length,
+        guestBots: allBots.filter(bot => bot.isGuest).length,
+        regularBots: allBots.filter(bot => !bot.isGuest).length
+      };
+      
+      res.json(adminStats);
+    } catch (error) {
+      console.error("Admin stats error:", error);
+      res.status(500).json({ message: "Failed to fetch admin statistics" });
+    }
+  });
+
   // Bot Instances
   app.get("/api/bot-instances", async (req, res) => {
     try {
@@ -1641,6 +1695,74 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     } catch (error) {
       console.error('Custom command creation error:', error);
       res.status(500).json({ message: "Failed to create custom command" });
+    }
+  });
+
+  // ======= ADMIN GOD REGISTRY ENDPOINTS =======
+
+  // Get all God Registry entries (Admin only)
+  app.get("/api/admin/god-registry", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const registrations = await storage.getAllGlobalRegistrations();
+      res.json(registrations);
+    } catch (error) {
+      console.error('Get God Registry error:', error);
+      res.status(500).json({ message: "Failed to fetch God Registry" });
+    }
+  });
+
+  // Update God Registry entry (Admin only)
+  app.put("/api/admin/god-registry/:phoneNumber", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { phoneNumber } = req.params;
+      const { tenancyName } = req.body;
+
+      if (!tenancyName) {
+        return res.status(400).json({ message: "Tenancy name is required" });
+      }
+
+      // Delete old registration
+      await storage.deleteGlobalRegistration(phoneNumber);
+      
+      // Create new registration with updated tenancy
+      await storage.addGlobalRegistration(phoneNumber, tenancyName);
+
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: 'god-registry-admin',
+        type: 'god_registry_update',
+        description: `God Registry updated: ${phoneNumber} moved to ${tenancyName}`,
+        metadata: { phoneNumber, tenancyName, updatedBy: 'admin' },
+        serverName: getServerName()
+      });
+
+      res.json({ message: "Registration updated successfully" });
+    } catch (error) {
+      console.error('Update God Registry error:', error);
+      res.status(500).json({ message: "Failed to update registration" });
+    }
+  });
+
+  // Delete God Registry entry (Admin only)
+  app.delete("/api/admin/god-registry/:phoneNumber", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { phoneNumber } = req.params;
+
+      await storage.deleteGlobalRegistration(phoneNumber);
+
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: 'god-registry-admin',
+        type: 'god_registry_delete',
+        description: `God Registry entry deleted: ${phoneNumber}`,
+        metadata: { phoneNumber, deletedBy: 'admin' },
+        serverName: getServerName()
+      });
+
+      res.json({ message: "Registration deleted successfully" });
+    } catch (error) {
+      console.error('Delete God Registry error:', error);
+      res.status(500).json({ message: "Failed to delete registration" });
     }
   });
 
@@ -4826,6 +4948,130 @@ Thank you for using TREKKER-MD! 🚀`;
       res.status(500).json({ message: `Failed to process cross-tenancy ${action} operation` });
     }
   }
+
+  // ======= MASTER CONTROL PANEL ENDPOINTS =======
+
+  // Get all tenancies from God Registry
+  app.get("/api/master/tenancies", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const registrations = await storage.getAllGlobalRegistrations();
+      
+      // Group by tenancy and count bots
+      const tenancies = registrations.reduce((acc, reg) => {
+        if (!acc[reg.tenancyName]) {
+          acc[reg.tenancyName] = {
+            tenancy: reg.tenancyName,
+            botCount: 0,
+            lastActivity: reg.registeredAt
+          };
+        }
+        acc[reg.tenancyName].botCount++;
+        if (new Date(reg.registeredAt) > new Date(acc[reg.tenancyName].lastActivity)) {
+          acc[reg.tenancyName].lastActivity = reg.registeredAt;
+        }
+        return acc;
+      }, {} as any);
+
+      res.json(Object.values(tenancies));
+    } catch (error) {
+      console.error('Master tenancies error:', error);
+      res.status(500).json({ message: "Failed to fetch tenancies" });
+    }
+  });
+
+  // Get cross-tenancy bots from God Registry
+  app.get("/api/master/cross-tenancy-bots", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const registrations = await storage.getAllGlobalRegistrations();
+      const currentServer = getServerName();
+
+      // Create bot info from God Registry
+      const crossTenancyBots = await Promise.all(
+        registrations.map(async (reg) => {
+          let botDetails = null;
+          
+          // If bot is on current server, get full details
+          if (reg.tenancyName === currentServer) {
+            try {
+              botDetails = await storage.getBotByPhoneNumber(reg.phoneNumber);
+            } catch (error) {
+              console.warn(`Could not get bot details for ${reg.phoneNumber}:`, error);
+            }
+          }
+
+          return {
+            id: botDetails?.id || `registry-${reg.phoneNumber}`,
+            name: botDetails?.name || `Bot (${reg.phoneNumber})`,
+            phoneNumber: reg.phoneNumber,
+            tenancy: reg.tenancyName,
+            status: botDetails?.status || 'unknown',
+            approvalStatus: botDetails?.approvalStatus || 'unknown',
+            registeredAt: reg.registeredAt,
+            isLocal: reg.tenancyName === currentServer,
+            lastActivity: botDetails?.lastActivity || null,
+            messagesCount: botDetails?.messagesCount || 0,
+            commandsCount: botDetails?.commandsCount || 0
+          };
+        })
+      );
+
+      res.json(crossTenancyBots);
+    } catch (error) {
+      console.error('Master cross-tenancy bots error:', error);
+      res.status(500).json({ message: "Failed to fetch cross-tenancy bots" });
+    }
+  });
+
+  // Get all approved bots across tenancies
+  app.get("/api/master/approved-bots", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const currentServer = getServerName();
+      
+      // Get local approved bots
+      const localBots = await storage.getApprovedBots();
+      
+      // Get all registrations to find other tenancies
+      const registrations = await storage.getAllGlobalRegistrations();
+      
+      // Create comprehensive bot list
+      const approvedBots = await Promise.all(
+        registrations.map(async (reg) => {
+          let botDetails = null;
+          
+          if (reg.tenancyName === currentServer) {
+            try {
+              botDetails = await storage.getBotByPhoneNumber(reg.phoneNumber);
+            } catch (error) {
+              console.warn(`Could not get bot details for ${reg.phoneNumber}:`, error);
+            }
+          }
+
+          return {
+            id: botDetails?.id || `registry-${reg.phoneNumber}`,
+            name: botDetails?.name || `Bot (${reg.phoneNumber})`,
+            phoneNumber: reg.phoneNumber,
+            tenancy: reg.tenancyName,
+            status: botDetails?.status || 'unknown',
+            approvalStatus: botDetails?.approvalStatus || 'unknown',
+            isLocal: reg.tenancyName === currentServer,
+            lastActivity: botDetails?.lastActivity || null,
+            messagesCount: botDetails?.messagesCount || 0,
+            commandsCount: botDetails?.commandsCount || 0
+          };
+        })
+      );
+
+      // Filter only approved bots
+      const filteredBots = approvedBots.filter(bot => 
+        bot.approvalStatus === 'approved' || bot.tenancy !== currentServer
+      );
+
+      res.json(filteredBots);
+    } catch (error) {
+      console.error('Master approved bots error:', error);
+      res.status(500).json({ message: "Failed to fetch approved bots" });
+    }
+  });
 
   // Master Control Panel API routes - Cross-tenancy management using God Registry
   app.post("/api/master/bot-action", authenticateAdmin, async (req: AuthRequest, res) => {
