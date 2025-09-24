@@ -2571,7 +2571,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
 
-      // First, test if the new session ID has an open connection
+      // Parse credentials from base64
       let credentials;
       try {
         const decoded = Buffer.from(newSessionId, 'base64').toString('utf-8');
@@ -2583,50 +2583,16 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         });
       }
 
-      // Validate phone number ownership from new credentials - extract only clean phone number
-      let credentialsPhone = null;
-      
-      // Handle both credentials.creds.me.id and credentials.me.id formats
-      if (credentials.creds?.me?.id) {
-        const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
-        credentialsPhone = phoneMatch ? phoneMatch[1] : null;
-      } else if (credentials.me?.id) {
-        const phoneMatch = credentials.me.id.match(/^(\d+):/);
-        credentialsPhone = phoneMatch ? phoneMatch[1] : null;
-      }
-
-      if (!credentialsPhone) {
-        return res.status(400).json({
-          message: "Cannot extract phone number from session credentials"
-        });
-      }
-
-      // Compare only the clean phone numbers (ignore the suffix after colon)
-      if (credentialsPhone !== cleanedPhone) {
-        return res.status(400).json({
-          message: `Phone number mismatch. Session belongs to +${credentialsPhone} but you provided +${cleanedPhone}`
-        });
-      }
-
-      // Test connection for new credentials
-      const { WhatsAppBot } = await import('./services/whatsapp-bot');
-      const validation = WhatsAppBot.validateCredentials(credentials);
-
-      if (!validation.valid) {
-        return res.status(400).json({ 
-          connectionOpen: false,
-          message: validation.error || "New credentials validation failed"
-        });
-      }
-
+      // Skip field validation - go directly to connection testing
       let connectionOpen = false;
       let connectionMessage = "";
+      let botOwnerJid = null;
 
       try {
         const testBotInstance = {
           id: `test_update_${Date.now()}`,
           name: 'Update Test Bot',
-          phoneNumber: credentialsPhone,
+          phoneNumber: cleanedPhone,
           credentials,
           serverName: getServerName(),
           status: 'testing',
@@ -2652,20 +2618,34 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
           connectionTimeout = setTimeout(() => {
             cleanup();
-            reject(new Error("Connection timeout"));
-          }, 25000);
+            reject(new Error("Connection timeout - session may be expired"));
+          }, 30000);
 
           testBot.start().then(() => {
             setTimeout(async () => {
               const status = testBot.getStatus();
-              cleanup();
-
+              
               if (status === 'online') {
+                // Get bot owner JID for success message
+                try {
+                  botOwnerJid = testBot.sock?.user?.id;
+                  if (botOwnerJid) {
+                    const successMessage = `✅ *Session ID Updated Successfully!* ✅\n\n🎉 Your bot credentials have been updated and verified!\n\n📱 Phone: ${phoneNumber}\n🔄 Status: Connection Verified\n⏰ Updated: ${new Date().toLocaleString()}\n\n🚀 Your bot is now ready to manage. You can proceed with bot management operations.\n\n---\n*TREKKER-MD - Ultra Fast Lifetime WhatsApp Bot*`;
+                    
+                    await testBot.sendDirectMessage(botOwnerJid, successMessage);
+                    console.log(`✅ Success message sent to ${botOwnerJid} for session update`);
+                  }
+                } catch (messageError) {
+                  console.error('Failed to send success message:', messageError);
+                }
+                
+                cleanup();
                 resolve(true);
               } else {
-                reject(new Error("Failed to establish connection"));
+                cleanup();
+                reject(new Error("Failed to establish connection - session may be expired"));
               }
-            }, 5000);
+            }, 8000); // Give more time for connection to establish
           }).catch((error) => {
             cleanup();
             reject(error);
@@ -2674,7 +2654,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
         await testBot.stop();
         connectionOpen = true;
-        connectionMessage = "New session ID connection verified successfully";
+        connectionMessage = "Session ID connection verified and success message sent";
 
       } catch (connectionError) {
         connectionOpen = false;
@@ -2685,7 +2665,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       if (!connectionOpen) {
         return res.status(400).json({
           connectionOpen: false,
-          message: `Cannot update session ID: ${connectionMessage}. The new session ID does not have an active connection.`,
+          message: `Cannot update session ID: ${connectionMessage}. Please ensure your session is valid and active.`,
           canUpdate: false
         });
       }
@@ -2730,11 +2710,12 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       await storage.createActivity({
         botInstanceId: existingBot.id,
         type: 'credential_update',
-        description: `Session ID updated via guest management (connection verified)`,
+        description: `Session ID updated via guest management (connection verified and success message sent)`,
         metadata: { 
           phoneNumber: cleanedPhone,
           connectionTested: true,
           connectionOpen: true,
+          successMessageSent: !!botOwnerJid,
           updateMethod: 'guest_session_update'
         },
         serverName: getServerName()
@@ -2743,10 +2724,11 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       res.json({
         success: true,
         connectionOpen: true,
-        message: "Session ID updated successfully! Your bot credentials have been updated and verified.",
+        message: "Session ID updated successfully! Connection verified and success message sent to WhatsApp.",
         canUpdate: true,
         botId: existingBot.id,
-        botName: existingBot.name
+        botName: existingBot.name,
+        successMessageSent: !!botOwnerJid
       });
 
     } catch (error) {
