@@ -40,23 +40,23 @@ async function resolveBotByPhone(phoneNumber: string): Promise<{
 }> {
   const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
   const currentServer = getServerName();
-  
+
   // Check God Registry to find hosting server
   const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
   if (!globalRegistration) {
     throw new Error("No bot found with this phone number");
   }
-  
+
   const hostingServer = globalRegistration.tenancyName;
   const isLocal = hostingServer === currentServer;
-  
+
   if (isLocal) {
     // Bot is on current server
     const bot = await storage.getBotByPhoneNumber(cleanedPhone);
     if (!bot) {
       throw new Error("Bot found in registry but not in local database");
     }
-    
+
     const canManage = enforceGuestPermissions(bot);
     return {
       bot,
@@ -78,7 +78,7 @@ async function resolveBotByPhone(phoneNumber: string): Promise<{
       commandsCount: 0,
       lastActivity: null
     };
-    
+
     // For cross-server bots, assume they need credential validation to determine real permissions
     const canManage = false; // Will be determined after credential validation
     return {
@@ -100,7 +100,7 @@ async function resolveBotById(botId: string, phoneNumber?: string): Promise<{
   needsProxy: boolean;
 }> {
   const currentServer = getServerName();
-  
+
   // First try local lookup
   try {
     const localBot = await storage.getBotInstance(botId);
@@ -117,19 +117,19 @@ async function resolveBotById(botId: string, phoneNumber?: string): Promise<{
   } catch (error) {
     // Bot not found locally, continue to cross-tenancy search
   }
-  
+
   // If not found locally and phone number provided, use phone-based resolution
   if (phoneNumber) {
     return await resolveBotByPhone(phoneNumber);
   }
-  
+
   throw new Error("Bot not found on any server");
 }
 
 // Helper function to enforce guest permissions based on bot approval status
 function enforceGuestPermissions(bot: any): boolean {
   if (!bot) return false;
-  
+
   // Only approved bots can be managed (start/stop/restart)
   // All bots (including pending/dormant) can have credentials updated
   return bot.approvalStatus === 'approved';
@@ -140,9 +140,9 @@ function validateGuestAction(action: string, bot: any): { allowed: boolean; reas
   if (!bot) {
     return { allowed: false, reason: "Bot not found" };
   }
-  
+
   const isApproved = bot.approvalStatus === 'approved';
-  
+
   switch (action) {
     case 'start':
     case 'stop': 
@@ -154,11 +154,11 @@ function validateGuestAction(action: string, bot: any): { allowed: boolean; reas
         };
       }
       return { allowed: true };
-      
+
     case 'update_credentials':
       // All bots can have credentials updated
       return { allowed: true };
-      
+
     default:
       return { allowed: false, reason: "Unknown action" };
   }
@@ -167,23 +167,23 @@ function validateGuestAction(action: string, bot: any): { allowed: boolean; reas
 // Data masking utility for guest-facing APIs - hides sensitive information
 function maskBotDataForGuest(botData: any, includeFeatures: boolean = false): any {
   if (!botData) return null;
-  
+
   const masked = {
     // Keep essential identifiers (use phone number as public ID)
     id: `bot_${botData.phoneNumber.slice(-4)}`, // Masked ID using last 4 digits
     botId: botData.id, // Include original botId for API compatibility
     name: botData.name,
     phoneNumber: botData.phoneNumber,
-    
+
     // Basic status information (safe to expose)
     status: botData.status,
     approvalStatus: botData.approvalStatus,
     isActive: botData.status === 'online',
     isApproved: botData.approvalStatus === 'approved',
-    
+
     // Pass through isOnline if provided (for API compatibility)
     ...(botData.hasOwnProperty('isOnline') && { isOnline: botData.isOnline }),
-    
+
     // Enhanced credential management fields
     credentialVerified: botData.credentialVerified || false,
     invalidReason: botData.invalidReason,
@@ -193,16 +193,16 @@ function maskBotDataForGuest(botData: any, includeFeatures: boolean = false): an
     needsCredentials: botData.needsCredentials || false,
     canManage: botData.canManage || false,
     credentialUploadEndpoint: botData.credentialUploadEndpoint,
-    
+
     // Limited stats (counts only, no detailed activity)
     messagesCount: Math.min(botData.messagesCount || 0, 9999), // Cap at 9999 for privacy
     commandsCount: Math.min(botData.commandsCount || 0, 9999), // Cap at 9999 for privacy
     lastActivity: botData.lastActivity ? new Date(botData.lastActivity).toISOString().split('T')[0] : null, // Date only, no time
-    
+
     // Cross-server information (SECURITY FIX: Always mask server names)
     crossServer: botData.crossServer || false,
     serverName: 'Protected', // Always mask server names to prevent tenant isolation breaches
-    
+
     // Optional: Basic feature status (simplified)
     ...(includeFeatures && {
       features: {
@@ -212,7 +212,7 @@ function maskBotDataForGuest(botData: any, includeFeatures: boolean = false): an
       }
     })
   };
-  
+
   // Remove undefined values
   return Object.fromEntries(Object.entries(masked).filter(([_, v]) => v !== undefined));
 }
@@ -235,18 +235,18 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
-  
+
   // WebSocket setup for real-time updates
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
-  
+
   wss.on('connection', (ws) => {
     console.log('Client connected to WebSocket');
-    
+
     ws.on('close', () => {
       console.log('Client disconnected from WebSocket');
     });
   });
-  
+
   // Broadcast function for real-time updates
   const broadcast = (data: any) => {
     wss.clients.forEach((client) => {
@@ -255,29 +255,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     });
   };
-  
+
   // Set broadcast function in bot manager
   botManager.setBroadcastFunction(broadcast);
-  
-  
+
+
   // Function to resume all saved bots from database on startup
   async function resumeSavedBots() {
     try {
       console.log('🔄 Starting bot resume process...');
-      
+
       // Run analysis to mark inactive bots as non-auto-start
       await storage.analyzeInactiveBots();
-      
+
       // Get only bots that are approved, verified, and marked for auto-start
       const resumableBots = await storage.getBotInstancesForAutoStart();
-      
+
       if (resumableBots.length === 0) {
         console.log('📋 No bots eligible for auto-start found');
         return;
       }
 
       console.log(`🚀 Resuming ${resumableBots.length} auto-start bot(s) with verified credentials...`);
-      
+
       // Set all bots to loading status initially
       for (const bot of resumableBots) {
         await storage.updateBotInstance(bot.id, { status: 'loading' });
@@ -292,24 +292,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Resume bots with a delay between each to prevent overwhelming
       for (let i = 0; i < resumableBots.length; i++) {
         const bot = resumableBots[i];
-        
+
         setTimeout(async () => {
           try {
             console.log(`🔄 Resuming bot: ${bot.name} (${bot.id})`);
-            
+
             // Create and start the bot
             await botManager.createBot(bot.id, bot);
             await botManager.startBot(bot.id);
-            
+
             console.log(`✅ Bot ${bot.name} resumed successfully`);
-            
+
             await storage.createActivity({
               botInstanceId: bot.id,
               type: 'startup',
               description: 'Bot resumed successfully on server restart',
               serverName: getServerName()
             });
-            
+
             // Broadcast bot status update
             broadcast({ 
               type: 'BOT_RESUMED', 
@@ -319,10 +319,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 status: 'loading' 
               } 
             });
-            
+
           } catch (error) {
             console.error(`❌ Failed to resume bot ${bot.name}:`, error);
-            
+
             await storage.updateBotInstance(bot.id, { status: 'error' });
             await storage.createActivity({
               botInstanceId: bot.id,
@@ -330,7 +330,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               description: `Bot resume failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
               serverName: getServerName()
             });
-            
+
             // Broadcast bot error
             broadcast({ 
               type: 'BOT_ERROR', 
@@ -344,9 +344,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }, i * 2000); // 2 second delay between each bot
       }
-      
+
       console.log(`✅ Bot resume process initiated for ${resumableBots.length} bot(s)`);
-      
+
     } catch (error) {
       console.error('❌ Failed to resume saved bots:', error);
     }
@@ -359,13 +359,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { username, password } = req.body;
-      
+
       if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
       }
-      
+
       const isValidAdmin = validateAdminCredentials(username, password);
-      
+
       if (isValidAdmin) {
         const token = generateToken(username, true);
         res.json({ 
@@ -380,46 +380,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Login failed" });
     }
   });
-  
+
   app.get("/api/auth/verify", authenticateUser, (req: AuthRequest, res) => {
     res.json({ user: req.user });
   });
-  
+
   // Credentials validation endpoint (accessible to everyone) - handles both JSON and multipart
   const multipartOnly = (req: any, res: any, next: any) => {
     return req.is('multipart/form-data') ? upload.single('credentials')(req, res, next) : next();
   };
-  
+
   app.post("/api/validate-credentials", multipartOnly, async (req, res) => {
     try {
       let credentials;
       let credentialType = 'file'; // Default to file
-      
+
       // Handle Base64 session data
       if (req.body.sessionData) {
         credentialType = 'base64';
         try {
           const base64Data = req.body.sessionData.trim();
-          
+
           // Check Base64 size limit (5MB when decoded)
           const estimatedSize = (base64Data.length * 3) / 4; // Rough estimate of decoded size
           const maxSizeBytes = 5 * 1024 * 1024; // 5MB
-          
+
           if (estimatedSize > maxSizeBytes) {
             return res.status(400).json({ 
               message: `❌ Base64 session data too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
             });
           }
-          
+
           const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
-          
+
           // Check actual decoded size
           if (decoded.length > maxSizeBytes) {
             return res.status(400).json({ 
               message: `❌ Decoded session data too large (${(decoded.length / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
             });
           }
-          
+
           credentials = JSON.parse(decoded);
         } catch (error) {
           return res.status(400).json({ 
@@ -441,17 +441,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Please provide credentials either as a file upload or Base64 session data" 
         });
       }
-      
+
       // Basic validation of credentials structure
       if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
         return res.status(400).json({ 
           message: "❌ Invalid credentials format. Please upload a valid WhatsApp session file." 
         });
       }
-      
+
       // Check required fields for WhatsApp credentials
       const missingFields = [];
-      
+
       // Check top-level creds object
       if (!credentials.creds || typeof credentials.creds !== 'object') {
         missingFields.push('creds');
@@ -464,19 +464,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       }
-      
+
       if (missingFields.length > 0) {
         return res.status(400).json({ 
           message: `❌ Missing required fields in credentials: ${missingFields.join(', ')}. Please ensure you're using a complete WhatsApp session file with proper nested structure.` 
         });
       }
-      
+
       // Validate phone number ownership if provided
       const phoneNumber = req.body.phoneNumber;
       if (phoneNumber && credentials.creds?.me?.id) {
         const credentialsPhone = credentials.creds.me.id.match(/^(\d+):/)?.[1];
         const providedPhoneNormalized = phoneNumber.replace(/\D/g, '');
-        
+
         if (credentialsPhone && providedPhoneNormalized) {
           if (credentialsPhone !== providedPhoneNormalized) {
             return res.status(400).json({ 
@@ -485,7 +485,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       }
-      
+
       // Check file size (for file uploads)
       if (credentialType === 'file' && req.file) {
         const fileSizeKB = req.file.buffer.length / 1024;
@@ -495,11 +495,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       }
-      
+
       // Check if phone number from credentials already exists in database (cross-server search)
       const { validateCredentialsByPhoneNumber } = await import('./services/creds-validator');
       const phoneValidation = await validateCredentialsByPhoneNumber(credentials);
-      
+
       if (!phoneValidation.isValid) {
         return res.status(400).json({ 
           valid: false,
@@ -509,7 +509,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isDuplicate: true
         });
       }
-      
+
       // All validations passed
       res.json({ 
         valid: true,
@@ -518,7 +518,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phoneNumber: phoneValidation.phoneNumber,
         isUnique: true
       });
-      
+
     } catch (error) {
       console.error('Credentials validation error:', error);
       res.status(500).json({ 
@@ -548,7 +548,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
       const currentBots = await storage.getAllBotInstances();
       const hasSecretConfig = !!process.env.SERVER_NAME;
-      
+
       res.json({
         serverName,
         maxBots,
@@ -566,14 +566,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
       const serverList = [];
-      
+
       // Generate Server1 to Server100 list
       for (let i = 1; i <= 100; i++) {
         const serverName = `Server${i}`;
-        
+
         // Check if server exists in registry
         const serverInfo = await storage.getServerByName(serverName);
-        
+
         if (serverInfo) {
           // Server exists, use actual data
           serverList.push({
@@ -596,7 +596,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       }
-      
+
       // Sort by current bots (ascending) - empty servers first
       serverList.sort((a, b) => {
         const aCurrent = a.currentBots || 0;
@@ -607,7 +607,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // If same bot count, sort by name
         return a.name.localeCompare(b.name);
       });
-      
+
       res.json(serverList);
     } catch (error) {
       console.error("Server list error:", error);
@@ -625,17 +625,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Server name is configured via secrets and cannot be changed through UI" 
         });
       }
-      
+
       const { serverName, description } = req.body;
-      
+
       if (!serverName || serverName.trim().length === 0) {
         return res.status(400).json({ message: "Server name is required" });
       }
-      
+
       const { getServerName } = await import('./db');
       const currentServerName = getServerName();
       const newServerName = serverName.trim();
-      
+
       // If server name is the same, just update description
       if (currentServerName === newServerName) {
         const currentServer = await storage.getServerByName(currentServerName);
@@ -647,10 +647,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         return res.json({ message: "Server description updated successfully" });
       }
-      
+
       // FIXED: Server information update WITHOUT changing global server tenancy
       console.log(`📝 Updating server information for "${newServerName}" without changing current tenancy`);
-      
+
       // Step 1: Ensure target server exists in registry (create if needed)
       let targetServer = await storage.getServerByName(newServerName);
       if (!targetServer) {
@@ -670,11 +670,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description: description.trim()
         });
       }
-      
+
       // SECURITY FIX: Do NOT change global server context or restart bots
       // This maintains proper tenant isolation while allowing server management
       console.log(`✅ Server information updated without changing tenancy context`);
-      
+
       // Log the configuration activity for audit trail
       await storage.createActivity({
         botInstanceId: 'server-config',
@@ -689,7 +689,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         serverName: currentServerName
       });
-      
+
       res.json({ 
         message: "Server information updated successfully without changing tenancy context.",
         serverName: newServerName,
@@ -697,7 +697,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         crossTenancyMode: true,
         tenancyChangeBlocked: true
       });
-      
+
     } catch (error) {
       console.error("Server configuration error:", error);
       res.status(500).json({ message: "Failed to update server configuration" });
@@ -707,11 +707,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Helper function to initialize server tenant
   async function initializeServerTenant(serverName: string) {
     console.log(`🔧 Initializing tenant for server: ${serverName}`);
-    
+
     // Update bot count for the new server based on actual database data
     const actualBots = await storage.getBotInstancesForServer(serverName);
     await storage.updateServerBotCount(serverName, actualBots.length);
-    
+
     console.log(`✅ Tenant initialized for server: ${serverName} (${actualBots.length} bots)`);
   }
 
@@ -720,7 +720,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Read server configuration from Replit secrets (environment variables)
       const serverConfig = process.env.SERVER_CONFIG;
-      
+
       if (serverConfig) {
         // Return the configuration string directly
         res.set('Content-Type', 'text/plain');
@@ -739,7 +739,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/bot-instances", async (req, res) => {
     try {
       const showPendingOnly = req.query.pending === 'true';
-      
+
       if (showPendingOnly) {
         // Show only pending bots for approval workflow
         const bots = await storage.getBotInstancesByApprovalStatus('pending');
@@ -782,13 +782,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { expirationMonths = 3 } = req.body;
-      
+
       // Get bot details first
       const bot = await storage.getBotInstance(id);
       if (!bot) {
         return res.status(404).json({ message: "Bot not found" });
       }
-      
+
       // Update bot to approved status  
       const updatedBot = await storage.updateBotInstance(id, {
         approvalStatus: 'approved',
@@ -810,7 +810,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         console.log(`Auto-starting approved bot ${bot.name} (${bot.id})...`);
         await botManager.startBot(id);
-        
+
         // Wait a moment for the bot to initialize before sending notification
         setTimeout(async () => {
           try {
@@ -838,7 +838,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
               // Send notification using the bot's own credentials
               const messageSent = await botManager.sendMessageThroughBot(id, bot.phoneNumber, approvalMessage);
-              
+
               if (messageSent) {
                 console.log(`✅ Approval notification sent to ${bot.phoneNumber} via bot ${bot.name}`);
               } else {
@@ -849,7 +849,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
             console.error('Failed to send approval notification:', notificationError);
           }
         }, 5000); // Wait 5 seconds for bot to fully initialize
-        
+
       } catch (startError) {
         console.error(`Failed to auto-start bot ${id}:`, startError);
         // Update status to error if start failed
@@ -868,7 +868,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   app.post("/api/bots/:id/reject", authenticateAdmin, async (req, res) => {
     try {
       const { id } = req.params;
-      
+
       const success = await storage.rejectBotInstance(id);
       if (success) {
         res.json({ message: "Bot rejected successfully" });
@@ -886,7 +886,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     try {
       const { id } = req.params;
       const { feature, enabled } = req.body;
-      
+
       const bot = await storage.getBotInstance(id);
       if (!bot) {
         return res.status(404).json({ message: "Bot not found" });
@@ -896,7 +896,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       const currentSettings = (bot.settings as any) || {};
       const features = (currentSettings.features as any) || {};
       features[feature] = enabled;
-      
+
       const success = await storage.updateBotInstance(id, {
         settings: { ...currentSettings, features }
       });
@@ -934,7 +934,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   app.post("/api/bot-instances", upload.single('credentials') as any, async (req, res) => {
     try {
       let credentials = null;
-      
+
       // Handle base64 credentials
       if (req.body.credentialsBase64) {
         try {
@@ -955,7 +955,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
           // Parse JSON
           credentials = JSON.parse(decodedContent);
-          
+
           // Validate that it's a proper WhatsApp credentials file
           if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
             return res.status(400).json({ 
@@ -997,7 +997,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           }
 
           credentials = JSON.parse(fileContent);
-          
+
           // Validate that it's a proper WhatsApp credentials file
           if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
             return res.status(400).json({ 
@@ -1026,13 +1026,13 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
       // Check for duplicate bot name and bot count limit
       const existingBots = await storage.getAllBotInstances();
-      
+
       // Check bot count limit using strict validation (no auto-removal)
       const botCountCheck = await storage.strictCheckBotCountLimit();
       if (!botCountCheck.canAdd) {
         // Get available servers for user to choose from
         const availableServers = await storage.getAvailableServers();
-        
+
         if (availableServers.length > 0) {
           // Server is full but there are other available servers
           return res.status(400).json({ 
@@ -1058,11 +1058,11 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           });
         }
       }
-      
+
       const duplicateName = existingBots.find(bot => 
         bot.name.toLowerCase().trim() === req.body.name.toLowerCase().trim()
       );
-      
+
       if (duplicateName) {
         return res.status(400).json({ 
           message: `Bot name "${req.body.name.trim()}" is already in use. Please choose a different name.` 
@@ -1076,7 +1076,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           // Compare essential credential fields to detect duplicates
           return JSON.stringify(bot.credentials) === JSON.stringify(credentials);
         });
-        
+
         if (duplicateCredentials) {
           return res.status(400).json({ 
             message: `These credentials are already in use by bot "${duplicateCredentials.name}". Each bot must have unique credentials.` 
@@ -1096,11 +1096,11 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
       const validatedData = insertBotInstanceSchema.parse(botData);
       const bot = await storage.createBotInstance(validatedData);
-      
+
       // Initialize bot instance
       try {
         await botManager.createBot(bot.id, bot);
-        
+
         // Set a timeout to delete the bot if it doesn't connect within 5 minutes
         setTimeout(async () => {
           try {
@@ -1126,7 +1126,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         await storage.deleteBotInstance(bot.id);
         throw new Error(`Failed to initialize bot: ${botError instanceof Error ? botError.message : 'Unknown error'}`);
       }
-      
+
       // Create welcome activity
       await storage.createActivity({
         botInstanceId: bot.id,
@@ -1134,13 +1134,13 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         description: `🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot "${bot.name}" created successfully!`,
         serverName: getServerName()
       });
-      
+
       broadcast({ type: 'BOT_CREATED', data: bot });
       res.json(bot);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Failed to create bot instance";
       console.error('Bot creation error:', error);
-      
+
       // Provide more specific error messages
       let userMessage = errorMessage;
       if (errorMessage.includes('name')) {
@@ -1150,7 +1150,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       } else if (errorMessage.includes('Expected object')) {
         userMessage = "Missing required bot configuration. Please fill in all required fields.";
       }
-      
+
       res.status(400).json({ message: userMessage });
     }
   });
@@ -1169,21 +1169,21 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     try {
       // Get bot instance to retrieve phone number before deletion
       const botInstance = await storage.getBotInstance(req.params.id);
-      
+
       await botManager.destroyBot(req.params.id);
-      
+
       // Delete all related data (commands, activities, groups)
       await storage.deleteBotRelatedData(req.params.id);
-      
+
       // Delete the bot instance itself
       await storage.deleteBotInstance(req.params.id);
-      
+
       // Remove from god register table if bot instance was found
       if (botInstance && botInstance.phoneNumber) {
         await storage.deleteGlobalRegistration(botInstance.phoneNumber);
         console.log(`🗑️ Removed ${botInstance.phoneNumber} from god register table`);
       }
-      
+
       broadcast({ type: 'BOT_DELETED', data: { id: req.params.id } });
       res.json({ success: true });
     } catch (error) {
@@ -1197,22 +1197,22 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     try {
       const { id } = req.params;
       const { feature, enabled } = req.body;
-      
+
       if (!feature || enabled === undefined) {
         return res.status(400).json({ message: "Feature and enabled status are required" });
       }
-      
+
       // Get bot instance
       const bot = await storage.getBotInstance(id);
       if (!bot) {
         return res.status(404).json({ message: "Bot not found" });
       }
-      
+
       // Only allow approved bots to have features toggled
       if (bot.approvalStatus !== 'approved') {
         return res.status(400).json({ message: "Only approved bots can have features toggled" });
       }
-      
+
       // Map feature names to database columns
       const featureMap: Record<string, string> = {
         'autoLike': 'autoLike',
@@ -1224,12 +1224,12 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         'autoRecording': 'presenceMode',
         'presenceAutoSwitch': 'presenceAutoSwitch'
       };
-      
+
       const dbField = featureMap[feature];
       if (!dbField) {
         return res.status(400).json({ message: "Invalid feature name" });
       }
-      
+
       // Prepare update object
       const updates: any = {};
       if (dbField === 'typingMode') {
@@ -1240,7 +1240,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       } else {
         updates[dbField] = enabled;
       }
-      
+
       // Also update settings.features
       const currentSettings = (bot.settings as any) || {};
       const currentFeatures = (currentSettings.features as any) || {};
@@ -1251,9 +1251,9 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           [feature]: enabled
         }
       };
-      
+
       await storage.updateBotInstance(id, updates);
-      
+
       // Log activity
       await storage.createActivity({
         botInstanceId: id,
@@ -1262,30 +1262,30 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         metadata: { feature, enabled },
         serverName: getServerName()
       });
-      
+
       res.json({ message: "Feature updated successfully", feature, enabled });
-      
+
     } catch (error) {
       console.error('Feature toggle error:', error);
       res.status(500).json({ message: "Failed to toggle feature" });
     }
   });
-  
+
   // Approve Bot
   app.post("/api/bot-instances/:id/approve", async (req, res) => {
     try {
       const { id } = req.params;
       const { expirationMonths = 3 } = req.body;
-      
+
       const bot = await storage.getBotInstance(id);
       if (!bot) {
         return res.status(404).json({ message: "Bot not found" });
       }
-      
+
       if (bot.approvalStatus !== 'pending') {
         return res.status(400).json({ message: "Only pending bots can be approved" });
       }
-      
+
       // Update bot to approved status
       const updatedBot = await storage.updateBotInstance(id, {
         approvalStatus: 'approved',
@@ -1293,7 +1293,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         expirationMonths,
         status: 'loading' // Set to loading as we're about to start it
       });
-      
+
       // Log activity
       await storage.createActivity({
         botInstanceId: id,
@@ -1307,7 +1307,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       try {
         console.log(`Auto-starting approved bot ${bot.name} (${bot.id})...`);
         await botManager.startBot(id);
-        
+
         // Wait a moment for the bot to initialize before sending notification
         setTimeout(async () => {
           try {
@@ -1335,7 +1335,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
               // Send notification using the bot's own credentials
               const messageSent = await botManager.sendMessageThroughBot(id, bot.phoneNumber, approvalMessage);
-              
+
               if (messageSent) {
                 console.log(`✅ Approval notification sent to ${bot.phoneNumber} via bot ${bot.name}`);
               } else {
@@ -1346,18 +1346,18 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
             console.error('Failed to send approval notification:', notificationError);
           }
         }, 5000); // Wait 5 seconds for bot to fully initialize
-        
+
       } catch (startError) {
         console.error(`Failed to auto-start bot ${bot.id}:`, startError);
         // Update status to error if start failed
         await storage.updateBotInstance(id, { status: 'error' });
       }
-      
+
       // Broadcast update
       broadcast({ type: 'BOT_APPROVED', data: updatedBot });
-      
+
       res.json({ message: "Bot approved successfully and starting automatically" });
-      
+
     } catch (error) {
       console.error('Bot approval error:', error);
       res.status(500).json({ message: "Failed to approve bot" });
@@ -1415,10 +1415,10 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
       console.log(`Starting bot ${bot.name} (${bot.id})...`);
       await botManager.startBot(req.params.id);
-      
+
       const updatedBot = await storage.updateBotInstance(req.params.id, { status: 'loading' });
       broadcast({ type: 'BOT_STATUS_CHANGED', data: updatedBot });
-      
+
       res.json({ 
         success: true, 
         message: `Bot ${bot.name} startup initiated - TREKKERMD LIFETIME BOT initializing...` 
@@ -1426,7 +1426,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     } catch (error) {
       console.error('Bot start error:', error);
       const errorMessage = error instanceof Error ? error.message : "Failed to start bot";
-      
+
       // Update bot status to error
       try {
         const bot = await storage.updateBotInstance(req.params.id, { status: 'error' });
@@ -1434,7 +1434,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       } catch (updateError) {
         console.error('Failed to update bot status:', updateError);
       }
-      
+
       res.status(500).json({ message: errorMessage });
     }
   });
@@ -1466,15 +1466,15 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     try {
       const botInstanceId = req.query.botInstanceId as string;
       let commands = await storage.getCommands(botInstanceId);
-      
+
       // If database is empty and no specific bot instance requested, populate with registered commands
       if (commands.length === 0 && !botInstanceId) {
         try {
           const { commandRegistry } = await import('./services/command-registry.js');
           const registeredCommands = commandRegistry.getAllCommands();
-          
+
           console.log('Database empty, populating with registered commands...');
-          
+
           for (const command of registeredCommands) {
             try {
               await storage.createCommand({
@@ -1492,7 +1492,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
               }
             }
           }
-          
+
           // Fetch commands again after populating
           commands = await storage.getCommands(botInstanceId);
           console.log(`✅ Populated database with ${commands.length} commands`);
@@ -1500,7 +1500,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           console.log('Note: Could not populate database with commands:', error);
         }
       }
-      
+
       res.json(commands);
     } catch (error) {
       console.error("Commands error:", error);
@@ -1546,9 +1546,9 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       const registeredCommands = commandRegistry.getAllCommands();
       const existingCommands = await storage.getCommands();
       const existingCommandNames = new Set(existingCommands.map(cmd => cmd.name));
-      
+
       let addedCount = 0;
-      
+
       for (const command of registeredCommands) {
         if (!existingCommandNames.has(command.name)) {
           try {
@@ -1566,7 +1566,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           }
         }
       }
-      
+
       console.log(`✅ Command sync completed: ${addedCount} new commands added`);
       res.json({ 
         success: true, 
@@ -1583,7 +1583,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   app.post("/api/commands/custom", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const { name, code, description, category } = req.body;
-      
+
       if (!name || !code || !description) {
         return res.status(400).json({ message: "Name, code, and description are required" });
       }
@@ -1608,10 +1608,10 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         ...commandData,
         serverName: getServerName()
       });
-      
+
       // Register the command in the command registry dynamically
       const { commandRegistry } = await import('./services/command-registry.js');
-      
+
       try {
         // Create a safe execution context for the custom command
         const customHandler = new Function('context', `
@@ -1638,7 +1638,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
       broadcast({ type: 'CUSTOM_COMMAND_CREATED', data: command });
       res.json({ success: true, command });
-      
+
     } catch (error) {
       console.error('Custom command creation error:', error);
       res.status(500).json({ message: "Failed to create custom command" });
@@ -1646,20 +1646,20 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   });
 
   // ======= GUEST AUTHENTICATION ENDPOINTS =======
-  
+
   // Guest Bot Status Check - Check if bot exists and its status
   app.post("/api/guest/bot/status", async (req, res) => {
     try {
       const { phoneNumber } = req.body;
-      
+
       if (!phoneNumber) {
         return res.status(400).json({ message: "Phone number is required" });
       }
-      
+
       // Clean phone number
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
       console.log(`🔍 Checking bot status for phone: ${cleanedPhone}`);
-      
+
       // Check if bot exists in current server
       const currentServerName = process.env.RUNTIME_SERVER_NAME || process.env.SERVER_NAME || 'Server1';
       const bot = await db.select()
@@ -1671,7 +1671,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           )
         )
         .limit(1);
-      
+
       if (bot.length === 0) {
         console.log(`❌ No bot found for phone ${cleanedPhone} on server ${currentServerName}`);
         return res.status(404).json({ 
@@ -1679,46 +1679,46 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           exists: false 
         });
       }
-      
+
       const botData = bot[0];
       const isActive = botData.status === 'online';
       const isApproved = botData.approvalStatus === 'approved';
-      
+
       console.log(`✅ Bot found - Status: ${botData.status}, Approval: ${botData.approvalStatus}`);
-      
+
       // Apply data masking for guest endpoint
       const maskedBotData = maskBotDataForGuest(botData, true);
       return res.json({
         exists: true,
         ...maskedBotData
       });
-      
+
     } catch (error) {
       console.error("❌ Error checking bot status:", error);
       return res.status(500).json({ message: "Failed to check bot status" });
     }
   });
-  
+
   // Guest OTP Request - Send verification code via WhatsApp with credential validation
   app.post("/api/guest/auth/send-otp", async (req, res) => {
     console.log("[secure_guest_otp] Enhanced security endpoint reached - enforcing credential validation");
     try {
       const { phoneNumber, sessionData } = req.body;
-      
+
       if (!phoneNumber) {
         return res.status(400).json({ message: "Phone number is required" });
       }
-      
+
       // Clean phone number
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
+
       // Validate phone number format (basic check)
       if (!/^\d{10,15}$/.test(cleanedPhone)) {
         return res.status(400).json({ message: "Invalid phone number format" });
       }
-      
+
       console.log(`🔍 Enhanced Guest OTP: Checking bot status first for ${cleanedPhone}`);
-      
+
       // Step 1: Check if bot exists and get its status
       const currentServerName = process.env.RUNTIME_SERVER_NAME || process.env.SERVER_NAME || 'Server1';
       const bot = await db.select()
@@ -1730,7 +1730,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           )
         )
         .limit(1);
-      
+
       if (bot.length === 0) {
         console.log(`❌ Bot not found for phone ${cleanedPhone}`);
         return res.status(404).json({ 
@@ -1738,16 +1738,16 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           exists: false 
         });
       }
-      
+
       const botData = bot[0];
       const isActive = botData.status === 'online';
       const isApproved = botData.approvalStatus === 'approved';
-      
+
       console.log(`📊 Bot Status - Active: ${isActive}, Approved: ${isApproved}`);
-      
+
       // Step 2: Enhanced bot status checking with credential verification
       console.log(`📊 Enhanced Status - Active: ${isActive}, Approved: ${isApproved}, CredVerified: ${botData.credentialVerified || false}`);
-      
+
       // Check if bot is not approved (priority check)
       if (!isApproved) {
         console.log(`⚠️ Bot not approved by admin`);
@@ -1758,12 +1758,12 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           canManage: false
         });
       }
-      
+
       // Check if bot has expired (for approved bots)
       const isExpired = botData.approvalDate && botData.expirationMonths 
         ? new Date() > new Date(new Date(botData.approvalDate).getTime() + (botData.expirationMonths * 30 * 24 * 60 * 60 * 1000))
         : false;
-        
+
       if (isExpired) {
         console.log(`⏰ Bot has expired`);
         return res.status(403).json({
@@ -1773,7 +1773,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           canManage: false
         });
       }
-      
+
       // Check credential verification status (key enhancement)
       const invalidStatuses = ['offline', 'error', 'loading', 'connecting'];
       if (!botData.credentialVerified || invalidStatuses.includes(botData.status)) {
@@ -1789,10 +1789,10 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           credentialUploadEndpoint: "/api/guest/verify-credentials"
         });
       }
-      
+
       // Step 3: For verified bots, send OTP using stored credentials
       console.log(`✅ Bot is verified and approved - proceeding with OTP generation`);
-      
+
       // Use stored credentials (already validated via credential verification system)
       let credentials = null;
       if (botData.credentials) {
@@ -1817,18 +1817,18 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           credentialUploadEndpoint: "/api/guest/verify-credentials"
         });
       }
-      
+
       // Generate and send OTP via WhatsApp
       const otp = generateGuestOTP();
       createGuestSession(cleanedPhone, otp);
-      
+
       const message = `🔐 Your verification code for bot management: ${otp}\n\nThis code expires in 10 minutes. Keep it secure!`;
-      
+
       try {
         await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), message, true);
-        
+
         console.log(`📱 OTP sent via WhatsApp to ${cleanedPhone}: ${otp}`);
-        
+
         res.json({
           success: true,
           message: "Verification code sent to your WhatsApp",
@@ -1840,13 +1840,13 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           // For development/demo - remove in production
           ...(process.env.NODE_ENV === 'development' && { otp })
         });
-        
+
       } catch (error) {
         console.error(`⚠️ Failed to send WhatsApp OTP to ${cleanedPhone}:`, error);
-        
+
         // Log OTP for development/fallback
         console.log(`🔑 Guest OTP for ${cleanedPhone}: ${otp} (Display method - WhatsApp failed)`);
-        
+
         res.json({
           success: true,
           message: "OTP generated but failed to send WhatsApp message. Check server logs for verification code.",
@@ -1859,25 +1859,25 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           ...(process.env.NODE_ENV === 'development' && { otp })
         });
       }
-      
+
     } catch (error) {
       console.error('Guest OTP send error:', error);
       res.status(500).json({ message: "Failed to send verification code" });
     }
   });
-  
+
   // Guest OTP Verification - Verify code and get guest token
   app.post("/api/guest/auth/verify-otp", async (req, res) => {
     try {
       const { phoneNumber, otp } = req.body;
-      
+
       if (!phoneNumber || !otp) {
         return res.status(400).json({ message: "Phone number and OTP are required" });
       }
-      
+
       // Clean phone number
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
+
       // Verify OTP
       const isValid = verifyGuestOTP(cleanedPhone, otp);
       if (!isValid) {
@@ -1885,17 +1885,17 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           message: "Invalid or expired verification code. Please request a new one." 
         });
       }
-      
+
       // Check if bot exists and get bot ID
       const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
       if (!globalRegistration) {
         clearGuestSession(cleanedPhone);
         return res.status(404).json({ message: "Bot registration not found" });
       }
-      
+
       let botId = undefined;
       const currentServer = getServerName();
-      
+
       if (globalRegistration.tenancyName === currentServer) {
         const botInstance = await storage.getBotByPhoneNumber(cleanedPhone);
         if (botInstance) {
@@ -1903,12 +1903,12 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           setGuestBotId(cleanedPhone, botId);
         }
       }
-      
+
       // Generate guest token
       const token = generateGuestToken(cleanedPhone, botId);
-      
+
       console.log(`✅ Guest authentication successful for ${cleanedPhone}`);
-      
+
       res.json({
         success: true,
         token,
@@ -1919,99 +1919,169 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         expiresIn: 7200, // 2 hours
         message: "Authentication successful"
       });
-      
+
     } catch (error) {
       console.error('Guest OTP verify error:', error);
       res.status(500).json({ message: "Failed to verify code" });
     }
   });
-  
+
   // ======= GUEST BOT ACTION ENDPOINTS =======
-  
-  // Guest Bot Controls - Start/Stop/Restart bot (approved users only)
-  app.post("/api/guest/bot/control", authenticateGuestWithBot, async (req: any, res) => {
+
+  // Guest bot action endpoint - cross-server bot management
+  app.post("/api/guest/bot-action", authenticateGuestWithBot, async (req: any, res) => {
     try {
-      const { action } = req.body; // start, stop, restart
+      const { action, botId } = req.body;
       const guestPhone = req.guest.phoneNumber;
-      const botId = req.guest.botId;
-      
-      if (!action || !['start', 'stop', 'restart'].includes(action)) {
-        return res.status(400).json({ message: "Invalid action. Must be 'start', 'stop', or 'restart'" });
+      const guestBotId = req.guest.botId;
+
+      if (!action || !botId) {
+        return res.status(400).json({ message: "Action and bot ID are required" });
       }
-      
-      console.log(`🎮 Guest bot control: ${action} for bot ${botId} by ${guestPhone}`);
-      
-      // Get bot data to verify it's approved
-      const bot = await storage.getBotInstance(botId);
-      if (!bot) {
-        return res.status(404).json({ message: "Bot not found" });
-      }
-      
-      if (bot.approvalStatus !== 'approved') {
-        return res.status(403).json({ 
-          message: "Bot management is only available for approved bots",
-          approvalStatus: bot.approvalStatus
+
+      const validActions = ['start', 'stop', 'restart', 'reactivate', 'delete'];
+      if (!validActions.includes(action)) {
+        return res.status(400).json({ 
+          message: "Invalid action",
+          validActions 
         });
       }
-      
-      let result;
-      switch (action) {
-        case 'start':
-          result = await botManager.startBot(botId);
-          await storage.createActivity({
-            botInstanceId: botId,
-            type: 'bot_control',
-            description: `Bot started by guest user ${guestPhone}`,
-            metadata: { action: 'start' },
-            serverName: getServerName()
+
+      console.log(`🎮 Guest bot action: ${action} for bot ${botId} by ${guestPhone}`);
+
+      try {
+        // Resolve bot by ID with tenancy support
+        const resolution = await resolveBotById(botId, guestPhone);
+        const { bot, isLocal, serverName, canManage, needsProxy } = resolution;
+
+        // Validate guest permissions
+        const actionValidation = validateGuestAction(action, bot);
+        if (!actionValidation.allowed) {
+          return res.status(403).json({ 
+            message: actionValidation.reason 
           });
-          break;
-        case 'stop':
-          result = await botManager.stopBot(botId);
-          await storage.createActivity({
-            botInstanceId: botId,
-            type: 'bot_control',
-            description: `Bot stopped by guest user ${guestPhone}`,
-            metadata: { action: 'stop' },
-            serverName: getServerName()
+        }
+
+        // Handle cross-server bots
+        if (!isLocal) {
+          return res.status(400).json({
+            message: `Bot is hosted on ${serverName} server. Cross-server ${action} actions are not supported yet.`,
+            crossServer: true,
+            hostingServer: serverName,
+            action: action
           });
-          break;
-        case 'restart':
-          await botManager.stopBot(botId);
-          result = await botManager.startBot(botId);
-          await storage.createActivity({
-            botInstanceId: botId,
-            type: 'bot_control',
-            description: `Bot restarted by guest user ${guestPhone}`,
-            metadata: { action: 'restart' },
-            serverName: getServerName()
-          });
-          break;
+        }
+
+        // Perform local bot actions
+        let result;
+        switch (action) {
+          case 'start':
+            result = await botManager.startBot(botId);
+            await storage.createActivity({
+              botInstanceId: botId,
+              type: 'bot_control',
+              description: `Bot started by guest user ${guestPhone}`,
+              metadata: { action: 'start', guestUser: guestPhone },
+              serverName: getServerName()
+            });
+            break;
+
+          case 'stop':
+            result = await botManager.stopBot(botId);
+            await storage.createActivity({
+              botInstanceId: botId,
+              type: 'bot_control',
+              description: `Bot stopped by guest user ${guestPhone}`,
+              metadata: { action: 'stop', guestUser: guestPhone },
+              serverName: getServerName()
+            });
+            break;
+
+          case 'restart':
+            await botManager.stopBot(botId);
+            result = await botManager.startBot(botId);
+            await storage.createActivity({
+              botInstanceId: botId,
+              type: 'bot_control',
+              description: `Bot restarted by guest user ${guestPhone}`,
+              metadata: { action: 'restart', guestUser: guestPhone },
+              serverName: getServerName()
+            });
+            break;
+
+          case 'reactivate':
+            // Update bot status and restart if approved
+            if (bot.approvalStatus === 'approved') {
+              await storage.updateBotInstance(botId, { status: 'loading' });
+              result = await botManager.startBot(botId);
+              await storage.createActivity({
+                botInstanceId: botId,
+                type: 'bot_control',
+                description: `Bot reactivated by guest user ${guestPhone}`,
+                metadata: { action: 'reactivate', guestUser: guestPhone },
+                serverName: getServerName()
+              });
+            } else {
+              return res.status(400).json({
+                message: "Only approved bots can be reactivated"
+              });
+            }
+            break;
+
+          case 'delete':
+            // Stop the bot first
+            await botManager.stopBot(botId);
+            await botManager.destroyBot(botId);
+
+            // Delete related data
+            await storage.deleteBotRelatedData(botId);
+            await storage.deleteBotInstance(botId);
+
+            // Remove from global registration
+            await storage.deleteGlobalRegistration(guestPhone);
+
+            await storage.createActivity({
+              botInstanceId: botId,
+              type: 'deletion',
+              description: `Bot deleted by guest user ${guestPhone}`,
+              metadata: { action: 'delete', guestUser: guestPhone, botName: bot.name },
+              serverName: getServerName()
+            });
+
+            result = { deleted: true };
+            break;
+        }
+
+        console.log(`✅ Bot ${action} completed for ${botId}`);
+
+        res.json({
+          success: true,
+          message: `Bot ${action} completed successfully`,
+          action,
+          botId,
+          result
+        });
+
+      } catch (resolutionError: any) {
+        if (resolutionError.message.includes("No bot found")) {
+          return res.status(404).json({ message: "Bot not found or access denied" });
+        }
+        throw resolutionError;
       }
-      
-      console.log(`✅ Bot ${action} completed for ${botId}`);
-      
-      res.json({
-        success: true,
-        message: `Bot ${action} completed successfully`,
-        action,
-        botId,
-        result
-      });
-      
+
     } catch (error) {
-      console.error(`❌ Guest bot control error:`, error);
-      res.status(500).json({ message: "Failed to control bot" });
+      console.error(`❌ Guest bot action error:`, error);
+      res.status(500).json({ message: "Failed to perform bot action" });
     }
   });
-  
+
   // Guest Bot Features - Update bot features (approved users only)  
   app.post("/api/guest/bot/features", authenticateGuestWithBot, async (req: any, res) => {
     try {
       const { feature, enabled } = req.body;
       const guestPhone = req.guest.phoneNumber;
       const botId = req.guest.botId;
-      
+
       const validFeatures = ['autoLike', 'autoViewStatus', 'autoReact', 'chatgptEnabled'];
       if (!feature || !validFeatures.includes(feature)) {
         return res.status(400).json({ 
@@ -2019,30 +2089,30 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           validFeatures 
         });
       }
-      
+
       if (typeof enabled !== 'boolean') {
         return res.status(400).json({ message: "Enabled must be true or false" });
       }
-      
+
       console.log(`🎛️ Guest feature update: ${feature} = ${enabled} for bot ${botId} by ${guestPhone}`);
-      
+
       // Get bot data to verify it's approved
       const bot = await storage.getBotInstance(botId);
       if (!bot) {
         return res.status(404).json({ message: "Bot not found" });
       }
-      
+
       if (bot.approvalStatus !== 'approved') {
         return res.status(403).json({ 
           message: "Feature management is only available for approved bots",
           approvalStatus: bot.approvalStatus
         });
       }
-      
+
       // Update the feature
       const updateData: any = {};
       updateData[feature] = enabled;
-      
+
       await storage.updateBotInstance(botId, updateData);
       await storage.createActivity({
         botInstanceId: botId,
@@ -2055,12 +2125,12 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         },
         serverName: getServerName()
       });
-      
+
       console.log(`✅ Feature ${feature} updated to ${enabled} for bot ${botId}`);
-      
+
       // Get updated bot data
       const updatedBot = await storage.getBotInstance(botId);
-      
+
       res.json({
         success: true,
         message: `${feature} ${enabled ? 'enabled' : 'disabled'} successfully`,
@@ -2075,32 +2145,32 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           typingMode: updatedBot?.typingMode || 'none'
         }
       });
-      
+
     } catch (error) {
       console.error(`❌ Guest feature update error:`, error);
       res.status(500).json({ message: "Failed to update bot feature" });
     }
   });
-  
+
   // Guest Bot Info - Get detailed bot information for authenticated guest
   app.get("/api/guest/bot/info", authenticateGuestWithBot, async (req: any, res) => {
     try {
       const guestPhone = req.guest.phoneNumber;
       const botId = req.guest.botId;
-      
+
       console.log(`📋 Guest requesting bot info for ${botId} by ${guestPhone}`);
-      
+
       const bot = await storage.getBotInstance(botId);
       if (!bot) {
         return res.status(404).json({ message: "Bot not found" });
       }
-      
+
       // Get recent activities for this bot
       const activities = await storage.getActivities(botId, 10); // Get last 10 activities
-      
+
       // Get bot status from bot manager (fallback to checking stored status)
       const isOnline = bot.status === 'online' || bot.status === 'loading';
-      
+
       // Apply data masking for guest endpoint (includes features)
       const maskedBotData = maskBotDataForGuest({
         ...bot,
@@ -2108,38 +2178,38 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         canManage: bot.approvalStatus === 'approved'
         // Note: activities are excluded from masked data for privacy
       }, true);
-      
+
       res.json(maskedBotData);
-      
+
     } catch (error) {
       console.error(`❌ Guest bot info error:`, error);
       res.status(500).json({ message: "Failed to get bot information" });
     }
   });
-  
+
   // Guest bot start - requires authentication and ownership verification
   app.post("/api/guest/bot/start", authenticateGuestWithBot, async (req: any, res) => {
     try {
       const { phoneNumber, botId } = req.guest;
-      
+
       // Additional ownership check
       const botInstance = await storage.getBotInstance(botId);
       if (!botInstance) {
         return res.status(404).json({ message: "Bot not found" });
       }
-      
+
       if (botInstance.phoneNumber !== phoneNumber) {
         return res.status(403).json({ message: "Access denied - you do not own this bot" });
       }
-      
+
       if (botInstance.approvalStatus !== 'approved') {
         return res.status(403).json({ message: "Bot is not approved for starting" });
       }
-      
+
       // Start the bot
       await botManager.createBot(botId, botInstance);
       await botManager.startBot(botId);
-      
+
       // Log activity
       await storage.createActivity({
         botInstanceId: botId,
@@ -2148,38 +2218,38 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         metadata: { guestAuth: true, phoneNumber },
         serverName: getServerName()
       });
-      
+
       res.json({ 
         success: true, 
         message: "Bot started successfully",
         botId,
         status: 'starting'
       });
-      
+
     } catch (error) {
       console.error('Guest bot start error:', error);
       res.status(500).json({ message: "Failed to start bot" });
     }
   });
-  
+
   // Guest bot stop - requires authentication and ownership verification  
   app.post("/api/guest/bot/stop", authenticateGuestWithBot, async (req: any, res) => {
     try {
       const { phoneNumber, botId } = req.guest;
-      
+
       // Additional ownership check
       const botInstance = await storage.getBotInstance(botId);
       if (!botInstance) {
         return res.status(404).json({ message: "Bot not found" });
       }
-      
+
       if (botInstance.phoneNumber !== phoneNumber) {
         return res.status(403).json({ message: "Access denied - you do not own this bot" });
       }
-      
+
       // Stop the bot
       await botManager.stopBot(botId);
-      
+
       // Log activity
       await storage.createActivity({
         botInstanceId: botId,
@@ -2188,61 +2258,61 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         metadata: { guestAuth: true, phoneNumber },
         serverName: getServerName()
       });
-      
+
       res.json({ 
         success: true, 
         message: "Bot stopped successfully",
         botId,
         status: 'stopping'
       });
-      
+
     } catch (error) {
       console.error('Guest bot stop error:', error);
       res.status(500).json({ message: "Failed to stop bot" });
     }
   });
-  
+
   // Guest bot delete - requires authentication and ownership verification
   app.delete("/api/guest/bot/delete", authenticateGuestWithBot, async (req: any, res) => {
     try {
       const { phoneNumber, botId } = req.guest;
-      
+
       // Additional ownership check
       const botInstance = await storage.getBotInstance(botId);
       if (!botInstance) {
         return res.status(404).json({ message: "Bot not found" });
       }
-      
+
       if (botInstance.phoneNumber !== phoneNumber) {
         return res.status(403).json({ message: "Access denied - you do not own this bot" });
       }
-      
+
       // Stop the bot first if running
       try {
         await botManager.stopBot(botId);
       } catch (error) {
         console.log(`Bot ${botId} was not running, proceeding with deletion`);
       }
-      
+
       // Delete bot from bot manager
       try {
         await botManager.deleteBot(botId);
       } catch (error) {
         console.log(`Bot ${botId} not in bot manager, proceeding with database deletion`);
       }
-      
+
       // Delete related data
       await storage.deleteBotRelatedData(botId);
-      
+
       // Delete bot instance
       await storage.deleteBotInstance(botId);
-      
+
       // Remove from global registration
       await storage.deleteGlobalRegistration(phoneNumber);
-      
+
       // Clear guest session
       clearGuestSession(phoneNumber);
-      
+
       // Log final activity (cross-tenancy for record keeping)
       await storage.createCrossTenancyActivity({
         type: 'deletion',
@@ -2256,15 +2326,15 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         serverName: getServerName(),
         phoneNumber
       });
-      
+
       console.log(`🗑️ Guest user ${phoneNumber} deleted bot ${botInstance.name} (${botId})`);
-      
+
       res.json({ 
         success: true, 
         message: "Bot deleted successfully",
         botId
       });
-      
+
     } catch (error) {
       console.error('Guest bot delete error:', error);
       res.status(500).json({ message: "Failed to delete bot" });
@@ -2275,11 +2345,11 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   app.post("/api/guest/test-credentials", async (req, res) => {
     try {
       const { sessionId } = req.body;
-      
+
       if (!sessionId) {
         return res.status(400).json({ message: "Session ID is required" });
       }
-      
+
       // Decode and parse credentials
       let credentials;
       try {
@@ -2291,18 +2361,18 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           connectionOpen: false
         });
       }
-      
+
       // Validate credentials using WhatsApp bot validation
       const { WhatsAppBot } = await import('./services/whatsapp-bot');
       const validation = WhatsAppBot.validateCredentials(credentials);
-      
+
       if (!validation.valid) {
         return res.json({ 
           connectionOpen: false,
           message: validation.error || "Credentials validation failed"
         });
       }
-      
+
       // Test actual connection by creating a temporary bot instance
       try {
         const testBotInstance = {
@@ -2317,15 +2387,15 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           messagesCount: 0,
           commandsCount: 0
         };
-        
+
         // Create temporary WhatsApp bot for testing
         const testBot = new WhatsAppBot(testBotInstance as any);
-        
+
         // Start the bot and check if it connects
         await new Promise((resolve, reject) => {
           let connectionTimeout: NodeJS.Timeout;
           let resolved = false;
-          
+
           const cleanup = () => {
             if (connectionTimeout) clearTimeout(connectionTimeout);
             if (!resolved) {
@@ -2333,41 +2403,41 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
               testBot.stop().catch(() => {});
             }
           };
-          
+
           // Set timeout for connection test (30 seconds)
           connectionTimeout = setTimeout(() => {
             cleanup();
             reject(new Error("Connection timeout - credentials may be expired"));
           }, 30000);
-          
+
           // Override event handlers to capture connection status
           testBot.start().then(() => {
             // Monitor for connection events
             setTimeout(async () => {
               const status = testBot.getStatus();
               cleanup();
-              
+
               if (status === 'online') {
                 resolve(true);
               } else {
                 reject(new Error("Failed to establish connection - credentials may be expired"));
               }
             }, 5000); // Give 5 seconds for connection to establish
-            
+
           }).catch((error) => {
             cleanup();
             reject(error);
           });
         });
-        
+
         // If we reach here, connection was successful
         await testBot.stop();
-        
+
         res.json({ 
           connectionOpen: true,
           message: "Credentials are valid and connection successful"
         });
-        
+
       } catch (connectionError) {
         console.error('Credential test connection error:', connectionError);
         res.json({ 
@@ -2375,7 +2445,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           message: connectionError instanceof Error ? connectionError.message : "Connection test failed"
         });
       }
-      
+
     } catch (error) {
       console.error('Test credentials error:', error);
       res.status(500).json({ 
@@ -2391,16 +2461,16 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   app.post("/api/guest/my-bots", async (req, res) => {
     try {
       const { phoneNumber } = req.body;
-      
+
       if (!phoneNumber) {
         return res.status(400).json({ message: "Phone number is required" });
       }
-      
+
       // Use tenancy resolution helper
       try {
         const resolution = await resolveBotByPhone(phoneNumber);
         const { bot, isLocal, serverName, canManage, needsProxy } = resolution;
-        
+
         // Return array of bots (even if just one) with proper masking and permissions
         const botInfo = maskBotDataForGuest({
           ...bot,
@@ -2412,19 +2482,19 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
             ? `Bot ready for management.${!isLocal ? ` Hosted on ${serverName} server.` : ''}`
             : `Please verify your credentials to access management features.${!isLocal ? ` Bot is hosted on ${serverName} server.` : ''}`
         }, true);
-        
+
         // Override server name for security
         botInfo.serverName = 'Protected';
-        
+
         res.json([botInfo]); // Return as array
-        
+
       } catch (resolutionError: any) {
         if (resolutionError.message.includes("No bot found")) {
           return res.json([]); // Return empty array if no bots found
         }
         throw resolutionError;
       }
-      
+
     } catch (error) {
       console.error('Guest my-bots error:', error);
       res.status(500).json({ message: "Failed to fetch bots" });
@@ -2435,27 +2505,27 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   app.post("/api/guest/cross-server-bots", async (req, res) => {
     try {
       const { phoneNumber } = req.body;
-      
+
       if (!phoneNumber) {
         return res.status(400).json({ message: "Phone number is required" });
       }
-      
+
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
       const currentServer = getServerName();
-      
+
       // Check God Registry to find hosting server
       const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
       if (!globalRegistration) {
         return res.json([]); // No bots found
       }
-      
+
       const hostingServer = globalRegistration.tenancyName;
-      
+
       // Only return cross-server bots (not local ones)
       if (hostingServer === currentServer) {
         return res.json([]); // Bot is local, not cross-server
       }
-      
+
       // Create cross-server bot info
       const crossServerBot = maskBotDataForGuest({
         id: `cross-server-${cleanedPhone}`,
@@ -2472,12 +2542,12 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         nextStep: 'credential_validation_required',
         message: `Your bot is hosted on ${hostingServer} server. Please verify your credentials to access management features.`
       }, true);
-      
+
       // Override server name for security
       crossServerBot.serverName = 'Protected';
-      
+
       res.json([crossServerBot]);
-      
+
     } catch (error) {
       console.error('Guest cross-server-bots error:', error);
       res.status(500).json({ message: "Failed to fetch cross-server bots" });
@@ -2488,16 +2558,16 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   app.post("/api/guest/verify-phone", async (req, res) => {
     try {
       const { phoneNumber } = req.body;
-      
+
       if (!phoneNumber) {
         return res.status(400).json({ message: "Phone number is required" });
       }
-      
+
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
+
       // Check if phone number is registered in God Registry
       const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
-      
+
       if (!globalRegistration) {
         return res.json({
           verified: false,
@@ -2506,11 +2576,11 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           nextStep: "register_new_bot"
         });
       }
-      
+
       const hostingServer = globalRegistration.tenancyName;
       const currentServer = getServerName();
       const isLocal = hostingServer === currentServer;
-      
+
       res.json({
         verified: true,
         isLocal,
@@ -2522,7 +2592,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         nextStep: "credential_validation_required",
         canRegister: false
       });
-      
+
     } catch (error) {
       console.error('Guest verify-phone error:', error);
       res.status(500).json({ message: "Failed to verify phone number" });
@@ -2535,16 +2605,16 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   app.post("/api/guest/search-bot", async (req, res) => {
     try {
       const { phoneNumber } = req.body;
-      
+
       if (!phoneNumber) {
         return res.status(400).json({ message: "Phone number is required" });
       }
-      
+
       // Use new tenancy resolution helper
       try {
         const resolution = await resolveBotByPhone(phoneNumber);
         const { bot, isLocal, serverName, canManage, needsProxy } = resolution;
-        
+
         // Create masked bot info with proper permission flags
         const botInfo = maskBotDataForGuest({
           ...bot,
@@ -2557,12 +2627,12 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           }`,
           botExists: true
         }, true);
-        
+
         // Override server name for security (always mask)
         botInfo.serverName = 'Protected';
-        
+
         res.json(botInfo);
-        
+
       } catch (resolutionError: any) {
         if (resolutionError.message.includes("No bot found")) {
           return res.status(404).json({ 
@@ -2571,7 +2641,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         }
         throw resolutionError;
       }
-      
+
     } catch (error) {
       console.error('Guest bot search error:', error);
       res.status(500).json({ message: "Failed to search for bot" });
@@ -2582,50 +2652,50 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   app.post("/api/guest/validate-existing-bot", async (req, res) => {
     try {
       const { phoneNumber, sessionId } = req.body;
-      
+
       if (!phoneNumber) {
         return res.status(400).json({ message: "Phone number is required" });
       }
-      
+
       if (!sessionId || typeof sessionId !== 'string' || sessionId.trim().length === 0) {
         return res.status(400).json({ message: "Session ID is required to verify bot ownership" });
       }
-      
+
       // Clean phone number
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
+
       // Parse credentials from base64 encoded session ID
       let credentials;
       try {
         const base64Data = sessionId.trim();
-        
+
         // Check Base64 size limit (5MB when decoded)
         const estimatedSize = (base64Data.length * 3) / 4; // Rough estimate of decoded size
         const maxSizeBytes = 5 * 1024 * 1024; // 5MB
-        
+
         if (estimatedSize > maxSizeBytes) {
           return res.status(400).json({ 
             message: `❌ Session ID too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
           });
         }
-        
+
         const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
-        
+
         // Check actual decoded size
         if (decoded.length > maxSizeBytes) {
           return res.status(400).json({ 
             message: `❌ Decoded session data too large (${(decoded.length / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
           });
         }
-        
+
         credentials = JSON.parse(decoded);
       } catch (error) {
         return res.status(400).json({ message: "Invalid session ID format. Please ensure it's properly encoded WhatsApp session data." });
       }
-      
+
       // Validate phone number ownership from credentials
       let credentialsPhone = null;
-      
+
       // Handle both credentials.creds.me.id and credentials.me.id for phone extraction
       if (credentials && credentials.creds && credentials.creds.me && credentials.creds.me.id) {
         const credentialsPhoneMatch = credentials.creds.me.id.match(/^(\d+):/);
@@ -2634,26 +2704,26 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         const credentialsPhoneMatch = credentials.me.id.match(/^(\d+):/);
         credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
       }
-      
+
       if (!credentialsPhone) {
         return res.status(400).json({ message: "Invalid session ID format - missing phone number data" });
       }
-      
+
       if (credentialsPhone !== cleanedPhone) {
         return res.status(400).json({
           message: "Session ID does not match the provided phone number. You must provide the original session ID for this bot."
         });
       }
-      
+
       // Check if bot exists
       const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
       if (!globalRegistration) {
         return res.status(404).json({ message: "No bot found with this phone number" });
       }
-      
+
       const botServer = globalRegistration.tenancyName;
       const currentServer = getServerName();
-      
+
       // Handle cross-server bot (limited management)
       if (botServer !== currentServer) {
         // For cross-server bots, validate credentials but only allow credential updates
@@ -2669,26 +2739,26 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           nextStep: 'cross_server_credential_update'
         });
       }
-      
+
       // Bot is on current server - get existing bot data
       const botInstance = await storage.getBotByPhoneNumber(cleanedPhone);
       if (!botInstance) {
         return res.status(404).json({ message: "Bot found in registry but not in local database. Contact support." });
       }
-      
+
       // Load existing credentials to compare
       let existingCredentials;
       try {
         const authDir = path.join(process.cwd(), 'auth', `bot_${botInstance.id}`);
         const credentialsPath = path.join(authDir, 'creds.json');
-        
+
         if (fs.existsSync(credentialsPath)) {
           const existingFileContent = fs.readFileSync(credentialsPath, 'utf-8');
           existingCredentials = JSON.parse(existingFileContent);
-          
+
           // Compare key credential data to validate ownership
           let existingPhone = null;
-          
+
           // Handle both credential formats for existing data
           if (existingCredentials?.creds?.me?.id) {
             const existingPhoneMatch = existingCredentials.creds.me.id.match(/^(\d+):/);
@@ -2697,7 +2767,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
             const existingPhoneMatch = existingCredentials.me.id.match(/^(\d+):/);
             existingPhone = existingPhoneMatch ? existingPhoneMatch[1] : null;
           }
-          
+
           if (existingPhone !== credentialsPhone) {
             return res.status(403).json({
               message: "Credential validation failed. The provided session ID does not match the existing bot credentials."
@@ -2710,13 +2780,13 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         console.warn('Could not load existing credentials for validation:', error);
         // Continue with validation since we've already validated phone number ownership
       }
-      
+
       // Generate guest authentication token after successful validation
       const guestToken = generateGuestToken(cleanedPhone, botInstance.id);
-      
+
       // Set guest session
       setGuestBotId(cleanedPhone, botInstance.id);
-      
+
       // Update bot credential status
       await storage.updateBotCredentialStatus(botInstance.id, {
         credentialVerified: true,
@@ -2724,14 +2794,14 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         invalidReason: undefined,
         credentials: credentials
       });
-      
+
       // Save updated credentials to file system
       try {
         const authDir = path.join(process.cwd(), 'auth', `bot_${botInstance.id}`);
         if (!fs.existsSync(authDir)) {
           fs.mkdirSync(authDir, { recursive: true });
         }
-        
+
         fs.writeFileSync(
           path.join(authDir, 'creds.json'),
           JSON.stringify(credentials, null, 2)
@@ -2739,7 +2809,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       } catch (fileError) {
         console.error('Failed to save updated credentials:', fileError);
       }
-      
+
       // Log activity
       await storage.createActivity({
         botInstanceId: botInstance.id,
@@ -2748,12 +2818,12 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         metadata: { guestAuth: true, phoneNumber: cleanedPhone, validationMethod: 'session_id' },
         serverName: getServerName()
       });
-      
+
       // Determine next step based on bot status
       let nextStep = 'unknown';
       let message = '';
       let canManage = false;
-      
+
       if (botInstance.approvalStatus === 'pending') {
         nextStep = 'wait_approval';
         message = 'Your bot ownership is verified but the bot is pending admin approval.';
@@ -2763,7 +2833,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         const isExpired = botInstance.approvalDate && botInstance.expirationMonths
           ? new Date() > new Date(new Date(botInstance.approvalDate).getTime() + (botInstance.expirationMonths * 30 * 24 * 60 * 60 * 1000))
           : false;
-          
+
         if (isExpired) {
           nextStep = 'wait_approval';
           message = 'Your bot has expired. Please contact admin for renewal.';
@@ -2778,7 +2848,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         message = 'Your bot registration was not approved. Contact support for assistance.';
         canManage = false;
       }
-      
+
       // Return validated bot data with management capabilities
       const validatedBotData = maskBotDataForGuest({
         ...botInstance,
@@ -2788,7 +2858,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         crossServer: false,
         credentialVerified: true
       });
-      
+
       res.json({
         success: true,
         botValidated: true,
@@ -2796,7 +2866,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         bot: validatedBotData,
         message: "Bot ownership successfully verified via session ID"
       });
-      
+
     } catch (error) {
       console.error('Guest bot validation error:', error);
       res.status(500).json({ message: "Failed to validate bot session ID" });
@@ -2807,28 +2877,28 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   app.post("/api/guest/verify-credentials", authenticateGuestWithBot, upload.single('credentials') as any, async (req: any, res) => {
     try {
       const { phoneNumber } = req.body;
-      
+
       if (!phoneNumber) {
         return res.status(400).json({ message: "Phone number is required" });
       }
-      
+
       if (!req.file) {
         return res.status(400).json({ message: "Credentials file is required" });
       }
-      
+
       // Clean phone number
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
+
       // Security check: Ensure guest can only update their own bot
       const guestBotId = req.guest.botId; // From authenticateGuestWithBot middleware
       const guestBotInstance = await storage.getBotInstance(guestBotId);
-      
+
       if (!guestBotInstance) {
         return res.status(404).json({ 
           message: "Your bot session is invalid. Please authenticate again." 
         });
       }
-      
+
       // Verify the phone number matches the authenticated bot
       const guestCleanedPhone = guestBotInstance.phoneNumber?.replace(/[\s\-\(\)\+]/g, '') || '';
       if (cleanedPhone !== guestCleanedPhone) {
@@ -2836,17 +2906,17 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           message: "You can only update credentials for your own bot." 
         });
       }
-      
+
       // Check if bot is approved
       if (guestBotInstance.approvalStatus !== 'approved') {
         return res.status(403).json({ 
           message: "Bot must be approved before credentials can be updated. Please wait for admin approval." 
         });
       }
-      
+
       // Use the authenticated bot instance for all operations
       const botInstance = guestBotInstance;
-      
+
       // Parse uploaded credentials
       let credentials;
       try {
@@ -2856,31 +2926,31 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           message: "Invalid credentials file. Please ensure you're uploading a valid creds.json file." 
         });
       }
-      
+
       // Basic validation of credentials structure
       if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
         return res.status(400).json({ 
           message: "Invalid credentials format. Please upload a valid WhatsApp session file." 
         });
       }
-      
+
       // Use existing validation function
       const validation = await validateWhatsAppCredentials(
         credentials, 
         cleanedPhone
       );
-      
+
       if (validation.isValid) {
         let credentialsSaved = false;
         let messageSent = false;
-        
+
         try {
           // Save credentials to bot's auth directory
           const authDir = path.join(process.cwd(), 'auth', `bot_${botInstance.id}`);
           if (!fs.existsSync(authDir)) {
             fs.mkdirSync(authDir, { recursive: true });
           }
-          
+
           // Save the validated credentials to creds.json
           fs.writeFileSync(
             path.join(authDir, 'creds.json'), 
@@ -2896,10 +2966,10 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
             nextStep: "update_credentials"
           });
         }
-        
+
         // Send authentication message
         const authMessage = `🔐 Your bot credentials have been successfully updated! Your bot "${botInstance.name}" is now ready to use. You can proceed with authentication to start using your bot.`;
-        
+
         try {
           // Convert credentials to base64 for sending message
           const credentialsBase64 = Buffer.from(JSON.stringify(credentials)).toString('base64');
@@ -2910,7 +2980,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           console.error('Failed to send authentication message:', messageError);
           messageSent = false;
         }
-        
+
         // Update bot credential status
         await storage.updateBotCredentialStatus(botInstance.id, {
           credentialVerified: true,
@@ -2919,7 +2989,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           invalidReason: undefined,
           authMessageSentAt: messageSent ? new Date() : null
         });
-        
+
         // Create comprehensive activity log
         await storage.createActivity({
           botInstanceId: botInstance.id,
@@ -2934,11 +3004,11 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           },
           serverName: getServerName()
         });
-        
+
         const responseMessage = messageSent 
           ? "Credentials verified and saved successfully! Check your WhatsApp for authentication instructions."
           : "Credentials verified and saved successfully! However, we couldn't send the WhatsApp message. Your bot is ready to use.";
-        
+
         res.json({
           success: true,
           message: responseMessage,
@@ -2954,14 +3024,14 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           autoStart: false,
           invalidReason: validation.message || 'Credential verification failed'
         });
-        
+
         res.status(400).json({
           success: false,
           message: validation.message || "Credentials could not be verified. Please check your credentials file and try again.",
           nextStep: "update_credentials"
         });
       }
-      
+
     } catch (error) {
       console.error('Guest credential verification error:', error);
       res.status(500).json({ message: "Failed to verify credentials" });
@@ -2972,7 +3042,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
   app.post("/api/guest/register-bot", upload.single('credsFile') as any, async (req, res) => {
     try {
       const { botName, phoneNumber, credentialType, sessionId, features, selectedServer } = req.body;
-      
+
       if (!botName || !phoneNumber) {
         return res.status(400).json({ message: "Bot name and phone number are required" });
       }
@@ -2982,11 +3052,10 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
       // Parse credentials first (before any phone number checks)
       let credentials = null;
-      
+
       // Handle credentials based on type
       if (credentialType === 'base64' && sessionId) {
         try {
-          // Validate base64 session ID
           const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
           const parsedCreds = JSON.parse(decoded);
           credentials = parsedCreds;
@@ -3009,7 +3078,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         // Extract clean phone number from credentials (format: "254704897825:33@s.whatsapp.net")
         const credentialsPhoneMatch = credentials.me.id.match(/^(\d+):/); 
         const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
-        
+
         if (!credentialsPhone || credentialsPhone !== cleanPhoneNumber) {
           return res.status(400).json({ 
             message: "You are not the owner of this credentials file. The phone number in the session does not match your input." 
@@ -3028,10 +3097,10 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           console.warn('Invalid features JSON:', error);
         }
       }
-      
+
       // Get current tenant name
       const currentTenancyName = getServerName();
-      
+
       // Check global registration first using clean phone number
       const globalRegistration = await storage.checkGlobalRegistration(cleanPhoneNumber);
       if (globalRegistration) {
@@ -3042,24 +3111,24 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
             registeredTo: globalRegistration.tenancyName
           });
         }
-        
+
         // Phone number belongs to this tenant - check for existing bot using clean phone number
         const existingBot = await storage.getBotByPhoneNumber(cleanPhoneNumber);
         if (existingBot) {
           // User has a bot on this server - automatically update credentials instead of blocking
           console.log(`📱 Phone number ${cleanPhoneNumber} already registered, updating credentials for bot ${existingBot.id}`);
-          
+
           // Update the existing bot's credentials automatically
           let credentialsSaved = false;
           let messageSent = false;
-          
+
           try {
             // Save credentials to bot's auth directory
             const authDir = path.join(process.cwd(), 'auth', `bot_${existingBot.id}`);
             if (!fs.existsSync(authDir)) {
               fs.mkdirSync(authDir, { recursive: true });
             }
-            
+
             // Save the new credentials to creds.json
             fs.writeFileSync(
               path.join(authDir, 'creds.json'), 
@@ -3074,10 +3143,10 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
               message: "Failed to update credentials. Please try again later."
             });
           }
-          
+
           // Send authentication message with updated credentials
           const authMessage = `🔐 Your bot credentials have been successfully updated! Your bot "${existingBot.name}" is now ready to use with the new credentials.`;
-          
+
           try {
             // Convert credentials to base64 for sending message
             const credentialsBase64 = Buffer.from(JSON.stringify(credentials)).toString('base64');
@@ -3088,7 +3157,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
             console.error('Failed to send authentication message:', messageError);
             messageSent = false;
           }
-          
+
           // Update bot credential status
           await storage.updateBotCredentialStatus(existingBot.id, {
             credentialVerified: true,
@@ -3096,14 +3165,14 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
             invalidReason: undefined,
             credentials: credentials
           });
-          
+
           // Update bot features if provided
           if (botFeatures && Object.keys(botFeatures).length > 0) {
             await storage.updateBotInstance(existingBot.id, {
               settings: JSON.stringify({ features: botFeatures })
             });
           }
-          
+
           // Create comprehensive activity log
           await storage.createActivity({
             botInstanceId: existingBot.id,
@@ -3119,11 +3188,11 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
             },
             serverName: getServerName()
           });
-          
+
           const responseMessage = messageSent 
             ? "Credentials automatically updated! Your existing bot now has new credentials. Check your WhatsApp for updated authentication instructions."
             : "Credentials automatically updated! Your existing bot now has new credentials and is ready to use.";
-          
+
           return res.json({
             success: true,
             type: 'credentials_updated',
@@ -3153,7 +3222,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
             message: "Your previous bot is active. Can't add new bot with same number." 
           });
         }
-        
+
         // If bot is inactive, test connection and handle accordingly
         if (existingBot.approvalStatus === 'approved' && existingBot.status !== 'online') {
           // Try to test connection - if fails, delete old credentials
@@ -3171,21 +3240,21 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       // Check bot count limit using strict validation (no auto-removal)
       const botCountCheck = await storage.strictCheckBotCountLimit();
       let targetServerName = currentTenancyName; // Default to current server
-      
+
       if (!botCountCheck.canAdd) {
         // Current server is full - try automatic cross-server registration
         const availableServers = await storage.getAvailableServers();
-        
+
         if (availableServers.length > 0) {
           // Automatically register on the first available server
           const targetServer = availableServers[0];
           targetServerName = targetServer.serverName;
-          
+
           console.log(`🔄 ${getServerName()} is full (${botCountCheck.currentCount}/${botCountCheck.maxCount}), automatically registering on ${targetServerName}`);
-          
+
           // Update global registration to point to the target server
           await storage.updateGlobalRegistration(phoneNumber, targetServerName);
-          
+
           console.log(`✅ Cross-server registration: Bot will be registered on ${targetServerName} instead of ${getServerName()}`);
         } else {
           // All servers are full - cannot proceed
@@ -3224,21 +3293,21 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           chatgptEnabled: (botFeatures as any).chatGPT || false
         }
       );
-      
+
       if (!registrationResult.success) {
         return res.status(400).json({
           message: registrationResult.error || "Failed to register bot",
           serverFull: registrationResult.error?.includes('capacity') || false
         });
       }
-      
+
       const botInstance = registrationResult.botInstance!;
 
       // Handle registration differently for cross-server vs same-server
       if (targetServerName !== currentTenancyName) {
         // Cross-server registration - no WhatsApp validation, just registry entry
         console.log(`🔄 Cross-server registration: Creating registry entry for bot ${botInstance.id} on ${targetServerName}`);
-        
+
         // Mark credentials as verified without testing (assuming they're valid)
         await storage.updateBotCredentialStatusOnServer(botInstance.id, targetServerName, {
           credentialVerified: true,
@@ -3247,19 +3316,19 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           invalidReason: undefined
         });
         console.log(`✅ Credentials marked as verified for bot ${botInstance.id} on server ${targetServerName} (cross-server)`);
-        
+
         // Update bot status to dormant (awaiting approval) without validation
         await storage.updateBotInstanceOnServer(botInstance.id, targetServerName, { 
           status: 'dormant',
           lastActivity: new Date()
         });
         console.log(`✅ Bot status set to dormant on server ${targetServerName} (cross-server registration)`);
-        
+
       } else {
         // Same-server registration - test WhatsApp connection and send validation message
         try {
           console.log(`🔄 Testing WhatsApp connection for guest bot ${botInstance.id}`);
-          
+
           // Prepare validation message
           const validationMessage = `🎉 Welcome to TREKKER-MD!
 
@@ -3279,10 +3348,10 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
           // Send validation message using the bot's own credentials
           const credentialsBase64 = credentialType === 'base64' ? sessionId : Buffer.from(JSON.stringify(credentials)).toString('base64');
-          
+
           await sendGuestValidationMessage(phoneNumber, credentialsBase64, validationMessage);
           console.log(`✅ Validation message sent successfully to ${phoneNumber}`);
-          
+
           // Mark credentials as verified since validation message was sent successfully
           await storage.updateBotCredentialStatus(botInstance.id, {
             credentialVerified: true,
@@ -3291,7 +3360,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
             invalidReason: undefined
           });
           console.log(`✅ Credentials marked as verified for bot ${botInstance.id}`);
-          
+
           // Update bot status to pending (awaiting approval)
           await storage.updateBotInstance(botInstance.id, { 
             status: 'dormant',
@@ -3299,11 +3368,11 @@ Thank you for choosing TREKKER-MD! 🚀`;
           });
         } catch (validationError) {
           console.error('Failed to validate WhatsApp connection:', validationError);
-          
+
           // For same-server validation failures, rollback the registration
           await storage.rollbackCrossServerRegistration(phoneNumber, botInstance.id, targetServerName);
           console.log(`🔄 Rolled back failed registration for ${phoneNumber}`);
-          
+
           return res.status(400).json({ 
             message: "Failed to validate WhatsApp credentials. Please check your session ID or creds.json file." 
           });
@@ -3338,7 +3407,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
       const crossServerMessage = targetServerName !== currentTenancyName 
         ? ` Your bot was automatically registered on ${targetServerName} server because ${currentTenancyName} was full.`
         : '';
-        
+
       res.json({ 
         success: true, 
         message: `Bot registered successfully!${targetServerName === currentTenancyName ? ' Validation message sent to your WhatsApp.' : ''}${crossServerMessage} Contact +254704897825 for activation.`,
@@ -3357,13 +3426,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
   app.post("/api/guest/manage-bot", upload.single('credsFile') as any, async (req, res) => {
     try {
       const { phoneNumber, action, credentialType, sessionId, botId } = req.body;
-      
+
       if (!phoneNumber || !action || !botId) {
         return res.status(400).json({ message: "Phone number, action, and bot ID are required" });
       }
-      
+
       const currentTenancyName = getServerName();
-      
+
       // Verify global registration
       const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
       if (!globalRegistration || globalRegistration.tenancyName !== currentTenancyName) {
@@ -3371,26 +3440,26 @@ Thank you for choosing TREKKER-MD! 🚀`;
           message: `Phone number not registered to this server or registered to ${globalRegistration?.tenancyName || 'another server'}` 
         });
       }
-      
+
       // Get the bot instance
       const botInstance = await storage.getBotInstance(botId);
       if (!botInstance || botInstance.phoneNumber !== phoneNumber) {
         return res.status(404).json({ message: "Bot not found or phone number mismatch" });
       }
-      
+
       switch (action) {
         case 'restart':
           if (botInstance.approvalStatus !== 'approved') {
             return res.status(400).json({ message: "Bot must be approved before it can be restarted" });
           }
-          
+
           // Check if bot is expired
           if (botInstance.approvalDate && botInstance.expirationMonths) {
             const approvalDate = new Date(botInstance.approvalDate);
             const expirationDate = new Date(approvalDate);
             expirationDate.setMonth(expirationDate.getMonth() + botInstance.expirationMonths);
             const now = new Date();
-            
+
             if (now > expirationDate) {
               return res.status(400).json({ 
                 message: "Bot has expired. Please contact admin for renewal.",
@@ -3398,34 +3467,34 @@ Thank you for choosing TREKKER-MD! 🚀`;
               });
             }
           }
-          
+
           // Restart the bot
           try {
             await botManager.destroyBot(botId);
           } catch (error) {
             console.log('Bot was not running, creating new instance');
           }
-          
+
           await botManager.createBot(botId, botInstance);
           await storage.updateBotInstance(botId, { status: 'loading' });
-          
+
           await storage.createActivity({
             botInstanceId: botId,
             type: 'restart',
             description: `Bot restarted by user via management interface`,
             serverName: getServerName()
           });
-          
+
           res.json({ 
             success: true, 
             message: "Bot restart initiated",
             botStatus: 'loading'
           });
           break;
-          
+
         case 'update_credentials':
           let newCredentials = null;
-          
+
           if (credentialType === 'base64' && sessionId) {
             try {
               const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
@@ -3443,7 +3512,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           } else {
             return res.status(400).json({ message: "Valid credentials are required for update" });
           }
-          
+
           // Validate credentials structure and content
           const { WhatsAppBot } = await import('./services/whatsapp-bot');
           const validation = WhatsAppBot.validateCredentials(newCredentials);
@@ -3452,13 +3521,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
               message: `Invalid credentials: ${validation.error}` 
             });
           }
-          
+
           // Validate phone number ownership
           if (newCredentials && newCredentials.creds && newCredentials.creds.me && newCredentials.creds.me.id) {
             const credentialsPhoneMatch = newCredentials.creds.me.id.match(/^(\d+):/);
             const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
             const inputPhone = phoneNumber.replace(/^\+/, '');
-            
+
             if (!credentialsPhone || credentialsPhone !== inputPhone) {
               return res.status(400).json({ 
                 message: "Credentials don't match your phone number" 
@@ -3469,13 +3538,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
               message: "Unable to verify phone number in credentials" 
             });
           }
-          
+
           // Update credentials
           await storage.updateBotInstance(botId, { 
             credentials: newCredentials,
             status: 'offline' // Reset to offline for reactivation
           });
-          
+
           await storage.createActivity({
             botInstanceId: botId,
             type: 'credentials_update',
@@ -3483,7 +3552,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
             metadata: { credentialType },
             serverName: getServerName()
           });
-          
+
           // Send success message to user via WhatsApp if bot is running
           let messageSent = false;
           try {
@@ -3494,10 +3563,10 @@ Thank you for choosing TREKKER-MD! 🚀`;
               `🌐 Server: ${getServerName()}\n\n` +
               `Your bot is now ready to be restarted. Visit your management panel to start your bot.\n\n` +
               `💫 *TREKKER-MD - Advanced WhatsApp Bot*`;
-            
+
             // Try to send message through existing bot manager if bot is running
             messageSent = await botManager.sendMessageThroughBot(botId, phoneNumber, successMessage);
-            
+
             if (messageSent) {
               console.log(`✅ Success message sent to ${phoneNumber} after credential update`);
             } else {
@@ -3507,29 +3576,29 @@ Thank you for choosing TREKKER-MD! 🚀`;
             console.warn(`⚠️ Failed to send success message to ${phoneNumber}:`, messageError);
             // Don't fail the credential update if message sending fails
           }
-          
+
           const responseMessage = messageSent 
             ? "Credentials updated successfully. Bot can now be restarted. A confirmation message has been sent to your WhatsApp."
             : "Credentials updated successfully. Bot can now be restarted.";
-            
+
           res.json({ 
             success: true, 
             message: responseMessage
           });
           break;
-          
+
         case 'start':
           if (botInstance.approvalStatus !== 'approved') {
             return res.status(400).json({ message: "Bot must be approved before it can be started" });
           }
-          
+
           // Check if bot is expired
           if (botInstance.approvalDate && botInstance.expirationMonths) {
             const approvalDate = new Date(botInstance.approvalDate);
             const expirationDate = new Date(approvalDate);
             expirationDate.setMonth(expirationDate.getMonth() + botInstance.expirationMonths);
             const now = new Date();
-            
+
             if (now > expirationDate) {
               return res.status(400).json({ 
                 message: "Bot has expired. Please contact admin for renewal.",
@@ -3537,19 +3606,19 @@ Thank you for choosing TREKKER-MD! 🚀`;
               });
             }
           }
-          
+
           // Start the bot
           try {
             await botManager.startBot(botId);
             await storage.updateBotInstance(botId, { status: 'loading' });
-            
+
             await storage.createActivity({
               botInstanceId: botId,
               type: 'start',
               description: `Bot started by user via management interface`,
               serverName: getServerName()
             });
-            
+
             res.json({ 
               success: true, 
               message: "Bot start initiated",
@@ -3560,23 +3629,23 @@ Thank you for choosing TREKKER-MD! 🚀`;
             res.status(500).json({ message: "Failed to start bot" });
           }
           break;
-          
+
         case 'stop':
           if (botInstance.approvalStatus !== 'approved') {
             return res.status(400).json({ message: "Bot must be approved before it can be stopped" });
           }
-          
+
           try {
             await botManager.stopBot(botId);
             await storage.updateBotInstance(botId, { status: 'offline' });
-            
+
             await storage.createActivity({
               botInstanceId: botId,
               type: 'stop',
               description: `Bot stopped by user via management interface`,
               serverName: getServerName()
             });
-            
+
             res.json({ 
               success: true, 
               message: "Bot stopped successfully"
@@ -3586,11 +3655,11 @@ Thank you for choosing TREKKER-MD! 🚀`;
             res.status(500).json({ message: "Failed to stop bot" });
           }
           break;
-          
+
         default:
           res.status(400).json({ message: "Invalid action specified" });
       }
-      
+
     } catch (error) {
       console.error('Bot management error:', error);
       res.status(500).json({ message: "Failed to manage bot" });
@@ -3602,10 +3671,10 @@ Thank you for choosing TREKKER-MD! 🚀`;
     const { phoneNumber, credentialType, sessionId } = req.body;
     const targetServer = globalRegistration.tenancyName;
     const currentServer = getServerName();
-    
+
     try {
       let newCredentials = null;
-      
+
       // Parse credentials based on type
       if (credentialType === 'base64' && sessionId) {
         try {
@@ -3624,7 +3693,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
       } else {
         return res.status(400).json({ message: "Valid credentials are required for update" });
       }
-      
+
       // Validate credentials structure
       const { WhatsAppBot } = await import('./services/whatsapp-bot');
       const validation = WhatsAppBot.validateCredentials(newCredentials);
@@ -3633,13 +3702,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
           message: `Invalid credentials: ${validation.error}` 
         });
       }
-      
+
       // Validate phone number ownership
       if (newCredentials?.creds?.me?.id) {
         const credentialsPhoneMatch = newCredentials.creds.me.id.match(/^(\d+):/);
         const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
         const inputPhone = phoneNumber.replace(/^\+/, '');
-        
+
         if (!credentialsPhone || credentialsPhone !== inputPhone) {
           return res.status(400).json({ 
             message: "Credentials don't match your phone number" 
@@ -3650,7 +3719,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           message: "Unable to verify phone number in credentials" 
         });
       }
-      
+
       // Store the credential update request in a cross-tenancy table for the target server
       await storage.createActivity({
         botInstanceId: 'cross-tenancy-request',
@@ -3666,7 +3735,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
         },
         serverName: currentServer
       });
-      
+
       // For now, simulate cross-tenancy support
       // In a real implementation, this would make an API call to the target server
       res.json({
@@ -3683,21 +3752,21 @@ Thank you for choosing TREKKER-MD! 🚀`;
           `Check the bot status on the target server dashboard`
         ]
       });
-      
+
     } catch (error) {
       console.error('Cross-tenancy credential update error:', error);
       res.status(500).json({ message: "Failed to process cross-tenancy credential update" });
     }
   }
-  
+
   async function handleCrossTenancyBotControl(req: any, res: any, globalRegistration: any, action: string) {
     const { phoneNumber } = req.body;
     const targetServer = globalRegistration.tenancyName;
     const currentServer = getServerName();
-    
+
     try {
       // FIXED: Implement real cross-tenancy bot control instead of just logging
-      
+
       // Find the actual bot on the target server
       const targetBot = await storage.getBotByPhoneNumber(phoneNumber);
       if (!targetBot) {
@@ -3708,12 +3777,12 @@ Thank you for choosing TREKKER-MD! 🚀`;
           sourceServer: currentServer
         });
       }
-      
+
       // Execute the actual bot control operation
       const { botManager } = await import('./services/bot-manager');
       let operationResult;
       let operationStatus = 'failed';
-      
+
       switch (action) {
         case 'start':
           try {
@@ -3725,7 +3794,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
             operationResult = `Failed to start bot: ${error instanceof Error ? error.message : 'Unknown error'}`;
           }
           break;
-          
+
         case 'stop':
           try {
             await botManager.stopBot(targetBot.id);
@@ -3736,7 +3805,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
             operationResult = `Failed to stop bot: ${error instanceof Error ? error.message : 'Unknown error'}`;
           }
           break;
-          
+
         case 'restart':
           try {
             await botManager.restartBot(targetBot.id);
@@ -3747,11 +3816,11 @@ Thank you for choosing TREKKER-MD! 🚀`;
             operationResult = `Failed to restart bot: ${error instanceof Error ? error.message : 'Unknown error'}`;
           }
           break;
-          
+
         default:
           operationResult = `Invalid action: ${action}`;
       }
-      
+
       // Log the actual operation (not just a request)
       await storage.createActivity({
         botInstanceId: targetBot.id,
@@ -3767,7 +3836,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
         },
         serverName: currentServer
       });
-      
+
       if (operationStatus === 'success') {
         res.json({
           success: true,
@@ -3792,7 +3861,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           action
         });
       }
-      
+
     } catch (error) {
       console.error(`Cross-tenancy ${action} error:`, error);
       res.status(500).json({ message: `Failed to process cross-tenancy ${action} operation` });
@@ -3800,16 +3869,16 @@ Thank you for choosing TREKKER-MD! 🚀`;
   }
 
   // Enhanced Cross-Tenancy Bot Management
-  app.post("/api/guest/cross-tenancy-manage", upload.single('credsFile') as any, async (req, res) => {
+  app.post("/api/guest/cross-tenancy-manage",upload.single('credsFile') as any, async (req, res) => {
     try {
       const { phoneNumber, action, credentialType, sessionId, botId, targetServer } = req.body;
-      
-      if (!phoneNumber || !action) {
-        return res.status(400).json({ message: "Phone number and action are required" });
+
+      if (!phoneNumber || !action || !botId) {
+        return res.status(400).json({ message: "Phone number, action, and bot ID are required" });
       }
-      
+
       const currentTenancyName = getServerName();
-      
+
       // Verify global registration to determine actual server location
       const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
       if (!globalRegistration) {
@@ -3817,47 +3886,47 @@ Thank you for choosing TREKKER-MD! 🚀`;
           message: "Phone number not registered to any server in the system" 
         });
       }
-      
+
       const actualServer = globalRegistration.tenancyName;
       const isCurrentServer = actualServer === currentTenancyName;
-      
+
       // If the bot is on the current server, use regular management
       if (isCurrentServer) {
         if (!botId) {
           return res.status(400).json({ message: "Bot ID is required for same-server operations" });
         }
-        
+
         // Handle same-server operations directly
         const { action } = req.body;
         const botInstance = await storage.getBotInstance(botId);
         if (!botInstance) {
           return res.status(404).json({ message: "Bot not found" });
         }
-        
+
         // Execute the same logic as in regular bot management
         // (This would be a refactored function call in production code)
         res.json({ message: `${action} action executed successfully`, botId, action });
       }
-      
+
       // Handle cross-tenancy operations
       switch (action) {
         case 'update_credentials':
           await handleCrossTenancyCredentialUpdate(req, res, globalRegistration);
           break;
-          
+
         case 'start':
         case 'stop':
         case 'restart':
           await handleCrossTenancyBotControl(req, res, globalRegistration, action);
           break;
-          
+
         default:
           res.status(400).json({ 
             message: `Cross-tenancy action '${action}' not supported yet`,
             suggestion: "Please contact the target server directly for this operation"
           });
       }
-      
+
     } catch (error) {
       console.error('Cross-tenancy bot management error:', error);
       res.status(500).json({ message: "Failed to manage bot across tenancies" });
@@ -3869,11 +3938,11 @@ Thank you for choosing TREKKER-MD! 🚀`;
     try {
       const { action, botId, tenancy, feature, enabled } = req.body;
       const currentServer = getServerName();
-      
+
       if (action !== 'toggle_feature') {
         return res.status(400).json({ message: "Invalid action. Only 'toggle_feature' is supported." });
       }
-      
+
       if (!tenancy || !feature || typeof enabled !== 'boolean') {
         return res.status(400).json({ 
           message: "Tenancy, feature, and enabled status are required" 
@@ -3888,13 +3957,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
           if (!botInstance) {
             return res.status(404).json({ message: "Bot not found on current server" });
           }
-          
+
           // Update bot features directly
           const updateData: any = {};
           updateData[feature] = enabled;
-          
+
           await storage.updateBotInstance(botId, updateData);
-          
+
           // Log the feature change
           await storage.createActivity({
             botInstanceId: botId,
@@ -3903,7 +3972,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
             metadata: { feature, enabled, changedBy: 'admin' },
             serverName: currentServer
           });
-          
+
           res.json({
             success: true,
             message: `Feature ${feature} ${enabled ? 'enabled' : 'disabled'} for bot ${botInstance.name}`,
@@ -3927,7 +3996,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
             },
             serverName: currentServer
           });
-          
+
           res.json({
             success: true,
             message: `Cross-tenancy feature toggle request logged for ${tenancy}`,
@@ -3954,7 +4023,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           },
           serverName: currentServer
         });
-        
+
         res.json({
           success: true,
           message: `Global feature toggle request logged for ${tenancy}`,
@@ -3965,7 +4034,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           scope: 'global'
         });
       }
-      
+
     } catch (error) {
       console.error('Feature management error:', error);
       res.status(500).json({ message: "Failed to manage feature" });
@@ -3977,17 +4046,17 @@ Thank you for choosing TREKKER-MD! 🚀`;
     try {
       const { sourceServer, targetServers, commandIds } = req.body;
       const currentServer = getServerName();
-      
+
       if (!sourceServer || !Array.isArray(targetServers) || !Array.isArray(commandIds)) {
         return res.status(400).json({ 
           message: "Source server, target servers array, and command IDs array are required" 
         });
       }
-      
+
       if (targetServers.length === 0) {
         return res.status(400).json({ message: "At least one target server must be specified" });
       }
-      
+
       // If source server is current server, get actual command data
       let commandsData = null;
       if (sourceServer === currentServer) {
@@ -4004,7 +4073,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
             }
           }
         }
-        
+
         // Log successful command export
         await storage.createActivity({
           botInstanceId: 'cross-tenancy-request',
@@ -4020,7 +4089,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           serverName: currentServer
         });
       }
-      
+
       // Log command sync requests for target servers
       for (const targetServer of targetServers) {
         await storage.createActivity({
@@ -4039,7 +4108,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           serverName: currentServer
         });
       }
-      
+
       res.json({
         success: true,
         message: `Command sync initiated from ${sourceServer} to ${targetServers.length} target server(s)`,
@@ -4048,32 +4117,32 @@ Thank you for choosing TREKKER-MD! 🚀`;
         commandCount: commandsData?.length || commandIds.length,
         syncedCommands: commandsData ? commandsData.map(c => ({ id: c.id, name: c.name })) : null
       });
-      
+
     } catch (error) {
       console.error('Command sync error:', error);
       res.status(500).json({ message: "Failed to sync commands" });
     }
   });
-  
+
   // Check Tenant Registration
   app.post("/api/guest/check-registration", async (req, res) => {
     try {
       const { phoneNumber } = req.body;
-      
+
       if (!phoneNumber) {
         return res.status(400).json({ message: "Phone number is required" });
       }
-      
+
       const currentTenancyName = getServerName();
       const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
-      
+
       if (!globalRegistration) {
         return res.json({
           registered: false,
           message: "Phone number not registered to any server"
         });
       }
-      
+
       if (globalRegistration.tenancyName !== currentTenancyName) {
         return res.json({
           registered: true,
@@ -4082,10 +4151,10 @@ Thank you for choosing TREKKER-MD! 🚀`;
           message: `Phone number is registered to ${globalRegistration.tenancyName}. Please go to ${globalRegistration.tenancyName} server.`
         });
       }
-      
+
       // Check for existing bot on this server
       const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
-      
+
       res.json({
         registered: true,
         currentServer: true,
@@ -4103,7 +4172,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           ? `Welcome back! You have a bot named "${existingBot.name}" on this server.`
           : "Phone number registered to this server but no bot found."
       });
-      
+
     } catch (error) {
       console.error('Check registration error:', error);
       res.status(500).json({ message: "Failed to check registration" });
@@ -4185,11 +4254,11 @@ Thank you for choosing TREKKER-MD! 🚀`;
       const botId = req.params.id;
       const { duration } = req.body; // Duration in months
       const botInstance = await storage.getBotInstance(botId);
-      
+
       if (!botInstance) {
         return res.status(404).json({ message: "Bot instance not found" });
       }
-      
+
       if (!duration || duration < 1 || duration > 12) {
         return res.status(400).json({ message: "Duration must be between 1-12 months" });
       }
@@ -4214,7 +4283,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
       // Send activation message (placeholder for now)
       console.log(`📞 Activation message would be sent to ${botInstance.phoneNumber}`);
-      
+
       broadcast({ 
         type: 'BOT_APPROVED', 
         data: { botId, name: botInstance.name } 
@@ -4231,7 +4300,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
       const botId = req.params.id;
       const { reason } = req.body;
       const botInstance = await storage.getBotInstance(botId);
-      
+
       if (!botInstance) {
         return res.status(404).json({ message: "Bot instance not found" });
       }
@@ -4267,20 +4336,20 @@ Thank you for choosing TREKKER-MD! 🚀`;
       const botId = req.params.id;
       const { message } = req.body;
       const botInstance = await storage.getBotInstance(botId);
-      
+
       if (!botInstance || !botInstance.phoneNumber) {
         return res.status(404).json({ message: "Bot instance or phone number not found" });
       }
 
       // Send message through the bot manager
       const success = await botManager.sendMessageThroughBot(botId, botInstance.phoneNumber, message);
-      
+
       if (!success) {
         return res.status(400).json({ message: "Bot is not online or failed to send message" });
       }
-      
+
       console.log(`📱 Message sent to ${botInstance.phoneNumber}: ${message}`);
-      
+
       // Log activity
       await storage.createActivity({
         serverName: 'default-server',
@@ -4301,14 +4370,14 @@ Thank you for choosing TREKKER-MD! 🚀`;
     try {
       const botId = req.params.id;
       const botInstance = await storage.getBotInstance(botId);
-      
+
       if (!botInstance) {
         return res.status(404).json({ message: "Bot instance not found" });
       }
 
       await botManager.startBot(botId);
       broadcast({ type: 'BOT_STATUS_CHANGED', data: { botId, status: 'loading' } });
-      
+
       res.json({ success: true, message: "Bot start initiated" });
     } catch (error) {
       res.status(500).json({ message: "Failed to start bot" });
@@ -4319,14 +4388,14 @@ Thank you for choosing TREKKER-MD! 🚀`;
     try {
       const botId = req.params.id;
       const botInstance = await storage.getBotInstance(botId);
-      
+
       if (!botInstance) {
         return res.status(404).json({ message: "Bot instance not found" });
       }
 
       await botManager.stopBot(botId);
       broadcast({ type: 'BOT_STATUS_CHANGED', data: { botId, status: 'offline' } });
-      
+
       res.json({ success: true, message: "Bot stopped successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to stop bot" });
@@ -4336,35 +4405,35 @@ Thank you for choosing TREKKER-MD! 🚀`;
   app.delete("/api/admin/bot-instances/:id", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const botId = req.params.id;
-      
+
       // Get bot instance to retrieve phone number before deletion
       const botInstance = await storage.getBotInstance(botId);
-      
+
       if (!botInstance) {
         return res.status(404).json({ message: "Bot instance not found" });
       }
 
       // Stop the bot first
       await botManager.destroyBot(botId);
-      
+
       // Delete all related data (commands, activities, groups) - CRITICAL MISSING STEP
       await storage.deleteBotRelatedData(botId);
-      
+
       // Delete the bot instance itself
       await storage.deleteBotInstance(botId);
-      
+
       // Remove from god register table if bot instance was found - CRITICAL MISSING STEP  
       if (botInstance.phoneNumber) {
         await storage.deleteGlobalRegistration(botInstance.phoneNumber);
         console.log(`🗑️ Removed ${botInstance.phoneNumber} from god register table`);
       }
-      
+
       broadcast({ type: 'BOT_DELETED', data: { id: botId } });
-      
+
       res.json({ success: true, message: "Bot deleted successfully" });
     } catch (error) {
       console.error('Delete bot error:', error);
-      res.status(500).json({ message: "Failed to delete bot" });
+      res.status(500).json({ message: "Failed to delete bot instance" });
     }
   });
 
@@ -4383,7 +4452,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
     try {
       const { phoneNumber } = req.params;
       const { tenancyName } = req.body;
-      
+
       if (!tenancyName) {
         return res.status(400).json({ message: "Tenancy name is required" });
       }
@@ -4413,7 +4482,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
   app.delete("/api/admin/god-registry/:phoneNumber", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const { phoneNumber } = req.params;
-      
+
       // Check if registration exists
       const existing = await storage.checkGlobalRegistration(phoneNumber);
       if (!existing) {
@@ -4443,7 +4512,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
   app.get("/api/master/approved-bots", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const allApprovedBots = await storage.getAllApprovedBots();
-      
+
       // Sanitize response - remove credentials and sensitive data
       const sanitizedBots = allApprovedBots.map(bot => ({
         id: bot.id,
@@ -4459,7 +4528,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
         isGuest: bot.isGuest
         // Explicitly exclude credentials, settings, and other sensitive data
       }));
-      
+
       res.json(sanitizedBots);
     } catch (error) {
       console.error('Failed to fetch cross-tenancy approved bots:', error);
@@ -4471,7 +4540,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
   app.get("/api/master/tenancies", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const registrations = await storage.getAllGlobalRegistrations();
-      
+
       // Group registrations by tenancy
       const tenancies = registrations.reduce((acc, reg) => {
         if (!acc[reg.tenancyName]) {
@@ -4485,7 +4554,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
         acc[reg.tenancyName].registrations.push(reg);
         return acc;
       }, {} as any);
-      
+
       res.json(Object.values(tenancies));
     } catch (error) {
       console.error('Failed to fetch tenancies:', error);
@@ -4498,9 +4567,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
       // Get all global registrations from God Registry
       const registrations = await storage.getAllGlobalRegistrations();
       const currentTenancy = getServerName();
-      
+
       const crossTenancyData = [];
-      
+
       // For each registration in God Registry, get bot data
       for (const registration of registrations) {
         try {
@@ -4532,7 +4601,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           console.error(`Failed to get bot data for ${registration.phoneNumber}:`, error);
         }
       }
-      
+
       res.json(crossTenancyData);
     } catch (error) {
       console.error('Failed to fetch cross-tenancy bots:', error);
@@ -4544,24 +4613,24 @@ Thank you for choosing TREKKER-MD! 🚀`;
   app.post('/api/master/migrate-bot', authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const { botId, sourceServer, targetServer } = req.body;
-      
+
       // Validate input
       if (!botId || !sourceServer || !targetServer) {
         return res.status(400).json({ message: 'Missing required fields' });
       }
-      
+
       if (sourceServer === targetServer) {
         return res.status(400).json({ message: 'Source and target servers cannot be the same' });
       }
-      
+
       // Get bot from source server using existing storage methods
       const crossTenancyClient = new CrossTenancyClient();
-      
+
       // For now, disable migration functionality until proper CrossTenancyClient integration
       return res.status(501).json({ 
         message: 'Bot migration functionality is temporarily disabled for maintenance' 
       });
-      
+
       res.json({ 
         success: true, 
         botId: migrationResult.id,
@@ -4578,19 +4647,19 @@ Thank you for choosing TREKKER-MD! 🚀`;
   app.post('/api/master/batch-operation', authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const { operation, botIds } = req.body;
-      
+
       if (!operation || !botIds || !Array.isArray(botIds)) {
         return res.status(400).json({ message: 'Invalid request parameters' });
       }
-      
+
       let completedCount = 0;
       const errors = [];
-      
+
       for (const botKey of botIds) {
         try {
           const [tenancy, botId] = botKey.split('-');
           const client = new CrossTenancyClient(tenancy);
-          
+
           switch (operation) {
             case 'start':
               await client.request(`/api/bots/${botId}/start`, 'POST');
@@ -4607,14 +4676,14 @@ Thank you for choosing TREKKER-MD! 🚀`;
             default:
               throw new Error(`Unknown operation: ${operation}`);
           }
-          
+
           completedCount++;
         } catch (error) {
           console.error(`Batch operation failed for ${botKey}:`, error);
           errors.push({ botKey, error: error.message });
         }
       }
-      
+
       res.json({ 
         completedCount,
         totalCount: botIds.length,
@@ -4630,38 +4699,38 @@ Thank you for choosing TREKKER-MD! 🚀`;
     try {
       const { action, botId, tenancy, data } = req.body;
       const currentTenancy = getServerName();
-      
+
       // Validate required fields - botId is required for most actions except bulk operations
       if (!action || !tenancy) {
         return res.status(400).json({ message: "Missing required fields: action and tenancy are required" });
       }
-      
+
       // botId is required for individual bot actions
       if (!botId && !['sync', 'disconnect', 'bulk_start', 'bulk_stop'].includes(action)) {
         return res.status(400).json({ message: "Missing required fields: botId is required for this action" });
       }
-      
+
       // Handle actions for local tenancy
       if (tenancy === currentTenancy) {
         switch (action) {
           case 'approve':
             if (!botId) return res.status(400).json({ message: "Bot ID required" });
-            
+
             const botInstance = await storage.getBotInstance(botId);
             if (!botInstance) {
               return res.status(404).json({ message: "Bot not found" });
             }
-            
+
             const duration = data?.duration || 6; // Default 6 months
             const approvalDate = new Date().toISOString();
-            
+
             await storage.updateBotInstance(botId, {
               approvalStatus: 'approved',
               status: 'offline',
               approvalDate,
               expirationMonths: duration
             });
-            
+
             await storage.createActivity({
               botInstanceId: botId,
               type: 'master_approval',
@@ -4669,22 +4738,22 @@ Thank you for choosing TREKKER-MD! 🚀`;
               metadata: { action: 'approve', duration, approvedBy: 'master_admin' },
               serverName: getServerName()
             });
-            
+
             broadcast({ 
               type: 'BOT_APPROVED_MASTER', 
               data: { botId, name: botInstance.name, tenancy } 
             });
-            
+
             break;
-            
+
           case 'reject':
             if (!botId) return res.status(400).json({ message: "Bot ID required" });
-            
+
             await storage.updateBotInstance(botId, {
               approvalStatus: 'rejected',
               status: 'rejected'
             });
-            
+
             await storage.createActivity({
               botInstanceId: botId,
               type: 'master_rejection',
@@ -4692,33 +4761,33 @@ Thank you for choosing TREKKER-MD! 🚀`;
               metadata: { action: 'reject', rejectedBy: 'master_admin' },
               serverName: getServerName()
             });
-            
+
             break;
-            
+
           case 'start':
             if (!botId) return res.status(400).json({ message: "Bot ID required" });
             await botManager.startBot(botId);
             break;
-            
+
           case 'stop':
             if (!botId) return res.status(400).json({ message: "Bot ID required" });
             await botManager.stopBot(botId);
             break;
-            
+
           case 'delete':
             if (!botId) return res.status(400).json({ message: "Bot ID required" });
-            
+
             const botToDelete = await storage.getBotInstance(botId);
             if (botToDelete) {
               // Stop bot if running
               await botManager.stopBot(botId);
-              
+
               // Delete from god registry
               await storage.deleteGlobalRegistration(botToDelete.phoneNumber || '');
-              
+
               // Delete bot instance
               await storage.deleteBotInstance(botId);
-              
+
               await storage.createActivity({
                 botInstanceId: 'system-master-control',
                 type: 'master_deletion',
@@ -4728,16 +4797,16 @@ Thank you for choosing TREKKER-MD! 🚀`;
               });
             }
             break;
-            
+
           default:
             return res.status(400).json({ message: "Unknown action" });
         }
-        
+
         res.json({ success: true, message: `Action ${action} completed successfully` });
       } else {
         // Handle actions for remote tenancies via God Registry
         console.log(`Cross-tenancy action ${action} on ${tenancy} for bot ${botId}`);
-        
+
         // Log the cross-tenancy action attempt (using system placeholder for bot_instance_id)
         await storage.createActivity({
           botInstanceId: 'system-master-control',
@@ -4746,7 +4815,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           metadata: { action, tenancy, botId, initiatedBy: 'master_admin' },
           serverName: getServerName()
         });
-        
+
         res.json({ 
           success: true, 
           message: `Cross-tenancy action ${action} logged for ${tenancy}`,
@@ -4766,7 +4835,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
       const maxBots = parseInt(process.env.BOTCOUNT || '10');
       const currentBots = await storage.getAllBotInstances();
       const approvedBots = currentBots.filter(bot => bot.approvalStatus === 'approved');
-      
+
       res.json({
         serverName,
         maxBots,
@@ -4787,7 +4856,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
     try {
       const registrations = await storage.getAllGlobalRegistrations();
       const currentTenancy = getServerName();
-      
+
       // Group by tenancy and count bots
       const tenancyStats = registrations.reduce((acc, reg) => {
         if (!acc[reg.tenancyName]) {
@@ -4869,11 +4938,11 @@ Thank you for choosing TREKKER-MD! 🚀`;
   app.post("/api/cross-server/register-bot", upload.single('credsFile') as any, async (req, res) => {
     try {
       const { targetServer, botName, phoneNumber, credentialType, sessionId, features } = req.body;
-      
+
       if (!targetServer || !botName || !phoneNumber) {
         return res.status(400).json({ message: "Target server, bot name and phone number are required" });
       }
-      
+
       // Check if target server exists and has capacity
       const serverCheck = await storage.strictCheckBotCountLimit(targetServer);
       if (!serverCheck.canAdd) {
@@ -4881,7 +4950,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           message: `Selected server ${targetServer} is now full (${serverCheck.currentCount}/${serverCheck.maxCount} bots). Please select another server.`
         });
       }
-      
+
       // Check global registration to prevent duplicate registrations
       const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
       if (globalRegistration) {
@@ -4890,7 +4959,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           registeredTo: globalRegistration.tenancyName
         });
       }
-      
+
       // Process credentials (similar to guest registration logic)
       let credentials = null;
       if (credentialType === 'base64' && sessionId) {
@@ -4910,13 +4979,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
       } else {
         return res.status(400).json({ message: "Valid credentials are required" });
       }
-      
+
       // Validate phone number ownership
       if (credentials && credentials.me && credentials.me.id) {
         const credentialsPhoneMatch = credentials.me.id.match(/^(\d+):/);
         const credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
         const inputPhone = phoneNumber.replace(/^\+/, '');
-        
+
         if (!credentialsPhone || credentialsPhone !== inputPhone) {
           return res.status(400).json({ 
             message: "You are not the owner of this credentials file. The phone number in the session does not match your input." 
@@ -4925,7 +4994,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
       } else {
         return res.status(400).json({ message: "Invalid credentials format - missing phone number data" });
       }
-      
+
       // Parse features if provided
       let botFeatures = {};
       if (features) {
@@ -4935,7 +5004,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           console.warn('Invalid features JSON:', error);
         }
       }
-      
+
       // Create bot instance on target server
       const botInstance = await storage.createBotInstance({
         name: botName,
@@ -4952,10 +5021,10 @@ Thank you for choosing TREKKER-MD! 🚀`;
         chatgptEnabled: (botFeatures as any).chatGPT || false,
         serverName: targetServer // Register under target server
       });
-      
+
       // Add to global registry under target server
       await storage.addGlobalRegistration(phoneNumber, targetServer);
-      
+
       // Log activity for cross-server registration
       await storage.createActivity({
         botInstanceId: botInstance.id,
@@ -4969,10 +5038,10 @@ Thank you for choosing TREKKER-MD! 🚀`;
         },
         serverName: targetServer
       });
-      
+
       // Update server bot count
       await storage.updateServerBotCount(targetServer, serverCheck.currentCount + 1);
-      
+
       res.json({ 
         success: true, 
         message: `Bot successfully registered on ${targetServer}! Your bot is awaiting admin approval.`,
@@ -4981,10 +5050,10 @@ Thank you for choosing TREKKER-MD! 🚀`;
         serverInfo: {
           serverName: targetServer,
           newBotCount: serverCheck.currentCount + 1,
-          maxBots: serverCheck.maxCount
+          maxBots: serverCheck.maxBotCount
         }
       });
-      
+
     } catch (error) {
       console.error('Cross-server bot registration error:', error);
       res.status(500).json({ message: "Failed to register bot on target server" });
@@ -4994,28 +5063,28 @@ Thank you for choosing TREKKER-MD! 🚀`;
   // ============================================================================
   // CROSS-TENANCY INTERNAL ROUTES
   // ============================================================================
-  
+
   // Authentication middleware for cross-tenancy requests
   const authenticateCrossTenancy = async (req: any, res: any, next: any) => {
     try {
       const authHeader = req.headers.authorization;
       const sourceServer = req.headers['x-source-server'];
       const targetServer = req.headers['x-target-server'];
-      
+
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ 
           success: false, 
           error: 'Missing or invalid authorization header' 
         });
       }
-      
+
       if (!sourceServer || !targetServer) {
         return res.status(400).json({ 
           success: false, 
           error: 'Missing X-Source-Server or X-Target-Server headers' 
         });
       }
-      
+
       // Validate that target server is current server
       const currentServer = getServerName();
       if (targetServer !== currentServer) {
@@ -5024,7 +5093,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           error: `Request target ${targetServer} does not match current server ${currentServer}` 
         });
       }
-      
+
       // Get source server info for shared secret
       const sourceServerInfo = await storage.getServerByName(sourceServer);
       if (!sourceServerInfo) {
@@ -5033,30 +5102,30 @@ Thank you for choosing TREKKER-MD! 🚀`;
           error: `Source server ${sourceServer} not found in registry` 
         });
       }
-      
+
       if (!sourceServerInfo.sharedSecret) {
         return res.status(403).json({ 
           success: false, 
           error: `Source server ${sourceServer} has no shared secret configured` 
         });
       }
-      
+
       // Validate JWT token
       const token = authHeader.substring(7);
       const payload = CrossTenancyClient.validateToken(token, sourceServer, sourceServerInfo.sharedSecret);
-      
+
       if (!payload) {
         return res.status(401).json({ 
           success: false, 
           error: 'Invalid or expired token' 
         });
       }
-      
+
       // Attach validated payload to request
       req.crossTenancy = payload;
       req.sourceServer = sourceServer;
       req.targetServer = targetServer;
-      
+
       next();
     } catch (error) {
       console.error('Cross-tenancy authentication error:', error);
@@ -5066,7 +5135,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
       });
     }
   };
-  
+
   // Zod schemas for validation
   const botCreateSchema = z.object({
     botData: z.object({
@@ -5087,12 +5156,12 @@ Thank you for choosing TREKKER-MD! 🚀`;
     }),
     phoneNumber: z.string().min(1),
   });
-  
+
   const botUpdateSchema = z.object({
     botId: z.string().min(1),
     updates: z.object({}).passthrough(),
   });
-  
+
   const botCredentialUpdateSchema = z.object({
     botId: z.string().min(1),
     credentialData: z.object({
@@ -5102,14 +5171,14 @@ Thank you for choosing TREKKER-MD! 🚀`;
       credentials: z.any().optional(),
     }),
   });
-  
+
   const botLifecycleSchema = z.object({
     botId: z.string().min(1),
     action: z.enum(['start', 'stop', 'restart']),
   });
-  
+
   // Health check endpoint
-  app.post("/internal/tenants/health", authenticateCrossTenancy, (req: any, res) => {
+  app.post("/internal/tenants/bots/health", authenticateCrossTenancy, (req: any, res) => {
     res.json({
       success: true,
       data: {
@@ -5120,7 +5189,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
       },
     });
   });
-  
+
   // Create bot endpoint
   app.post("/internal/tenants/bots/create", authenticateCrossTenancy, async (req: any, res) => {
     try {
@@ -5132,18 +5201,18 @@ Thank you for choosing TREKKER-MD! 🚀`;
           details: validation.error.issues,
         });
       }
-      
+
       const { botData, phoneNumber } = validation.data;
-      
+
       // Create bot instance on current server
       const botInstance = await storage.createBotInstance({
         ...botData,
         serverName: getServerName(), // Ensure server isolation
       });
-      
+
       // Add to global registry
       await storage.addGlobalRegistration(phoneNumber, getServerName());
-      
+
       // Log cross-tenancy activity
       await storage.createCrossTenancyActivity({
         type: 'cross_tenancy_bot_create',
@@ -5158,13 +5227,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
         remoteTenancy: req.sourceServer,
         phoneNumber,
       });
-      
+
       res.json({
         success: true,
         data: botInstance,
         message: 'Bot created successfully',
       });
-      
+
     } catch (error) {
       console.error('Cross-tenancy bot creation error:', error);
       res.status(500).json({
@@ -5174,7 +5243,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
       });
     }
   });
-  
+
   // Update bot endpoint
   app.post("/internal/tenants/bots/update", authenticateCrossTenancy, async (req: any, res) => {
     try {
@@ -5186,12 +5255,12 @@ Thank you for choosing TREKKER-MD! 🚀`;
           details: validation.error.issues,
         });
       }
-      
+
       const { botId, updates } = validation.data;
-      
+
       // Update bot instance (storage automatically scopes by serverName)
       const botInstance = await storage.updateBotInstance(botId, updates);
-      
+
       // Log cross-tenancy activity
       await storage.createCrossTenancyActivity({
         type: 'cross_tenancy_bot_update',
@@ -5205,13 +5274,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
         botInstanceId: botId,
         remoteTenancy: req.sourceServer,
       });
-      
+
       res.json({
         success: true,
         data: botInstance,
         message: 'Bot updated successfully',
       });
-      
+
     } catch (error) {
       console.error('Cross-tenancy bot update error:', error);
       res.status(500).json({
@@ -5221,7 +5290,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
       });
     }
   });
-  
+
   // Update bot credentials endpoint
   app.post("/internal/tenants/bots/credentials", authenticateCrossTenancy, async (req: any, res) => {
     try {
@@ -5233,12 +5302,12 @@ Thank you for choosing TREKKER-MD! 🚀`;
           details: validation.error.issues,
         });
       }
-      
+
       const { botId, credentialData } = validation.data;
-      
+
       // Update bot credentials (storage automatically scopes by serverName)
       const botInstance = await storage.updateBotCredentialStatus(botId, credentialData);
-      
+
       // Log cross-tenancy activity
       await storage.createCrossTenancyActivity({
         type: 'cross_tenancy_credential_update',
@@ -5252,13 +5321,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
         botInstanceId: botId,
         remoteTenancy: req.sourceServer,
       });
-      
+
       res.json({
         success: true,
         data: botInstance,
         message: 'Bot credentials updated successfully',
       });
-      
+
     } catch (error) {
       console.error('Cross-tenancy credential update error:', error);
       res.status(500).json({
@@ -5268,7 +5337,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
       });
     }
   });
-  
+
   // Bot lifecycle control endpoint
   app.post("/internal/tenants/bots/lifecycle", authenticateCrossTenancy, async (req: any, res) => {
     try {
@@ -5280,9 +5349,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
           details: validation.error.issues,
         });
       }
-      
+
       const { botId, action } = validation.data;
-      
+
       // Verify bot exists and is on current server
       const botInstance = await storage.getBotInstance(botId);
       if (!botInstance) {
@@ -5291,7 +5360,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           error: 'Bot not found',
         });
       }
-      
+
       let result;
       switch (action) {
         case 'start':
@@ -5309,7 +5378,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
         default:
           throw new Error(`Unknown action: ${action}`);
       }
-      
+
       // Log cross-tenancy activity
       await storage.createCrossTenancyActivity({
         type: 'cross_tenancy_bot_lifecycle',
@@ -5323,13 +5392,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
         botInstanceId: botId,
         remoteTenancy: req.sourceServer,
       });
-      
+
       res.json({
         success: true,
         data: result,
         message: `Bot ${action} action completed successfully`,
       });
-      
+
     } catch (error) {
       console.error(`Cross-tenancy bot lifecycle error:`, error);
       res.status(500).json({
@@ -5339,19 +5408,19 @@ Thank you for choosing TREKKER-MD! 🚀`;
       });
     }
   });
-  
+
   // Get bot status endpoint
   app.post("/internal/tenants/bots/status", authenticateCrossTenancy, async (req: any, res) => {
     try {
       const { botId } = req.crossTenancy.data;
-      
+
       if (!botId || typeof botId !== 'string') {
         return res.status(400).json({
           success: false,
           error: 'Bot ID is required',
         });
       }
-      
+
       // Get bot instance (storage automatically scopes by serverName)
       const botInstance = await storage.getBotInstance(botId);
       if (!botInstance) {
@@ -5360,11 +5429,11 @@ Thank you for choosing TREKKER-MD! 🚀`;
           error: 'Bot not found',
         });
       }
-      
+
       // Get bot runtime status from bot manager
       const bot = botManager.getBot(botId);
       const runtimeStatus = bot ? bot.getStatus() : 'offline';
-      
+
       res.json({
         success: true,
         data: {
@@ -5375,7 +5444,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
         },
         message: 'Bot status retrieved successfully',
       });
-      
+
     } catch (error) {
       console.error('Cross-tenancy bot status error:', error);
       res.status(500).json({

@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface BotInfo {
   id: string;
+  botId: string;
   name: string;
   phoneNumber: string;
   status: string;
@@ -21,6 +22,8 @@ interface BotInfo {
   messagesCount?: number;
   commandsCount?: number;
   isActive: boolean;
+  isApproved: boolean;
+  canManage: boolean;
   needsCredentials?: boolean;
   features?: {
     autoLike?: boolean;
@@ -38,11 +41,10 @@ export default function GuestBotManagement() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [sessionId, setSessionId] = useState("");
   const [currentStep, setCurrentStep] = useState<Step>('phone');
-  const [botFound, setBotFound] = useState<any>(null);
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [authenticatedBotId, setAuthenticatedBotId] = useState<string | null>(null);
 
-  // Search for bot by phone number - simplified to just check existence
+  // Step 1: Check if phone number has a bot (simplified check)
   const phoneCheckMutation = useMutation({
     mutationFn: async (phoneNumber: string) => {
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
@@ -61,16 +63,15 @@ export default function GuestBotManagement() {
     },
     onSuccess: (data) => {
       if (data.verified) {
-        setBotFound({ phoneNumber });
         setCurrentStep('verification');
         toast({
-          title: "Phone Number Found",
-          description: "Bot found in our system. Please verify your session ID to continue.",
+          title: "Bot Found",
+          description: "Please verify your session ID to continue.",
         });
       } else {
         toast({
-          title: "Phone Number Not Found",
-          description: "No bot found with this phone number. Please check and try again.",
+          title: "No Bot Found",
+          description: "No bot registered with this phone number.",
           variant: "destructive"
         });
       }
@@ -84,12 +85,12 @@ export default function GuestBotManagement() {
     }
   });
 
-  // Session ID verification mutation
+  // Step 2: Verify session ID and phone number match
   const verifySessionMutation = useMutation({
     mutationFn: async ({ phoneNumber, sessionId }: { phoneNumber: string, sessionId: string }) => {
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
       
-      // Step 1: Decode base64 and check if phone number matches
+      // First decode and verify phone number matches
       try {
         const decoded = Buffer.from(sessionId.trim(), 'base64').toString('utf-8');
         const credentials = JSON.parse(decoded);
@@ -97,26 +98,15 @@ export default function GuestBotManagement() {
         // Extract phone number from credentials
         const credentialsPhone = credentials.creds?.me?.id?.match(/^(\d+):/)?.[1];
         
-        if (!credentialsPhone || credentialsPhone !== cleanedPhone) {
-          throw new Error('Phone number in session ID does not match the search phone number');
+        if (!credentialsPhone) {
+          throw new Error('Invalid session ID format - no phone number found');
         }
         
-        // Step 2: Validate session with backend
-        const response = await fetch('/api/guest/validate-existing-bot', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            phoneNumber: cleanedPhone, 
-            sessionId: sessionId.trim()
-          }),
-        });
-        
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || 'Session validation failed');
+        if (credentialsPhone !== cleanedPhone) {
+          throw new Error('Phone number in session ID does not match the provided phone number');
         }
         
-        return response.json();
+        return { success: true, phoneVerified: true };
       } catch (error) {
         if (error instanceof Error) {
           throw error;
@@ -124,13 +114,11 @@ export default function GuestBotManagement() {
         throw new Error('Invalid session ID format');
       }
     },
-    onSuccess: (data) => {
-      setGuestToken(data.guestToken);
-      setAuthenticatedBotId(data.bot?.botId);
+    onSuccess: () => {
       setCurrentStep('testing');
       toast({
         title: "Authentication Complete",
-        description: "Session ID verified successfully. Testing connection...",
+        description: "Session ID verified. Testing connection...",
       });
       
       // Automatically start testing credentials
@@ -140,23 +128,19 @@ export default function GuestBotManagement() {
     },
     onError: (error: Error) => {
       toast({
-        title: "Verification Failed",
+        title: "Verification Failed", 
         description: error.message,
         variant: "destructive"
       });
     },
   });
 
-  // Test credentials connection
+  // Step 3: Test if credentials are valid (connection test)
   const testCredentialsMutation = useMutation({
     mutationFn: async ({ sessionId }: { sessionId: string }) => {
-      // Create a temporary test connection to check if credentials are valid
       const response = await fetch('/api/guest/test-credentials', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(guestToken && { 'Authorization': `Bearer ${guestToken}` })
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId }),
       });
       
@@ -169,11 +153,8 @@ export default function GuestBotManagement() {
     },
     onSuccess: (data) => {
       if (data.connectionOpen) {
-        setCurrentStep('dashboard');
-        toast({
-          title: "Connection Successful",
-          description: "Your bot credentials are valid. Welcome to your dashboard!",
-        });
+        // Now validate with backend to get proper token
+        validateBotMutation.mutate({ phoneNumber, sessionId });
       } else {
         toast({
           title: "Credentials Expired",
@@ -191,18 +172,56 @@ export default function GuestBotManagement() {
     },
   });
 
+  // Final step: Get authentication token and bot info
+  const validateBotMutation = useMutation({
+    mutationFn: async ({ phoneNumber, sessionId }: { phoneNumber: string, sessionId: string }) => {
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      const response = await fetch('/api/guest/validate-existing-bot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          phoneNumber: cleanedPhone, 
+          sessionId: sessionId.trim()
+        }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Bot validation failed');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setGuestToken(data.guestToken);
+      setAuthenticatedBotId(data.bot?.botId);
+      setCurrentStep('dashboard');
+      toast({
+        title: "Welcome!",
+        description: "You can now manage your bot.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Validation Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   // Get user's bots for dashboard
   const { data: userBots = [], isLoading: loadingBots } = useQuery({
     queryKey: ["/api/guest/my-bots", phoneNumber],
     queryFn: async () => {
-      if (!phoneNumber.trim() || currentStep !== 'dashboard') return [];
+      if (!phoneNumber.trim() || currentStep !== 'dashboard' || !guestToken) return [];
       
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
       const response = await fetch('/api/guest/my-bots', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          ...(guestToken && { 'Authorization': `Bearer ${guestToken}` })
+          'Authorization': `Bearer ${guestToken}`
         },
         body: JSON.stringify({ phoneNumber: cleanedPhone }),
       });
@@ -245,7 +264,7 @@ export default function GuestBotManagement() {
     },
     onError: (error: Error) => {
       toast({
-        title: "Action Failed",
+        title: "Action Failed", 
         description: error.message,
         variant: "destructive"
       });
@@ -277,14 +296,13 @@ export default function GuestBotManagement() {
   };
 
   const handleBotAction = (action: string, bot: BotInfo) => {
-    botActionMutation.mutate({ action, botId: bot.id });
+    botActionMutation.mutate({ action, botId: bot.botId });
   };
 
   const resetFlow = () => {
     setCurrentStep('phone');
     setPhoneNumber("");
     setSessionId("");
-    setBotFound(null);
     setGuestToken(null);
     setAuthenticatedBotId(null);
   };
@@ -306,7 +324,7 @@ export default function GuestBotManagement() {
     }
   };
 
-  const activeBots = userBots.filter((bot: BotInfo) => bot.isActive && bot.approvalStatus === 'approved');
+  const activeBots = userBots.filter((bot: BotInfo) => bot.isActive && bot.isApproved);
   const pendingBots = userBots.filter((bot: BotInfo) => bot.approvalStatus === 'pending');
   const inactiveBots = userBots.filter((bot: BotInfo) => !bot.isActive || bot.approvalStatus === 'rejected');
 
@@ -316,7 +334,7 @@ export default function GuestBotManagement() {
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold">Bot Management</h1>
           <p className="text-muted-foreground">
-            Manage your WhatsApp bots across all servers
+            Manage your WhatsApp bots across servers
           </p>
         </div>
 
@@ -329,7 +347,7 @@ export default function GuestBotManagement() {
                 Find Your Bot
               </CardTitle>
               <CardDescription>
-                Enter your phone number to find your bot in our system
+                Enter your phone number to check if you have a bot registered
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -340,13 +358,11 @@ export default function GuestBotManagement() {
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   className="flex-1"
-                  data-testid="input-search-phone"
                   onKeyDown={(e) => e.key === 'Enter' && handlePhoneSubmit()}
                 />
                 <Button 
                   onClick={handlePhoneSubmit}
                   disabled={phoneCheckMutation.isPending}
-                  data-testid="button-search-bots"
                 >
                   {phoneCheckMutation.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : "Find Bot"}
                 </Button>
@@ -361,10 +377,10 @@ export default function GuestBotManagement() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Verify Your Session ID
+                Verify Your Session
               </CardTitle>
               <CardDescription>
-                Enter your session ID (base64 encoded credentials) to verify bot ownership
+                Paste your session ID (base64 credentials) to verify bot ownership
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -375,10 +391,9 @@ export default function GuestBotManagement() {
                   value={sessionId}
                   onChange={(e) => setSessionId(e.target.value)}
                   className="w-full h-32 p-3 border rounded-md resize-none font-mono text-sm mt-2"
-                  data-testid="input-session-id"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  This verifies that you own the bot associated with phone number {phoneNumber}
+                  This verifies that you own the bot registered with {phoneNumber}
                 </p>
               </div>
               
@@ -387,12 +402,11 @@ export default function GuestBotManagement() {
                   onClick={handleSessionVerification}
                   disabled={verifySessionMutation.isPending}
                   className="flex-1"
-                  data-testid="button-verify-session"
                 >
                   {verifySessionMutation.isPending ? (
                     <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Verifying...</>
                   ) : (
-                    <><Shield className="h-4 w-4 mr-2" /> Verify Session ID</>
+                    <><Shield className="h-4 w-4 mr-2" /> Verify Session</>
                   )}
                 </Button>
                 <Button
@@ -406,7 +420,7 @@ export default function GuestBotManagement() {
           </Card>
         )}
 
-        {/* Step 3: Testing Credentials */}
+        {/* Step 3: Testing Connection */}
         {currentStep === 'testing' && (
           <Card>
             <CardHeader>
@@ -427,7 +441,7 @@ export default function GuestBotManagement() {
                 </p>
               </div>
               
-              {testCredentialsMutation.isError && (
+              {(testCredentialsMutation.isError || validateBotMutation.isError) && (
                 <Alert variant="destructive">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
@@ -469,13 +483,13 @@ export default function GuestBotManagement() {
 
             <Tabs defaultValue="active" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="active" data-testid="tab-active-bots">
+                <TabsTrigger value="active">
                   Active Bots ({activeBots.length})
                 </TabsTrigger>
-                <TabsTrigger value="pending" data-testid="tab-pending-bots">
+                <TabsTrigger value="pending">
                   Pending ({pendingBots.length})
                 </TabsTrigger>
-                <TabsTrigger value="inactive" data-testid="tab-inactive-bots">
+                <TabsTrigger value="inactive">
                   Inactive ({inactiveBots.length})
                 </TabsTrigger>
               </TabsList>
@@ -530,9 +544,8 @@ export default function GuestBotManagement() {
                               <Button
                                 size="sm"
                                 onClick={() => handleBotAction('start', bot)}
-                                disabled={botActionMutation.isPending}
+                                disabled={botActionMutation.isPending || !bot.canManage}
                                 className="flex-1"
-                                data-testid={`button-start-${bot.id}`}
                               >
                                 <Play className="h-3 w-3 mr-1" />
                                 Start
@@ -542,9 +555,8 @@ export default function GuestBotManagement() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleBotAction('stop', bot)}
-                                disabled={botActionMutation.isPending}
+                                disabled={botActionMutation.isPending || !bot.canManage}
                                 className="flex-1"
-                                data-testid={`button-stop-${bot.id}`}
                               >
                                 <Square className="h-3 w-3 mr-1" />
                                 Stop
@@ -554,8 +566,7 @@ export default function GuestBotManagement() {
                               size="sm"
                               variant="outline"
                               onClick={() => handleBotAction('restart', bot)}
-                              disabled={botActionMutation.isPending}
-                              data-testid={`button-restart-${bot.id}`}
+                              disabled={botActionMutation.isPending || !bot.canManage}
                             >
                               <RefreshCw className="h-3 w-3" />
                             </Button>
@@ -626,7 +637,6 @@ export default function GuestBotManagement() {
                               variant="outline"
                               onClick={() => handleBotAction('reactivate', bot)}
                               disabled={botActionMutation.isPending}
-                              data-testid={`button-reactivate-${bot.id}`}
                             >
                               Reactivate
                             </Button>
@@ -636,7 +646,6 @@ export default function GuestBotManagement() {
                               onClick={() => handleBotAction('delete', bot)}
                               disabled={botActionMutation.isPending}
                               className="text-red-600 hover:bg-red-50"
-                              data-testid={`button-delete-${bot.id}`}
                             >
                               <Trash2 className="h-3 w-3 mr-1" />
                               Delete
