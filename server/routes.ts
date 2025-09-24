@@ -1902,20 +1902,78 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         return res.status(400).json({ message: "Invalid session ID format. Please ensure it's properly encoded WhatsApp session data." });
       }
 
-      // Extract phone number from credentials - handle both credential formats
+      // Enhanced phone number extraction with multiple fallback methods
       let phoneNumber = null;
 
-      // Handle both credentials.creds.me.id and credentials.me.id for phone extraction
-      if (credentials && credentials.creds && credentials.creds.me && credentials.creds.me.id) {
+      // Method 1: Check credentials.creds.me.id (most common)
+      if (credentials?.creds?.me?.id) {
         const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
         phoneNumber = phoneMatch ? phoneMatch[1] : null;
-      } else if (credentials && credentials.me && credentials.me.id) {
+      }
+
+      // Method 2: Check credentials.me.id (alternative format)
+      if (!phoneNumber && credentials?.me?.id) {
         const phoneMatch = credentials.me.id.match(/^(\d+):/);
         phoneNumber = phoneMatch ? phoneMatch[1] : null;
       }
 
+      // Method 3: Check credentials.creds.registrationId and look for phone in other fields
+      if (!phoneNumber && credentials?.creds) {
+        // Sometimes phone is in accountSyncCounter or other fields
+        const credsStr = JSON.stringify(credentials.creds);
+        const phoneMatches = credsStr.match(/(\d{10,15})/g);
+        if (phoneMatches && phoneMatches.length > 0) {
+          // Filter out timestamps and IDs, keep only valid phone numbers
+          const validPhones = phoneMatches.filter(num => 
+            num.length >= 10 && num.length <= 15 && 
+            !num.startsWith('0') && // Remove numbers starting with 0 (likely timestamps)
+            parseInt(num) > 1000000000 // Ensure it's a reasonable phone number
+          );
+          if (validPhones.length > 0) {
+            phoneNumber = validPhones[0];
+          }
+        }
+      }
+
+      // Method 4: Deep search in the entire credentials object
       if (!phoneNumber) {
-        return res.status(400).json({ message: "Cannot extract phone number from session credentials. Invalid credential format." });
+        const findPhoneInObject = (obj: any, depth = 0): string | null => {
+          if (depth > 5 || !obj || typeof obj !== 'object') return null;
+          
+          for (const [key, value] of Object.entries(obj)) {
+            if (typeof value === 'string') {
+              // Look for patterns like "1234567890:x@s.whatsapp.net"
+              const phoneMatch = value.match(/(\d{10,15}):/);
+              if (phoneMatch) return phoneMatch[1];
+              
+              // Look for standalone phone numbers
+              if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number')) {
+                const cleanNumber = value.replace(/\D/g, '');
+                if (cleanNumber.length >= 10 && cleanNumber.length <= 15) {
+                  return cleanNumber;
+                }
+              }
+            } else if (typeof value === 'object') {
+              const found = findPhoneInObject(value, depth + 1);
+              if (found) return found;
+            }
+          }
+          return null;
+        };
+        
+        phoneNumber = findPhoneInObject(credentials);
+      }
+
+      if (!phoneNumber) {
+        console.error('Failed to extract phone number from credentials:', {
+          hasCredsMe: !!(credentials?.creds?.me),
+          hasMe: !!(credentials?.me),
+          credsKeys: credentials?.creds ? Object.keys(credentials.creds) : [],
+          topLevelKeys: credentials ? Object.keys(credentials) : []
+        });
+        return res.status(400).json({ 
+          message: "Cannot extract phone number from session credentials. Please ensure you're using valid WhatsApp session data." 
+        });
       }
 
       // Check if bot exists in global registry
@@ -2584,15 +2642,60 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         return res.status(400).json({ message: "Invalid session ID format. Please ensure it's properly encoded WhatsApp session data." });
       }
 
-      // Extract phone number from new credentials
+      // Enhanced phone number extraction from new credentials
       let credentialPhone = null;
-      if (newCredentials && newCredentials.creds && newCredentials.creds.me && newCredentials.creds.me.id) {
+
+      // Method 1: Check credentials.creds.me.id (most common)
+      if (newCredentials?.creds?.me?.id) {
         const phoneMatch = newCredentials.creds.me.id.match(/^(\d+):/);
         credentialPhone = phoneMatch ? phoneMatch[1] : null;
       }
 
+      // Method 2: Check credentials.me.id (alternative format)
+      if (!credentialPhone && newCredentials?.me?.id) {
+        const phoneMatch = newCredentials.me.id.match(/^(\d+):/);
+        credentialPhone = phoneMatch ? phoneMatch[1] : null;
+      }
+
+      // Method 3: Deep search for phone numbers in credentials
       if (!credentialPhone) {
-        return res.status(400).json({ message: "Cannot extract phone number from new session credentials" });
+        const findPhoneInObject = (obj: any, depth = 0): string | null => {
+          if (depth > 5 || !obj || typeof obj !== 'object') return null;
+          
+          for (const [key, value] of Object.entries(obj)) {
+            if (typeof value === 'string') {
+              // Look for patterns like "1234567890:x@s.whatsapp.net"
+              const phoneMatch = value.match(/(\d{10,15}):/);
+              if (phoneMatch) return phoneMatch[1];
+              
+              // Look for standalone phone numbers in phone-related fields
+              if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number')) {
+                const cleanNumber = value.replace(/\D/g, '');
+                if (cleanNumber.length >= 10 && cleanNumber.length <= 15) {
+                  return cleanNumber;
+                }
+              }
+            } else if (typeof value === 'object') {
+              const found = findPhoneInObject(value, depth + 1);
+              if (found) return found;
+            }
+          }
+          return null;
+        };
+        
+        credentialPhone = findPhoneInObject(newCredentials);
+      }
+
+      if (!credentialPhone) {
+        console.error('Failed to extract phone number from new credentials:', {
+          hasCredsMe: !!(newCredentials?.creds?.me),
+          hasMe: !!(newCredentials?.me),
+          credsKeys: newCredentials?.creds ? Object.keys(newCredentials.creds) : [],
+          topLevelKeys: newCredentials ? Object.keys(newCredentials) : []
+        });
+        return res.status(400).json({ 
+          message: "Cannot extract phone number from new session credentials. Please ensure you're using valid WhatsApp session data with proper phone number information." 
+        });
       }
 
       if (credentialPhone !== cleanedPhone) {
@@ -3330,20 +3433,60 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         return res.status(400).json({ message: "Invalid session ID format. Please ensure it's properly encoded WhatsApp session data." });
       }
 
-      // Validate phone number ownership from credentials - extract only clean phone number
+      // Enhanced phone number extraction from credentials
       let credentialsPhone = null;
 
-      // Handle both credentials.creds.me.id and credentials.me.id for phone extraction
-      if (credentials && credentials.creds && credentials.creds.me && credentials.creds.me.id) {
+      // Method 1: Check credentials.creds.me.id (most common)
+      if (credentials?.creds?.me?.id) {
         const credentialsPhoneMatch = credentials.creds.me.id.match(/^(\d+):/);
         credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
-      } else if (credentials && credentials.me && credentials.me.id) {
+      }
+
+      // Method 2: Check credentials.me.id (alternative format)
+      if (!credentialsPhone && credentials?.me?.id) {
         const credentialsPhoneMatch = credentials.me.id.match(/^(\d+):/);
         credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
       }
 
+      // Method 3: Deep search for phone numbers in credentials
       if (!credentialsPhone) {
-        return res.status(400).json({ message: "Invalid session ID format - missing phone number data" });
+        const findPhoneInObject = (obj: any, depth = 0): string | null => {
+          if (depth > 5 || !obj || typeof obj !== 'object') return null;
+          
+          for (const [key, value] of Object.entries(obj)) {
+            if (typeof value === 'string') {
+              // Look for patterns like "1234567890:x@s.whatsapp.net"
+              const phoneMatch = value.match(/(\d{10,15}):/);
+              if (phoneMatch) return phoneMatch[1];
+              
+              // Look for standalone phone numbers in phone-related fields
+              if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number')) {
+                const cleanNumber = value.replace(/\D/g, '');
+                if (cleanNumber.length >= 10 && cleanNumber.length <= 15) {
+                  return cleanNumber;
+                }
+              }
+            } else if (typeof value === 'object') {
+              const found = findPhoneInObject(value, depth + 1);
+              if (found) return found;
+            }
+          }
+          return null;
+        };
+        
+        credentialsPhone = findPhoneInObject(credentials);
+      }
+
+      if (!credentialsPhone) {
+        console.error('Failed to extract phone number from credentials for validation:', {
+          hasCredsMe: !!(credentials?.creds?.me),
+          hasMe: !!(credentials?.me),
+          credsKeys: credentials?.creds ? Object.keys(credentials.creds) : [],
+          topLevelKeys: credentials ? Object.keys(credentials) : []
+        });
+        return res.status(400).json({ 
+          message: "Invalid session ID format - cannot extract phone number data. Please ensure you're using valid WhatsApp session credentials." 
+        });
       }
 
       // Compare only the clean phone numbers (ignore the suffix after colon like :23@s.whatsapp.net)

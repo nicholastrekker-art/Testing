@@ -103,9 +103,18 @@ export default function GuestBotManagement() {
       }
     },
     onError: (error: Error) => {
+      let errorMessage = error.message;
+      
+      // Provide more helpful error messages
+      if (errorMessage.includes("Cannot extract phone number")) {
+        errorMessage = "❌ Invalid session ID: Cannot extract phone number from the credentials. Please ensure you're using valid WhatsApp session data.";
+      } else if (errorMessage.includes("Invalid session ID format")) {
+        errorMessage = "❌ Invalid session ID format: Please ensure you're pasting valid base64-encoded WhatsApp session data.";
+      }
+      
       toast({
         title: "Verification Failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -161,12 +170,16 @@ export default function GuestBotManagement() {
       let errorMessage = error.message;
       
       // Provide more helpful error messages
-      if (errorMessage.includes("Connection timeout")) {
+      if (errorMessage.includes("Cannot extract phone number")) {
+        errorMessage = "❌ Invalid session ID: Cannot extract phone number from the credentials. Please ensure you're using valid WhatsApp session data.";
+      } else if (errorMessage.includes("Connection timeout")) {
         errorMessage = "❌ Connection timeout: Your new session ID may be expired or invalid. Please get a fresh session ID.";
       } else if (errorMessage.includes("phone number mismatch")) {
         errorMessage = "❌ Phone number mismatch: The new session ID belongs to a different phone number.";
       } else if (errorMessage.includes("Failed to establish connection")) {
         errorMessage = "❌ Cannot connect with new session ID. Please ensure it's valid and active.";
+      } else if (errorMessage.includes("Invalid session ID format")) {
+        errorMessage = "❌ Invalid session ID format: Please ensure you're pasting valid base64-encoded WhatsApp session data.";
       }
       
       toast({
