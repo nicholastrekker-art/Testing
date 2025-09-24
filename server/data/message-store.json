@@ -1,23 +1,23 @@
 {
-  "3EB0CEC5ED0C18A03DED22": {
-    "id": "3EB0CEC5ED0C18A03DED22",
+  "3EB09EF4DC04813A6A552B": {
+    "id": "3EB09EF4DC04813A6A552B",
     "fromJid": "254799257758:21@s.whatsapp.net",
     "senderJid": "self",
     "content": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀",
     "type": "extendedTextMessage",
-    "timestamp": 1758708404641,
+    "timestamp": 1758709628487,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758:21@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0CEC5ED0C18A03DED22"
+        "id": "3EB09EF4DC04813A6A552B"
       },
       "message": {
         "extendedTextMessage": {
           "text": "🎉 WELCOME TO TREKKERMD LIFETIME BOT 🎉\n\nYour bot \"Trekker\" is now online and ready to serve!\n\n✨ Features activated:\n- Auto reactions and likes\n- Advanced command system (300+ commands)\n- ChatGPT AI integration\n- Group management tools\n- Real-time activity monitoring\n- PRESENCE features (auto-typing/recording)\n\nType .help to see available commands or .list for the full command list.\n\nHappy chatting! 🚀"
         }
       },
-      "messageTimestamp": "1758708403",
+      "messageTimestamp": "1758709627",
       "status": "PENDING"
     }
   }
