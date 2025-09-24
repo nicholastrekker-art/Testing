@@ -3743,17 +3743,34 @@ Thank you for using TREKKER-MD! 🚀`;
 
       // Method 1: Check credentials.creds.me.id (most common)
       if (credentials?.creds?.me?.id) {
-        const credentialsPhoneMatch = credentials.creds.me.id.match(/^(\d+):/);
-        credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
+        const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
+        credentialsPhone = phoneMatch ? phoneMatch[1] : null;
       }
 
       // Method 2: Check credentials.me.id (alternative format)
       if (!credentialsPhone && credentials?.me?.id) {
-        const credentialsPhoneMatch = credentials.me.id.match(/^(\d+):/);
-        credentialsPhone = credentialsPhoneMatch ? credentialsPhoneMatch[1] : null;
+        const phoneMatch = credentials.me.id.match(/^(\d+):/);
+        credentialsPhone = phoneMatch ? phoneMatch[1] : null;
       }
 
-      // Method 3: Deep search for phone numbers in credentials
+      // Method 3: Check for standalone phone numbers without colon
+      if (!credentialsPhone && credentials?.creds) {
+        const credsStr = JSON.stringify(credentials.creds);
+        const phoneMatches = credsStr.match(/(\d{10,15})/g);
+        if (phoneMatches && phoneMatches.length > 0) {
+          // Filter out timestamps and IDs, keep only valid phone numbers
+          const validPhones = phoneMatches.filter(num => 
+            num.length >= 10 && num.length <= 15 && 
+            !num.startsWith('0') && // Remove numbers starting with 0 (likely timestamps)
+            parseInt(num) > 1000000000 // Ensure it's a reasonable phone number
+          );
+          if (validPhones.length > 0) {
+            credentialsPhone = validPhones[0];
+          }
+        }
+      }
+
+      // Method 4: Deep search for phone numbers in credentials
       if (!credentialsPhone) {
         const findPhoneInObject = (obj: any, depth = 0): string | null => {
           if (depth > 5 || !obj || typeof obj !== 'object') return null;
@@ -4220,11 +4237,53 @@ Thank you for using TREKKER-MD! 🚀`;
       }
 
       // Step 3: Validate credentials structure and phone number ownership
-      const credentialsPhoneMatch = credentials?.creds?.me?.id?.match(/^(\d+):/);
-      if (!credentialsPhoneMatch || credentialsPhoneMatch[1] !== cleanedPhone) {
+      let credentialsPhone = null;
+      
+      // Method 1: Check credentials.creds.me.id with colon format
+      if (credentials?.creds?.me?.id) {
+        const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
+        credentialsPhone = phoneMatch ? phoneMatch[1] : null;
+      }
+      
+      // Method 2: Check credentials.me.id (alternative format)
+      if (!credentialsPhone && credentials?.me?.id) {
+        const phoneMatch = credentials.me.id.match(/^(\d+):/);
+        credentialsPhone = phoneMatch ? phoneMatch[1] : null;
+      }
+      
+      // Method 3: Deep search for phone numbers in credentials
+      if (!credentialsPhone) {
+        const findPhoneInObject = (obj: any, depth = 0): string | null => {
+          if (depth > 5 || !obj || typeof obj !== 'object') return null;
+
+          for (const [key, value] of Object.entries(obj)) {
+            if (typeof value === 'string') {
+              // Look for patterns like "1234567890:x@s.whatsapp.net"
+              const phoneMatch = value.match(/(\d{10,15}):/);
+              if (phoneMatch) return phoneMatch[1];
+
+              // Look for standalone phone numbers in phone-related fields
+              if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number')) {
+                const cleanNumber = value.replace(/\D/g, '');
+                if (cleanNumber.length >= 10 && cleanNumber.length <= 15) {
+                  return cleanNumber;
+                }
+              }
+            } else if (typeof value === 'object') {
+              const found = findPhoneInObject(value, depth + 1);
+              if (found) return found;
+            }
+          }
+          return null;
+        };
+
+        credentialsPhone = findPhoneInObject(credentials);
+      }
+      
+      if (!credentialsPhone || credentialsPhone !== cleanedPhone) {
         return res.status(400).json({
           success: false,
-          message: `Credentials phone number mismatch. The session belongs to +${credentialsPhoneMatch?.[1] || 'unknown'} but you provided +${cleanedPhone}.`
+          message: `Credentials phone number mismatch. The session belongs to +${credentialsPhone || 'unknown'} but you provided +${cleanedPhone}.`
         });
       }
 

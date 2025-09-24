@@ -68,8 +68,66 @@ export const validateCredentialsByPhoneNumber = async (credentials: any): Promis
   alreadyRegistered?: boolean;
 }> => {
   try {
-    // Extract phone number from credentials
-    const phoneNumber = credentials.creds?.me?.id?.match(/^(\d+):/)?.[1];
+    // Enhanced phone number extraction from credentials
+    let phoneNumber = null;
+
+    // Method 1: Check credentials.creds.me.id (most common)
+    if (credentials?.creds?.me?.id) {
+      const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
+      phoneNumber = phoneMatch ? phoneMatch[1] : null;
+    }
+
+    // Method 2: Check credentials.me.id (alternative format)
+    if (!phoneNumber && credentials?.me?.id) {
+      const phoneMatch = credentials.me.id.match(/^(\d+):/);
+      phoneNumber = phoneMatch ? phoneMatch[1] : null;
+    }
+
+    // Method 3: Check for standalone phone numbers without colon
+    if (!phoneNumber && credentials?.creds) {
+      const credsStr = JSON.stringify(credentials.creds);
+      const phoneMatches = credsStr.match(/(\d{10,15})/g);
+      if (phoneMatches && phoneMatches.length > 0) {
+        // Filter out timestamps and IDs, keep only valid phone numbers
+        const validPhones = phoneMatches.filter(num => 
+          num.length >= 10 && num.length <= 15 && 
+          !num.startsWith('0') && // Remove numbers starting with 0 (likely timestamps)
+          parseInt(num) > 1000000000 // Ensure it's a reasonable phone number
+        );
+        if (validPhones.length > 0) {
+          phoneNumber = validPhones[0];
+        }
+      }
+    }
+
+    // Method 4: Deep search for phone numbers in credentials
+    if (!phoneNumber) {
+      const findPhoneInObject = (obj: any, depth = 0): string | null => {
+        if (depth > 5 || !obj || typeof obj !== 'object') return null;
+
+        for (const [key, value] of Object.entries(obj)) {
+          if (typeof value === 'string') {
+            // Look for patterns like "1234567890:x@s.whatsapp.net"
+            const phoneMatch = value.match(/(\d{10,15}):/);
+            if (phoneMatch) return phoneMatch[1];
+
+            // Look for standalone phone numbers
+            if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number')) {
+              const cleanNumber = value.replace(/\D/g, '');
+              if (cleanNumber.length >= 10 && cleanNumber.length <= 15) {
+                return cleanNumber;
+              }
+            }
+          } else if (typeof value === 'object') {
+            const found = findPhoneInObject(value, depth + 1);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      phoneNumber = findPhoneInObject(credentials);
+    }
     
     if (!phoneNumber) {
       return {
