@@ -2717,69 +2717,89 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           if (bot.approvalStatus !== 'approved') {
             return res.status(400).json({ message: "Only approved bots can be started" });
           }
-          result = await botManager.startBot(botId);
-          await storage.updateBotInstance(botId, { status: 'loading' });
-          await storage.createActivity({
-            botInstanceId: botId,
-            type: 'bot_control',
-            description: `Bot started by guest user ${cleanedPhone}`,
-            metadata: { action: 'start', guestUser: cleanedPhone },
-            serverName: currentServer
-          });
+          try {
+            result = await botManager.startBot(botId);
+            await storage.updateBotInstance(botId, { status: 'loading' });
+            await storage.createActivity({
+              botInstanceId: botId,
+              type: 'bot_control',
+              description: `Bot started by guest user ${cleanedPhone}`,
+              metadata: { action: 'start', guestUser: cleanedPhone },
+              serverName: currentServer
+            });
+          } catch (startError) {
+            console.error(`Failed to start bot ${botId}:`, startError);
+            return res.status(500).json({ message: "Failed to start bot. Please try again." });
+          }
           break;
 
         case 'stop':
           if (bot.approvalStatus !== 'approved') {
             return res.status(400).json({ message: "Only approved bots can be stopped" });
           }
-          result = await botManager.stopBot(botId);
-          await storage.updateBotInstance(botId, { status: 'offline' });
-          await storage.createActivity({
-            botInstanceId: botId,
-            type: 'bot_control',
-            description: `Bot stopped by guest user ${cleanedPhone}`,
-            metadata: { action: 'stop', guestUser: cleanedPhone },
-            serverName: currentServer
-          });
+          try {
+            result = await botManager.stopBot(botId);
+            await storage.updateBotInstance(botId, { status: 'offline' });
+            await storage.createActivity({
+              botInstanceId: botId,
+              type: 'bot_control',
+              description: `Bot stopped by guest user ${cleanedPhone}`,
+              metadata: { action: 'stop', guestUser: cleanedPhone },
+              serverName: currentServer
+            });
+          } catch (stopError) {
+            console.error(`Failed to stop bot ${botId}:`, stopError);
+            return res.status(500).json({ message: "Failed to stop bot. Please try again." });
+          }
           break;
 
         case 'restart':
           if (bot.approvalStatus !== 'approved') {
             return res.status(400).json({ message: "Only approved bots can be restarted" });
           }
-          await botManager.stopBot(botId);
-          result = await botManager.startBot(botId);
-          await storage.updateBotInstance(botId, { status: 'loading' });
-          await storage.createActivity({
-            botInstanceId: botId,
-            type: 'bot_control',
-            description: `Bot restarted by guest user ${cleanedPhone}`,
-            metadata: { action: 'restart', guestUser: cleanedPhone },
-            serverName: currentServer
-          });
+          try {
+            await botManager.stopBot(botId);
+            result = await botManager.startBot(botId);
+            await storage.updateBotInstance(botId, { status: 'loading' });
+            await storage.createActivity({
+              botInstanceId: botId,
+              type: 'bot_control',
+              description: `Bot restarted by guest user ${cleanedPhone}`,
+              metadata: { action: 'restart', guestUser: cleanedPhone },
+              serverName: currentServer
+            });
+          } catch (restartError) {
+            console.error(`Failed to restart bot ${botId}:`, restartError);
+            return res.status(500).json({ message: "Failed to restart bot. Please try again." });
+          }
           break;
 
         case 'delete':
-          // Stop the bot first
-          await botManager.stopBot(botId);
-          await botManager.destroyBot(botId);
+          try {
+            // Stop the bot first
+            await botManager.stopBot(botId);
+            await botManager.destroyBot(botId);
 
-          // Delete related data
-          await storage.deleteBotRelatedData(botId);
-          await storage.deleteBotInstance(botId);
+            // Delete related data
+            await storage.deleteBotRelatedData(botId);
+            await storage.deleteBotInstance(botId);
 
-          // Remove from global registration
-          await storage.deleteGlobalRegistration(cleanedPhone);
+            // Remove from global registration
+            await storage.deleteGlobalRegistration(cleanedPhone);
 
-          await storage.createActivity({
-            botInstanceId: botId,
-            type: 'deletion',
-            description: `Bot deleted by guest user ${cleanedPhone}`,
-            metadata: { action: 'delete', guestUser: cleanedPhone, botName: bot.name },
-            serverName: currentServer
-          });
+            await storage.createActivity({
+              botInstanceId: botId,
+              type: 'deletion',
+              description: `Bot deleted by guest user ${cleanedPhone}`,
+              metadata: { action: 'delete', guestUser: cleanedPhone, botName: bot.name },
+              serverName: currentServer
+            });
 
-          result = { deleted: true };
+            result = { deleted: true };
+          } catch (deleteError) {
+            console.error(`Failed to delete bot ${botId}:`, deleteError);
+            return res.status(500).json({ message: "Failed to delete bot. Please try again." });
+          }
           break;
       }
 

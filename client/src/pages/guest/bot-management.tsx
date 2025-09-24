@@ -186,14 +186,13 @@ export default function GuestBotManagement() {
 
   // Bot action mutation
   const botActionMutation = useMutation({
-    mutationFn: async ({ action, botId }: { action: string; botId: string }) => {
-      const response = await fetch('/api/guest/bot-action', {
+    mutationFn: async ({ action, botId, phoneNumber }: { action: string; botId: string; phoneNumber: string }) => {
+      const response = await fetch('/api/guest/server-bot-action', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${guestToken}`,
         },
-        body: JSON.stringify({ action, botId }),
+        body: JSON.stringify({ action, botId, phoneNumber }),
       });
 
       if (!response.ok) {
@@ -222,13 +221,12 @@ export default function GuestBotManagement() {
   // Bot feature toggle mutation
   const featureToggleMutation = useMutation({
     mutationFn: async ({ feature, enabled, botId }: { feature: string; enabled: boolean; botId: string }) => {
-      const response = await fetch('/api/guest/bot/features', {
+      const response = await fetch('/api/guest/server-bot-features', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${guestToken}`,
         },
-        body: JSON.stringify({ feature, enabled, botId }),
+        body: JSON.stringify({ feature, enabled, botId, phoneNumber }),
       });
 
       if (!response.ok) {
@@ -280,7 +278,11 @@ export default function GuestBotManagement() {
   };
 
   const handleBotAction = (action: string, bot: BotInfo) => {
-    botActionMutation.mutate({ action, botId: bot.botId });
+    botActionMutation.mutate({ 
+      action, 
+      botId: bot.botId, 
+      phoneNumber: phoneNumber 
+    });
   };
 
   const handleFeatureToggle = (feature: string, enabled: boolean, bot: BotInfo) => {
@@ -663,6 +665,83 @@ export default function GuestBotManagement() {
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                          {/* Feature toggles for active bots */}
+                          <div className="grid grid-cols-2 gap-2 text-xs mb-4">
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">Auto Like</span>
+                              <button
+                                onClick={() => handleFeatureToggle('autoLike', !bot.features?.autoLike, bot)}
+                                disabled={featureToggleMutation.isPending}
+                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                                  bot.features?.autoLike ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                                } cursor-pointer hover:opacity-80`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${bot.features?.autoLike ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+                              </button>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">Auto View</span>
+                              <button
+                                onClick={() => handleFeatureToggle('autoViewStatus', !bot.features?.autoView, bot)}
+                                disabled={featureToggleMutation.isPending}
+                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                                  bot.features?.autoView ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                                } cursor-pointer hover:opacity-80`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${bot.features?.autoView ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+                              </button>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">Auto React</span>
+                              <button
+                                onClick={() => handleFeatureToggle('autoReact', !bot.features?.autoReact, bot)}
+                                disabled={featureToggleMutation.isPending}
+                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                                  bot.features?.autoReact ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                                } cursor-pointer hover:opacity-80`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${bot.features?.autoReact ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+                              </button>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">ChatGPT</span>
+                              <button
+                                onClick={() => handleFeatureToggle('chatgptEnabled', !bot.features?.chatGPT, bot)}
+                                disabled={featureToggleMutation.isPending}
+                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                                  bot.features?.chatGPT ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                                } cursor-pointer hover:opacity-80`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${bot.features?.chatGPT ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+                              </button>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">Always Online</span>
+                              <button
+                                onClick={() => handleFeatureToggle('alwaysOnline', !bot.features?.alwaysOnline, bot)}
+                                disabled={featureToggleMutation.isPending}
+                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                                  bot.features?.alwaysOnline ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                                } cursor-pointer hover:opacity-80`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${bot.features?.alwaysOnline ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+                              </button>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground">Typing Indicator</span>
+                              <button
+                                onClick={() => handleFeatureToggle('typingIndicator', !bot.features?.typingIndicator, bot)}
+                                disabled={featureToggleMutation.isPending}
+                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
+                                  bot.features?.typingIndicator ? 'bg-primary justify-end' : 'bg-muted justify-start'
+                                } cursor-pointer hover:opacity-80`}
+                              >
+                                <div className={`w-2 h-2 rounded-full ${bot.features?.typingIndicator ? 'bg-white' : 'bg-muted-foreground'}`}></div>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Action buttons */}
                           <div className="flex gap-2">
                             {bot.status === 'offline' ? (
                               <Button
@@ -691,9 +770,16 @@ export default function GuestBotManagement() {
                               variant="outline"
                               onClick={() => handleBotAction('restart', bot)}
                               disabled={botActionMutation.isPending}
+                              title="Restart bot"
                             >
                               <RefreshCw className="h-3 w-3" />
                             </Button>
+                          </div>
+
+                          {/* Bot statistics */}
+                          <div className="flex justify-between text-xs text-muted-foreground pt-2 border-t">
+                            <span>Messages: {bot.messagesCount || 0}</span>
+                            <span>Commands: {bot.commandsCount || 0}</span>
                           </div>
                         </CardContent>
                       </Card>
