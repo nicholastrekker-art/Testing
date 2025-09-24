@@ -57,11 +57,18 @@ export class AutoStatusService {
     try {
       const configData = readFileSync(this.configPath, 'utf8');
       const config = JSON.parse(configData);
-      // Ensure throttleDelay exists for backward compatibility
+      // Ensure all required fields exist for backward compatibility
       if (!config.throttleDelay) {
         config.throttleDelay = 3000;
-        this.saveConfig(config);
       }
+      if (!config.autoViewInterval) {
+        config.autoViewInterval = 5000;
+      }
+      if (!config.postedStatusDelay) {
+        config.postedStatusDelay = Math.floor(Math.random() * 5000) + 5000;
+      }
+      // Save updated config if any fields were missing
+      this.saveConfig(config);
       return config;
     } catch (error) {
       console.error('Error reading auto status config:', error);
@@ -405,45 +412,55 @@ export class AutoStatusService {
     try {
       console.log(`[${this.botInstance.name}] Fetching all available statuses...`);
       
-      // Fetch status updates from WhatsApp
-      const statusUpdates = await sock.query({
-        tag: 'iq',
-        attrs: {
-          to: 'status@broadcast',
-          type: 'get',
-          xmlns: 'status'
-        }
-      });
-
-      if (statusUpdates && statusUpdates.content) {
-        console.log(`[${this.botInstance.name}] Found ${statusUpdates.content.length} existing statuses`);
-        
-        for (const status of statusUpdates.content) {
-          if (status.key) {
-            await this.addStatusToQueue(status.key, false);
+      // Try to get status from sock.store first (more reliable)
+      if (sock.store && sock.store.messages) {
+        const statusMessages = sock.store.messages['status@broadcast'];
+        if (statusMessages && statusMessages.length > 0) {
+          console.log(`[${this.botInstance.name}] Found ${statusMessages.length} statuses in store`);
+          for (const msg of statusMessages) {
+            if (msg.key) {
+              await this.addStatusToQueue(msg.key, false);
+            }
           }
+          console.log(`[${this.botInstance.name}] Status fetching from store completed`);
+          return;
         }
       }
-      
-      console.log(`[${this.botInstance.name}] Status fetching completed`);
-    } catch (error) {
-      console.error(`[${this.botInstance.name}] Error fetching statuses:`, error);
-      // Fallback: Try to get status from sock.store if available
+
+      // Fallback: Try to fetch from WhatsApp API with timeout protection
       try {
-        if (sock.store && sock.store.messages) {
-          const statusMessages = sock.store.messages['status@broadcast'];
-          if (statusMessages) {
-            console.log(`[${this.botInstance.name}] Found ${statusMessages.length} statuses in store`);
-            for (const msg of statusMessages) {
-              if (msg.key) {
-                await this.addStatusToQueue(msg.key, false);
-              }
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Status fetch timeout')), 10000); // 10 second timeout
+        });
+
+        const fetchPromise = sock.query({
+          tag: 'iq',
+          attrs: {
+            to: 'status@broadcast',
+            type: 'get',
+            xmlns: 'status'
+          }
+        });
+
+        const statusUpdates = await Promise.race([fetchPromise, timeoutPromise]);
+
+        if (statusUpdates && statusUpdates.content) {
+          console.log(`[${this.botInstance.name}] Found ${statusUpdates.content.length} existing statuses`);
+          
+          for (const status of statusUpdates.content) {
+            if (status.key) {
+              await this.addStatusToQueue(status.key, false);
             }
           }
         }
-      } catch (fallbackError) {
-        console.error(`[${this.botInstance.name}] Fallback status fetch failed:`, fallbackError);
+        
+        console.log(`[${this.botInstance.name}] Status fetching completed`);
+      } catch (queryError) {
+        console.log(`[${this.botInstance.name}] Direct status query failed (${queryError.message}), continuing with passive monitoring`);
       }
+      
+    } catch (error) {
+      console.log(`[${this.botInstance.name}] Status fetching encountered error (${error.message}), will rely on real-time status updates`);
     }
   }
 
