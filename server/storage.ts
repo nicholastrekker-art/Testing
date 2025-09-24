@@ -1129,7 +1129,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteExpiredStatusIds(botInstanceId: string): Promise<number> {
     const serverName = getServerName();
-    const now = new Date();
+    const now = new Date().toISOString();
     
     const result = await db
       .delete(viewedStatusIds)
@@ -1146,7 +1146,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async cleanupAllExpiredStatusIds(): Promise<number> {
-    const now = new Date();
+    const now = new Date().toISOString();
     
     const result = await db
       .delete(viewedStatusIds)
