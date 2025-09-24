@@ -71,7 +71,7 @@ class BotManager {
         const newBot = new WhatsAppBot(botInstance);
         this.bots.set(botId, newBot);
         
-        // Start bot in isolated container
+        // Start bot silently
         await newBot.start();
       }
     } catch (error) {

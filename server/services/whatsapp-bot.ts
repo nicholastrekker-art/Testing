@@ -116,18 +116,15 @@ export class WhatsAppBot {
           const reconnectDelay = Math.min(5000 * (this.reconnectAttempts || 1), 30000);
           this.reconnectAttempts = (this.reconnectAttempts || 0) + 1;
 
-          console.log(`Bot ${this.botInstance.name}: Attempting reconnect #${this.reconnectAttempts} in ${reconnectDelay}ms`);
-
           setTimeout(async () => {
             try {
               await this.start();
             } catch (error) {
-              console.error(`Bot ${this.botInstance.name}: Reconnect attempt failed:`, error);
               await storage.createActivity({
                 serverName: this.botInstance.serverName,
                 botInstanceId: this.botInstance.id,
                 type: 'error',
-                description: `Reconnect attempt #${this.reconnectAttempts} failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+                description: `Reconnect attempt failed: ${error instanceof Error ? error.message : 'Unknown error'}`
               });
             }
           }, reconnectDelay);
@@ -756,8 +753,6 @@ export class WhatsAppBot {
     }
 
     try {
-      console.log(`Starting Baileys bot ${this.botInstance.name} in isolated container...`);
-
       await storage.updateBotInstance(this.botInstance.id, { status: 'loading' });
       await storage.createActivity({
         serverName: this.botInstance.serverName,
@@ -791,8 +786,6 @@ export class WhatsAppBot {
 
       await this.setupEventHandlers();
       this.startHeartbeat(); // Start heartbeat monitoring
-
-      console.log(`Baileys bot ${this.botInstance.name} initialization completed in isolated container`);
 
     } catch (error) {
       console.error(`Error starting Baileys bot ${this.botInstance.name}:`, error);
@@ -860,8 +853,6 @@ export class WhatsAppBot {
     this.stopPresenceAutoSwitch(); // Stop presence auto-switch when bot stops
 
     try {
-      console.log(`Stopping bot ${this.botInstance.name} in isolated container...`);
-
       if (this.sock) {
         // Remove all event listeners to prevent conflicts
         this.sock.ev.removeAllListeners();
@@ -874,9 +865,7 @@ export class WhatsAppBot {
       this.isRunning = false;
 
       await this.safeUpdateBotStatus('offline');
-      await this.safeCreateActivity('status_change', 'TREKKERMD LIFETIME BOT stopped - isolated container shut down');
-
-      console.log(`Bot ${this.botInstance.name} stopped successfully in isolated container`);
+      await this.safeCreateActivity('status_change', 'TREKKERMD LIFETIME BOT stopped');
     } catch (error) {
       console.error(`Error stopping bot ${this.botInstance.name}:`, error);
       this.isRunning = false; // Force stop even if error occurs
