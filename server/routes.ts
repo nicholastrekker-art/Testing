@@ -2455,6 +2455,289 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     }
   });
 
+  // ======= GUEST SERVER BOT MANAGEMENT ENDPOINTS =======
+
+  // Guest search server bots - Find bots by phone number on current server
+  app.post("/api/guest/search-server-bots", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      const currentServer = getServerName();
+
+      // Search for bots with this phone number on current server
+      const bots = await db.select()
+        .from(botInstances)
+        .where(
+          and(
+            eq(botInstances.phoneNumber, cleanedPhone),
+            eq(botInstances.serverName, currentServer)
+          )
+        )
+        .orderBy(desc(botInstances.createdAt));
+
+      if (bots.length === 0) {
+        return res.json({
+          bots: [],
+          serverName: currentServer,
+          message: `No bots found with phone number ${phoneNumber} on ${currentServer}`
+        });
+      }
+
+      // Return bot data without masking since user owns the phone number
+      const botData = bots.map(bot => ({
+        id: bot.id,
+        name: bot.name,
+        phoneNumber: bot.phoneNumber,
+        status: bot.status,
+        approvalStatus: bot.approvalStatus,
+        serverName: bot.serverName,
+        lastActivity: bot.lastActivity,
+        messagesCount: bot.messagesCount,
+        commandsCount: bot.commandsCount,
+        autoLike: bot.autoLike,
+        autoViewStatus: bot.autoViewStatus,
+        autoReact: bot.autoReact,
+        typingMode: bot.typingMode,
+        chatgptEnabled: bot.chatgptEnabled,
+        alwaysOnline: bot.alwaysOnline,
+        presenceMode: bot.presenceMode,
+        presenceAutoSwitch: bot.presenceAutoSwitch,
+        credentialVerified: bot.credentialVerified,
+        autoStart: bot.autoStart,
+        approvalDate: bot.approvalDate,
+        expirationMonths: bot.expirationMonths,
+        createdAt: bot.createdAt,
+        updatedAt: bot.updatedAt
+      }));
+
+      res.json({
+        bots: botData,
+        serverName: currentServer,
+        count: bots.length,
+        message: `Found ${bots.length} bot(s) for ${phoneNumber} on ${currentServer}`
+      });
+
+    } catch (error) {
+      console.error('Guest search server bots error:', error);
+      res.status(500).json({ message: "Failed to search for bots" });
+    }
+  });
+
+  // Guest server bot action - Perform actions on bots (start, stop, restart, delete)
+  app.post("/api/guest/server-bot-action", async (req, res) => {
+    try {
+      const { action, botId, phoneNumber } = req.body;
+
+      if (!action || !botId || !phoneNumber) {
+        return res.status(400).json({ message: "Action, bot ID, and phone number are required" });
+      }
+
+      const validActions = ['start', 'stop', 'restart', 'delete'];
+      if (!validActions.includes(action)) {
+        return res.status(400).json({ 
+          message: "Invalid action",
+          validActions 
+        });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      const currentServer = getServerName();
+
+      // Get bot and verify ownership
+      const bot = await storage.getBotInstance(botId);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+
+      // Verify phone number ownership
+      const botCleanedPhone = bot.phoneNumber?.replace(/[\s\-\(\)\+]/g, '') || '';
+      if (cleanedPhone !== botCleanedPhone) {
+        return res.status(403).json({ message: "You can only manage your own bots" });
+      }
+
+      // Verify bot is on current server
+      if (bot.serverName !== currentServer) {
+        return res.status(403).json({ 
+          message: `Bot is on ${bot.serverName}, not ${currentServer}. Cannot manage cross-server bots.` 
+        });
+      }
+
+      // Perform the action
+      let result;
+      switch (action) {
+        case 'start':
+          if (bot.approvalStatus !== 'approved') {
+            return res.status(400).json({ message: "Only approved bots can be started" });
+          }
+          result = await botManager.startBot(botId);
+          await storage.updateBotInstance(botId, { status: 'loading' });
+          await storage.createActivity({
+            botInstanceId: botId,
+            type: 'bot_control',
+            description: `Bot started by guest user ${cleanedPhone}`,
+            metadata: { action: 'start', guestUser: cleanedPhone },
+            serverName: currentServer
+          });
+          break;
+
+        case 'stop':
+          if (bot.approvalStatus !== 'approved') {
+            return res.status(400).json({ message: "Only approved bots can be stopped" });
+          }
+          result = await botManager.stopBot(botId);
+          await storage.updateBotInstance(botId, { status: 'offline' });
+          await storage.createActivity({
+            botInstanceId: botId,
+            type: 'bot_control',
+            description: `Bot stopped by guest user ${cleanedPhone}`,
+            metadata: { action: 'stop', guestUser: cleanedPhone },
+            serverName: currentServer
+          });
+          break;
+
+        case 'restart':
+          if (bot.approvalStatus !== 'approved') {
+            return res.status(400).json({ message: "Only approved bots can be restarted" });
+          }
+          await botManager.stopBot(botId);
+          result = await botManager.startBot(botId);
+          await storage.updateBotInstance(botId, { status: 'loading' });
+          await storage.createActivity({
+            botInstanceId: botId,
+            type: 'bot_control',
+            description: `Bot restarted by guest user ${cleanedPhone}`,
+            metadata: { action: 'restart', guestUser: cleanedPhone },
+            serverName: currentServer
+          });
+          break;
+
+        case 'delete':
+          // Stop the bot first
+          await botManager.stopBot(botId);
+          await botManager.destroyBot(botId);
+
+          // Delete related data
+          await storage.deleteBotRelatedData(botId);
+          await storage.deleteBotInstance(botId);
+
+          // Remove from global registration
+          await storage.deleteGlobalRegistration(cleanedPhone);
+
+          await storage.createActivity({
+            botInstanceId: botId,
+            type: 'deletion',
+            description: `Bot deleted by guest user ${cleanedPhone}`,
+            metadata: { action: 'delete', guestUser: cleanedPhone, botName: bot.name },
+            serverName: currentServer
+          });
+
+          result = { deleted: true };
+          break;
+      }
+
+      console.log(`✅ Guest bot ${action} completed for ${botId} by ${cleanedPhone}`);
+
+      res.json({
+        success: true,
+        message: `Bot ${action} completed successfully`,
+        action,
+        botId,
+        result
+      });
+
+    } catch (error) {
+      console.error(`❌ Guest server bot action error:`, error);
+      res.status(500).json({ message: "Failed to perform bot action" });
+    }
+  });
+
+  // Guest server bot features - Update bot features (all approved bots)
+  app.post("/api/guest/server-bot-features", async (req, res) => {
+    try {
+      const { feature, enabled, botId, phoneNumber } = req.body;
+
+      if (!feature || typeof enabled !== 'boolean' || !botId || !phoneNumber) {
+        return res.status(400).json({ message: "Feature, enabled status, bot ID, and phone number are required" });
+      }
+
+      const validFeatures = ['autoLike', 'autoViewStatus', 'autoReact', 'chatgptEnabled', 'alwaysOnline', 'presenceAutoSwitch'];
+      if (!validFeatures.includes(feature)) {
+        return res.status(400).json({ 
+          message: "Invalid feature", 
+          validFeatures 
+        });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      const currentServer = getServerName();
+
+      // Get bot and verify ownership
+      const bot = await storage.getBotInstance(botId);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+
+      // Verify phone number ownership
+      const botCleanedPhone = bot.phoneNumber?.replace(/[\s\-\(\)\+]/g, '') || '';
+      if (cleanedPhone !== botCleanedPhone) {
+        return res.status(403).json({ message: "You can only manage your own bots" });
+      }
+
+      // Verify bot is on current server
+      if (bot.serverName !== currentServer) {
+        return res.status(403).json({ 
+          message: `Bot is on ${bot.serverName}, not ${currentServer}. Cannot manage cross-server bots.` 
+        });
+      }
+
+      // For some features, we allow management even if not approved (like updating settings)
+      // But for others, we require approval
+      const requiresApproval = ['autoLike', 'autoViewStatus', 'autoReact', 'chatgptEnabled'];
+      if (requiresApproval.includes(feature) && bot.approvalStatus !== 'approved') {
+        return res.status(403).json({ 
+          message: "This feature can only be modified for approved bots",
+          approvalStatus: bot.approvalStatus
+        });
+      }
+
+      // Update the feature
+      const updateData: any = {};
+      updateData[feature] = enabled;
+
+      await storage.updateBotInstance(botId, updateData);
+      await storage.createActivity({
+        botInstanceId: botId,
+        type: 'feature_update',
+        description: `${feature} ${enabled ? 'enabled' : 'disabled'} by guest user ${cleanedPhone}`,
+        metadata: { 
+          feature, 
+          enabled, 
+          guestUser: cleanedPhone 
+        },
+        serverName: currentServer
+      });
+
+      console.log(`✅ Feature ${feature} updated to ${enabled} for bot ${botId} by ${cleanedPhone}`);
+
+      res.json({
+        success: true,
+        message: `${feature} ${enabled ? 'enabled' : 'disabled'} successfully`,
+        feature,
+        enabled,
+        botId
+      });
+
+    } catch (error) {
+      console.error(`❌ Guest server bot features error:`, error);
+      res.status(500).json({ message: "Failed to update bot feature" });
+    }
+  });
+
   // ======= NEW GUEST ENDPOINTS FOR CROSS-TENANCY SUPPORT =======
 
   // Guest my-bots endpoint - Get all bots for a phone number across servers

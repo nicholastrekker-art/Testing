@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, Play, Square, RefreshCw, Settings, Trash2, ExternalLink, AlertTriangle, Shield, CheckCircle, Phone, Eye, EyeOff, Upload } from "lucide-react";
+import { Bot, Play, Square, RefreshCw, Settings, Trash2, ExternalLink, AlertTriangle, Shield, CheckCircle, Phone, Eye, EyeOff, Upload, Power, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface BotInfo {
@@ -44,7 +43,7 @@ type Step = 'phone' | 'verification' | 'testing' | 'dashboard';
 export default function GuestBotManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // State management
   const [phoneNumber, setPhoneNumber] = useState("");
   const [sessionId, setSessionId] = useState("");
@@ -64,12 +63,12 @@ export default function GuestBotManagement() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phoneNumber: cleanedPhone }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Bot search failed');
       }
-      
+
       return response.json();
     },
     onSuccess: (data) => {
@@ -100,22 +99,22 @@ export default function GuestBotManagement() {
   const verifySessionMutation = useMutation({
     mutationFn: async ({ phoneNumber, sessionId }: { phoneNumber: string, sessionId: string }) => {
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
+
       try {
         const decoded = Buffer.from(sessionId.trim(), 'base64').toString('utf-8');
         const credentials = JSON.parse(decoded);
-        
+
         // Extract phone number from credentials
         const credentialsPhone = credentials.creds?.me?.id?.match(/^(\d+):/)?.[1];
-        
+
         if (!credentialsPhone) {
           throw new Error('Invalid session ID format - no phone number found');
         }
-        
+
         if (credentialsPhone !== cleanedPhone) {
           throw new Error('Phone number in session ID does not match the provided phone number');
         }
-        
+
         return { success: true, phoneVerified: true };
       } catch (error) {
         if (error instanceof Error) {
@@ -131,7 +130,7 @@ export default function GuestBotManagement() {
         title: "Authentication Complete",
         description: "Session ID verified. Testing connection...",
       });
-      
+
       // Automatically start testing credentials
       setTimeout(() => {
         testCredentialsMutation.mutate({ sessionId });
@@ -154,12 +153,12 @@ export default function GuestBotManagement() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Credential test failed');
       }
-      
+
       return response.json();
     },
     onSuccess: (data) => {
@@ -196,12 +195,12 @@ export default function GuestBotManagement() {
           sessionId: sessionId.trim()
         }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Bot validation failed');
       }
-      
+
       return response.json();
     },
     onSuccess: (data) => {
@@ -227,7 +226,7 @@ export default function GuestBotManagement() {
     queryKey: ["/api/guest/my-bots", phoneNumber],
     queryFn: async () => {
       if (!phoneNumber.trim() || currentStep !== 'dashboard' || !guestToken) return [];
-      
+
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
       const response = await fetch('/api/guest/my-bots', {
         method: 'POST',
@@ -237,12 +236,12 @@ export default function GuestBotManagement() {
         },
         body: JSON.stringify({ phoneNumber: cleanedPhone }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Failed to fetch your bots');
       }
-      
+
       return response.json();
     },
     enabled: currentStep === 'dashboard' && !!phoneNumber.trim() && !!guestToken,
@@ -259,12 +258,12 @@ export default function GuestBotManagement() {
         },
         body: JSON.stringify({ action, botId }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || `Failed to ${action} bot`);
       }
-      
+
       return response.json();
     },
     onSuccess: (data, variables) => {
@@ -294,12 +293,12 @@ export default function GuestBotManagement() {
         },
         body: JSON.stringify({ feature, enabled }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Failed to update feature');
       }
-      
+
       return response.json();
     },
     onSuccess: (data) => {
@@ -365,7 +364,7 @@ export default function GuestBotManagement() {
     if (approvalStatus === 'pending') {
       return <Badge variant="outline" className="bg-yellow-50 text-yellow-800">Pending Approval</Badge>;
     }
-    
+
     switch (status) {
       case 'online':
         return <Badge className="bg-green-500">Online</Badge>;
@@ -523,7 +522,7 @@ export default function GuestBotManagement() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex gap-2">
                 <Button 
                   onClick={handleSessionVerification}
@@ -574,7 +573,7 @@ export default function GuestBotManagement() {
                   </p>
                 </div>
               </div>
-              
+
               {(testCredentialsMutation.isError || validateBotMutation.isError) && (
                 <Alert variant="destructive">
                   <AlertTriangle className="h-4 w-4" />
