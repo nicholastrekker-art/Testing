@@ -2271,6 +2271,120 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     }
   });
 
+  // Test credentials endpoint - verify if session ID works for WhatsApp connection
+  app.post("/api/guest/test-credentials", async (req, res) => {
+    try {
+      const { sessionId } = req.body;
+      
+      if (!sessionId) {
+        return res.status(400).json({ message: "Session ID is required" });
+      }
+      
+      // Decode and parse credentials
+      let credentials;
+      try {
+        const decoded = Buffer.from(sessionId.trim(), 'base64').toString('utf-8');
+        credentials = JSON.parse(decoded);
+      } catch (error) {
+        return res.status(400).json({ 
+          message: "Invalid session ID format",
+          connectionOpen: false
+        });
+      }
+      
+      // Validate credentials using WhatsApp bot validation
+      const { WhatsAppBot } = await import('./services/whatsapp-bot');
+      const validation = WhatsAppBot.validateCredentials(credentials);
+      
+      if (!validation.valid) {
+        return res.json({ 
+          connectionOpen: false,
+          message: validation.error || "Credentials validation failed"
+        });
+      }
+      
+      // Test actual connection by creating a temporary bot instance
+      try {
+        const testBotInstance = {
+          id: `test_${Date.now()}`,
+          name: 'Test Bot',
+          phoneNumber: credentials.creds?.me?.id?.match(/^(\d+):/)?.[1] || 'unknown',
+          credentials,
+          serverName: getServerName(),
+          status: 'testing',
+          approvalStatus: 'approved',
+          settings: {},
+          messagesCount: 0,
+          commandsCount: 0
+        };
+        
+        // Create temporary WhatsApp bot for testing
+        const testBot = new WhatsAppBot(testBotInstance as any);
+        
+        // Start the bot and check if it connects
+        await new Promise((resolve, reject) => {
+          let connectionTimeout: NodeJS.Timeout;
+          let resolved = false;
+          
+          const cleanup = () => {
+            if (connectionTimeout) clearTimeout(connectionTimeout);
+            if (!resolved) {
+              resolved = true;
+              testBot.stop().catch(() => {});
+            }
+          };
+          
+          // Set timeout for connection test (30 seconds)
+          connectionTimeout = setTimeout(() => {
+            cleanup();
+            reject(new Error("Connection timeout - credentials may be expired"));
+          }, 30000);
+          
+          // Override event handlers to capture connection status
+          testBot.start().then(() => {
+            // Monitor for connection events
+            setTimeout(async () => {
+              const status = testBot.getStatus();
+              cleanup();
+              
+              if (status === 'online') {
+                resolve(true);
+              } else {
+                reject(new Error("Failed to establish connection - credentials may be expired"));
+              }
+            }, 5000); // Give 5 seconds for connection to establish
+            
+          }).catch((error) => {
+            cleanup();
+            reject(error);
+          });
+        });
+        
+        // If we reach here, connection was successful
+        await testBot.stop();
+        
+        res.json({ 
+          connectionOpen: true,
+          message: "Credentials are valid and connection successful"
+        });
+        
+      } catch (connectionError) {
+        console.error('Credential test connection error:', connectionError);
+        res.json({ 
+          connectionOpen: false,
+          message: connectionError instanceof Error ? connectionError.message : "Connection test failed"
+        });
+      }
+      
+    } catch (error) {
+      console.error('Test credentials error:', error);
+      res.status(500).json({ 
+        message: "Failed to test credentials",
+        connectionOpen: false
+      });
+    }
+  });
+
   // ======= NEW GUEST ENDPOINTS FOR CROSS-TENANCY SUPPORT =======
 
   // Guest my-bots endpoint - Get all bots for a phone number across servers
