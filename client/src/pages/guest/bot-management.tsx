@@ -56,24 +56,35 @@ export default function GuestBotManagement() {
   // Step 1: Session ID verification - Extract phone number and check bot status
   const verifySessionMutation = useMutation({
     mutationFn: async (sessionId: string) => {
+      // Validate base64 format before sending to server
+      try {
+        const cleanSessionId = sessionId.trim();
+        // Test if it's valid base64 by attempting to decode it
+        const decoded = atob(cleanSessionId);
+        // Test if decoded content is valid JSON
+        JSON.parse(decoded);
+      } catch (error) {
+        throw new Error('Invalid session ID format. Please ensure you\'re providing valid base64-encoded credentials.');
+      }
+
       const response = await fetch('/api/guest/verify-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId: sessionId.trim() }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Session verification failed');
       }
-      
+
       return response.json();
     },
     onSuccess: (data) => {
       setBotInfo(data);
       setPhoneNumber(data.phoneNumber);
       setGuestToken(data.token);
-      
+
       if (data.botActive) {
         setCurrentStep('dashboard');
         setAuthenticatedBotId(data.botId);
@@ -107,19 +118,19 @@ export default function GuestBotManagement() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId: sessionId.trim() }),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Session verification failed');
       }
-      
+
       return response.json();
     },
     onSuccess: (data) => {
       setBotInfo(data);
       setPhoneNumber(data.phoneNumber);
       setGuestToken(data.token);
-      
+
       if (data.botActive) {
         setCurrentStep('dashboard');
         setAuthenticatedBotId(data.botId);
@@ -151,7 +162,7 @@ export default function GuestBotManagement() {
       if (!phoneNumber.trim() || currentStep !== 'dashboard') return [];
 
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
+
       // Use server-specific search to get current bots
       const response = await fetch('/api/guest/search-server-bots', {
         method: 'POST',

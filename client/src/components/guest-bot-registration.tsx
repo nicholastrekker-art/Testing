@@ -19,7 +19,7 @@ interface GuestBotRegistrationProps {
 
 export default function GuestBotRegistration({ open, onClose }: GuestBotRegistrationProps) {
   const { toast } = useToast();
-  
+
   const [formData, setFormData] = useState({
     botName: '',
     phoneNumber: '',
@@ -44,7 +44,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
   const [showServerSelection, setShowServerSelection] = useState(false);
   const [showCredentialUpdate, setShowCredentialUpdate] = useState(false);
   const [managingBot, setManagingBot] = useState<string | null>(null); // Track which action is in progress
-  
+
   // Sequential registration state
   const [phoneCheckResult, setPhoneCheckResult] = useState<any>(null);
   const [selectedServer, setSelectedServer] = useState<string>('');
@@ -72,7 +72,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     mutationFn: async (phoneNumber: string) => {
       // Clean phone number - remove spaces, dashes, parentheses, and leading +
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
+
       const response = await fetch('/api/guest/check-registration', {
         method: 'POST',
         headers: {
@@ -80,12 +80,12 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
         },
         body: JSON.stringify({ phoneNumber: cleanedPhone }),
       });
-      
+
       if (!response.ok) {
         let errorMessage = 'Failed to check phone number';
         try {
           const error = await response.json();
-          
+
           // Check if this is a server mismatch (not a real error)
           if (error.registeredTo && error.message) {
             // This is a server mismatch - treat as success with mismatch data
@@ -97,7 +97,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
               serverMismatch: true
             };
           }
-          
+
           errorMessage = error.message || errorMessage;
         } catch (e) {
           // If response is not JSON, use status text
@@ -105,12 +105,12 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
         }
         throw new Error(errorMessage);
       }
-      
+
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         throw new Error('Invalid response format from server');
       }
-      
+
       return response.json();
     },
     onSuccess: (data) => {
@@ -162,28 +162,35 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       formDataToSend.append('phoneNumber', data.phoneNumber);
       formDataToSend.append('credentialType', data.credentialType);
       formDataToSend.append('features', JSON.stringify(data.features));
-      
+
       // CRITICAL: Add selectedServer to payload
       if (data.selectedServer) {
         formDataToSend.append('selectedServer', data.selectedServer);
       }
-      
-      if (data.credentialType === 'base64') {
-        formDataToSend.append('sessionId', data.sessionId);
+
+      if (data.credentialType === 'base64' && data.sessionId) {
+        // Validate base64 format before sending
+        try {
+          const decoded = atob(data.sessionId.trim());
+          JSON.parse(decoded);
+          formDataToSend.append('sessionId', data.sessionId);
+        } catch (error) {
+          throw new Error('Invalid session ID format. Please ensure you\'re providing valid base64-encoded credentials.');
+        }
       } else if (data.credsFile) {
         formDataToSend.append('credsFile', data.credsFile);
       }
-      
+
       const response = await fetch('/api/guest/register-bot', {
         method: 'POST',
         body: formDataToSend,
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Failed to register bot');
       }
-      
+
       return response.json();
     },
     onSuccess: (data) => {
@@ -211,14 +218,14 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     },
     onError: (error: any) => {
       const errorData = error.message;
-      
+
       // Check if it's a server mismatch error
       if (errorData?.includes('server') && errorData?.includes('registered to')) {
         setServerMismatch({ message: errorData });
         setStep(9); // FIXED: Show server mismatch screen (step 9, not 5)
         return;
       }
-      
+
       // IMPROVED: Preserve user context instead of bouncing back to step 1
       // If user was in features step, go back to features
       if (step === 6) {
@@ -226,7 +233,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       } else {
         setStep(4); // Go back to credentials step
       }
-      
+
       toast({
         title: "Registration failed",
         description: error instanceof Error ? error.message : "Unknown error",
@@ -238,7 +245,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
   // Step 1: Phone number validation and check
   const handlePhoneSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.phoneNumber) {
       toast({
         title: "Validation Error",
@@ -326,17 +333,17 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       formData.append('phoneNumber', phoneNumber);
       formData.append('action', action);
       formData.append('botId', botId);
-      
+
       const response = await fetch('/api/guest/manage-bot', {
         method: 'POST',
         body: formData,
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || `Failed to ${action} bot`);
       }
-      
+
       return response.json();
     },
     onSuccess: async (data, variables) => {
@@ -345,7 +352,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
         description: data.message
       });
       setManagingBot(null);
-      
+
       // If credentials were updated, switch back to default server
       if (variables.action === 'update_credentials') {
         try {
@@ -353,10 +360,10 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
             title: "Credentials Updated Successfully",
             description: "Returning to default server...",
           });
-          
+
           // Wait a moment before switching
           await new Promise(resolve => setTimeout(resolve, 1500));
-          
+
           const switchResponse = await fetch('/api/server/configure', {
             method: 'POST',
             headers: {
@@ -367,13 +374,13 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
               description: 'Returned to default server after credential update'
             }),
           });
-          
+
           if (switchResponse.ok) {
             toast({
               title: "Returned to Default Server",
               description: "Credentials updated successfully. You're now back on the default server.",
             });
-            
+
             // Close the modal after successful server switch
             setTimeout(() => {
               handleClose();
@@ -413,7 +420,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
 
   const handleBotAction = (action: string) => {
     if (!existingBotData) return;
-    
+
     setManagingBot(action);
     manageBotMutation.mutate({
       action,
@@ -674,7 +681,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                       autoFocus
                     />
                   </div>
-                  
+
                   <div>
                     <Label className="text-sm font-medium">Choose Credential Type *</Label>
                     <RadioGroup 
@@ -790,7 +797,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                         <p className="text-xs text-muted-foreground mt-1">Automatically like WhatsApp status updates</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
                       <Checkbox 
                         id="autoReact"
@@ -809,7 +816,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                         <p className="text-xs text-muted-foreground mt-1">Automatically react to messages</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
                       <Checkbox 
                         id="autoView"
@@ -828,7 +835,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                         <p className="text-xs text-muted-foreground mt-1">Automatically view WhatsApp status</p>
                       </div>
                     </div>
-                    
+
                     <div className="p-3 border rounded-lg hover:bg-muted/50">
                       <div className="mb-3">
                         <Label className="text-sm font-medium">Presence Configuration</Label>
@@ -854,7 +861,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                           <SelectItem value="auto_switch">Auto Switch (Recording & Typing)</SelectItem>
                         </SelectContent>
                       </Select>
-                      
+
                       {formData.features.presenceMode === 'auto_switch' && (
                         <div className="mt-3">
                           <Label className="text-xs text-muted-foreground">Switch Interval (seconds)</Label>
@@ -873,7 +880,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 md:col-span-2">
                       <Checkbox 
                         id="chatGPT"
@@ -1048,7 +1055,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <Button 
                       className="w-full bg-amber-600 hover:bg-amber-700 text-white"
@@ -1065,7 +1072,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                     >
                       🔍 Go to Bot Search & Verification
                     </Button>
-                    
+
                     <div className="text-xs text-amber-700 dark:text-amber-300 text-center">
                       For security, bot management requires credential verification.
                       Use the "Search Your Bot" page to securely access your bot.
@@ -1120,17 +1127,17 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                       onClick={async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        
+
                         console.log('Server switch button clicked!');
                         console.log('ServerMismatch data:', serverMismatch);
-                        
+
                         try {
                           // Switch to the registered server on the backend
                           toast({
                             title: "Switching Server",
                             description: `Switching to ${serverMismatch.registeredTo}...`,
                           });
-                          
+
                           console.log('Making server configure call...');
                           const response = await fetch('/api/server/configure', {
                             method: 'POST',
@@ -1142,26 +1149,26 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                               description: `Switched to ${serverMismatch.registeredTo} for bot management`
                             }),
                           });
-                          
+
                           console.log('Server configure response:', response.status);
-                          
+
                           if (!response.ok) {
                             const error = await response.json();
                             console.error('Server configure error:', error);
                             throw new Error(error.message || 'Failed to switch server');
                           }
-                          
+
                           const result = await response.json();
                           console.log('Server configure result:', result);
-                          
+
                           toast({
                             title: "Server Switched",
                             description: `Successfully switched to ${serverMismatch.registeredTo}`,
                           });
-                          
+
                           // Wait a moment for server to fully switch
                           await new Promise(resolve => setTimeout(resolve, 1000));
-                          
+
                           // Now make a call to get the bot data on the new server
                           console.log('Checking registration on new server...');
                           const checkResponse = await fetch('/api/guest/check-registration', {
@@ -1171,13 +1178,13 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                             },
                             body: JSON.stringify({ phoneNumber: formData.phoneNumber }),
                           });
-                          
+
                           console.log('Check registration response:', checkResponse.status);
-                          
+
                           if (checkResponse.ok) {
                             const checkData = await checkResponse.json();
                             console.log('Check registration data:', checkData);
-                            
+
                             if (checkData.hasBot && checkData.bot) {
                               setExistingBotData(checkData.bot);
                               setSelectedServer(serverMismatch.registeredTo);
@@ -1217,7 +1224,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                         <div className="text-sm opacity-80 mt-1">Manage your existing bot on {serverMismatch.registeredTo}</div>
                       </div>
                     </Button>
-                    
+
                     <Button 
                       variant="outline"
                       onClick={() => {
@@ -1402,7 +1409,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
           </div>
         )}
       </DialogContent>
-      
+
       {/* Credential Update Modal */}
       {existingBotData && (
         <CredentialUpdateModal

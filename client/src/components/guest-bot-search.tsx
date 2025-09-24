@@ -112,6 +112,17 @@ export default function GuestBotSearch() {
     mutationFn: async ({ phoneNumber, sessionId }: { phoneNumber: string, sessionId: string }) => {
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
       
+      // Validate base64 format before sending to server
+      try {
+        const cleanSessionId = sessionId.trim();
+        // Test if it's valid base64 by attempting to decode it
+        const decoded = atob(cleanSessionId);
+        // Test if decoded content is valid JSON
+        JSON.parse(decoded);
+      } catch (error) {
+        throw new Error('Invalid session ID format. Please ensure you\'re providing valid base64-encoded credentials.');
+      }
+      
       const response = await fetch('/api/guest/validate-existing-bot', {
         method: 'POST',
         headers: {
