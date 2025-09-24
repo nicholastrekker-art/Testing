@@ -2429,7 +2429,8 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           deletedBotId: botId
         },
         serverName: getServerName(),
-        phoneNumber
+        phoneNumber,
+        remoteTenancy: undefined
       });
 
       console.log(`🗑️ Guest user ${phoneNumber} deleted bot ${botInstance.name} (${botId})`);
@@ -2481,7 +2482,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       // Test actual connection by creating a temporary bot instance
       try {
         const { WhatsAppBot } = await import('./services/whatsapp-bot');
-        
+
         const testBotInstance = {
           id: `test_${Date.now()}`,
           name: 'Test Bot',
@@ -2537,7 +2538,6 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
           });
         });
 
-        // If we reach here, connection was successful
         await testBot.stop();
 
         res.json({ 
@@ -2571,176 +2571,182 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         return res.status(400).json({ message: "Phone number and new session ID are required" });
       }
 
+      // Clean phone number
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
 
-      // Parse credentials from base64
-      let credentials;
+      // Parse and validate new session credentials
+      let newCredentials;
       try {
-        const decoded = Buffer.from(newSessionId, 'base64').toString('utf-8');
-        credentials = JSON.parse(decoded);
+        const base64Data = newSessionId.trim();
+        const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
+        newCredentials = JSON.parse(decoded);
       } catch (error) {
+        return res.status(400).json({ message: "Invalid session ID format. Please ensure it's properly encoded WhatsApp session data." });
+      }
+
+      // Extract phone number from new credentials
+      let credentialPhone = null;
+      if (newCredentials && newCredentials.creds && newCredentials.creds.me && newCredentials.creds.me.id) {
+        const phoneMatch = newCredentials.creds.me.id.match(/^(\d+):/);
+        credentialPhone = phoneMatch ? phoneMatch[1] : null;
+      }
+
+      if (!credentialPhone) {
+        return res.status(400).json({ message: "Cannot extract phone number from new session credentials" });
+      }
+
+      if (credentialPhone !== cleanedPhone) {
         return res.status(400).json({ 
-          message: "Invalid session ID format",
-          connectionOpen: false
+          message: `Update failed: New session ID does not match your phone number. Expected ${cleanedPhone}, got ${credentialPhone}` 
         });
       }
 
-      // Skip field validation - go directly to connection testing
-      let connectionOpen = false;
-      let connectionMessage = "";
+      // Find existing bot first
+      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      if (!globalRegistration) {
+        return res.status(404).json({ message: "Bot registration not found" });
+      }
+
+      const currentServer = getServerName();
+      if (globalRegistration.tenancyName !== currentServer) {
+        return res.status(400).json({
+          message: `Bot is registered on ${globalRegistration.tenancyName} server. Cross-server credential updates are not supported yet.`
+        });
+      }
+
+      const existingBot = await storage.getBotByPhoneNumber(cleanedPhone);
+      if (!existingBot) {
+        return res.status(404).json({ message: "Bot not found on current server" });
+      }
+
+      // Test connection with new credentials using the EXISTING bot instance
       let botOwnerJid = null;
 
       try {
         const { WhatsAppBot } = await import('./services/whatsapp-bot');
-        
+
+        // Create test bot instance using existing bot data but with new credentials
         const testBotInstance = {
-          id: `test_update_${Date.now()}`,
-          name: 'Update Test Bot',
-          phoneNumber: cleanedPhone,
-          credentials,
-          serverName: getServerName(),
-          status: 'testing',
-          approvalStatus: 'approved',
-          settings: {},
-          messagesCount: 0,
-          commandsCount: 0
+          ...existingBot,
+          credentials: newCredentials, // Use NEW credentials for testing
+          status: 'loading'
         };
 
         const testBot = new WhatsAppBot(testBotInstance as any);
 
-        await new Promise((resolve, reject) => {
-          let connectionTimeout: NodeJS.Timeout;
-          let resolved = false;
+        // Test connection by attempting to start the bot briefly
+        console.log(`Testing connection for ${cleanedPhone} with new session ID...`);
 
-          const cleanup = () => {
-            if (connectionTimeout) clearTimeout(connectionTimeout);
-            if (!resolved) {
-              resolved = true;
-              testBot.stop().catch(() => {});
+        // Create a promise that resolves when connection is established or fails
+        const connectionTest = new Promise((resolve, reject) => {
+          let connectionTimeout: NodeJS.Timeout;
+          let connectionEstablished = false;
+
+          const startTest = async () => {
+            try {
+              await testBot.start();
+
+              // Set a timeout to check connection status
+              connectionTimeout = setTimeout(() => {
+                if (!connectionEstablished) {
+                  testBot.stop();
+                  reject(new Error('Connection timeout - credentials may be invalid or expired'));
+                }
+              }, 8000); // 8 second timeout
+
+              // Check if bot connects successfully
+              const checkConnection = () => {
+                const status = testBot.getStatus();
+                if (status === 'online') {
+                  connectionEstablished = true;
+                  clearTimeout(connectionTimeout);
+
+                  // Get bot owner JID for success message
+                  if (testBot.sock && testBot.sock.user && testBot.sock.user.id) {
+                    botOwnerJid = testBot.sock.user.id;
+                  }
+
+                  testBot.stop();
+                  resolve(true);
+                } else {
+                  // Keep checking for a short while
+                  setTimeout(checkConnection, 1000);
+                }
+              };
+
+              // Start checking after a brief delay
+              setTimeout(checkConnection, 2000);
+
+            } catch (error) {
+              clearTimeout(connectionTimeout);
+              testBot.stop();
+              reject(error);
             }
           };
 
-          connectionTimeout = setTimeout(() => {
-            cleanup();
-            reject(new Error("Connection timeout - session may be expired"));
-          }, 30000);
-
-          testBot.start().then(() => {
-            setTimeout(async () => {
-              const status = testBot.getStatus();
-              
-              if (status === 'online') {
-                // Get bot owner JID for success message
-                try {
-                  botOwnerJid = testBot.sock?.user?.id;
-                  if (botOwnerJid) {
-                    const successMessage = `✅ *Session ID Updated Successfully!* ✅\n\n🎉 Your bot credentials have been updated and verified!\n\n📱 Phone: ${phoneNumber}\n🔄 Status: Connection Verified\n⏰ Updated: ${new Date().toLocaleString()}\n\n🚀 Your bot is now ready to manage. You can proceed with bot management operations.\n\n---\n*TREKKER-MD - Ultra Fast Lifetime WhatsApp Bot*`;
-                    
-                    await testBot.sendDirectMessage(botOwnerJid, successMessage);
-                    console.log(`✅ Success message sent to ${botOwnerJid} for session update`);
-                  }
-                } catch (messageError) {
-                  console.error('Failed to send success message:', messageError);
-                }
-                
-                cleanup();
-                resolve(true);
-              } else {
-                cleanup();
-                reject(new Error("Failed to establish connection - session may be expired"));
-              }
-            }, 8000); // Give more time for connection to establish
-          }).catch((error) => {
-            cleanup();
-            reject(error);
-          });
+          startTest();
         });
 
-        await testBot.stop();
-        connectionOpen = true;
-        connectionMessage = "Session ID connection verified and success message sent";
+        await connectionTest;
+        console.log(`✅ Connection test successful for ${cleanedPhone} with new credentials`);
 
       } catch (connectionError) {
-        connectionOpen = false;
-        connectionMessage = connectionError instanceof Error ? connectionError.message : "Connection test failed";
-      }
-
-      // Only proceed with update if connection is open
-      if (!connectionOpen) {
+        console.error(`❌ Connection test failed for ${cleanedPhone}:`, connectionError);
         return res.status(400).json({
           connectionOpen: false,
-          message: `Cannot update session ID: ${connectionMessage}. Please ensure your session is valid and active.`,
-          canUpdate: false
+          message: `Update failed: Failed to establish connection with new session ID. Please ensure your new session ID is valid and active. Error: ${connectionError instanceof Error ? connectionError.message : 'Connection timeout'}`
         });
       }
 
-      // Find the existing bot and update its credentials
-      const existingBot = await storage.getBotByPhoneNumber(cleanedPhone);
-      if (!existingBot) {
-        return res.status(404).json({ message: "No existing bot found for this phone number" });
-      }
-
-      // Update the bot's credentials and reset status
-      await storage.updateBotCredentialStatus(existingBot.id, {
-        credentialVerified: true,
-        credentialPhone: cleanedPhone,
-        invalidReason: undefined,
-        credentials: credentials,
-        autoStart: true
-      });
-
-      // Also update the bot status to offline so it can be restarted with new credentials
-      await storage.updateBotInstance(existingBot.id, {
-        status: 'offline',
-        lastActivity: new Date()
-      });
-
-      // Save credentials to file system
+      // Connection successful - update the existing bot's credentials
       try {
-        const authDir = path.join(process.cwd(), 'auth', `bot_${existingBot.id}`);
-        if (!fs.existsSync(authDir)) {
-          fs.mkdirSync(authDir, { recursive: true });
+        await storage.updateBotInstance(existingBot.id, {
+          credentials: newCredentials, // Update with NEW credentials
+          credentialVerified: true,
+          invalidReason: null,
+          autoStart: true,
+          status: 'loading'
+        });
+
+        console.log(`✅ Updated credentials for bot ${existingBot.id} with new session ID`);
+
+        // Send success message to bot owner if we got the JID
+        let successMessageSent = false;
+        if (botOwnerJid) {
+          try {
+            const successMessage = `🎉 Session ID Update Successful! 🎉\n\nYour bot credentials have been updated successfully!\n\n✅ New session ID verified\n✅ Connection established\n✅ Credentials updated\n✅ Bot ready for management\n\nYou can now proceed to manage your bot features and settings.`;
+
+            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(newCredentials), successMessage, false);
+            successMessageSent = true;
+            console.log(`✅ Success message sent to ${cleanedPhone}`);
+          } catch (messageError) {
+            console.warn(`⚠️ Failed to send success message to ${cleanedPhone}:`, messageError);
+          }
         }
 
-        fs.writeFileSync(
-          path.join(authDir, 'creds.json'),
-          JSON.stringify(credentials, null, 2)
-        );
-      } catch (fileError) {
-        console.error('Failed to save updated credentials:', fileError);
+        return res.json({
+          success: true,
+          connectionOpen: true,
+          successMessageSent,
+          message: successMessageSent 
+            ? "Session ID updated successfully! New connection verified and success message sent to your WhatsApp."
+            : "Session ID updated successfully! New connection verified.",
+          botId: existingBot.id
+        });
+
+      } catch (updateError) {
+        console.error(`❌ Failed to update bot credentials for ${cleanedPhone}:`, updateError);
+        return res.status(500).json({
+          connectionOpen: true,
+          message: `Connection successful but credential update failed: ${updateError instanceof Error ? updateError.message : 'Unknown error'}`
+        });
       }
 
-      // Log activity
-      await storage.createActivity({
-        botInstanceId: existingBot.id,
-        type: 'credential_update',
-        description: `Session ID updated via guest management (connection verified and success message sent)`,
-        metadata: { 
-          phoneNumber: cleanedPhone,
-          connectionTested: true,
-          connectionOpen: true,
-          successMessageSent: !!botOwnerJid,
-          updateMethod: 'guest_session_update'
-        },
-        serverName: getServerName()
-      });
-
-      res.json({
-        success: true,
-        connectionOpen: true,
-        message: "Session ID updated successfully! Connection verified and success message sent to WhatsApp.",
-        canUpdate: true,
-        botId: existingBot.id,
-        botName: existingBot.name,
-        successMessageSent: !!botOwnerJid
-      });
-
     } catch (error) {
-      console.error('Update session error:', error);
-      res.status(500).json({ 
-        message: "Failed to update session ID",
+      console.error('Session update error:', error);
+      return res.status(500).json({ 
         connectionOpen: false,
-        canUpdate: false
+        message: "Failed to update session ID. Please try again." 
       });
     }
   });
@@ -3201,7 +3207,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
       if (!globalRegistration) {
         return res.json({
-          verified: false,
+          registered: false,
           message: "Phone number not found in our system",
           canRegister: true,
           nextStep: "register_new_bot"
@@ -3213,7 +3219,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       const isLocal = hostingServer === currentServer;
 
       res.json({
-        verified: true,
+        registered: true,
         isLocal,
         hostingServer: isLocal ? currentServer : 'Protected', // Mask remote server names
         crossServer: !isLocal,
@@ -3461,7 +3467,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         message = 'Your bot ownership is verified but the bot is pending admin approval.';
         canManage = false;
       } else if (botInstance.approvalStatus === 'approved') {
-        // Check if bot has expired
+        // Check if bot is expired
         const isExpired = botInstance.approvalDate && botInstance.expirationMonths
           ? new Date() > new Date(new Date(botInstance.approvalDate).getTime() + (botInstance.expirationMonths * 30 * 24 * 60 * 60 * 1000))
           : false;
@@ -3617,8 +3623,8 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
         await storage.updateBotCredentialStatus(botInstance.id, {
           credentialVerified: true,
           credentialPhone: cleanedPhone,
-          autoStart: true,
           invalidReason: undefined,
+          credentials: credentials,
           authMessageSentAt: messageSent ? new Date() : null
         });
 
@@ -3781,7 +3787,7 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
           try {
             // Convert credentials to base64 for sending message
-            const credentialsBase64 = Buffer.from(JSON.stringify(credentials)).toString('base64');
+            const credentialsBase64 = credentialType === 'base64' ? sessionId : Buffer.from(JSON.stringify(credentials)).toString('base64');
             await sendGuestValidationMessage(cleanPhoneNumber, credentialsBase64, authMessage, true);
             messageSent = true;
             console.log(`✅ Updated authentication message sent to ${cleanPhoneNumber}`);
@@ -4013,7 +4019,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
       // Log activity on target server (cross-tenancy logging)
       await storage.createCrossTenancyActivity({
-        botInstanceId: botInstance.id,
         type: 'registration',
         description: `Guest bot registered${targetServerName !== currentTenancyName ? ' (cross-server)' : ' and validation message sent'} to ${phoneNumber}`,
         metadata: { 
@@ -4069,7 +4074,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
       const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
       if (!globalRegistration || globalRegistration.tenancyName !== currentTenancyName) {
         return res.status(400).json({ 
-          message: `Phone number not registered to this server or registered to ${globalRegistration?.tenancyName || 'another server'}` 
+          message: "Phone number not registered to this server or registered to " + globalRegistration?.tenancyName || 'another server' 
         });
       }
 
@@ -4723,319 +4728,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
     }
   });
 
-  // Check Tenant Registration
-  app.post("/api/guest/check-registration", async (req, res) => {
-    try {
-      const { phoneNumber } = req.body;
-
-      if (!phoneNumber) {
-        return res.status(400).json({ message: "Phone number is required" });
-      }
-
-      const currentTenancyName = getServerName();
-      const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
-
-      if (!globalRegistration) {
-        return res.json({
-          registered: false,
-          message: "Phone number not registered to any server"
-        });
-      }
-
-      if (globalRegistration.tenancyName !== currentTenancyName) {
-        return res.json({
-          registered: true,
-          currentServer: false,
-          registeredTo: globalRegistration.tenancyName,
-          message: `Phone number is registered to ${globalRegistration.tenancyName}. Please go to ${globalRegistration.tenancyName} server.`
-        });
-      }
-
-      // Check for existing bot on this server
-      const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
-
-      res.json({
-        registered: true,
-        currentServer: true,
-        hasBot: !!existingBot,
-        bot: existingBot ? {
-          id: existingBot.id,
-          name: existingBot.name,
-          status: existingBot.status,
-          approvalStatus: existingBot.approvalStatus,
-          isApproved: existingBot.approvalStatus === 'approved',
-          approvalDate: existingBot.approvalDate,
-          expirationMonths: existingBot.expirationMonths
-        } : null,
-        message: existingBot 
-          ? `Welcome back! You have a bot named "${existingBot.name}" on this server.`
-          : "Phone number registered to this server but no bot found."
-      });
-
-    } catch (error) {
-      console.error('Check registration error:', error);
-      res.status(500).json({ message: "Failed to check registration" });
-    }
-  });
-
-  // Activities
-  app.get("/api/activities", async (req, res) => {
-    try {
-      const botInstanceId = req.query.botInstanceId as string;
-      const limit = parseInt(req.query.limit as string) || 50;
-      const activities = await storage.getActivities(botInstanceId, limit);
-      res.json(activities);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch activities" });
-    }
-  });
-
-  // Groups
-  app.get("/api/groups/:botInstanceId", async (req, res) => {
-    try {
-      const groups = await storage.getGroups(req.params.botInstanceId);
-      res.json(groups);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch groups" });
-    }
-  });
-
-  // Admin-only routes
-  app.get("/api/admin/bot-instances", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const botInstances = await storage.getAllBotInstances();
-      res.json(botInstances);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch bot instances" });
-    }
-  });
-
-  app.get("/api/admin/activities", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const limit = parseInt(req.query.limit as string) || 100;
-      const activities = await storage.getAllActivities(limit);
-      res.json(activities);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch activities" });
-    }
-  });
-
-  app.get("/api/admin/stats", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const stats = await storage.getSystemStats();
-      res.json(stats);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch stats" });
-    }
-  });
-
-  // Admin Bot Approval Routes
-  app.get("/api/admin/pending-bots", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const pendingBots = await storage.getPendingBots();
-      res.json(pendingBots);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch pending bots" });
-    }
-  });
-
-  app.get("/api/admin/approved-bots", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const approvedBots = await storage.getApprovedBots();
-      res.json(approvedBots);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch approved bots" });
-    }
-  });
-
-  app.post("/api/admin/approve-bot/:id", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const botId = req.params.id;
-      const { duration } = req.body; // Duration in months
-      const botInstance = await storage.getBotInstance(botId);
-
-      if (!botInstance) {
-        return res.status(404).json({ message: "Bot instance not found" });
-      }
-
-      if (!duration || duration < 1 || duration > 12) {
-        return res.status(400).json({ message: "Duration must be between 1-12 months" });
-      }
-
-      // Update approval status with expiration
-      const approvalDate = new Date().toISOString();
-      await storage.updateBotInstance(botId, { 
-        approvalStatus: 'approved',
-        status: 'offline', // Ready to be started
-        approvalDate,
-        expirationMonths: duration
-      });
-
-      // Log activity
-      await storage.createActivity({
-        botInstanceId: botId,
-        type: 'approval',
-        description: `Bot ${botInstance.name} approved by admin for ${duration} months`,
-        metadata: { adminAction: 'approve', phoneNumber: botInstance.phoneNumber, duration, approvalDate },
-        serverName: getServerName()
-      });
-
-      // Send activation message (placeholder for now)
-      console.log(`📞 Activation message would be sent to ${botInstance.phoneNumber}`);
-
-      broadcast({ 
-        type: 'BOT_APPROVED', 
-        data: { botId, name: botInstance.name } 
-      });
-
-      res.json({ success: true, message: "Bot approved successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to approve bot" });
-    }
-  });
-
-  app.post("/api/admin/reject-bot/:id", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const botId = req.params.id;
-      const { reason } = req.body;
-      const botInstance = await storage.getBotInstance(botId);
-
-      if (!botInstance) {
-        return res.status(404).json({ message: "Bot instance not found" });
-      }
-
-      // Update approval status
-      await storage.updateBotInstance(botId, { 
-        approvalStatus: 'rejected',
-        status: 'rejected'
-      });
-
-      // Log activity
-      await storage.createActivity({
-        botInstanceId: botId,
-        type: 'rejection',
-        description: `Bot ${botInstance.name} rejected by admin. Reason: ${reason || 'No reason provided'}`,
-        metadata: { adminAction: 'reject', reason, phoneNumber: botInstance.phoneNumber },
-        serverName: getServerName()
-      });
-
-      broadcast({ 
-        type: 'BOT_REJECTED', 
-        data: { botId, name: botInstance.name, reason } 
-      });
-
-      res.json({ success: true, message: "Bot rejected successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to reject bot" });
-    }
-  });
-
-  app.post("/api/admin/send-message/:id", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const botId = req.params.id;
-      const { message } = req.body;
-      const botInstance = await storage.getBotInstance(botId);
-
-      if (!botInstance || !botInstance.phoneNumber) {
-        return res.status(404).json({ message: "Bot instance or phone number not found" });
-      }
-
-      // Send message through the bot manager
-      const success = await botManager.sendMessageThroughBot(botId, botInstance.phoneNumber, message);
-
-      if (!success) {
-        return res.status(400).json({ message: "Bot is not online or failed to send message" });
-      }
-
-      console.log(`📱 Message sent to ${botInstance.phoneNumber}: ${message}`);
-
-      // Log activity
-      await storage.createActivity({
-        serverName: 'default-server',
-        botInstanceId: botId,
-        type: 'admin_message',
-        description: `Admin sent message to ${botInstance.name}`,
-        metadata: { message, phoneNumber: botInstance.phoneNumber }
-      });
-
-      res.json({ success: true, message: "Message sent successfully" });
-    } catch (error) {
-      console.error('Admin send message error:', error);
-      res.status(500).json({ message: "Failed to send message" });
-    }
-  });
-
-  app.post("/api/admin/bot-instances/:id/start", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const botId = req.params.id;
-      const botInstance = await storage.getBotInstance(botId);
-
-      if (!botInstance) {
-        return res.status(404).json({ message: "Bot instance not found" });
-      }
-
-      await botManager.startBot(botId);
-      broadcast({ type: 'BOT_STATUS_CHANGED', data: { botId, status: 'loading' } });
-
-      res.json({ success: true, message: "Bot start initiated" });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to start bot" });
-    }
-  });
-
-  app.post("/api/admin/bot-instances/:id/stop", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const botId = req.params.id;
-      const botInstance = await storage.getBotInstance(botId);
-
-      if (!botInstance) {
-        return res.status(404).json({ message: "Bot instance not found" });
-      }
-
-      await botManager.stopBot(botId);
-      broadcast({ type: 'BOT_STATUS_CHANGED', data: { botId, status: 'offline' } });
-
-      res.json({ success: true, message: "Bot stopped successfully" });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to stop bot" });
-    }
-  });
-
-  app.delete("/api/admin/bot-instances/:id", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const botId = req.params.id;
-
-      // Get bot instance to retrieve phone number before deletion
-      const botInstance = await storage.getBotInstance(botId);
-
-      if (!botInstance) {
-        return res.status(404).json({ message: "Bot instance not found" });
-      }
-
-      // Stop the bot first
-      await botManager.destroyBot(botId);
-
-      // Delete all related data (commands, activities, groups) - CRITICAL MISSING STEP
-      await storage.deleteBotRelatedData(botId);
-
-      // Delete the bot instance itself
-      await storage.deleteBotInstance(botId);
-
-      // Remove from god register table if bot instance was found - CRITICAL MISSING STEP  
-      if (botInstance.phoneNumber) {
-        await storage.deleteGlobalRegistration(botInstance.phoneNumber);
-        console.log(`🗑️ Removed ${botInstance.phoneNumber} from god register table`);
-      }
-
-      broadcast({ type: 'BOT_DELETED', data: { id: botId } });
-
-      res.json({ success: true, message: "Bot deleted successfully" });
-    } catch (error) {
-      console.error('Delete bot error:', error);
-      res.status(500).json({ message: "Failed to delete bot instance" });
-    }
-  });
-
   // God Registry Management Endpoints (Admin only)
   app.get("/api/admin/god-registry", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
@@ -5179,8 +4871,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
               crossTenancyData.push({
                 ...localBot,
                 tenancy: registration.tenancyName,
-                isLocal: true
-              });
+                isLocal: true              });
             }
           } else {
             // For other tenancies, show registry info
@@ -5686,7 +5377,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
         });
       }
 
-      // Get source server info for shared secret
+      // Validate that source server exists and has a shared secret configured
       const sourceServerInfo = await storage.getServerByName(sourceServer);
       if (!sourceServerInfo) {
         return res.status(404).json({ 

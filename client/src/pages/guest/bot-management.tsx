@@ -136,28 +136,42 @@ export default function GuestBotManagement() {
         setAuthenticatedBotId(data.botId || authenticatedBotId);
         
         const successMessage = data.successMessageSent 
-          ? "Session ID updated successfully! Connection verified and success message sent to your WhatsApp."
-          : "Session ID updated successfully! Connection verified.";
+          ? "✅ New session ID updated successfully! Connection verified and success message sent to your WhatsApp."
+          : "✅ New session ID updated successfully! Connection verified.";
         
         toast({
           title: "Session Updated!",
           description: successMessage,
         });
         
+        // Clear the session input since update was successful
+        setSessionId("");
+        
         // Refresh the bot data
         queryClient.invalidateQueries({ queryKey: ["/api/guest/server-bots", phoneNumber] });
       } else {
         toast({
           title: "Update Failed",
-          description: data.message || "Session update failed - connection could not be verified",
+          description: data.message || "New session update failed - connection could not be verified",
           variant: "destructive"
         });
       }
     },
     onError: (error: Error) => {
+      let errorMessage = error.message;
+      
+      // Provide more helpful error messages
+      if (errorMessage.includes("Connection timeout")) {
+        errorMessage = "❌ Connection timeout: Your new session ID may be expired or invalid. Please get a fresh session ID.";
+      } else if (errorMessage.includes("phone number mismatch")) {
+        errorMessage = "❌ Phone number mismatch: The new session ID belongs to a different phone number.";
+      } else if (errorMessage.includes("Failed to establish connection")) {
+        errorMessage = "❌ Cannot connect with new session ID. Please ensure it's valid and active.";
+      }
+      
       toast({
         title: "Update Failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -321,12 +335,16 @@ export default function GuestBotManagement() {
     if (!sessionId.trim()) {
       toast({
         title: "Session ID Required", 
-        description: "Please paste updated session credentials",
+        description: "Please paste your NEW session credentials",
         variant: "destructive"
       });
       return;
     }
-    updateSessionMutation.mutate(sessionId);
+    
+    // Clear any previous session data to ensure we use the new one
+    setSessionId(sessionId.trim());
+    
+    updateSessionMutation.mutate(sessionId.trim());
   };
 
   const handleBotAction = (action: string, bot: BotInfo) => {
@@ -578,7 +596,7 @@ export default function GuestBotManagement() {
                 Bot Connection Inactive
               </CardTitle>
               <CardDescription>
-                Your bot {botInfo?.phoneNumber} was found but is not currently connected. Provide a new session ID - we'll test its connection and send a success message to WhatsApp before updating.
+                Your bot {botInfo?.phoneNumber} was found but is not currently connected. Provide a NEW session ID - we'll test the new credentials, verify connection, and update your bot settings.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -594,7 +612,7 @@ export default function GuestBotManagement() {
                   </Button>
                 </div>
                 <textarea
-                  placeholder="Paste your updated base64 session credentials here..."
+                  placeholder="Paste your NEW base64 session credentials here..."
                   value={sessionId}
                   onChange={(e) => setSessionId(e.target.value)}
                   className={`w-full h-32 p-3 border rounded-md resize-none font-mono text-sm ${
@@ -602,7 +620,7 @@ export default function GuestBotManagement() {
                   }`}
                 />
                 <p className="text-xs text-muted-foreground">
-                  We'll test the connection, send a success message to your WhatsApp, then update your bot credentials
+                  We'll test your NEW session ID connection, verify it works, then update your bot credentials
                 </p>
                 <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200">
                   <p className="text-sm text-green-700 dark:text-green-300 mb-2">
@@ -641,9 +659,9 @@ export default function GuestBotManagement() {
                   size="lg"
                 >
                   {updateSessionMutation.isPending ? (
-                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Testing Connection & Updating...</>
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Testing NEW Session & Updating...</>
                   ) : (
-                    <><Upload className="h-4 w-4 mr-2" /> Test Connection & Update Session</>
+                    <><Upload className="h-4 w-4 mr-2" /> Test NEW Session & Update</>
                   )}
                 </Button>
                 <Button
