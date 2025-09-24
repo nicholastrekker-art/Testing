@@ -2480,6 +2480,8 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
 
       // Test actual connection by creating a temporary bot instance
       try {
+        const { WhatsAppBot } = await import('./services/whatsapp-bot');
+        
         const testBotInstance = {
           id: `test_${Date.now()}`,
           name: 'Test Bot',
@@ -2589,6 +2591,8 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
       let botOwnerJid = null;
 
       try {
+        const { WhatsAppBot } = await import('./services/whatsapp-bot');
+        
         const testBotInstance = {
           id: `test_update_${Date.now()}`,
           name: 'Update Test Bot',
