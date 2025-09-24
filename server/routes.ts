@@ -2560,6 +2560,188 @@ Thank you for choosing TREKKER-MD! Your bot will remain active for ${expirationM
     }
   });
 
+  // Update session ID with connection testing
+  app.post("/api/guest/update-session", async (req, res) => {
+    try {
+      const { phoneNumber, newSessionId } = req.body;
+
+      if (!phoneNumber || !newSessionId) {
+        return res.status(400).json({ message: "Phone number and new session ID are required" });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+
+      // First, test if the new session ID has an open connection
+      let credentials;
+      try {
+        const decoded = Buffer.from(newSessionId, 'base64').toString('utf-8');
+        credentials = JSON.parse(decoded);
+      } catch (error) {
+        return res.status(400).json({ 
+          message: "Invalid session ID format",
+          connectionOpen: false
+        });
+      }
+
+      // Validate phone number ownership from new credentials
+      const credentialsPhone = credentials.creds?.me?.id?.match(/^(\d+):/)?.[1];
+      if (!credentialsPhone || credentialsPhone !== cleanedPhone) {
+        return res.status(400).json({
+          message: "New session ID does not match your phone number"
+        });
+      }
+
+      // Test connection for new credentials
+      const { WhatsAppBot } = await import('./services/whatsapp-bot');
+      const validation = WhatsAppBot.validateCredentials(credentials);
+
+      if (!validation.valid) {
+        return res.status(400).json({ 
+          connectionOpen: false,
+          message: validation.error || "New credentials validation failed"
+        });
+      }
+
+      let connectionOpen = false;
+      let connectionMessage = "";
+
+      try {
+        const testBotInstance = {
+          id: `test_update_${Date.now()}`,
+          name: 'Update Test Bot',
+          phoneNumber: credentialsPhone,
+          credentials,
+          serverName: getServerName(),
+          status: 'testing',
+          approvalStatus: 'approved',
+          settings: {},
+          messagesCount: 0,
+          commandsCount: 0
+        };
+
+        const testBot = new WhatsAppBot(testBotInstance as any);
+
+        await new Promise((resolve, reject) => {
+          let connectionTimeout: NodeJS.Timeout;
+          let resolved = false;
+
+          const cleanup = () => {
+            if (connectionTimeout) clearTimeout(connectionTimeout);
+            if (!resolved) {
+              resolved = true;
+              testBot.stop().catch(() => {});
+            }
+          };
+
+          connectionTimeout = setTimeout(() => {
+            cleanup();
+            reject(new Error("Connection timeout"));
+          }, 25000);
+
+          testBot.start().then(() => {
+            setTimeout(async () => {
+              const status = testBot.getStatus();
+              cleanup();
+
+              if (status === 'online') {
+                resolve(true);
+              } else {
+                reject(new Error("Failed to establish connection"));
+              }
+            }, 5000);
+          }).catch((error) => {
+            cleanup();
+            reject(error);
+          });
+        });
+
+        await testBot.stop();
+        connectionOpen = true;
+        connectionMessage = "New session ID connection verified successfully";
+
+      } catch (connectionError) {
+        connectionOpen = false;
+        connectionMessage = connectionError instanceof Error ? connectionError.message : "Connection test failed";
+      }
+
+      // Only proceed with update if connection is open
+      if (!connectionOpen) {
+        return res.status(400).json({
+          connectionOpen: false,
+          message: `Cannot update session ID: ${connectionMessage}. The new session ID does not have an active connection.`,
+          canUpdate: false
+        });
+      }
+
+      // Find the existing bot and update its credentials
+      const existingBot = await storage.getBotByPhoneNumber(cleanedPhone);
+      if (!existingBot) {
+        return res.status(404).json({ message: "No existing bot found for this phone number" });
+      }
+
+      // Update the bot's credentials and reset status
+      await storage.updateBotCredentialStatus(existingBot.id, {
+        credentialVerified: true,
+        credentialPhone: cleanedPhone,
+        invalidReason: undefined,
+        credentials: credentials,
+        autoStart: true
+      });
+
+      // Also update the bot status to offline so it can be restarted with new credentials
+      await storage.updateBotInstance(existingBot.id, {
+        status: 'offline',
+        lastActivity: new Date()
+      });
+
+      // Save credentials to file system
+      try {
+        const authDir = path.join(process.cwd(), 'auth', `bot_${existingBot.id}`);
+        if (!fs.existsSync(authDir)) {
+          fs.mkdirSync(authDir, { recursive: true });
+        }
+
+        fs.writeFileSync(
+          path.join(authDir, 'creds.json'),
+          JSON.stringify(credentials, null, 2)
+        );
+      } catch (fileError) {
+        console.error('Failed to save updated credentials:', fileError);
+      }
+
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: existingBot.id,
+        type: 'credential_update',
+        description: `Session ID updated via guest management (connection verified)`,
+        metadata: { 
+          phoneNumber: cleanedPhone,
+          connectionTested: true,
+          connectionOpen: true,
+          updateMethod: 'guest_session_update'
+        },
+        serverName: getServerName()
+      });
+
+      res.json({
+        success: true,
+        connectionOpen: true,
+        message: "Session ID updated successfully! Your bot credentials have been updated and verified.",
+        canUpdate: true,
+        botId: existingBot.id,
+        botName: existingBot.name
+      });
+
+    } catch (error) {
+      console.error('Update session error:', error);
+      res.status(500).json({ 
+        message: "Failed to update session ID",
+        connectionOpen: false,
+        canUpdate: false
+      });
+    }
+  });
+
   // ======= GUEST SERVER BOT MANAGEMENT ENDPOINTS =======
 
   // Guest search server bots - Find bots by phone number on current server

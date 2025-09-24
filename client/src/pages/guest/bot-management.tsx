@@ -111,6 +111,51 @@ export default function GuestBotManagement() {
     }
   });
 
+  // Update session ID mutation with connection testing
+  const updateSessionMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      const response = await fetch('/api/guest/update-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          phoneNumber: phoneNumber,
+          newSessionId: sessionId.trim() 
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Session update failed');
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.success && data.connectionOpen) {
+        setCurrentStep('dashboard');
+        toast({
+          title: "Session Updated!",
+          description: data.message,
+        });
+        // Refresh the bot data
+        queryClient.invalidateQueries({ queryKey: ["/api/guest/server-bots", phoneNumber] });
+      } else {
+        toast({
+          title: "Update Failed",
+          description: data.message || "Session update failed",
+          variant: "destructive"
+        });
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update Failed",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   // Retry verification with new session ID
   const retryVerificationMutation = useMutation({
     mutationFn: async (sessionId: string) => {
@@ -274,7 +319,7 @@ export default function GuestBotManagement() {
       });
       return;
     }
-    retryVerificationMutation.mutate(sessionId);
+    updateSessionMutation.mutate(sessionId);
   };
 
   const handleBotAction = (action: string, bot: BotInfo) => {
@@ -526,7 +571,7 @@ export default function GuestBotManagement() {
                 Bot Connection Inactive
               </CardTitle>
               <CardDescription>
-                Your bot {botInfo?.phoneNumber} was found but is not currently connected. Please provide updated session credentials.
+                Your bot {botInfo?.phoneNumber} was found but is not currently connected. Provide a new session ID - we'll test its connection before updating.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -550,7 +595,7 @@ export default function GuestBotManagement() {
                   }`}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Provide fresh session credentials to reactivate your bot connection
+                  Provide new session credentials - we'll verify the connection is active before updating your bot
                 </p>
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                   <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
@@ -573,14 +618,14 @@ export default function GuestBotManagement() {
               <div className="flex gap-2">
                 <Button 
                   onClick={handleRetryVerification}
-                  disabled={retryVerificationMutation.isPending}
+                  disabled={updateSessionMutation.isPending}
                   className="flex-1"
                   size="lg"
                 >
-                  {retryVerificationMutation.isPending ? (
-                    <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Updating...</>
+                  {updateSessionMutation.isPending ? (
+                    <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Testing Connection...</>
                   ) : (
-                    <><Power className="h-4 w-4 mr-2" /> Update & Verify Connection</>
+                    <><Power className="h-4 w-4 mr-2" /> Test & Update Session</>
                   )}
                 </Button>
                 <Button
