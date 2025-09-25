@@ -29,6 +29,7 @@ import {
 } from "@shared/schema";
 import { db, getServerName } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
+import crypto from 'crypto';
 
 // Get maximum bot count from environment variables with default fallback
 function getMaxBotCount(): number {
@@ -1302,28 +1303,48 @@ export class DatabaseStorage implements IStorage {
           }
         };
       } else {
-        // For remote servers, we would use CrossTenancyClient to validate
-        // For now, return a simplified validation
+        // For remote servers, use CrossTenancyClient to validate on origin server
         console.log(`External bot validation for ${phoneNumber} from server ${originServerName}`);
         
-        // TODO: Implement actual cross-server credential validation
-        // This would involve calling the origin server to validate credentials
-        return {
-          valid: true, // Assuming valid for now
-          ownerJid: phoneNumber + "@s.whatsapp.net",
-          originServerName: originServerName,
-          remoteBotId: `remote_${phoneNumber}`,
-          features: {
-            autoLike: true,
-            autoReact: true,
-            autoViewStatus: true,
-            chatgptEnabled: false,
-            typingMode: "recording",
-            presenceMode: "available",
-            alwaysOnline: false,
-            presenceAutoSwitch: false
+        const { crossTenancyClient } = await import('./services/crossTenancyClient');
+        
+        // Call the origin server to validate credentials without storing locally
+        // We'll create a custom validation endpoint call using the private makeRequest method
+        const validationResponse = await (crossTenancyClient as any).makeRequest(
+          originServerName,
+          '/internal/tenants/bots/validate-credentials',
+          {
+            serverName: currentServerName,
+            action: 'validateCredentials',
+            data: { phoneNumber, credentials },
+            timestamp: Date.now(),
+            nonce: crypto.randomBytes(16).toString('hex')
           }
-        };
+        );
+
+        if (validationResponse.success && validationResponse.data) {
+          return {
+            valid: true,
+            ownerJid: validationResponse.data.ownerJid || (phoneNumber + "@s.whatsapp.net"),
+            originServerName: originServerName,
+            remoteBotId: validationResponse.data.botId || `remote_${phoneNumber}`,
+            features: validationResponse.data.features || {
+              autoLike: false,
+              autoReact: false,
+              autoViewStatus: false,
+              chatgptEnabled: false,
+              typingMode: "recording",
+              presenceMode: "available",
+              alwaysOnline: false,
+              presenceAutoSwitch: false
+            }
+          };
+        } else {
+          return {
+            valid: false,
+            error: validationResponse.error || "Remote server validation failed"
+          };
+        }
       }
     } catch (error) {
       console.error('External bot credential validation error:', error);

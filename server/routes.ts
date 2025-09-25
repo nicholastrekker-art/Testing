@@ -29,6 +29,7 @@ import {
 import { sendValidationMessage, sendGuestValidationMessage, validateWhatsAppCredentials } from "./services/validation-bot";
 import { CrossTenancyClient } from "./services/crossTenancyClient";
 import { z } from "zod";
+import crypto from 'crypto';
 
 // Helper function to resolve bot location by phone number across tenancies
 async function resolveBotByPhone(phoneNumber: string): Promise<{
@@ -161,6 +162,41 @@ function validateGuestAction(action: string, bot: any): { allowed: boolean; reas
 
     default:
       return { allowed: false, reason: "Unknown action" };
+  }
+}
+
+// Helper function to send WhatsApp notification to bot owner
+async function sendBotManagerNotification(ownerJid: string, phoneNumber: string): Promise<void> {
+  try {
+    console.log(`📱 Sending bot manager notification to ${ownerJid} for phone ${phoneNumber}`);
+    
+    // Create a temporary validation bot to send the notification
+    const { ValidationBot } = await import('./services/validation-bot');
+    const notificationBot = new ValidationBot(phoneNumber);
+    
+    // Connect and send notification message
+    const connected = await notificationBot.connect();
+    if (connected) {
+      const message = `🤖 *Bot Manager Access*\n\nYou have successfully connected to the bot manager for *${phoneNumber}*.\n\n✅ Connection established\n⏱️ Valid for 24 hours\n🔧 Manage your bot features remotely\n\n_This is a temporary connection for bot management._`;
+      
+      await notificationBot.sendMessage(ownerJid, message);
+      console.log(`✅ Bot manager notification sent to ${ownerJid}`);
+      
+      // Record notification sent
+      const connection = await storage.getExternalBotConnection(phoneNumber);
+      if (connection) {
+        await storage.updateExternalBotConnection(connection.id, {
+          notificationSentAt: new Date()
+        });
+      }
+    }
+    
+    // Clean disconnect preserving credentials
+    await notificationBot.disconnect(true);
+    
+  } catch (error) {
+    console.error(`❌ Failed to send bot manager notification to ${ownerJid}:`, error);
+    // Don't throw error to avoid breaking the main flow
   }
 }
 
@@ -2719,6 +2755,192 @@ Thank you for using TREKKER-MD! 🚀
     } catch (error) {
       console.error('Cross-server bot search error:', error);
       res.status(500).json({ message: "Failed to search for bots" });
+    }
+  });
+
+  // ======= EXTERNAL BOT MANAGEMENT ENDPOINTS =======
+
+  // Establish External Bot Connection - Connect to external bot with credential validation
+  app.post("/api/guest/external-bot/connect", async (req, res) => {
+    try {
+      const { phoneNumber, credentials } = req.body;
+
+      if (!phoneNumber || !credentials) {
+        return res.status(400).json({ message: "Phone number and credentials are required" });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      const currentServerName = getServerName();
+
+      console.log(`🔗 Establishing external bot connection for ${cleanedPhone}`);
+
+      // Validate credentials on origin server without storing locally
+      const validationResult = await storage.validateExternalBotCredentials(cleanedPhone, credentials);
+      
+      if (!validationResult.valid) {
+        return res.status(401).json({ 
+          message: "Invalid credentials", 
+          error: validationResult.error 
+        });
+      }
+
+      // Check if connection already exists
+      let existingConnection = await storage.getExternalBotConnection(cleanedPhone, currentServerName);
+      
+      if (existingConnection) {
+        // Update existing connection
+        await storage.updateExternalBotConnection(existingConnection.id, {
+          credentialsValid: true,
+          lastValidation: new Date(),
+          connectionEstablishedAt: new Date(),
+          features: validationResult.features || {},
+          ownerJid: validationResult.ownerJid || cleanedPhone + "@s.whatsapp.net",
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+        });
+      } else {
+        // Create new external connection
+        await storage.createExternalBotConnection({
+          phoneNumber: cleanedPhone,
+          ownerJid: validationResult.ownerJid || cleanedPhone + "@s.whatsapp.net",
+          originServerName: validationResult.originServerName!,
+          remoteBotId: validationResult.remoteBotId!,
+          credentialsValid: true,
+          lastValidation: new Date(),
+          connectionEstablishedAt: new Date(),
+          features: validationResult.features || {},
+          tempToken: crypto.randomBytes(32).toString('hex'),
+          currentServerName: currentServerName
+        });
+      }
+
+      // Send WhatsApp notification to bot owner
+      await sendBotManagerNotification(validationResult.ownerJid!, cleanedPhone);
+
+      res.json({
+        success: true,
+        message: "External bot connection established",
+        phoneNumber: cleanedPhone,
+        originServer: validationResult.originServerName,
+        features: validationResult.features,
+        expiresIn: "24 hours"
+      });
+
+    } catch (error) {
+      console.error('External bot connection error:', error);
+      res.status(500).json({ message: "Failed to establish external bot connection" });
+    }
+  });
+
+  // Get Active External Bot Connections
+  app.get("/api/guest/external-bots", async (req, res) => {
+    try {
+      const currentServerName = getServerName();
+      const connections = await storage.getActiveExternalConnections(currentServerName);
+
+      const formattedConnections = connections.map(conn => ({
+        id: conn.id,
+        phoneNumber: conn.phoneNumber,
+        originServer: conn.originServerName,
+        connected: conn.credentialsValid,
+        connectedAt: conn.connectionEstablishedAt,
+        expiresAt: conn.expiresAt,
+        features: conn.features || {},
+        canManage: true,
+        isExternal: true
+      }));
+
+      res.json({ connections: formattedConnections });
+
+    } catch (error) {
+      console.error('Get external bots error:', error);
+      res.status(500).json({ message: "Failed to get external bot connections" });
+    }
+  });
+
+  // Update External Bot Features - Toggle features for external bots
+  app.post("/api/guest/external-bot/features", async (req, res) => {
+    try {
+      const { phoneNumber, feature, enabled } = req.body;
+
+      if (!phoneNumber || !feature || typeof enabled !== 'boolean') {
+        return res.status(400).json({ message: "Phone number, feature, and enabled status are required" });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      const currentServerName = getServerName();
+
+      // Get external connection
+      const connection = await storage.getExternalBotConnection(cleanedPhone, currentServerName);
+      if (!connection) {
+        return res.status(404).json({ message: "External bot connection not found" });
+      }
+
+      // Update feature in the connection
+      const currentFeatures = connection.features as Record<string, any> || {};
+      const updatedFeatures = { ...currentFeatures, [feature]: enabled };
+      await storage.updateExternalBotConnection(connection.id, {
+        features: updatedFeatures
+      });
+
+      // Send feature update to origin server using CrossTenancyClient
+      const { crossTenancyClient } = await import('./services/crossTenancyClient');
+      const updateResponse = await crossTenancyClient.updateBot(
+        connection.originServerName,
+        connection.remoteBotId,
+        { [feature]: enabled }
+      );
+
+      if (!updateResponse.success) {
+        console.error(`Failed to update feature on origin server: ${updateResponse.error}`);
+        return res.status(500).json({ 
+          message: "Failed to update feature on origin server",
+          error: updateResponse.error 
+        });
+      }
+
+      res.json({
+        success: true,
+        message: `Feature ${feature} ${enabled ? 'enabled' : 'disabled'} successfully`,
+        phoneNumber: cleanedPhone,
+        feature: feature,
+        enabled: enabled,
+        updatedFeatures: updatedFeatures
+      });
+
+    } catch (error) {
+      console.error('External bot feature update error:', error);
+      res.status(500).json({ message: "Failed to update external bot feature" });
+    }
+  });
+
+  // Disconnect External Bot Connection
+  app.post("/api/guest/external-bot/disconnect", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      const currentServerName = getServerName();
+
+      const connection = await storage.getExternalBotConnection(cleanedPhone, currentServerName);
+      if (!connection) {
+        return res.status(404).json({ message: "External bot connection not found" });
+      }
+
+      await storage.deleteExternalBotConnection(connection.id);
+
+      res.json({
+        success: true,
+        message: "External bot connection disconnected",
+        phoneNumber: cleanedPhone
+      });
+
+    } catch (error) {
+      console.error('External bot disconnect error:', error);
+      res.status(500).json({ message: "Failed to disconnect external bot" });
     }
   });
 

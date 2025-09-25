@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Bot, Play, Square, RefreshCw, Settings, Trash2, ExternalLink, AlertTriangle, Shield, CheckCircle, Phone, Eye, EyeOff, Upload, Power, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import ExternalBotManager from "@/components/external-bot-manager";
 
 interface BotInfo {
   id: string;
@@ -757,7 +758,7 @@ export default function GuestBotManagement() {
             </Card>
 
             <Tabs defaultValue="active" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="active" className="flex items-center gap-2">
                   <Bot className="h-4 w-4" />
                   Active Bots ({activeBots.length})
@@ -769,6 +770,10 @@ export default function GuestBotManagement() {
                 <TabsTrigger value="inactive" className="flex items-center gap-2">
                   <Square className="h-4 w-4" />
                   Inactive ({inactiveBots.length})
+                </TabsTrigger>
+                <TabsTrigger value="external" className="flex items-center gap-2" data-testid="tab-external-bots">
+                  <ExternalLink className="h-4 w-4" />
+                  External Bots
                 </TabsTrigger>
               </TabsList>
 
@@ -1126,6 +1131,10 @@ export default function GuestBotManagement() {
                     ))}
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="external" className="space-y-4">
+                <ExternalBotManager />
               </TabsContent>
             </Tabs>
           </>
