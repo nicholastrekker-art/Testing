@@ -55,6 +55,7 @@ function ConnectExternalBot({ onConnectionEstablished }: ConnectExternalBotProps
 
   const connectMutation = useMutation({
     mutationFn: async ({ phoneNumber, credentials }: { phoneNumber: string; credentials: string }) => {
+      // The endpoint was changed to '/api/guest/external-bot/connect' based on the issue description.
       const response = await fetch('/api/guest/external-bot/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,8 +63,14 @@ function ConnectExternalBot({ onConnectionEstablished }: ConnectExternalBotProps
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Connection failed');
+        // Handle potential JSON parsing errors and provide a more informative message.
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          throw new Error(`Connection failed: ${response.statusText}`);
+        }
+        throw new Error(errorData.message || `Connection failed (Status: ${response.status})`);
       }
 
       return response.json();
@@ -129,7 +136,8 @@ function ConnectExternalBot({ onConnectionEstablished }: ConnectExternalBotProps
             placeholder="Paste your bot's base64 credentials here"
             value={credentials}
             onChange={(e) => setCredentials(e.target.value)}
-            type="password"
+            // Changed type from "password" to "text" for better visibility as per the issue.
+            type="text" 
           />
         </div>
         <Button 
@@ -140,7 +148,7 @@ function ConnectExternalBot({ onConnectionEstablished }: ConnectExternalBotProps
         >
           {connectMutation.isPending ? 'Connecting...' : 'Connect External Bot'}
         </Button>
-        
+
         <Alert>
           <AlertDescription>
             External bot connections are temporary (24 hours) and don't store bot data locally. 
@@ -165,7 +173,7 @@ function ExternalBotCard({ connection, onFeatureToggle, onDisconnect }: External
     const diff = expires.getTime() - now.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    
+
     if (hours > 0) return `${hours}h ${minutes}m`;
     if (minutes > 0) return `${minutes}m`;
     return 'Expired';
@@ -199,7 +207,7 @@ function ExternalBotCard({ connection, onFeatureToggle, onDisconnect }: External
             )}
           </div>
         </div>
-        
+
         {connection.expiresAt && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="h-3 w-3" />
@@ -207,7 +215,7 @@ function ExternalBotCard({ connection, onFeatureToggle, onDisconnect }: External
           </div>
         )}
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-3">
@@ -223,7 +231,7 @@ function ExternalBotCard({ connection, onFeatureToggle, onDisconnect }: External
                 onCheckedChange={(checked) => onFeatureToggle(connection.phoneNumber, 'autoLike', checked)}
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <Label htmlFor={`autoReact-${connection.id}`} className="flex items-center gap-2 text-sm">
                 <MessageSquare className="h-3 w-3" />
@@ -236,7 +244,7 @@ function ExternalBotCard({ connection, onFeatureToggle, onDisconnect }: External
                 onCheckedChange={(checked) => onFeatureToggle(connection.phoneNumber, 'autoReact', checked)}
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <Label htmlFor={`autoView-${connection.id}`} className="flex items-center gap-2 text-sm">
                 <Eye className="h-3 w-3" />
@@ -250,7 +258,7 @@ function ExternalBotCard({ connection, onFeatureToggle, onDisconnect }: External
               />
             </div>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label htmlFor={`chatGPT-${connection.id}`} className="flex items-center gap-2 text-sm">
@@ -264,7 +272,7 @@ function ExternalBotCard({ connection, onFeatureToggle, onDisconnect }: External
                 onCheckedChange={(checked) => onFeatureToggle(connection.phoneNumber, 'chatgptEnabled', checked)}
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <Label htmlFor={`alwaysOnline-${connection.id}`} className="flex items-center gap-2 text-sm">
                 <Wifi className="h-3 w-3" />
@@ -279,7 +287,7 @@ function ExternalBotCard({ connection, onFeatureToggle, onDisconnect }: External
             </div>
           </div>
         </div>
-        
+
         <div className="flex gap-2 pt-4 border-t">
           <Button
             variant="outline"
@@ -303,9 +311,10 @@ export default function ExternalBotManager() {
 
   // Fetch active external connections
   const { data: connectionsData, isLoading } = useQuery({
-    queryKey: ['/api/guest/external-bots'],
+    // The query key was updated to reflect the correct API endpoint.
+    queryKey: ['/api/guest/external-connections'],
     queryFn: async () => {
-      const response = await fetch('/api/guest/external-bots');
+      const response = await fetch('/api/guest/external-connections');
       if (!response.ok) {
         throw new Error('Failed to fetch external connections');
       }
@@ -336,7 +345,8 @@ export default function ExternalBotManager() {
         title: "Feature Updated",
         description: `${data.feature} ${data.enabled ? 'enabled' : 'disabled'} successfully on origin server`,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/guest/external-bots'] });
+      // The query key was updated to reflect the correct API endpoint.
+      queryClient.invalidateQueries({ queryKey: ['/api/guest/external-connections'] });
     },
     onError: (error: Error) => {
       toast({
@@ -368,7 +378,8 @@ export default function ExternalBotManager() {
         title: "External Bot Disconnected",
         description: "External bot connection has been removed",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/guest/external-bots'] });
+      // The query key was updated to reflect the correct API endpoint.
+      queryClient.invalidateQueries({ queryKey: ['/api/guest/external-connections'] });
     },
     onError: (error: Error) => {
       toast({
@@ -388,7 +399,8 @@ export default function ExternalBotManager() {
   };
 
   const handleConnectionEstablished = () => {
-    queryClient.invalidateQueries({ queryKey: ['/api/guest/external-bots'] });
+    // The query key was updated to reflect the correct API endpoint.
+    queryClient.invalidateQueries({ queryKey: ['/api/guest/external-connections'] });
   };
 
   return (

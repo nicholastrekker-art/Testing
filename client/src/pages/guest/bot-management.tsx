@@ -773,7 +773,7 @@ export default function GuestBotManagement() {
                 </TabsTrigger>
                 <TabsTrigger value="external" className="flex items-center gap-2" data-testid="tab-external-bots">
                   <ExternalLink className="h-4 w-4" />
-                  External Bots
+                  Connect Cross-Server
                 </TabsTrigger>
               </TabsList>
 
