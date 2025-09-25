@@ -2374,24 +2374,24 @@ Thank you for using TREKKER-MD! 🚀
       const credentialTestFailed = !updatedBot.credentialVerified && updatedBot.invalidReason;
 
       res.json({
-        success: botActive && (!credentials || !credentialTestFailed), // Success only if bot is active AND credentials didn't fail
+        success: !credentialTestFailed, // Success if credentials didn't fail validation
         phoneNumber: `+${phoneNumber}`,
         botActive,
         botServer,
         crossServer: botServer !== currentServer,
         token,
-        message: botActive 
-          ? "Bot is active and connected" 
-          : credentialTestFailed 
-            ? `Credential validation failed: ${updatedBot.invalidReason}`
-            : "Bot found but not currently connected",
+        message: credentialTestFailed 
+          ? `Credential validation failed: ${updatedBot.invalidReason}`
+          : botActive 
+            ? "Bot is active and connected"
+            : "Credentials updated successfully and success message sent to WhatsApp",
         botId: bot.id,
         botName: bot.name,
         lastActivity: bot.lastActivity,
-        connectionUpdated: botActive && credentials && !credentialTestFailed ? true : false,
+        connectionUpdated: credentials && !credentialTestFailed ? true : false,
         tenancyPreserved: true,
         updateMethod: 'direct_database_access',
-        nextStep: botActive && !credentialTestFailed ? 'authenticated' : 'update_credentials',
+        nextStep: !credentialTestFailed ? 'authenticated' : 'update_credentials',
         credentialValidationFailed: credentialTestFailed
       });
 

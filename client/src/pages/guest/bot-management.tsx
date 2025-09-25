@@ -103,10 +103,10 @@ export default function GuestBotManagement() {
           title: "Session Updated!",
           description: `New session ID tested successfully! Your bot is reconnecting and a success message has been sent to your WhatsApp.`,
         });
-        
+
         // Clear the session input since update was successful
         setSessionId("");
-        
+
         // Refresh the bot data after a short delay
         setTimeout(() => {
           queryClient.invalidateQueries({ queryKey: ["/api/guest/server-bots", data.phoneNumber] });
@@ -114,7 +114,7 @@ export default function GuestBotManagement() {
       } else {
         // Bot found but credentials failed validation or bot is not active
         setCurrentStep('inactive');
-        
+
         // Provide specific message based on the issue
         let description = "Your bot is not currently connected. Please provide updated credentials.";
         if (data.credentialValidationFailed || (data.message && data.message.includes("validation failed"))) {
@@ -124,7 +124,7 @@ export default function GuestBotManagement() {
         } else if (data.message && data.message.includes("failed")) {
           description = "Connection test failed. Please ensure your credentials are current and valid.";
         }
-        
+
         toast({
           title: "Bot Inactive",
           description: description,
@@ -134,14 +134,14 @@ export default function GuestBotManagement() {
     },
     onError: (error: Error) => {
       let errorMessage = error.message;
-      
+
       // Provide more helpful error messages
       if (errorMessage.includes("Cannot extract phone number")) {
         errorMessage = "❌ Invalid session ID: Cannot extract phone number from the credentials. Please ensure you're using valid WhatsApp session data.";
       } else if (errorMessage.includes("Invalid session ID format")) {
         errorMessage = "❌ Invalid session ID format: Please ensure you're pasting valid base64-encoded WhatsApp session data.";
       }
-      
+
       toast({
         title: "Verification Failed",
         description: errorMessage,
@@ -182,31 +182,36 @@ export default function GuestBotManagement() {
       setPhoneNumber(data.phoneNumber);
       setGuestToken(data.token);
 
-      // Check if connection was actually successful and credentials are valid
-      if (data.success && data.botActive && !data.credentialValidationFailed) {
+      // Check if credentials were successfully updated
+      if (data.success && !data.credentialValidationFailed) {
         setCurrentStep('dashboard');
         setAuthenticatedBotId(data.botId);
+
+        let title = "Session Updated!";
+        let description = "";
+
+        if (data.crossServer) {
+          // Cross-server credential update
+          description = `✅ Credentials updated successfully for bot on ${data.botServer}! Success message sent to your WhatsApp.`;
+        } else if (data.botActive) {
+          // Same server, bot is active
+          description = `✅ New session ID updated successfully! Your bot ${data.phoneNumber} is now connected and ready to manage.`;
+        } else if (data.connectionUpdated) {
+          // Same server, credentials updated but bot reconnecting
+          description = "✅ New session ID tested successfully! Your bot is reconnecting and a success message has been sent to your WhatsApp.";
+        } else {
+          // Same server, credentials updated
+          description = "✅ Credentials updated successfully and success message sent to your WhatsApp.";
+        }
+
         toast({
-          title: "Session Updated!",
-          description: `✅ New session ID updated successfully! Your bot ${data.phoneNumber} is now connected and ready to manage.`,
+          title,
+          description,
         });
-        
+
         // Clear the session input since update was successful
         setSessionId("");
-        
-        // Refresh the bot data
-        queryClient.invalidateQueries({ queryKey: ["/api/guest/server-bots", data.phoneNumber] });
-      } else if (data.success && data.connectionUpdated && !data.credentialValidationFailed) {
-        setCurrentStep('dashboard');
-        setAuthenticatedBotId(data.botId);
-        toast({
-          title: "Session Updated!",
-          description: "✅ New session ID tested successfully! Your bot is reconnecting and a success message has been sent to your WhatsApp.",
-        });
-        
-        // Clear the session input since update was successful
-        setSessionId("");
-        
+
         // Refresh the bot data after a short delay
         setTimeout(() => {
           queryClient.invalidateQueries({ queryKey: ["/api/guest/server-bots", data.phoneNumber] });
@@ -221,7 +226,7 @@ export default function GuestBotManagement() {
         } else if (data.message && data.message.includes("failed")) {
           description = "Connection test failed. Please ensure your new credentials are current and valid.";
         }
-        
+
         toast({
           title: "Update Failed",
           description: description,
@@ -231,7 +236,7 @@ export default function GuestBotManagement() {
     },
     onError: (error: Error) => {
       let errorMessage = error.message;
-      
+
       // Provide more helpful error messages
       if (errorMessage.includes("Cannot extract phone number")) {
         errorMessage = "❌ Invalid session ID: Cannot extract phone number from the credentials. Please ensure you're using valid WhatsApp session data.";
@@ -244,7 +249,7 @@ export default function GuestBotManagement() {
       } else if (errorMessage.includes("Invalid session ID format")) {
         errorMessage = "❌ Invalid session ID format: Please ensure you're pasting valid base64-encoded WhatsApp session data.";
       }
-      
+
       toast({
         title: "Update Failed",
         description: errorMessage,
@@ -322,7 +327,7 @@ export default function GuestBotManagement() {
 
       const data = await response.json();
       console.log('Bot search response:', data);
-      
+
       // Add server info to each bot
       const bots = (data.bots || []).map((bot: any) => ({
         ...bot,
@@ -330,7 +335,7 @@ export default function GuestBotManagement() {
         currentServer: data.currentServer,
         crossServer: bot.crossServer || (data.hostingServer !== data.currentServer)
       }));
-      
+
       return bots;
     },
     enabled: currentStep === 'dashboard' && !!phoneNumber.trim() && !!guestToken,
@@ -399,7 +404,7 @@ export default function GuestBotManagement() {
     onError: (error: Error, variables) => {
       let errorMessage = error.message;
       let errorTitle = "Feature Update Failed";
-      
+
       // Handle specific cross-tenancy errors
       if (errorMessage.includes("Bot not found")) {
         errorTitle = "Bot Not Found";
@@ -411,7 +416,7 @@ export default function GuestBotManagement() {
         errorTitle = "Invalid Feature";
         errorMessage = "The requested feature is not available for this bot.";
       }
-      
+
       toast({
         title: errorTitle,
         description: errorMessage,
@@ -442,10 +447,10 @@ export default function GuestBotManagement() {
       });
       return;
     }
-    
+
     // Clear any previous session data to ensure we use the new one
     setSessionId(sessionId.trim());
-    
+
     updateSessionMutation.mutate(sessionId.trim());
   };
 
@@ -462,7 +467,7 @@ export default function GuestBotManagement() {
     const requestData = bot.crossServer 
       ? { feature, enabled, botId: bot.botId, phoneNumber: phoneNumber }
       : { feature, enabled, botId: bot.botId };
-    
+
     featureToggleMutation.mutate(requestData);
   };
 
@@ -1180,7 +1185,7 @@ export default function GuestBotManagement() {
                 )}
               </TabsContent>
 
-              
+
             </Tabs>
           </>
         )}
