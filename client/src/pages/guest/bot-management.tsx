@@ -153,13 +153,21 @@ export default function GuestBotManagement() {
   // Update session ID mutation with connection testing
   const updateSessionMutation = useMutation({
     mutationFn: async (sessionId: string) => {
-      const response = await fetch('/api/guest/update-session', {
+      // Validate base64 format before sending to server
+      try {
+        const cleanSessionId = sessionId.trim();
+        // Test if it's valid base64 by attempting to decode it
+        const decoded = atob(cleanSessionId);
+        // Test if decoded content is valid JSON
+        JSON.parse(decoded);
+      } catch (error) {
+        throw new Error('Invalid session ID format. Please ensure you\'re providing valid base64-encoded credentials.');
+      }
+
+      const response = await fetch('/api/guest/verify-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          phoneNumber: phoneNumber,
-          newSessionId: sessionId.trim() 
-        }),
+        body: JSON.stringify({ sessionId: sessionId.trim() }),
       });
 
       if (!response.ok) {
@@ -170,28 +178,53 @@ export default function GuestBotManagement() {
       return response.json();
     },
     onSuccess: (data) => {
-      if (data.success && data.connectionOpen) {
+      setBotInfo(data);
+      setPhoneNumber(data.phoneNumber);
+      setGuestToken(data.token);
+
+      // Check if connection was actually successful and credentials are valid
+      if (data.success && data.botActive && !data.credentialValidationFailed) {
         setCurrentStep('dashboard');
-        setAuthenticatedBotId(data.botId || authenticatedBotId);
-        
-        const successMessage = data.successMessageSent 
-          ? "✅ New session ID updated successfully! Connection verified and success message sent to your WhatsApp."
-          : "✅ New session ID updated successfully! Connection verified.";
-        
+        setAuthenticatedBotId(data.botId);
         toast({
           title: "Session Updated!",
-          description: successMessage,
+          description: `✅ New session ID updated successfully! Your bot ${data.phoneNumber} is now connected and ready to manage.`,
         });
         
         // Clear the session input since update was successful
         setSessionId("");
         
         // Refresh the bot data
-        queryClient.invalidateQueries({ queryKey: ["/api/guest/server-bots", phoneNumber] });
+        queryClient.invalidateQueries({ queryKey: ["/api/guest/server-bots", data.phoneNumber] });
+      } else if (data.success && data.connectionUpdated && !data.credentialValidationFailed) {
+        setCurrentStep('dashboard');
+        setAuthenticatedBotId(data.botId);
+        toast({
+          title: "Session Updated!",
+          description: "✅ New session ID tested successfully! Your bot is reconnecting and a success message has been sent to your WhatsApp.",
+        });
+        
+        // Clear the session input since update was successful
+        setSessionId("");
+        
+        // Refresh the bot data after a short delay
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ["/api/guest/server-bots", data.phoneNumber] });
+        }, 3000);
       } else {
+        // Credentials failed validation - stay in inactive state
+        let description = "New session update failed - connection could not be verified";
+        if (data.credentialValidationFailed || (data.message && data.message.includes("validation failed"))) {
+          description = "The new credentials you provided are invalid or expired. Please get a fresh session ID.";
+        } else if (data.message && data.message.includes("Connection Failure") || data.message.includes("401")) {
+          description = "Connection test failed - your new credentials are invalid or expired. Please get a fresh session ID.";
+        } else if (data.message && data.message.includes("failed")) {
+          description = "Connection test failed. Please ensure your new credentials are current and valid.";
+        }
+        
         toast({
           title: "Update Failed",
-          description: data.message || "New session update failed - connection could not be verified",
+          description: description,
           variant: "destructive"
         });
       }
