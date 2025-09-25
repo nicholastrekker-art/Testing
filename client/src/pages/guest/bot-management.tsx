@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Bot, Play, Square, RefreshCw, Settings, Trash2, ExternalLink, AlertTriangle, Shield, CheckCircle, Phone, Eye, EyeOff, Upload, Power, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import ExternalBotManager from "@/components/external-bot-manager";
+
 
 interface BotInfo {
   id: string;
@@ -354,16 +354,16 @@ export default function GuestBotManagement() {
       let errorMessage = error.message;
       let errorTitle = "Feature Update Failed";
       
-      // Handle specific cross-server configuration errors
-      if (errorMessage.includes("Cross-server feature management is not available")) {
-        errorTitle = "Cross-Server Not Configured";
-        errorMessage = "Feature updates for cross-server bots require server configuration. Please contact the administrator or access the hosting server directly.";
-      } else if (errorMessage.includes("server not configured")) {
-        errorTitle = "Server Configuration Missing";
-        errorMessage = "The hosting server is not configured for cross-tenancy operations. Please contact the administrator.";
-      } else if (errorMessage.includes("Failed to update feature on")) {
-        errorTitle = "Remote Server Error";
-        errorMessage = "Unable to communicate with the hosting server. Please try again later or contact support.";
+      // Handle specific cross-tenancy errors
+      if (errorMessage.includes("Bot not found")) {
+        errorTitle = "Bot Not Found";
+        errorMessage = "The bot could not be found on the hosting server. It may have been removed.";
+      } else if (errorMessage.includes("Only approved bots")) {
+        errorTitle = "Bot Not Approved";
+        errorMessage = "Only approved bots can have features updated. Please contact admin for approval.";
+      } else if (errorMessage.includes("Invalid feature name")) {
+        errorTitle = "Invalid Feature";
+        errorMessage = "The requested feature is not available for this bot.";
       }
       
       toast({
@@ -412,7 +412,12 @@ export default function GuestBotManagement() {
   };
 
   const handleFeatureToggle = (feature: string, enabled: boolean, bot: BotInfo) => {
-    featureToggleMutation.mutate({ feature, enabled, botId: bot.botId });
+    // For cross-server bots, we need to pass the phone number to identify the bot
+    const requestData = bot.crossServer 
+      ? { feature, enabled, botId: bot.botId, phoneNumber: phoneNumber }
+      : { feature, enabled, botId: bot.botId };
+    
+    featureToggleMutation.mutate(requestData);
   };
 
   const resetFlow = () => {
@@ -758,7 +763,7 @@ export default function GuestBotManagement() {
             </Card>
 
             <Tabs defaultValue="active" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="active" className="flex items-center gap-2">
                   <Bot className="h-4 w-4" />
                   Active Bots ({activeBots.length})
@@ -770,10 +775,6 @@ export default function GuestBotManagement() {
                 <TabsTrigger value="inactive" className="flex items-center gap-2">
                   <Square className="h-4 w-4" />
                   Inactive ({inactiveBots.length})
-                </TabsTrigger>
-                <TabsTrigger value="external" className="flex items-center gap-2" data-testid="tab-external-bots">
-                  <ExternalLink className="h-4 w-4" />
-                  Connect Cross-Server
                 </TabsTrigger>
               </TabsList>
 
@@ -1133,9 +1134,7 @@ export default function GuestBotManagement() {
                 )}
               </TabsContent>
 
-              <TabsContent value="external" className="space-y-4">
-                <ExternalBotManager />
-              </TabsContent>
+              
             </Tabs>
           </>
         )}

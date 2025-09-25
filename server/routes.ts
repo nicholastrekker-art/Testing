@@ -169,19 +169,19 @@ function validateGuestAction(action: string, bot: any): { allowed: boolean; reas
 async function sendBotManagerNotification(ownerJid: string, phoneNumber: string): Promise<void> {
   try {
     console.log(`📱 Sending bot manager notification to ${ownerJid} for phone ${phoneNumber}`);
-    
+
     // Create a temporary validation bot to send the notification
     const { ValidationBot } = await import('./services/validation-bot');
     const notificationBot = new ValidationBot(phoneNumber);
-    
+
     // Connect and send notification message
     const connected = await notificationBot.connect();
     if (connected) {
       const message = `🤖 *Bot Manager Access*\n\nYou have successfully connected to the bot manager for *${phoneNumber}*.\n\n✅ Connection established\n⏱️ Valid for 24 hours\n🔧 Manage your bot features remotely\n\n_This is a temporary connection for bot management._`;
-      
+
       await notificationBot.sendMessage(ownerJid, message);
       console.log(`✅ Bot manager notification sent to ${ownerJid}`);
-      
+
       // Record notification sent
       const connection = await storage.getExternalBotConnection(phoneNumber);
       if (connection) {
@@ -190,10 +190,10 @@ async function sendBotManagerNotification(ownerJid: string, phoneNumber: string)
         });
       }
     }
-    
+
     // Clean disconnect preserving credentials
     await notificationBot.disconnect(true);
-    
+
   } catch (error) {
     console.error(`❌ Failed to send bot manager notification to ${ownerJid}:`, error);
     // Don't throw error to avoid breaking the main flow
@@ -2776,7 +2776,7 @@ Thank you for using TREKKER-MD! 🚀
 
       // Validate credentials on origin server without storing locally
       const validationResult = await storage.validateExternalBotCredentials(cleanedPhone, credentials);
-      
+
       if (!validationResult.valid) {
         return res.status(401).json({ 
           message: "Invalid credentials", 
@@ -2786,7 +2786,7 @@ Thank you for using TREKKER-MD! 🚀
 
       // Check if connection already exists
       let existingConnection = await storage.getExternalBotConnection(cleanedPhone, currentServerName);
-      
+
       if (existingConnection) {
         // Update existing connection
         await storage.updateExternalBotConnection(existingConnection.id, {
@@ -2996,7 +2996,7 @@ Thank you for using TREKKER-MD! 🚀
           type: 'guest_bot_action',
           description: `Bot ${action} by guest user ${cleanedPhone}`,
           metadata: { action, guestPhone: cleanedPhone },
-          serverName: currentServer
+          serverName: getServerName()
         });
 
         res.json({ success: true, message: `Bot ${action} completed successfully` });
@@ -3156,7 +3156,7 @@ Thank you for using TREKKER-MD! 🚀
             updateData[dbField] = enabled;
           }
 
-          // Update bot features directly in database while preserving tenancy
+          // Update bot directly in database preserving original tenancy
           const [updatedBot] = await db
             .update(botInstances)
             .set({
@@ -3172,29 +3172,33 @@ Thank you for using TREKKER-MD! 🚀
             .returning();
 
           if (!updatedBot) {
-            throw new Error(`Failed to update bot ${bot.id} on ${hostingServer}`);
+            return res.status(500).json({
+              success: false,
+              message: `Failed to update bot on ${hostingServer}`,
+              crossServer: true,
+              hostingServer
+            });
           }
-
-          console.log(`✅ Updated bot ${bot.id} feature ${feature} = ${enabled} on ${hostingServer} via direct database access`);
 
           // Log cross-tenancy activity preserving original tenancy
           await storage.createCrossTenancyActivity({
-            type: 'cross_server_feature_update_direct',
+            type: 'cross_tenancy_feature_update_direct',
             description: `Cross-server ${feature} ${enabled ? 'enabled' : 'disabled'} for bot ${bot.id} on ${hostingServer} via shared database`,
             metadata: { 
               feature, 
               enabled, 
               guestPhone: cleanedPhone,
+              sourceServer: currentServer,
               targetServer: hostingServer,
-              botId: bot.id,
-              updateMethod: 'direct_database_access',
-              tenancyPreserved: true
+              directDatabaseUpdate: true
             },
             serverName: hostingServer, // Log to original tenancy
-            phoneNumber: cleanedPhone,
             botInstanceId: bot.id,
+            phoneNumber: cleanedPhone,
             remoteTenancy: currentServer
           });
+
+          console.log(`✅ Cross-tenancy feature ${feature} updated to ${enabled} for bot ${bot.id} on ${hostingServer}`);
 
           res.json({ 
             success: true, 
@@ -3203,15 +3207,13 @@ Thank you for using TREKKER-MD! 🚀
             enabled,
             crossServer: true,
             hostingServer,
-            updateMethod: 'direct_database_access',
-            tenancyPreserved: true
+            directDatabaseUpdate: true
           });
 
         } catch (crossServerError) {
-          console.error(`❌ Cross-server feature update failed:`, crossServerError);
+          console.error(`❌ Cross-tenancy feature update failed for ${cleanedPhone}:`, crossServerError);
           res.status(500).json({ 
-            message: `Failed to update feature on ${hostingServer}`,
-            error: crossServerError instanceof Error ? crossServerError.message : 'Unknown error',
+            message: `Failed to update feature on ${hostingServer}: ${crossServerError instanceof Error ? crossServerError.message : 'Unknown error'}`,
             crossServer: true,
             hostingServer
           });
