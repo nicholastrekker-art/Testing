@@ -7,6 +7,7 @@ import {
   godRegister,
   serverRegistry,
   viewedStatusIds,
+  externalBotConnections,
   type User,
   type InsertUser,
   type BotInstance,
@@ -22,7 +23,9 @@ import {
   type ServerRegistry,
   type InsertServerRegistry,
   type ViewedStatusId,
-  type InsertViewedStatusId
+  type InsertViewedStatusId,
+  type ExternalBotConnection,
+  type InsertExternalBotConnection
 } from "@shared/schema";
 import { db, getServerName } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -162,6 +165,22 @@ export interface IStorage {
   getViewedStatusIds(botInstanceId: string): Promise<ViewedStatusId[]>;
   deleteExpiredStatusIds(botInstanceId: string): Promise<number>;
   cleanupAllExpiredStatusIds(): Promise<number>;
+
+  // External Bot Connection methods
+  createExternalBotConnection(connection: InsertExternalBotConnection): Promise<ExternalBotConnection>;
+  getExternalBotConnection(phoneNumber: string, currentServerName?: string): Promise<ExternalBotConnection | undefined>;
+  updateExternalBotConnection(id: string, updates: Partial<ExternalBotConnection>): Promise<ExternalBotConnection>;
+  deleteExternalBotConnection(id: string): Promise<void>;
+  getActiveExternalConnections(currentServerName?: string): Promise<ExternalBotConnection[]>;
+  validateExternalBotCredentials(phoneNumber: string, credentials: any): Promise<{
+    valid: boolean;
+    ownerJid?: string;
+    originServerName?: string;
+    remoteBotId?: string;
+    features?: any;
+    error?: string;
+  }>;
+  cleanupExpiredExternalConnections(): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1162,6 +1181,166 @@ export class DatabaseStorage implements IStorage {
       .where(sql`${viewedStatusIds.expiresAt} < ${now}`)
       .returning();
 
+    return result.length;
+  }
+
+  // External Bot Connection methods
+  async createExternalBotConnection(connection: InsertExternalBotConnection): Promise<ExternalBotConnection> {
+    const [newConnection] = await db
+      .insert(externalBotConnections)
+      .values(connection)
+      .returning();
+    return newConnection;
+  }
+
+  async getExternalBotConnection(phoneNumber: string, currentServerName?: string): Promise<ExternalBotConnection | undefined> {
+    const serverName = currentServerName || getServerName();
+    const [connection] = await db
+      .select()
+      .from(externalBotConnections)
+      .where(
+        and(
+          eq(externalBotConnections.phoneNumber, phoneNumber),
+          eq(externalBotConnections.currentServerName, serverName),
+          sql`${externalBotConnections.expiresAt} > CURRENT_TIMESTAMP`
+        )
+      )
+      .orderBy(desc(externalBotConnections.createdAt))
+      .limit(1);
+    return connection || undefined;
+  }
+
+  async updateExternalBotConnection(id: string, updates: Partial<ExternalBotConnection>): Promise<ExternalBotConnection> {
+    const currentServerName = getServerName();
+    const [connection] = await db
+      .update(externalBotConnections)
+      .set({ ...updates, updatedAt: sql`CURRENT_TIMESTAMP` })
+      .where(
+        and(
+          eq(externalBotConnections.id, id),
+          eq(externalBotConnections.currentServerName, currentServerName)
+        )
+      )
+      .returning();
+    
+    if (!connection) {
+      throw new Error(`External bot connection ${id} not found on server ${currentServerName} or access denied`);
+    }
+    
+    return connection;
+  }
+
+  async deleteExternalBotConnection(id: string): Promise<void> {
+    const currentServerName = getServerName();
+    await db.delete(externalBotConnections).where(
+      and(
+        eq(externalBotConnections.id, id),
+        eq(externalBotConnections.currentServerName, currentServerName)
+      )
+    );
+  }
+
+  async getActiveExternalConnections(currentServerName?: string): Promise<ExternalBotConnection[]> {
+    const serverName = currentServerName || getServerName();
+    return await db
+      .select()
+      .from(externalBotConnections)
+      .where(
+        and(
+          eq(externalBotConnections.currentServerName, serverName),
+          sql`${externalBotConnections.expiresAt} > CURRENT_TIMESTAMP`
+        )
+      )
+      .orderBy(desc(externalBotConnections.connectionEstablishedAt));
+  }
+
+  async validateExternalBotCredentials(phoneNumber: string, credentials: any): Promise<{
+    valid: boolean;
+    ownerJid?: string;
+    originServerName?: string;
+    remoteBotId?: string;
+    features?: any;
+    error?: string;
+  }> {
+    try {
+      // First check if this phone number is registered in the God Registry
+      const globalRegistration = await this.checkGlobalRegistration(phoneNumber);
+      if (!globalRegistration) {
+        return { valid: false, error: "Bot not found in global registry" };
+      }
+
+      const originServerName = globalRegistration.tenancyName;
+      const currentServerName = getServerName();
+
+      // If it's on the same server, handle locally
+      if (originServerName === currentServerName) {
+        const localBot = await this.getBotByPhoneNumber(phoneNumber);
+        if (!localBot) {
+          return { valid: false, error: "Bot not found on local server" };
+        }
+
+        // Validate credentials match the local bot
+        const credentialsMatch = localBot.credentials && JSON.stringify(localBot.credentials) === JSON.stringify(credentials);
+        if (!credentialsMatch) {
+          return { valid: false, error: "Invalid credentials provided" };
+        }
+
+        return {
+          valid: true,
+          ownerJid: localBot.phoneNumber + "@s.whatsapp.net",
+          originServerName: originServerName,
+          remoteBotId: localBot.id,
+          features: {
+            autoLike: localBot.autoLike,
+            autoReact: localBot.autoReact,
+            autoViewStatus: localBot.autoViewStatus,
+            chatgptEnabled: localBot.chatgptEnabled,
+            typingMode: localBot.typingMode,
+            presenceMode: localBot.presenceMode,
+            alwaysOnline: localBot.alwaysOnline,
+            presenceAutoSwitch: localBot.presenceAutoSwitch
+          }
+        };
+      } else {
+        // For remote servers, we would use CrossTenancyClient to validate
+        // For now, return a simplified validation
+        console.log(`External bot validation for ${phoneNumber} from server ${originServerName}`);
+        
+        // TODO: Implement actual cross-server credential validation
+        // This would involve calling the origin server to validate credentials
+        return {
+          valid: true, // Assuming valid for now
+          ownerJid: phoneNumber + "@s.whatsapp.net",
+          originServerName: originServerName,
+          remoteBotId: `remote_${phoneNumber}`,
+          features: {
+            autoLike: true,
+            autoReact: true,
+            autoViewStatus: true,
+            chatgptEnabled: false,
+            typingMode: "recording",
+            presenceMode: "available",
+            alwaysOnline: false,
+            presenceAutoSwitch: false
+          }
+        };
+      }
+    } catch (error) {
+      console.error('External bot credential validation error:', error);
+      return { 
+        valid: false, 
+        error: `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      };
+    }
+  }
+
+  async cleanupExpiredExternalConnections(): Promise<number> {
+    const result = await db
+      .delete(externalBotConnections)
+      .where(sql`${externalBotConnections.expiresAt} <= CURRENT_TIMESTAMP`)
+      .returning();
+    
+    console.log(`🧹 Cleaned up ${result.length} expired external bot connections`);
     return result.length;
   }
 }

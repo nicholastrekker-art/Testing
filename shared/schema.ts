@@ -116,6 +116,26 @@ export const viewedStatusIds = pgTable("viewed_status_ids", {
   serverName: text("server_name").notNull(),
 });
 
+// External bot connections table - tracks temporary connections to external bots
+export const externalBotConnections = pgTable("external_bot_connections", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  phoneNumber: text("phone_number").notNull(), // Bot's phone number
+  ownerJid: text("owner_jid").notNull(), // WhatsApp JID of the bot owner
+  originServerName: text("origin_server_name").notNull(), // Server where bot is actually hosted
+  remoteBotId: text("remote_bot_id").notNull(), // Bot ID on the origin server
+  sessionData: jsonb("session_data"), // Temporary session data for connection
+  credentialsValid: boolean("credentials_valid").default(false),
+  lastValidation: timestamp("last_validation"),
+  connectionEstablishedAt: timestamp("connection_established_at"),
+  notificationSentAt: timestamp("notification_sent_at"), // When WhatsApp notification was sent
+  features: jsonb("features").default({}), // Available features from origin server
+  tempToken: text("temp_token"), // Temporary authentication token for the session
+  expiresAt: timestamp("expires_at").notNull().default(sql`CURRENT_TIMESTAMP + INTERVAL '24 hours'`), // Connection expires after 24 hours
+  currentServerName: text("current_server_name").notNull(), // Server handling the connection
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
 // Relations
 export const botInstancesRelations = relations(botInstances, ({ many }) => ({
   commands: many(commands),
@@ -149,6 +169,17 @@ export const viewedStatusIdsRelations = relations(viewedStatusIds, ({ one }) => 
   botInstance: one(botInstances, {
     fields: [viewedStatusIds.botInstanceId],
     references: [botInstances.id],
+  }),
+}));
+
+export const externalBotConnectionsRelations = relations(externalBotConnections, ({ one }) => ({
+  originServer: one(serverRegistry, {
+    fields: [externalBotConnections.originServerName],
+    references: [serverRegistry.serverName],
+  }),
+  currentServer: one(serverRegistry, {
+    fields: [externalBotConnections.currentServerName],
+    references: [serverRegistry.serverName],
   }),
 }));
 
@@ -199,6 +230,12 @@ export const insertViewedStatusIdSchema = createInsertSchema(viewedStatusIds).om
   viewedAt: true,
 });
 
+export const insertExternalBotConnectionSchema = createInsertSchema(externalBotConnections).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -223,3 +260,6 @@ export type InsertServerRegistry = z.infer<typeof insertServerRegistrySchema>;
 
 export type ViewedStatusId = typeof viewedStatusIds.$inferSelect;
 export type InsertViewedStatusId = z.infer<typeof insertViewedStatusIdSchema>;
+
+export type ExternalBotConnection = typeof externalBotConnections.$inferSelect;
+export type InsertExternalBotConnection = z.infer<typeof insertExternalBotConnectionSchema>;
