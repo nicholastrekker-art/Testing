@@ -2330,6 +2330,9 @@ Thank you for using TREKKER-MD! 🚀
                   eq(botInstances.serverName, botServer)
                 )
               );
+            
+            // Set validation failure flag for response
+            botActive = false;
           }
         } catch (testError) {
           console.error(`❌ Error testing credentials for ${phoneNumber}:`, testError);
@@ -2347,14 +2350,31 @@ Thank you for using TREKKER-MD! 🚀
                 eq(botInstances.serverName, botServer)
               )
             );
+          
+          // Set validation failure flag for response
+          botActive = false;
         }
       }
 
       // Generate guest token for future authenticated requests
       const token = generateGuestToken(phoneNumber, bot.id);
 
+      // Get updated bot status after credential testing
+      const updatedBotInstance = await db.select()
+        .from(botInstances)
+        .where(
+          and(
+            eq(botInstances.phoneNumber, phoneNumber),
+            eq(botInstances.serverName, botServer)
+          )
+        )
+        .limit(1);
+
+      const updatedBot = updatedBotInstance[0] || bot;
+      const credentialTestFailed = !updatedBot.credentialVerified && updatedBot.invalidReason;
+
       res.json({
-        success: true,
+        success: botActive || (!credentials), // Success if bot is active OR if no credentials were tested
         phoneNumber: `+${phoneNumber}`,
         botActive,
         botServer,
@@ -2362,14 +2382,17 @@ Thank you for using TREKKER-MD! 🚀
         token,
         message: botActive 
           ? "Bot is active and connected" 
-          : "Bot found but not currently connected",
+          : credentialTestFailed 
+            ? `Credential validation failed: ${updatedBot.invalidReason}`
+            : "Bot found but not currently connected",
         botId: bot.id,
         botName: bot.name,
         lastActivity: bot.lastActivity,
-        connectionUpdated: !botActive && credentials ? true : false,
+        connectionUpdated: botActive && credentials ? true : false,
         tenancyPreserved: true,
         updateMethod: 'direct_database_access',
-        nextStep: botActive ? 'authenticated' : 'update_credentials'
+        nextStep: botActive ? 'authenticated' : 'update_credentials',
+        credentialValidationFailed: credentialTestFailed
       });
 
     } catch (error) {

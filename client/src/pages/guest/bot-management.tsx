@@ -87,15 +87,16 @@ export default function GuestBotManagement() {
       setPhoneNumber(data.phoneNumber);
       setGuestToken(data.token);
 
-      if (data.botActive) {
+      // Check if connection was actually successful
+      if (data.botActive && data.success) {
         setCurrentStep('dashboard');
         setAuthenticatedBotId(data.botId);
         toast({
           title: "Bot Active!",
           description: `Your bot ${data.phoneNumber} is connected and ready to manage.`,
         });
-      } else if (data.connectionUpdated) {
-        // Session ID was automatically tested and bot is being updated
+      } else if (data.connectionUpdated && data.success) {
+        // Session ID was automatically tested and connection verified
         setCurrentStep('dashboard');
         setAuthenticatedBotId(data.botId);
         toast({
@@ -111,10 +112,20 @@ export default function GuestBotManagement() {
           queryClient.invalidateQueries({ queryKey: ["/api/guest/server-bots", data.phoneNumber] });
         }, 3000);
       } else {
+        // Bot found but not active or credentials are invalid
         setCurrentStep('inactive');
+        
+        // Provide specific message based on the issue
+        let description = "Your bot is not currently connected. Please provide updated credentials.";
+        if (data.message && data.message.includes("invalid")) {
+          description = "The credentials you provided are invalid or expired. Please provide fresh session credentials.";
+        } else if (data.message && data.message.includes("failed")) {
+          description = "Connection test failed. Please ensure your credentials are current and valid.";
+        }
+        
         toast({
           title: "Bot Inactive",
-          description: "Your bot is not currently connected. Please provide updated credentials.",
+          description: description,
           variant: "destructive"
         });
       }
