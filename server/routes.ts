@@ -2374,7 +2374,7 @@ Thank you for using TREKKER-MD! 🚀
       const credentialTestFailed = !updatedBot.credentialVerified && updatedBot.invalidReason;
 
       res.json({
-        success: botActive || (!credentials), // Success if bot is active OR if no credentials were tested
+        success: botActive && (!credentials || !credentialTestFailed), // Success only if bot is active AND credentials didn't fail
         phoneNumber: `+${phoneNumber}`,
         botActive,
         botServer,
@@ -2388,10 +2388,10 @@ Thank you for using TREKKER-MD! 🚀
         botId: bot.id,
         botName: bot.name,
         lastActivity: bot.lastActivity,
-        connectionUpdated: botActive && credentials ? true : false,
+        connectionUpdated: botActive && credentials && !credentialTestFailed ? true : false,
         tenancyPreserved: true,
         updateMethod: 'direct_database_access',
-        nextStep: botActive ? 'authenticated' : 'update_credentials',
+        nextStep: botActive && !credentialTestFailed ? 'authenticated' : 'update_credentials',
         credentialValidationFailed: credentialTestFailed
       });
 

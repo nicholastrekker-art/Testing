@@ -87,15 +87,15 @@ export default function GuestBotManagement() {
       setPhoneNumber(data.phoneNumber);
       setGuestToken(data.token);
 
-      // Check if connection was actually successful
-      if (data.botActive && data.success) {
+      // Check if connection was actually successful and credentials are valid
+      if (data.success && data.botActive && !data.credentialValidationFailed) {
         setCurrentStep('dashboard');
         setAuthenticatedBotId(data.botId);
         toast({
           title: "Bot Active!",
           description: `Your bot ${data.phoneNumber} is connected and ready to manage.`,
         });
-      } else if (data.connectionUpdated && data.success) {
+      } else if (data.success && data.connectionUpdated && !data.credentialValidationFailed) {
         // Session ID was automatically tested and connection verified
         setCurrentStep('dashboard');
         setAuthenticatedBotId(data.botId);
@@ -112,13 +112,15 @@ export default function GuestBotManagement() {
           queryClient.invalidateQueries({ queryKey: ["/api/guest/server-bots", data.phoneNumber] });
         }, 3000);
       } else {
-        // Bot found but not active or credentials are invalid
+        // Bot found but credentials failed validation or bot is not active
         setCurrentStep('inactive');
         
         // Provide specific message based on the issue
         let description = "Your bot is not currently connected. Please provide updated credentials.";
-        if (data.message && data.message.includes("invalid")) {
+        if (data.credentialValidationFailed || (data.message && data.message.includes("validation failed"))) {
           description = "The credentials you provided are invalid or expired. Please provide fresh session credentials.";
+        } else if (data.message && data.message.includes("Connection Failure") || data.message.includes("401")) {
+          description = "Connection test failed - your credentials are invalid or expired. Please get a new session ID.";
         } else if (data.message && data.message.includes("failed")) {
           description = "Connection test failed. Please ensure your credentials are current and valid.";
         }
