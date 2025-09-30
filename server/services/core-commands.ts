@@ -621,9 +621,16 @@ commandRegistry.register({
       
       let targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
       
-      // If no user specified, use sender
+      // If no user specified, check if in private conversation
       if (!targetUser) {
-        targetUser = message.key.participant || message.key.remoteJid;
+        // Check if this is a private conversation (not a group)
+        if (!from.includes('@g.us')) {
+          // In private conversation, use the other participant's JID
+          targetUser = from;
+        } else {
+          // In group, use sender
+          targetUser = message.key.participant || message.key.remoteJid;
+        }
       }
 
       await respond('🖼️ *Getting profile picture...*\nPlease wait...');
@@ -654,7 +661,7 @@ commandRegistry.register({
   description: 'Block a user (Owner only)',
   category: 'ADMIN',
   handler: async (context: CommandContext) => {
-    const { respond, message, client } = context;
+    const { respond, message, client, from } = context;
 
     // Check if sender is bot owner
     if (!message.key.fromMe) {
@@ -666,11 +673,18 @@ commandRegistry.register({
       const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
       const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
       
-      const targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
+      let targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
 
+      // If no user specified, check if in private conversation
       if (!targetUser) {
-        await respond('❌ Please reply to a message or tag a user to block!');
-        return;
+        // Check if this is a private conversation (not a group)
+        if (!from.includes('@g.us')) {
+          // In private conversation, use the other participant's JID
+          targetUser = from;
+        } else {
+          await respond('❌ Please reply to a message or tag a user to block!');
+          return;
+        }
       }
 
       await client.updateBlockStatus(targetUser, 'block');
@@ -689,7 +703,7 @@ commandRegistry.register({
   description: 'Unblock a user (Owner only)',
   category: 'ADMIN',
   handler: async (context: CommandContext) => {
-    const { respond, message, client } = context;
+    const { respond, message, client, from } = context;
 
     // Check if sender is bot owner
     if (!message.key.fromMe) {
@@ -701,11 +715,18 @@ commandRegistry.register({
       const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
       const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
       
-      const targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
+      let targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
 
+      // If no user specified, check if in private conversation
       if (!targetUser) {
-        await respond('❌ Please reply to a message or tag a user to unblock!');
-        return;
+        // Check if this is a private conversation (not a group)
+        if (!from.includes('@g.us')) {
+          // In private conversation, use the other participant's JID
+          targetUser = from;
+        } else {
+          await respond('❌ Please reply to a message or tag a user to unblock!');
+          return;
+        }
       }
 
       await client.updateBlockStatus(targetUser, 'unblock');
@@ -765,7 +786,7 @@ commandRegistry.register({
   description: 'Get user bio/status message',
   category: 'GENERAL',
   handler: async (context: CommandContext) => {
-    const { respond, message, client, args } = context;
+    const { respond, message, client, args, from } = context;
 
     try {
       // Get quoted message or tagged user
@@ -774,9 +795,16 @@ commandRegistry.register({
       
       let targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
       
-      // If no user specified, use sender
+      // If no user specified, check if in private conversation
       if (!targetUser) {
-        targetUser = message.key.participant || message.key.remoteJid;
+        // Check if this is a private conversation (not a group)
+        if (!from.includes('@g.us')) {
+          // In private conversation, use the other participant's JID
+          targetUser = from;
+        } else {
+          // In group, use sender
+          targetUser = message.key.participant || message.key.remoteJid;
+        }
       }
 
       // If command has "set" as first argument, handle setting bio (owner only)
