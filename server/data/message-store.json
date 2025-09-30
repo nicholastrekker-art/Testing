@@ -1,1038 +1,75 @@
 {
-  "3EB0376841FA0AC01D49BC": {
-    "id": "3EB0376841FA0AC01D49BC",
+  "3EB080B3D422BAB749687F": {
+    "id": "3EB080B3D422BAB749687F",
     "fromJid": "254799257758:29@s.whatsapp.net",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
     "type": "extendedTextMessage",
-    "timestamp": 1759267494529,
+    "timestamp": 1759268201757,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758:29@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0376841FA0AC01D49BC"
+        "id": "3EB080B3D422BAB749687F"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
         }
       },
-      "messageTimestamp": "1759267493",
+      "messageTimestamp": "1759268199",
       "status": "PENDING"
     }
   },
-  "3EB08A1C55D265F7281708": {
-    "id": "3EB08A1C55D265F7281708",
-    "fromJid": "254101793738:16@s.whatsapp.net",
+  "ACCEADAE9AD7D458BF9CADE32BF2CA34": {
+    "id": "ACCEADAE9AD7D458BF9CADE32BF2CA34",
+    "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267498197,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB08A1C55D265F7281708"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267497",
-      "status": "PENDING"
-    }
-  },
-  "3EB04FB474E639A0C478CD": {
-    "id": "3EB04FB474E639A0C478CD",
-    "fromJid": "254114282300:3@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"maina\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267502572,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254114282300:3@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB04FB474E639A0C478CD"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"maina\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267501",
-      "status": "PENDING"
-    }
-  },
-  "AC09986BE0B32B51B8A4656B1566A6CE": {
-    "id": "AC09986BE0B32B51B8A4656B1566A6CE",
-    "fromJid": "254101793738@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759267503575,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738@s.whatsapp.net",
-        "fromMe": true,
-        "id": "AC09986BE0B32B51B8A4656B1566A6CE"
-      },
-      "messageTimestamp": 1759267502,
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "protocolMessage": {
-          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
-          "peerDataOperationRequestResponseMessage": {
-            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
-            "stanzaId": "3EB0CE9745D8CC6A241495",
-            "peerDataOperationResult": [
-              {
-                "mediaUploadResult": "SUCCESS",
-                "placeholderMessageResendResponse": {
-                  "webMessageInfoBytes": "CjYKEHN0YXR1c0Bicm9hZGNhc3QQABogQTU5RThDQkRFMjZBN0RCRDczQTA0RjREOTRGRERGRUIS6QUawQUK+gFodHRwczovL21tZy53aGF0c2FwcC5uZXQvbzEvdi90MjQvZjIvbTIzMS9BUU1oNFVmY0t0UGsyTU1GTTZiUGtCTXljRE5OLWV6RGMxVUxjY1VYcHJOTXJBblpCUUhYeWpORnNwdkpWMHFtZ0RVaF80c2FoOUFxTWdsczMyVWZKUG1HUjhDZ215V3R0TnRIRkt3cXNBP2NjYj05LTQmb2g9MDFfUTVBYTJnRVBULVNhUjJpV2U2alhUU1lITFg0UnlRcVR3NE84TTVvOXA1bThUd3A5bHcmb2U9NjkwMzFCQTAmX25jX3NpZD1lNmVkNmMmbW1zMz10cnVlEgppbWFnZS9qcGVnIiCwvnFbsDeUZ5o1SCUPLdXhsFomhLBbNuQQ7j1RDZ3hXSjNqQkwgAo4gAhCIDHJAri2lLJ75DYKLjPh3dkQPOwO+Y9oUWRVb/YMmO3ySiA4/9hr6+Gg+BsB5NgwNmB3Um3IW8rOt+OW6n4PL3CtNVrYAS9vMS92L3QyNC9mMi9tMjMxL0FRTWg0VWZjS3RQazJNTUZNNmJQa0JNeWNETk4tZXpEYzFVTGNjVVhwck5NckFuWkJRSFh5ak5Gc3B2SlYwcW1nRFVoXzRzYWg5QXFNZ2xzMzJVZkpQbUdSOENnbXlXdHROdEhGS3dxc0E/Y2NiPTktNCZvaD0wMV9RNUFhMmdFUFQtU2FSMmlXZTZqWFRTWUhMWDRSeVFxVHc0TzhNNW85cDVtOFR3cDlsdyZvZT02OTAzMUJBMCZfbmNfc2lkPWU2ZWQ2Y2CKvu7GBooBA9gDAKoBKF+hwa787wvLtjctohWT+rLS0ouPZCgNWh22flz1yfNkGpBsE3KkYn6wAb98sAHhyASwAcvFAbAB4p4CugEgyYybEoa0Jc49OMzeR8s3Gd1k9twlsE37FxA4/XJoydiaAiIaII52bYYFswmWgVUkdNl09zNZRC6BItjWsHxzJS/1sJy/GLO+7sYGKhsyNTQxMTM3NjUyNTBAcy53aGF0c2FwcC5uZXSyAjYKNE1lZGlhLy5TdGF0dXNlcy8xYzhmZGRkNGJjMjI0ZDIxYWZiYTkyZGYxZThmMjYxNS5qcGeKAyCOdm2GBbMJloFVJHTZdPczWUQugSLY1rB8cyUv9bCcv/IDFgoUAQsvOSgV0MpKKWtn+CVGbnzkOmeIBAA="
-                }
-              }
-            ]
-          }
-        }
-      }
-    }
-  },
-  "3EB036FC123457BA0FDA43": {
-    "id": "3EB036FC123457BA0FDA43",
-    "fromJid": "254797582445:22@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267508447,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254797582445:22@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB036FC123457BA0FDA43"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267507",
-      "status": "PENDING"
-    }
-  },
-  "3EB067461D3F879DFF7C08": {
-    "id": "3EB067461D3F879DFF7C08",
-    "fromJid": "254768989551:70@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267510332,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254768989551:70@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB067461D3F879DFF7C08"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267509",
-      "status": "PENDING"
-    }
-  },
-  "AC036326445A73B66A2CF6030E11DCC2": {
-    "id": "AC036326445A73B66A2CF6030E11DCC2",
-    "fromJid": "254101793738@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759267512821,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738@s.whatsapp.net",
-        "fromMe": true,
-        "id": "AC036326445A73B66A2CF6030E11DCC2"
-      },
-      "messageTimestamp": 1759267511,
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "protocolMessage": {
-          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
-          "peerDataOperationRequestResponseMessage": {
-            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
-            "stanzaId": "3EB031E72814459BCACF02",
-            "peerDataOperationResult": [
-              {
-                "mediaUploadResult": "SUCCESS",
-                "placeholderMessageResendResponse": {
-                  "webMessageInfoBytes": "CjYKEHN0YXR1c0Bicm9hZGNhc3QQABogQUMwMDM1QkIxMDhCREJGQzFBQ0Y1QURBRTc0RkUxMDgSmAcalQcK+gFodHRwczovL21tZy53aGF0c2FwcC5uZXQvbzEvdi90MjQvZjIvbTIzOC9BUVA3V0JBeGVfdnBYbWVxbjFucGUtbmFtdkpqQVo0cFdNWmJ4REdvUDRGNGZVZDVYRVRxd1NybzlHdjMyQm5OVTFmVEU1WHJOaEppa0l4WWxsQlIyMllMNEh4RjJqS1NUZHFKOUJqOUxRP2NjYj05LTQmb2g9MDFfUTVBYTJnRktSRU1VOFR5a25NVHFzUnQxRmRiaWxvajJQcjFaTldZbDBTX2lEdGtTQWcmb2U9NjkwM0JCNjkmX25jX3NpZD1lNmVkNmMmbW1zMz10cnVlEgppbWFnZS9qcGVnGkVCcm8gaGFzIDkgcGVuYWx0aWVzIGluIDYgZ2FtZXMsIGV2ZW4gUm9uYWxkbyBpcyBhZnJhaWQgb2YgaGlt8J+YgvCfmIIiIAyctvhZGWD5De8CBmEiF4qDTpskutEHlR41smaXhP3VKOSvBTC4CDiOBUIg5TSyqN73K9YsOYyeaeGahsrcNOIVxM1Qq0ElbaFNK/BKIB5aNVdLEjhSwehZ0BS2mnD+hVDshz1SOul+wIydTJAJWtgBL28xL3YvdDI0L2YyL20yMzgvQVFQN1dCQXhlX3ZwWG1lcW4xbnBlLW5hbXZKakFaNHBXTVpieERHb1A0RjRmVWQ1WEVUcXdTcm85R3YzMkJuTlUxZlRFNVhyTmhKaWtJeFlsbEJSMjJZTDRIeEYyaktTVGRxSjlCajlMUT9jY2I9OS00Jm9oPTAxX1E1QWEyZ0ZLUkVNVThUeWtuTVRxc1J0MUZkYmlsb2oyUHIxWk5XWWwwU19pRHRrU0FnJm9lPTY5MDNCQjY5Jl9uY19zaWQ9ZTZlZDZjYMyJ8cYGigEG2AMAgAQA0gGhAS92L3Q2Mi4zNTg1MC0yNC81NTgwMDYyNDJfMTEwNDY0MzgzMTg3MDczMl82MjQzMzU5MjYwNjExMDczNzc2X24uZW5jP2NjYj0xMS00Jm9oPTAxX1E1QWEyZ0UydzQwemJNbEp6cFZzTVh2amRETDR4TUhLX3drWHVFZlVVMEFJcUJoTGhBJm9lPTY5MDNDNTMzJl9uY19zaWQ9NWUwM2Uw2gEgUkMaFvB46Eu75GwEdWvl2lQs9wQZ0U9Q+9hxEspmBCDiASChsT7VI4ZwPJHmMsryCgoI6ihvcBL9xY6qyJw1RejSkxiulfHGBiobMjYwOTYxMDAwNDc1QHMud2hhdHNhcHAubmV0sgI2CjRNZWRpYS8uU3RhdHVzZXMvMWE5NTQ1OTRjZmVjNGMzNmJjYjRjMWM0ZTRkYzgwMmMuanBnigMg0Yie+HSR3rjyauQdeWB7Ow46yCpn8Lk/v29lzwF0d6ryAxYKFAELB8QK8ZLxFlIFJPR3SFLXoGQ8iAQA"
-                }
-              }
-            ]
-          }
-        }
-      }
-    }
-  },
-  "3EB02CCB3DCCFA691760FE": {
-    "id": "3EB02CCB3DCCFA691760FE",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "🚨 *DELETED MEDIA RECOVERED* 🚨\n\n🗑️ *Deleted by:* Unknown\n📎 *Type:* image\n💬 *Caption:* Bro has 9 penalties in 6 games, even Ronaldo is afraid of him😂😂\n📏 *Size:* 86KB\n\n📞 *Owner:* +254704897825",
-    "type": "imageMessage",
-    "timestamp": 1759267524734,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB02CCB3DCCFA691760FE"
-      },
-      "message": {
-        "imageMessage": {
-          "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m239/AQOYNJewvqWjy3YWnTZi_IYqB3yuc7znPHa8Vp-Fsyg0geUQ0_2QLhHoeiwITq-FGbQMMdsuOH9ppsCsZcK-ZW-mm06zjyjOLXLamYfRWA?ccb=9-4&oh=01_Q5Aa2gF8r3WTBX9AzMgPnCAdl6u7mthw93P4HeQrIjcTUxMqCA&oe=6903BAD5&_nc_sid=e6ed6c&mms3=true",
-          "mimetype": "image/jpeg",
-          "caption": "🚨 *DELETED MEDIA RECOVERED* 🚨\n\n🗑️ *Deleted by:* Unknown\n📎 *Type:* image\n💬 *Caption:* Bro has 9 penalties in 6 games, even Ronaldo is afraid of him😂😂\n📏 *Size:* 86KB\n\n📞 *Owner:* +254704897825",
-          "fileSha256": "Hlo1V0sSOFLB6FnQFLaacP6FUOyHPVI66X7AjJ1MkAk=",
-          "fileLength": "88058",
-          "mediaKey": "a4Us26NDrIHxg5aV5GgFUHWSq8jxtQMpt2L9o2ZNiic=",
-          "fileEncSha256": "PRn2m9nLtWrnUseZj8fqJBdPfFcatit2tux9CvuJO/8=",
-          "directPath": "/o1/v/t24/f2/m239/AQOYNJewvqWjy3YWnTZi_IYqB3yuc7znPHa8Vp-Fsyg0geUQ0_2QLhHoeiwITq-FGbQMMdsuOH9ppsCsZcK-ZW-mm06zjyjOLXLamYfRWA?ccb=9-4&oh=01_Q5Aa2gF8r3WTBX9AzMgPnCAdl6u7mthw93P4HeQrIjcTUxMqCA&oe=6903BAD5&_nc_sid=e6ed6c",
-          "mediaKeyTimestamp": "1759267524"
-        }
-      },
-      "messageTimestamp": "1759267524",
-      "status": "PENDING"
-    }
-  },
-  "AC0035BB108BDBFC1ACF5ADAE74FE108": {
-    "id": "AC0035BB108BDBFC1ACF5ADAE74FE108",
-    "fromJid": "status@broadcast",
-    "senderJid": "self",
-    "content": "Bro has 9 penalties in 6 games, even Ronaldo is afraid of him😂😂",
+    "content": ".list",
     "type": "unknown",
-    "timestamp": 1759267525318,
+    "timestamp": 1759268206671,
     "originalMessage": {
       "key": {
-        "remoteJid": "status@broadcast",
-        "fromMe": false,
-        "id": "AC0035BB108BDBFC1ACF5ADAE74FE108",
-        "participant": "260961000475@s.whatsapp.net",
-        "participantLid": "126349901566044@lid"
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "ACCEADAE9AD7D458BF9CADE32BF2CA34"
       },
-      "messageTimestamp": 1759267524,
-      "pushName": "Astro The Unknown Alien 📍",
-      "broadcast": true,
       "message": {
-        "senderKeyDistributionMessage": {
-          "groupId": "status@broadcast",
-          "axolotlSenderKeyDistributionMessage": "MwjR+NXgBhAAGiBsOYZg4cEPEClIjkHdN6CNWXZx05HWYFP0UqV2tInkdyIhBdKqwYYPjNMyb4IAMRig02KonUY0KL0uZZ8kijfglx0l"
-        },
-        "imageMessage": {
-          "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m238/AQP7WBAxe_vpXmeqn1npe-namvJjAZ4pWMZbxDGoP4F4fUd5XETqwSro9Gv32BnNU1fTE5XrNhJikIxYllBR22YL4HxF2jKSTdqJ9Bj9LQ?ccb=9-4&oh=01_Q5Aa2gFKREMU8TyknMTqsRt1Fdbiloj2Pr1ZNWYl0S_iDtkSAg&oe=6903BB69&_nc_sid=e6ed6c&mms3=true",
-          "mimetype": "image/jpeg",
-          "caption": "Bro has 9 penalties in 6 games, even Ronaldo is afraid of him😂😂",
-          "fileSha256": "DJy2+FkZYPkN7wIGYSIXioNOmyS60QeVHjWyZpeE/dU=",
-          "fileLength": "88036",
-          "height": 1080,
-          "width": 654,
-          "mediaKey": "5TSyqN73K9YsOYyeaeGahsrcNOIVxM1Qq0ElbaFNK/A=",
-          "fileEncSha256": "Hlo1V0sSOFLB6FnQFLaacP6FUOyHPVI66X7AjJ1MkAk=",
-          "directPath": "/o1/v/t24/f2/m238/AQP7WBAxe_vpXmeqn1npe-namvJjAZ4pWMZbxDGoP4F4fUd5XETqwSro9Gv32BnNU1fTE5XrNhJikIxYllBR22YL4HxF2jKSTdqJ9Bj9LQ?ccb=9-4&oh=01_Q5Aa2gFKREMU8TyknMTqsRt1Fdbiloj2Pr1ZNWYl0S_iDtkSAg&oe=6903BB69&_nc_sid=e6ed6c",
-          "mediaKeyTimestamp": "1759265996",
-          "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkJCQkKCQoLCwoODw0PDhUTERETFR8WGBYYFh8wHiMeHiMeMCozKScpMypMOzU1O0xXSUVJV2pfX2qFf4WuruoBCQkJCQoJCgsLCg4PDQ8OFRMRERMVHxYYFhgWHzAeIx4eIx4wKjMpJykzKkw7NTU7TFdJRUlXal9faoV/ha6u6v/CABEIAIcAUgMBIgACEQEDEQH/xAAzAAACAwEBAQAAAAAAAAAAAAAFBgADBAIHAQEAAwADAQAAAAAAAAAAAAAAAAIDAQQFBv/aAAwDAQACEAMQAAAAQPnX2qas+Tiba5jgUTVAollYcSQCd9Gszm+684Vc1wxl60chTXsxB8kgNQdiV+bbDyZydSZji8ojI+pnYMnnXZAKjD4XjzdV9iplXOutGV4tbcmAxe9Sk0z21MV7AiYYFOIjvFg67n87Z0Psia7xbJuAhl8wLdNm1LZkeO1pgud3SK3ZMvFq7N6uawhxfwFsv5e+qpvy6PykdAbkfH56tPcZyPuwV5+4T6aJNRJtcSVcow4+dJJlpsBVOYDmh0bbBt3E4JLrFZNdrt58y72wr9Vcaza8+Sk190HR8/bJNYt6kXHGeS75NUlH5qknKmSWz//EADMQAAICAgECBAQEBgIDAAAAAAECAwQAERIFIRMxQVEGFCJxEDJSYRUjQoGSsQeRYqHR/9oACAEBAAE/AKRqxvB8wissrcST24jet4kcREE0ih1ZyCkZ0T7A+2LF0XRJivkIv1nSDviHonFg63N8tqRw2Rodjkn8G4N4Zuc9duQTW86s3SmtA9LjmSvwXYl8+X4p4f8AWW/sMHDgdk899vbX4UqF654QhptOrS8E1+s+mWundRrzNWkpvE8Z7p7Ejl/o4lW621WGX6vMaI3gqWzrVeX/ABOfK2dA+BJoje+J1rW8FW0fKvL/AIHFpWmIAhbe9a9d63hpWlIUwnZGwMNWcDZjOuJYH3A9ceN42KuhVvYjX4V73y8CrHNZR1fmOD6UOPJtZL1GGeWeaV7RlkO2YP8AmO/M73nzVXl+e5r35jeJcgMYSSa3vQ3p+2CxT7KZLfALoDmPXzx7UJTSPa5a7cpNjPGm3vxX3ve9nDYnJ2ZpN61vkcNicggzSEH05HGd3O2Ysfcnf4V65krlvky44HTh+PfZG8NNO4HT5NkDRMg9ci6W8sViZaJ4wKPE/mdtnRBy9XgoymCar/M0DsSbGePRDbFQkexc549MPsVNr7Fjjz0ipC1CraHfkSNj9v3yWaq8ekr8G7dwd4s9MIAamz22eR7++HWzry/Cb4d4OhR9p65NFWWZ41XWv/LJ5btYOIpW8F/zAHQP3yta+anAk5H997OV+m0pgQXKnFX4dRnSSyzsPIqTrOpMkWmrrpd67neVKZeMNPIBsbBGWIIRNFHE/Y/nOWK9YcBAxYnezjPICRvyPtg6qXhZQNcRreQz1a1iY2BzaTyxK1Ffqk58WHZclqLXnSzBGRF650kRXal9eQDmNgudOo1q4CBYwzJ6+v3wdOin6s0U8cfF41LBN6B1o+eW/h6hFRYKe6janE6Q0SyS2ZI1LdokkbjyP75F1CtFIyOnFgx37bw2qJO+HnlfoFNkLCYhCuzi9GElp5lj5xITrIIvGDRywBSp0udQiuR2XqRNsON6z4E+GT0mm3Urse7UneJT/QmdQodKtQSTTrHCEUkzJpWA1jVa0N82anUQVJ7xuByI/scvddVEP5exACr3Oz7nLVG3PeMk6S8D3j9gcTpUCCbx5NP34g4nS4SinxvQZyliM9Teo965gbIynd6lW1GKaFdj6iw1lyS9YnE+okdfJV9ceK29pLckS8l7aDeeS9dvvTgqtFHxVQrMGbfYa2cpQ2LU1qusLzGRdFHm+kLsfqI2cHTGs9aFJUMKj8x1ojJ/h2tClmsZj2Tmv3zp82umo8qBvDXucvQxTWZZwFLEEqMF2cdvBwpLFauCXzMxI+2Dj3wBDjKhUfc4Uj4+Z3lbqHyMVmWjUaSyrAF21ojWyoyfqTN1eHlEqT8VWbet+Idk5UjWW7NK+mKxBdZ1u5BH0yaOsmpPLiMhkpx2IxMjEGPHig5txVtbOsjtSWp7Mrnv4msZjg5YQeCn9zg375W6JSlrVZnV/rbm/wDMddn+xz4zeOp1iEVvoCLvQOfDdjq9sSyRRuwOu+X6PU1V5JIPo49yDnUqc9aB7Ic6VxxOL1ebiPpHllWGOtDIzO5kck9iQMTqkFGuJ3i8VydcXOxnwjKOo354Za8UilDL5b4+msQdNNqSJ61YRrsKSgC8gN+f2Byr0rpm+Zrwssh2NaZfuufGLydLqV5K66gLle39JzofTB8S9RnnuyHhHnQrKVepXKcEBSCPWjk85atKNBu2dTp1X6bJC6gAr/7wxlSV9jrEuwXWPfiAM6r064aMMqROysd5/wAfUmqdF6jfAJnkfgoAO10MmSGGoGkk8No4vGfl+XTMP9hcpfGFCvHEZGZy54Qpr8qp7nOp9Q/iVCapNCgimTXuR6gjPhJHqX7FU72u95B1SvT6s8NrSrISQ2NPXmqzyVpQRrto51iWM0lTe22OwyP4AnljSRrKIzqCUK91Jyr8P2FnjQxoNnvljozS1IoIgq61sudDOpUblJ2+SJMiLsIn0lh7qcopdt0+fUzLIG0RER+Uemz5nOofD0VuPhFWCrvzzpPR+oRhoLXKVEOkKkLsfuTkfToaPVZrYjAZ4lXgpLf7y18KJftG3Ns99hMpfDknJlrROiepLaTJvh2apJFLNYQoH5aVjvthuVQSPGf/ADbCVrLLPOyIAv0g9iPvn8WltNqk6OP6pn3wX/6c+Vjbw5bN55pIzyA7Iu/sMS9Tk2ocHY+rBargFOXpveQSxNCnkeWXrMMd4oo+rTN3OgSD5b/vlW9SWks0jBea70ctdackpXQr6Bm7L/1nUWs210/UwNA/Skf6gV1snB0OlocrVreu+pMv3pupTF5iSm+yb+n+4yOzOAAH7DyGGaUkEnv98SVk2Rob88+Zf3H/AHnQSJaAdv6XYZ1a6kjOmyXZwydxs7JGUWNesiNL9Y2Cd79cewn68M6E/nzxV/VgQe+Kq+5xQv6jgVf1HCiD1OdM6pBSprA8MreI7fUPIbyeqPFRpAdoSVwqPc4VHvvGUZoe+K7E+QwSNvBIfc54xHrhtD1bJrvUCrwxzxCFh58PrGC71MAJ4kTKDrZ2dj7axbewA3HlrvresNhe+lz5jfoc+aiz/8QALBEAAgIBAgQEBQUAAAAAAAAAAQIDEQAEEiEiMVETFEFhBSBScZEGFSNCVP/aAAgBAgEBPwCxRs/1HL7/ADnhXv8ALoW1hRl1HUHlOR0Su4cLq81MqwEcoN9MS3UOKo4HDMw9B2y198bYK50XvzAZ5qLYyb0IFVxGb4pRtBVj264YpqA8TlHoOGTLtjGxyL6Vm6XvmqAM8h9byuuaEVIxFcFwukMTPLIoGQTxaqRDHTrdUDn7NN2TJdNGykPxs82JDCgpUAF8MMsEbUwHuAM+LePPqNals4RFMaD0B9c/SxdNNqHYcwkFXnn5/wDQPxkqSyyjdIVjUjlXq/39sjCeLIV3AjrfSzkiJJt3AGsVNIkhkEa+MygMfYYbKuI41TcPQZ5PUfUPzj6mRmJLtf3zzMn1N+c+Hzu05BJPKcbWSA7SpDDreDVOc8y2bF7YUXICYmLIaJFHJP5RzAX3wRJngJ75/8QAJxEAAgICAQIGAgMAAAAAAAAAAQIAEQMSITFRBBMUIGGRQVIQImL/2gAIAQMBAT8Ao8cfm7+PeASGIFgGifaVogkcTKhCvqeaup4bEcwIvp1McKrMhuxCmqr3Peat/mLkXnYj4EIQsGD0eQ02KMKP0YMuEkkY/wC3c8zEN8hDgCupM0wdx9QiVNSeBOGKDp+CYAExOQ/PeetHZ55m6sulWOIBQA+Jjw5cik4/uHhT3sXMg3dEDcN1qeSnzNgrAoORPMLro6g19wO2IHQa3CrUWvgnmKVDKSLoz1WH9YWf9jLbrsZ4ZMuTJS23Ey5mOHFh1IKXvfe4L9mPK+MkoaMy+Iy5iN9Se9AH+Kn/2Q==",
-          "contextInfo": {
-            "pairedMediaType": "NOT_PAIRED_MEDIA",
-            "statusSourceType": "IMAGE"
-          },
-          "thumbnailDirectPath": "/v/t62.35850-24/558006242_1104643831870732_6243359260611073776_n.enc?ccb=11-4&oh=01_Q5Aa2gE2w40zbMlJzpVsMXvjdDL4xMHK_wkXuEfUU0AIqBhLhA&oe=6903C533&_nc_sid=5e03e0",
-          "thumbnailSha256": "UkMaFvB46Eu75GwEdWvl2lQs9wQZ0U9Q+9hxEspmBCA=",
-          "thumbnailEncSha256": "obE+1SOGcDyR5jLK8goKCOoob3AS/cWOqsicNUXo0pM="
-        },
+        "conversation": ".list",
         "messageContextInfo": {
-          "deviceListMetadata": {
-            "recipientKeyHash": "Zq3tkocftmJp5w==",
-            "recipientTimestamp": "1758604989"
-          },
-          "deviceListMetadataVersion": 2,
-          "messageSecret": "0Yie+HSR3rjyauQdeWB7Ow46yCpn8Lk/v29lzwF0d6o="
-        }
-      }
-    }
-  },
-  "AC4EF1DDAF703D9780BAED792FF3E361": {
-    "id": "AC4EF1DDAF703D9780BAED792FF3E361",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": ".dp",
-    "type": "conversation",
-    "timestamp": 1759267527556,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "AC4EF1DDAF703D9780BAED792FF3E361"
-      },
-      "messageTimestamp": 1759267526,
-      "pushName": "Team Grill🙃",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "conversation": ".dp"
-      }
-    }
-  },
-  "3EB0C6FEF3DBEF56958CBA": {
-    "id": "3EB0C6FEF3DBEF56958CBA",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "🖼️ *Getting profile picture...*\nPlease wait...",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267529325,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0C6FEF3DBEF56958CBA"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "🖼️ *Getting profile picture...*\nPlease wait..."
+          "messageSecret": "YfyzUEwBD3k+hnUqxN5rgdfFLxQ1KMaRbseyMjF44JQ="
         }
       },
-      "messageTimestamp": "1759267527",
-      "status": "SERVER_ACK"
-    }
-  },
-  "3EB0BB686B926E82525AEE": {
-    "id": "3EB0BB686B926E82525AEE",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "📸 *Profile Picture*\n\n👤 *User:* @254799257758\n🔗 *High Quality:* Yes\n\n> Powered by TREKKERMD LIFETIME BOT",
-    "type": "imageMessage",
-    "timestamp": 1759267529443,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0BB686B926E82525AEE"
-      },
-      "message": {
-        "imageMessage": {
-          "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m231/AQP5uLW87-hQHJMP6jY1R8SWlT1V-tm_YyBvOp3AgjXpH-4JPTgd-F-JAbme3qi9BdGKWi0BLf3ncIFFsyIOvncjiRlOgnH2oGFJCs1mXw?ccb=9-4&oh=01_Q5Aa2gEUQwpzXw5Prqr6rguR5ZUWg0-kPyFvqzmDwj7V7iENPQ&oe=6903AEE3&_nc_sid=e6ed6c&mms3=true",
-          "mimetype": "image/jpeg",
-          "caption": "📸 *Profile Picture*\n\n👤 *User:* @254799257758\n🔗 *High Quality:* Yes\n\n> Powered by TREKKERMD LIFETIME BOT",
-          "fileSha256": "p7+HS5S5iu0BYv6yBUhSMP6WYr/h4RkWPgICp14K0+A=",
-          "fileLength": "43894",
-          "mediaKey": "sJ34bLtmKFWo3EcywVdT+5xCVWnwfziv2S7qggc5qeU=",
-          "fileEncSha256": "aMMvqigWSZ8UfDouOoi2vE8vViOwc5f0mO7up/Dlm9k=",
-          "directPath": "/o1/v/t24/f2/m231/AQP5uLW87-hQHJMP6jY1R8SWlT1V-tm_YyBvOp3AgjXpH-4JPTgd-F-JAbme3qi9BdGKWi0BLf3ncIFFsyIOvncjiRlOgnH2oGFJCs1mXw?ccb=9-4&oh=01_Q5Aa2gEUQwpzXw5Prqr6rguR5ZUWg0-kPyFvqzmDwj7V7iENPQ&oe=6903AEE3&_nc_sid=e6ed6c",
-          "mediaKeyTimestamp": "1759267528",
-          "contextInfo": {
-            "mentionedJid": [
-              "254799257758@s.whatsapp.net"
-            ]
-          }
-        }
-      },
-      "messageTimestamp": "1759267528",
-      "status": "PENDING"
-    }
-  },
-  "AC18B54F6C4CEFA8F2E682987646C3FF": {
-    "id": "AC18B54F6C4CEFA8F2E682987646C3FF",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": ".dp",
-    "type": "conversation",
-    "timestamp": 1759267540019,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "AC18B54F6C4CEFA8F2E682987646C3FF"
-      },
-      "messageTimestamp": 1759267538,
-      "pushName": "Team Grill🙃",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "conversation": ".dp"
-      }
-    }
-  },
-  "3EB01BE0540D36A0179E93": {
-    "id": "3EB01BE0540D36A0179E93",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "🖼️ *Getting profile picture...*\nPlease wait...",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267542332,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB01BE0540D36A0179E93"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "🖼️ *Getting profile picture...*\nPlease wait..."
-        }
-      },
-      "messageTimestamp": "1759267540",
-      "status": "SERVER_ACK"
-    }
-  },
-  "3EB0E7777CE4E95D7C2EE4": {
-    "id": "3EB0E7777CE4E95D7C2EE4",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "📸 *Profile Picture*\n\n👤 *User:* @254704897825\n🔗 *High Quality:* Yes\n\n> Powered by TREKKERMD LIFETIME BOT",
-    "type": "imageMessage",
-    "timestamp": 1759267542451,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0E7777CE4E95D7C2EE4"
-      },
-      "message": {
-        "imageMessage": {
-          "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m231/AQMmmMDqBfcH393CDpnLrN9tJvMDitAq2KpJOLfyi-tdb5nbaptVNl60Ve-7wbqAlSP9xFySYYxCZXAO5RJwb1y45mbSaRIBsyC1Po3Dcw?ccb=9-4&oh=01_Q5Aa2gFDwaYf20tPW966GAyz8sJDfaQGLBdtm_samVw_zs15Yw&oe=6903A4BB&_nc_sid=e6ed6c&mms3=true",
-          "mimetype": "image/jpeg",
-          "caption": "📸 *Profile Picture*\n\n👤 *User:* @254704897825\n🔗 *High Quality:* Yes\n\n> Powered by TREKKERMD LIFETIME BOT",
-          "fileSha256": "WFqFIXxtAUfcujQR4YyP2h+yCeQlFP2yglqhPu2rlbs=",
-          "fileLength": "58659",
-          "mediaKey": "DTourwiodpKpdgkjEEn1bVRk8wjBixdJxdSsu6d80Bo=",
-          "fileEncSha256": "sf3UunzUbV2jusbX+yOkjzMDLORgilJhmQGxj/OVuD4=",
-          "directPath": "/o1/v/t24/f2/m231/AQMmmMDqBfcH393CDpnLrN9tJvMDitAq2KpJOLfyi-tdb5nbaptVNl60Ve-7wbqAlSP9xFySYYxCZXAO5RJwb1y45mbSaRIBsyC1Po3Dcw?ccb=9-4&oh=01_Q5Aa2gFDwaYf20tPW966GAyz8sJDfaQGLBdtm_samVw_zs15Yw&oe=6903A4BB&_nc_sid=e6ed6c",
-          "mediaKeyTimestamp": "1759267540",
-          "contextInfo": {
-            "mentionedJid": [
-              "254704897825@s.whatsapp.net"
-            ]
-          }
-        }
-      },
-      "messageTimestamp": "1759267540",
-      "status": "PENDING"
-    }
-  },
-  "AC14F93826A4CDAC49A558874D1BD760": {
-    "id": "AC14F93826A4CDAC49A558874D1BD760",
-    "fromJid": "254101793738@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759267555084,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738@s.whatsapp.net",
-        "fromMe": true,
-        "id": "AC14F93826A4CDAC49A558874D1BD760"
-      },
-      "messageTimestamp": 1759267553,
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "protocolMessage": {
-          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
-          "peerDataOperationRequestResponseMessage": {
-            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
-            "stanzaId": "3EB01190B3AD30847D1BAD",
-            "peerDataOperationResult": [
-              {
-                "mediaUploadResult": "SUCCESS",
-                "placeholderMessageResendResponse": {
-                  "webMessageInfoBytes": "CjYKEHN0YXR1c0Bicm9hZGNhc3QQABogQUNBNjVBOUI1QTUxOTZFQ0MwQTM2MjY4RkM3Nzk2MEQS0AlKzQkKwgFodHRwczovL21tZy53aGF0c2FwcC5uZXQvdi90NjIuNzE2MS0yNC81NTc1NTEzNjlfMTQ5OTA3Njg1MTA5MTg2MF82NDE2ODMyODE5NjU0MzA1NjMxX24uZW5jP2NjYj0xMS00Jm9oPTAxX1E1QWEyZ0UwQTJDREZDbDJhUXYxSVlWc3ItUHNmMUQ1ZzlPdDU0WDk0STZvZ1NaZHV3Jm9lPTY5MDNDMjcyJl9uY19zaWQ9NWUwM2UwJm1tczM9dHJ1ZRIJdmlkZW8vbXA0GiC9+AQwaHbiONZ2050qE8UqeDi73f2ZMIhGe5hghC3kbCC09hMoDzIgZ29FLkftX9PeSRynA2n3C3dxF67hp30fJHP1kAykfKI6BPCfjJpIgApQwAdaIELVy8sb7xck8l+L3Ro7QfkwLgs3tcklcUT7RF57hpnEaqABL3YvdDYyLjcxNjEtMjQvNTU3NTUxMzY5XzE0OTkwNzY4NTEwOTE4NjBfNjQxNjgzMjgxOTY1NDMwNTYzMV9uLmVuYz9jY2I9MTEtNCZvaD0wMV9RNUFhMmdFMEEyQ0RGQ2wyYVF2MUlZVnNyLVBzZjFENWc5T3Q1NFg5NEk2b2dTWmR1dyZvZT02OTAzQzI3MiZfbmNfc2lkPTVlMDNlMHD2k/HGBooBBtgDAIAEAJIBMqOKX+/iZXl53R+hDKBXMxxK99ALMM02mvm4hNXEVsjSVz307RbtHsqGoH3iZBS1jD/HqgGgAS92L3Q2Mi4zNjE0Ny0yNC81NTg3ODc5MjlfNzc3OTA3MjA1MDI0MzI5XzcyNDgxNzY3NjYxNDQwMjU4MjNfbi5lbmM/Y2NiPTExLTQmb2g9MDFfUTVBYTJnR0JHcWhsUjJVS041TjduQ21FdWpkaTR2NTdKNzN5RmNHM2czSFhfYVl0OEEmb2U9NjkwM0NCMEEmX25jX3NpZD01ZTAzZTCyASBQbqueLj1SzndANyESB6q5FblI1H03fXjv1cwBbKBcaroBII8gKW07BN3rLr3bAv+OHhOP7iZpiwXhgesEHnVfNu6rygH+AiABKvcCEvQCChAxMjc5NjI3ODMzOTM4ODk5EhAxODgzNTU3ODU1NzE4MTU0Gg5EZXZyaXggRGEgRnVidSIESmUgPyqgAS92L3Q2Mi43NjQ1OC0yNC81NTYwNTE4MjZfODM4NzIzMTA4ODI4NjIzXzc2NjEwMjEwMTEwMjU5ODA5NjFfbi5lbmM/Y2NiPTExLTQmb2g9MDFfUTVBYTJnSFhxVkFnbHhBMTdNRmdmYVlZN1pKVlpUa3ZFZVlBZ1RvSGZtZnp3OFl1N2cmb2U9NjkwM0JCQUUmX25jX3NpZD01ZTAzZTAyIEnaPmCnhS+66IewOCAeHEZBOz34RPqVyePdTnqtqnOAOiCaFp49qg+952c0QPfOPUGiecaN1t+yI3Cj+D/mlcN7D0IraHR0cHM6Ly93d3cuaW5zdGFncmFtLmNvbS9fdS9kZXZyaXhfZGFfZnVidUoAUABaICvy5kl2fPmKYRX7CLt7dCPyueOpwMNTuYc0UUxPkI1ZMAHSAS9TdGlja2VyOiBQaG90byBzZWxlY3RlZCBTdGlja2VyOiBQaG90byBzZWxlY3RlZBjZlfHGBiobMjU0NzE3NzI4MDg1QHMud2hhdHNhcHAubmV0igMguraONxwQjY0ei8+jR6SfzUj+gvXLB337Kg6IhY+mFL/yAxYKFAELfmgxUeDj7inIUg7PffhmKVlaiAQA"
-                }
-              }
-            ]
-          }
-        }
-      }
-    }
-  },
-  "ACA65A9B5A5196ECC0A36268FC77960D": {
-    "id": "ACA65A9B5A5196ECC0A36268FC77960D",
-    "fromJid": "status@broadcast",
-    "senderJid": "status@broadcast",
-    "content": "🌚",
-    "type": "videoMessage",
-    "timestamp": 1759267555657,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "status@broadcast",
-        "fromMe": false,
-        "id": "ACA65A9B5A5196ECC0A36268FC77960D"
-      },
-      "message": {
-        "videoMessage": {
-          "url": "https://mmg.whatsapp.net/v/t62.7161-24/557551369_1499076851091860_6416832819654305631_n.enc?ccb=11-4&oh=01_Q5Aa2gE0A2CDFCl2aQv1IYVsr-Psf1D5g9Ot54X94I6ogSZduw&oe=6903C272&_nc_sid=5e03e0&mms3=true",
-          "mimetype": "video/mp4",
-          "fileSha256": "vfgEMGh24jjWdtOdKhPFKng4u939mTCIRnuYYIQt5Gw=",
-          "fileLength": "326452",
-          "seconds": 15,
-          "mediaKey": "Z29FLkftX9PeSRynA2n3C3dxF67hp30fJHP1kAykfKI=",
-          "caption": "🌚",
-          "height": 1280,
-          "width": 960,
-          "fileEncSha256": "QtXLyxvvFyTyX4vdGjtB+TAuCze1ySVxRPtEXnuGmcQ=",
-          "directPath": "/v/t62.7161-24/557551369_1499076851091860_6416832819654305631_n.enc?ccb=11-4&oh=01_Q5Aa2gE0A2CDFCl2aQv1IYVsr-Psf1D5g9Ot54X94I6ogSZduw&oe=6903C272&_nc_sid=5e03e0",
-          "mediaKeyTimestamp": "1759267318",
-          "contextInfo": {
-            "pairedMediaType": "NOT_PAIRED_MEDIA",
-            "statusSourceType": "IMAGE"
-          },
-          "streamingSidecar": "o4pf7+JleXndH6EMoFczHEr30AswzTaa+biE1cRWyNJXPfTtFu0eyoagfeJkFLWMP8c=",
-          "thumbnailDirectPath": "/v/t62.36147-24/558787929_777907205024329_7248176766144025823_n.enc?ccb=11-4&oh=01_Q5Aa2gGBGqhlR2UKN5N7nCmEujdi4v57J73yFcG3g3HX_aYt8A&oe=6903CB0A&_nc_sid=5e03e0",
-          "thumbnailSha256": "UG6rni49Us53QDchEgequRW5SNR9N31479XMAWygXGo=",
-          "thumbnailEncSha256": "jyApbTsE3esuvdsC/44eE4/uJmmLBeGB6wQedV827qs=",
-          "annotations": [
-            {
-              "shouldSkipConfirmation": true,
-              "embeddedContent": {
-                "embeddedMusic": {
-                  "musicContentMediaId": "1279627833938899",
-                  "songId": "1883557855718154",
-                  "author": "Devrix Da Fubu",
-                  "title": "Je ?",
-                  "artworkDirectPath": "/v/t62.76458-24/556051826_838723108828623_7661021011025980961_n.enc?ccb=11-4&oh=01_Q5Aa2gHXqVAglxA17MFgfaYY7ZJVZTkvEeYAgToHfmfzw8Yu7g&oe=6903BBAE&_nc_sid=5e03e0",
-                  "artworkSha256": "Sdo+YKeFL7roh7A4IB4cRkE7PfhE+pXJ491Oeq2qc4A=",
-                  "artworkEncSha256": "mhaePaoPvednNED3zj1BonnGjdbfsiNwo/g/5pXDew8=",
-                  "artistAttribution": "https://www.instagram.com/_u/devrix_da_fubu",
-                  "countryBlocklist": "",
-                  "isExplicit": false,
-                  "artworkMediaKey": "K/LmSXZ8+YphFfsIu3t0I/K546nAw1O5hzRRTE+QjVk="
-                }
-              },
-              "embeddedAction": true
-            }
-          ],
-          "accessibilityLabel": "Sticker: Photo selected Sticker: Photo selected"
-        }
-      },
-      "messageTimestamp": "1759267545",
-      "participant": "254717728085@s.whatsapp.net",
-      "messageSecret": "uraONxwQjY0ei8+jR6SfzUj+gvXLB337Kg6IhY+mFL8=",
-      "reportingTokenInfo": {
-        "reportingTag": "AQt+aDFR4OPuKchSDs99+GYpWVo="
-      },
-      "isMentionedInStatus": false
-    }
-  },
-  "A5E6F55695550CCC4CC45E74774C6E46": {
-    "id": "A5E6F55695550CCC4CC45E74774C6E46",
-    "fromJid": "120363422777127103@g.us",
-    "senderJid": "self",
-    "content": "Hapo sasa",
-    "type": "unknown",
-    "timestamp": 1759267567513,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "120363422777127103@g.us",
-        "fromMe": false,
-        "id": "A5E6F55695550CCC4CC45E74774C6E46",
-        "participant": "171021873233972@lid",
-        "participantPn": "254799274183@s.whatsapp.net"
-      },
-      "messageTimestamp": 1759267566,
-      "pushName": "kimutailaban76",
-      "broadcast": false,
-      "message": {
-        "conversation": "Hapo sasa",
-        "senderKeyDistributionMessage": {
-          "groupId": "120363422777127103@g.us",
-          "axolotlSenderKeyDistributionMessage": "Mwiki9OIAxAAGiDuBeYu4nW8kBatwrULGJ5ZrFCyHcN0JPV8OE7efN06EiIhBXqDsDKIzCU9IRwN+PJRPlDttcG9+hlcLaXaEMJpZ4Uq"
-        },
-        "messageContextInfo": {
-          "messageSecret": "PwWNdhCEgpEjx1snfX1EYaf52nkJpWMLkhX/ua+S67A="
-        }
-      },
-      "verifiedBizName": "kimutailaban76"
-    }
-  },
-  "AC795D2C3E9D315362BD9C9943DFE8E0": {
-    "id": "AC795D2C3E9D315362BD9C9943DFE8E0",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": ".block",
-    "type": "conversation",
-    "timestamp": 1759267594931,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "AC795D2C3E9D315362BD9C9943DFE8E0"
-      },
-      "messageTimestamp": 1759267593,
-      "pushName": "Team Grill🙃",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "conversation": ".block"
-      }
-    }
-  },
-  "3EB0B1F95AB4FEF812CD10": {
-    "id": "3EB0B1F95AB4FEF812CD10",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "❌ Please reply to a message or tag a user to block!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267596207,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0B1F95AB4FEF812CD10"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "❌ Please reply to a message or tag a user to block!"
-        }
-      },
-      "messageTimestamp": "1759267595",
-      "status": "PENDING"
-    }
-  },
-  "AC7AC8FC6E462BEEC881FE721D40278A": {
-    "id": "AC7AC8FC6E462BEEC881FE721D40278A",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "\"❌ Please reply to a message or tag a user to block!\"\n.block",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267608062,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "AC7AC8FC6E462BEEC881FE721D40278A"
-      },
-      "messageTimestamp": 1759267606,
-      "pushName": "Team Grill🙃",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": ".block",
-          "previewType": "NONE",
-          "contextInfo": {
-            "stanzaId": "3EB0B1F95AB4FEF812CD10",
-            "participant": "254799257758@s.whatsapp.net",
-            "quotedMessage": {
-              "conversation": "❌ Please reply to a message or tag a user to block!"
-            }
-          },
-          "inviteLinkGroupTypeV2": "DEFAULT"
-        }
-      }
-    }
-  },
-  "3EB0C630970FD698935285": {
-    "id": "3EB0C630970FD698935285",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "🚫 *User Blocked*\n\n👤 @254799257758 has been blocked successfully!\n\n⚠️ They will no longer be able to message this bot.",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267610221,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0C630970FD698935285"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "🚫 *User Blocked*\n\n👤 @254799257758 has been blocked successfully!\n\n⚠️ They will no longer be able to message this bot."
-        }
-      },
-      "messageTimestamp": "1759267608",
-      "status": "SERVER_ACK"
-    }
-  },
-  "AC8CFF1723410C3A7AB59BA156E2BBD0": {
-    "id": "AC8CFF1723410C3A7AB59BA156E2BBD0",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "Hi",
-    "type": "conversation",
-    "timestamp": 1759267633114,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "AC8CFF1723410C3A7AB59BA156E2BBD0"
-      },
-      "messageTimestamp": 1759267632,
-      "pushName": "Team Grill🙃",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "conversation": "Hi"
-      }
-    }
-  },
-  "3EB02C2B8B1C28A7871F0D": {
-    "id": "3EB02C2B8B1C28A7871F0D",
-    "fromJid": "254799257758:29@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267643822,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758:29@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB02C2B8B1C28A7871F0D"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267642",
-      "status": "PENDING"
-    }
-  },
-  "3EB0026137CB7EACDD6F2B": {
-    "id": "3EB0026137CB7EACDD6F2B",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267648444,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0026137CB7EACDD6F2B"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267646",
-      "status": "PENDING"
-    }
-  },
-  "3EB096D29D4B32F1DACA02": {
-    "id": "3EB096D29D4B32F1DACA02",
-    "fromJid": "254114282300:3@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"maina\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267651048,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254114282300:3@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB096D29D4B32F1DACA02"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"maina\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267649",
-      "status": "PENDING"
-    }
-  },
-  "3EB0B60B9C9F44F8094C14": {
-    "id": "3EB0B60B9C9F44F8094C14",
-    "fromJid": "254799257758:29@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267656566,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758:29@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0B60B9C9F44F8094C14"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267655",
-      "status": "PENDING"
-    }
-  },
-  "3EB05AF36BEC11E26497B5": {
-    "id": "3EB05AF36BEC11E26497B5",
-    "fromJid": "254768989551:70@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267660149,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254768989551:70@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB05AF36BEC11E26497B5"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267658",
-      "status": "PENDING"
-    }
-  },
-  "3EB074B3A93202D496BCBB": {
-    "id": "3EB074B3A93202D496BCBB",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267661156,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB074B3A93202D496BCBB"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267659",
-      "status": "PENDING"
-    }
-  },
-  "3EB0066A4D7BB6749899CC": {
-    "id": "3EB0066A4D7BB6749899CC",
-    "fromJid": "254114282300:3@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"maina\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267664288,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254114282300:3@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0066A4D7BB6749899CC"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"maina\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267662",
-      "status": "PENDING"
-    }
-  },
-  "3EB0509AE4068E37715679": {
-    "id": "3EB0509AE4068E37715679",
-    "fromJid": "254799257758:29@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267668517,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758:29@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0509AE4068E37715679"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267667",
-      "status": "PENDING"
-    }
-  },
-  "3EB02AABF52A482D825D1A": {
-    "id": "3EB02AABF52A482D825D1A",
-    "fromJid": "254797582445:22@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267671232,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254797582445:22@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB02AABF52A482D825D1A"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267669",
-      "status": "PENDING"
-    }
-  },
-  "3EB0B96008B26050A7B4A7": {
-    "id": "3EB0B96008B26050A7B4A7",
-    "fromJid": "254768989551:70@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267671789,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254768989551:70@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0B96008B26050A7B4A7"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267670",
-      "status": "PENDING"
-    }
-  },
-  "3EB098047DFC7C97E8118F": {
-    "id": "3EB098047DFC7C97E8118F",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267675104,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB098047DFC7C97E8118F"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267673",
-      "status": "PENDING"
-    }
-  },
-  "3EB07643E5726C00E25761": {
-    "id": "3EB07643E5726C00E25761",
-    "fromJid": "254114282300:3@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"maina\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267675819,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254114282300:3@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB07643E5726C00E25761"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"maina\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267674",
-      "status": "PENDING"
-    }
-  },
-  "3EB0B5B2DC20E95D1570D7": {
-    "id": "3EB0B5B2DC20E95D1570D7",
-    "fromJid": "254799257758:29@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267676066,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758:29@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0B5B2DC20E95D1570D7"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267674",
-      "status": "PENDING"
-    }
-  },
-  "3EB0FE484F48332BF9C09C": {
-    "id": "3EB0FE484F48332BF9C09C",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267680283,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0FE484F48332BF9C09C"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267679",
-      "status": "PENDING"
-    }
-  },
-  "ACB443F0122564B88CFA836AC05F24CB": {
-    "id": "ACB443F0122564B88CFA836AC05F24CB",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": ".menu",
-    "type": "unknown",
-    "timestamp": 1759267681300,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "ACB443F0122564B88CFA836AC05F24CB"
-      },
-      "message": {
-        "conversation": ".menu",
-        "messageContextInfo": {
-          "messageSecret": "ZFQ61egrcXPMhXKJEu/HNkPJIQ7vXtzGVN84fucl7S8="
-        }
-      },
-      "messageTimestamp": "1759267673",
+      "messageTimestamp": "1759268169",
       "status": "DELIVERY_ACK",
+      "messageC2STimestamp": "1759268170",
       "userReceipt": [
         {
           "userJid": "254704897825@s.whatsapp.net",
-          "receiptTimestamp": "1759267678",
+          "receiptTimestamp": "1759268174",
           "readTimestamp": "0",
           "playedTimestamp": "0"
         }
       ],
-      "messageSecret": "ZFQ61egrcXPMhXKJEu/HNkPJIQ7vXtzGVN84fucl7S8=",
+      "messageSecret": "YfyzUEwBD3k+hnUqxN5rgdfFLxQ1KMaRbseyMjF44JQ=",
       "originalSelfAuthorUserJidString": "254799257758@s.whatsapp.net",
       "isMentionedInStatus": false
     }
   },
-  "AC14850619C4E605BD9F16C2B0D349DE": {
-    "id": "AC14850619C4E605BD9F16C2B0D349DE",
+  "AC190CB70EF96D942592F1AACCA6DAF6": {
+    "id": "AC190CB70EF96D942592F1AACCA6DAF6",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759267680800,
+    "timestamp": 1759268206170,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "AC14850619C4E605BD9F16C2B0D349DE"
+        "id": "AC190CB70EF96D942592F1AACCA6DAF6"
       },
-      "messageTimestamp": 1759267679,
+      "messageTimestamp": 1759268205,
       "broadcast": false,
       "status": 2,
       "message": {
@@ -1040,12 +77,12 @@
           "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
           "peerDataOperationRequestResponseMessage": {
             "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
-            "stanzaId": "3EB05622ACAA96DE3698DB",
+            "stanzaId": "3EB00CF27704CC7A76BC94",
             "peerDataOperationResult": [
               {
                 "mediaUploadResult": "SUCCESS",
                 "placeholderMessageResendResponse": {
-                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBABGiBBQ0I0NDNGMDEyMjU2NEI4OENGQTgzNkFDMDVGMjRDQhIsCgUubWVudZoCIhogZFQ61egrcXPMhXKJEu/HNkPJIQ7vXtzGVN84fucl7S8Y2ZbxxgYgA8ICJwobMjU0NzA0ODk3ODI1QHMud2hhdHNhcHAubmV0EN6W8cYGGAAgAIoDIGRUOtXoK3FzzIVyiRLvxzZDySEO717cxlTfOH7nJe0vmgMbMjU0Nzk5MjU3NzU4QHMud2hhdHNhcHAubmV0iAQA"
+                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBABGiBBQ0NFQURBRTlBRDdENDU4QkY5Q0FERTMyQkYyQ0EzNBIsCgUubGlzdJoCIhogYfyzUEwBD3k+hnUqxN5rgdfFLxQ1KMaRbseyMjF44JQYyZrxxgYgAzDKmvHGBsICJwobMjU0NzA0ODk3ODI1QHMud2hhdHNhcHAubmV0EM6a8cYGGAAgAIoDIGH8s1BMAQ95PoZ1KsTea4HXxS8UNSjGkW7HsjIxeOCUmgMbMjU0Nzk5MjU3NzU4QHMud2hhdHNhcHAubmV0iAQA"
                 }
               }
             ]
@@ -1054,591 +91,64 @@
       }
     }
   },
-  "3EB06432A959C418BAF0E1": {
-    "id": "3EB06432A959C418BAF0E1",
+  "3EB08BA3FC27AE08A4CCFB": {
+    "id": "3EB08BA3FC27AE08A4CCFB",
     "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "self",
-    "content": "\nGood Morning 🌄, *User*\n\n╭━❮ TREKKERMD LIFETIME BOT ❯━╮ \n┃ *👤ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃ *🥏ᴘʀᴇғɪx:* *[ . ]*\n┃ *🕒ᴛɪᴍᴇ:* 00:28:00\n┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* 41 \n┃ *📆ᴅᴀᴛᴇ:* 01/10/2025\n┃ *🧑‍💻ᴍᴏᴅᴇ:* Public\n┃ *📼ʀᴀᴍ:* 18.0GB/62.8GB\n┃ *⏳ᴜᴘᴛɪᴍᴇ:* 3 minutes, 16 seconds\n╰─────────────━┈⊷\n> *Stay humble, hustle hard.*\n\n\n*╭━❮ 𝐀𝐃𝐌𝐈𝐍 ❯━╮*\n┃✰ ᴀᴅᴅᴄᴍᴅ\n┃✰ ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n┃✰ ʙʟᴏᴄᴋ\n┃✰ ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ 𝚜ᴇᴛᴅᴘ\n┃✰ ᴜɴʙʟᴏᴄᴋ\n╰─────────────━┈⊷\n*╭━❮ 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 ❯━╮*\n┃✰ ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 ❯━╮*\n┃✰ ғᴀᴄᴇʙᴏᴏᴋ\n┃✰ ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n┃✰ ᴘʟᴀʏ\n┃✰ ᴛɪᴋᴛᴏᴋ\n┃✰ ᴠɪᴅᴇᴏ\n╰─────────────━┈⊷\n*╭━❮ 𝐅𝐔𝐍 ❯━╮*\n┃✰ ᴀᴅᴠɪᴄᴇ\n┃✰ ᴀɴɢʀʏ\n┃✰ ᴅᴀʀᴇ\n┃✰ ғᴀᴄᴛ\n┃✰ ʜᴀᴘᴘʏ\n┃✰ ʟᴏᴠᴇ\n┃✰ ǫᴜᴏᴛᴇ𝚜\n┃✰ 𝚜ᴀᴅ\n┃✰ ᴛʀɪᴠɪᴀ\n┃✰ ᴛʀᴜᴛʜ\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 ❯━╮*\n┃✰ ʙɪᴏ\n┃✰ ᴅᴘ\n┃✰ ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐑𝐎𝐔𝐏 ❯━╮*\n┃✰ ᴅᴇᴍᴏᴛᴇ\n┃✰ ɢʀᴏᴜᴘɪɴғᴏ\n┃✰ ɪɴᴠɪᴛᴇ\n┃✰ ᴋɪᴄᴋ\n┃✰ ᴘʀᴏᴍᴏᴛᴇ\n┃✰ ᴛᴀɢᴀʟʟ\n╰─────────────━┈⊷\n*╭━❮ 𝐒𝐘𝐒𝐓𝐄𝐌 ❯━╮*\n┃✰ ᴄᴏᴍᴍᴀɴᴅ𝚜\n┃✰ ғᴇᴛᴄʜ\n┃✰ ʜᴇʟᴘ\n┃✰ ʟɪ𝚜ᴛ\n┃✰ ᴍᴇɴᴜ\n┃✰ ᴏᴡɴᴇʀ\n┃✰ ᴘɪɴɢ\n┃✰ 𝚜ᴛᴀᴛᴜ𝚜\n┃✰ ᴜᴘᴛɪᴍᴇ\n╰─────────────━┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n",
-    "type": "imageMessage",
-    "timestamp": 1759267683077,
+    "content": "\nGood Morning 🌄, *User*\n\n╭━━━ 〔 TREKKERMD LIFETIME BOT 〕━━━┈⊷\n┃╭──────────────\n┃│▸ *ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃│▸ *ᴘʀᴇғɪx:* *[ . ]*\n┃│▸ *ᴛɪᴍᴇ:* 00:36:46\n┃│▸ *ᴄᴏᴍᴍᴀɴᴅꜱ:* 41 \n┃│▸ *ᴅᴀᴛᴇ:* 01/10/2025\n┃│▸ *ᴍᴏᴅᴇ:* Public\n┃│▸ *ᴛɪᴍᴇ ᴢᴏɴᴇ:* Africa/Nairobi\n┃│▸ *ʀᴀᴍ:* 15.9GB/62.8GB\n┃│▸ *ᴜᴘᴛɪᴍᴇ:* 15 seconds\n┃╰──────────────\n╰━━━━━━━━━━━━━━━┈⊷\n> *Do more than just exist.*\n\n*𝐓𝐑𝐄𝐊𝐊𝐄𝐑𝐌𝐃 𝐋𝐈𝐅𝐄𝐓𝐈𝐌𝐄 𝐁𝐎𝐓 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒*\n\n*╭─────「 𝐀𝐃𝐌𝐈𝐍 」──┈⊷*\n│◦│╭───────────────\n│◦│ 1. ᴀᴅᴅᴄᴍᴅ\n│◦│ 2. ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n│◦│ 3. ʙʟᴏᴄᴋ\n│◦│ 4. ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n│◦│ 5. 𝚜ᴇᴛᴅᴘ\n│◦│ 6. ᴜɴʙʟᴏᴄᴋ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 」──┈⊷*\n│◦│╭───────────────\n│◦│ 7. ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n│◦│ 8. ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 」──┈⊷*\n│◦│╭───────────────\n│◦│ 9. ғᴀᴄᴇʙᴏᴏᴋ\n│◦│ 10. ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n│◦│ 11. ᴘʟᴀʏ\n│◦│ 12. ᴛɪᴋᴛᴏᴋ\n│◦│ 13. ᴠɪᴅᴇᴏ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐅𝐔𝐍 」──┈⊷*\n│◦│╭───────────────\n│◦│ 14. ᴀᴅᴠɪᴄᴇ\n│◦│ 15. ᴀɴɢʀʏ\n│◦│ 16. ᴅᴀʀᴇ\n│◦│ 17. ғᴀᴄᴛ\n│◦│ 18. ʜᴀᴘᴘʏ\n│◦│ 19. ʟᴏᴠᴇ\n│◦│ 20. ǫᴜᴏᴛᴇ𝚜\n│◦│ 21. 𝚜ᴀᴅ\n│◦│ 22. ᴛʀɪᴠɪᴀ\n│◦│ 23. ᴛʀᴜᴛʜ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 」──┈⊷*\n│◦│╭───────────────\n│◦│ 24. ʙɪᴏ\n│◦│ 25. ᴅᴘ\n│◦│ 26. ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐆𝐑𝐎𝐔𝐏 」──┈⊷*\n│◦│╭───────────────\n│◦│ 27. ᴅᴇᴍᴏᴛᴇ\n│◦│ 28. ɢʀᴏᴜᴘɪɴғᴏ\n│◦│ 29. ɪɴᴠɪᴛᴇ\n│◦│ 30. ᴋɪᴄᴋ\n│◦│ 31. ᴘʀᴏᴍᴏᴛᴇ\n│◦│ 32. ᴛᴀɢᴀʟʟ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐒𝐘𝐒𝐓𝐄𝐌 」──┈⊷*\n│◦│╭───────────────\n│◦│ 33. ᴄᴏᴍᴍᴀɴᴅ𝚜\n│◦│ 34. ғᴇᴛᴄʜ\n│◦│ 35. ʜᴇʟᴘ\n│◦│ 36. ʟɪ𝚜ᴛ\n│◦│ 37. ᴍᴇɴᴜ\n│◦│ 38. ᴏᴡɴᴇʀ\n│◦│ 39. ᴘɪɴɢ\n│◦│ 40. 𝚜ᴛᴀᴛᴜ𝚜\n│◦│ 41. ᴜᴘᴛɪᴍᴇ\n│◦╰─────────────\n╰──────────────┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n",
+    "type": "extendedTextMessage",
+    "timestamp": 1759268208175,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB06432A959C418BAF0E1"
+        "id": "3EB08BA3FC27AE08A4CCFB"
       },
       "message": {
-        "imageMessage": {
-          "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m231/AQMPazxlemWuFPZNe5zvIH5cBwQRa31z6TNqrwWDKrCwIVv50_5b9xJwET7t03-6ywceB6X2SS6P0rmDrrK4thoP5C7lfhBMWBA41OvwWQ?ccb=9-4&oh=01_Q5Aa2gFFgn_Hxc11NBOvA1LZxx5y38mGcvglOl3zMhnoPZoClg&oe=6903C53D&_nc_sid=e6ed6c&mms3=true",
-          "mimetype": "image/jpeg",
-          "caption": "\nGood Morning 🌄, *User*\n\n╭━❮ TREKKERMD LIFETIME BOT ❯━╮ \n┃ *👤ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃ *🥏ᴘʀᴇғɪx:* *[ . ]*\n┃ *🕒ᴛɪᴍᴇ:* 00:28:00\n┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* 41 \n┃ *📆ᴅᴀᴛᴇ:* 01/10/2025\n┃ *🧑‍💻ᴍᴏᴅᴇ:* Public\n┃ *📼ʀᴀᴍ:* 18.0GB/62.8GB\n┃ *⏳ᴜᴘᴛɪᴍᴇ:* 3 minutes, 16 seconds\n╰─────────────━┈⊷\n> *Stay humble, hustle hard.*\n\n\n*╭━❮ 𝐀𝐃𝐌𝐈𝐍 ❯━╮*\n┃✰ ᴀᴅᴅᴄᴍᴅ\n┃✰ ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n┃✰ ʙʟᴏᴄᴋ\n┃✰ ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ 𝚜ᴇᴛᴅᴘ\n┃✰ ᴜɴʙʟᴏᴄᴋ\n╰─────────────━┈⊷\n*╭━❮ 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 ❯━╮*\n┃✰ ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 ❯━╮*\n┃✰ ғᴀᴄᴇʙᴏᴏᴋ\n┃✰ ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n┃✰ ᴘʟᴀʏ\n┃✰ ᴛɪᴋᴛᴏᴋ\n┃✰ ᴠɪᴅᴇᴏ\n╰─────────────━┈⊷\n*╭━❮ 𝐅𝐔𝐍 ❯━╮*\n┃✰ ᴀᴅᴠɪᴄᴇ\n┃✰ ᴀɴɢʀʏ\n┃✰ ᴅᴀʀᴇ\n┃✰ ғᴀᴄᴛ\n┃✰ ʜᴀᴘᴘʏ\n┃✰ ʟᴏᴠᴇ\n┃✰ ǫᴜᴏᴛᴇ𝚜\n┃✰ 𝚜ᴀᴅ\n┃✰ ᴛʀɪᴠɪᴀ\n┃✰ ᴛʀᴜᴛʜ\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 ❯━╮*\n┃✰ ʙɪᴏ\n┃✰ ᴅᴘ\n┃✰ ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐑𝐎𝐔𝐏 ❯━╮*\n┃✰ ᴅᴇᴍᴏᴛᴇ\n┃✰ ɢʀᴏᴜᴘɪɴғᴏ\n┃✰ ɪɴᴠɪᴛᴇ\n┃✰ ᴋɪᴄᴋ\n┃✰ ᴘʀᴏᴍᴏᴛᴇ\n┃✰ ᴛᴀɢᴀʟʟ\n╰─────────────━┈⊷\n*╭━❮ 𝐒𝐘𝐒𝐓𝐄𝐌 ❯━╮*\n┃✰ ᴄᴏᴍᴍᴀɴᴅ𝚜\n┃✰ ғᴇᴛᴄʜ\n┃✰ ʜᴇʟᴘ\n┃✰ ʟɪ𝚜ᴛ\n┃✰ ᴍᴇɴᴜ\n┃✰ ᴏᴡɴᴇʀ\n┃✰ ᴘɪɴɢ\n┃✰ 𝚜ᴛᴀᴛᴜ𝚜\n┃✰ ᴜᴘᴛɪᴍᴇ\n╰─────────────━┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n",
-          "fileSha256": "gpZ5DxbJySf7CDa4lC/WgV2OBFPsfF6dKAn6F4jHk8I=",
-          "fileLength": "166711",
-          "mediaKey": "oai+0yWlMzFXJYEDIlEFpTdnc4RMYu+VhALtf0q1uHI=",
-          "fileEncSha256": "IFhhZwmBn5fvqk38u0zTKdsRx78hXHX2h0Zebfo1UgE=",
-          "directPath": "/o1/v/t24/f2/m231/AQMPazxlemWuFPZNe5zvIH5cBwQRa31z6TNqrwWDKrCwIVv50_5b9xJwET7t03-6ywceB6X2SS6P0rmDrrK4thoP5C7lfhBMWBA41OvwWQ?ccb=9-4&oh=01_Q5Aa2gFFgn_Hxc11NBOvA1LZxx5y38mGcvglOl3zMhnoPZoClg&oe=6903C53D&_nc_sid=e6ed6c",
-          "mediaKeyTimestamp": "1759267681"
+        "extendedTextMessage": {
+          "text": "\nGood Morning 🌄, *User*\n\n╭━━━ 〔 TREKKERMD LIFETIME BOT 〕━━━┈⊷\n┃╭──────────────\n┃│▸ *ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃│▸ *ᴘʀᴇғɪx:* *[ . ]*\n┃│▸ *ᴛɪᴍᴇ:* 00:36:46\n┃│▸ *ᴄᴏᴍᴍᴀɴᴅꜱ:* 41 \n┃│▸ *ᴅᴀᴛᴇ:* 01/10/2025\n┃│▸ *ᴍᴏᴅᴇ:* Public\n┃│▸ *ᴛɪᴍᴇ ᴢᴏɴᴇ:* Africa/Nairobi\n┃│▸ *ʀᴀᴍ:* 15.9GB/62.8GB\n┃│▸ *ᴜᴘᴛɪᴍᴇ:* 15 seconds\n┃╰──────────────\n╰━━━━━━━━━━━━━━━┈⊷\n> *Do more than just exist.*\n\n*𝐓𝐑𝐄𝐊𝐊𝐄𝐑𝐌𝐃 𝐋𝐈𝐅𝐄𝐓𝐈𝐌𝐄 𝐁𝐎𝐓 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒*\n\n*╭─────「 𝐀𝐃𝐌𝐈𝐍 」──┈⊷*\n│◦│╭───────────────\n│◦│ 1. ᴀᴅᴅᴄᴍᴅ\n│◦│ 2. ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n│◦│ 3. ʙʟᴏᴄᴋ\n│◦│ 4. ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n│◦│ 5. 𝚜ᴇᴛᴅᴘ\n│◦│ 6. ᴜɴʙʟᴏᴄᴋ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 」──┈⊷*\n│◦│╭───────────────\n│◦│ 7. ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n│◦│ 8. ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 」──┈⊷*\n│◦│╭───────────────\n│◦│ 9. ғᴀᴄᴇʙᴏᴏᴋ\n│◦│ 10. ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n│◦│ 11. ᴘʟᴀʏ\n│◦│ 12. ᴛɪᴋᴛᴏᴋ\n│◦│ 13. ᴠɪᴅᴇᴏ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐅𝐔𝐍 」──┈⊷*\n│◦│╭───────────────\n│◦│ 14. ᴀᴅᴠɪᴄᴇ\n│◦│ 15. ᴀɴɢʀʏ\n│◦│ 16. ᴅᴀʀᴇ\n│◦│ 17. ғᴀᴄᴛ\n│◦│ 18. ʜᴀᴘᴘʏ\n│◦│ 19. ʟᴏᴠᴇ\n│◦│ 20. ǫᴜᴏᴛᴇ𝚜\n│◦│ 21. 𝚜ᴀᴅ\n│◦│ 22. ᴛʀɪᴠɪᴀ\n│◦│ 23. ᴛʀᴜᴛʜ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 」──┈⊷*\n│◦│╭───────────────\n│◦│ 24. ʙɪᴏ\n│◦│ 25. ᴅᴘ\n│◦│ 26. ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐆𝐑𝐎𝐔𝐏 」──┈⊷*\n│◦│╭───────────────\n│◦│ 27. ᴅᴇᴍᴏᴛᴇ\n│◦│ 28. ɢʀᴏᴜᴘɪɴғᴏ\n│◦│ 29. ɪɴᴠɪᴛᴇ\n│◦│ 30. ᴋɪᴄᴋ\n│◦│ 31. ᴘʀᴏᴍᴏᴛᴇ\n│◦│ 32. ᴛᴀɢᴀʟʟ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐒𝐘𝐒𝐓𝐄𝐌 」──┈⊷*\n│◦│╭───────────────\n│◦│ 33. ᴄᴏᴍᴍᴀɴᴅ𝚜\n│◦│ 34. ғᴇᴛᴄʜ\n│◦│ 35. ʜᴇʟᴘ\n│◦│ 36. ʟɪ𝚜ᴛ\n│◦│ 37. ᴍᴇɴᴜ\n│◦│ 38. ᴏᴡɴᴇʀ\n│◦│ 39. ᴘɪɴɢ\n│◦│ 40. 𝚜ᴛᴀᴛᴜ𝚜\n│◦│ 41. ᴜᴘᴛɪᴍᴇ\n│◦╰─────────────\n╰──────────────┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n"
         }
       },
-      "messageTimestamp": "1759267681",
+      "messageTimestamp": "1759268206",
       "status": "SERVER_ACK"
     }
   },
-  "3EB0D46F61A9ADCCB114FA": {
-    "id": "3EB0D46F61A9ADCCB114FA",
+  "3EB08019A111CEED5E1FC5": {
+    "id": "3EB08019A111CEED5E1FC5",
     "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "self",
-    "content": "\nGood Morning 🌄, *User*\n\n╭━❮ TREKKERMD LIFETIME BOT ❯━╮ \n┃ *👤ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃ *🥏ᴘʀᴇғɪx:* *[ . ]*\n┃ *🕒ᴛɪᴍᴇ:* 00:28:01\n┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* 41 \n┃ *📆ᴅᴀᴛᴇ:* 01/10/2025\n┃ *🧑‍💻ᴍᴏᴅᴇ:* Public\n┃ *📼ʀᴀᴍ:* 18.0GB/62.8GB\n┃ *⏳ᴜᴘᴛɪᴍᴇ:* 3 minutes, 17 seconds\n╰─────────────━┈⊷\n> *Do more than just exist.*\n\n\n*╭━❮ 𝐀𝐃𝐌𝐈𝐍 ❯━╮*\n┃✰ ᴀᴅᴅᴄᴍᴅ\n┃✰ ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n┃✰ ʙʟᴏᴄᴋ\n┃✰ ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ 𝚜ᴇᴛᴅᴘ\n┃✰ ᴜɴʙʟᴏᴄᴋ\n╰─────────────━┈⊷\n*╭━❮ 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 ❯━╮*\n┃✰ ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 ❯━╮*\n┃✰ ғᴀᴄᴇʙᴏᴏᴋ\n┃✰ ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n┃✰ ᴘʟᴀʏ\n┃✰ ᴛɪᴋᴛᴏᴋ\n┃✰ ᴠɪᴅᴇᴏ\n╰─────────────━┈⊷\n*╭━❮ 𝐅𝐔𝐍 ❯━╮*\n┃✰ ᴀᴅᴠɪᴄᴇ\n┃✰ ᴀɴɢʀʏ\n┃✰ ᴅᴀʀᴇ\n┃✰ ғᴀᴄᴛ\n┃✰ ʜᴀᴘᴘʏ\n┃✰ ʟᴏᴠᴇ\n┃✰ ǫᴜᴏᴛᴇ𝚜\n┃✰ 𝚜ᴀᴅ\n┃✰ ᴛʀɪᴠɪᴀ\n┃✰ ᴛʀᴜᴛʜ\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 ❯━╮*\n┃✰ ʙɪᴏ\n┃✰ ᴅᴘ\n┃✰ ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐑𝐎𝐔𝐏 ❯━╮*\n┃✰ ᴅᴇᴍᴏᴛᴇ\n┃✰ ɢʀᴏᴜᴘɪɴғᴏ\n┃✰ ɪɴᴠɪᴛᴇ\n┃✰ ᴋɪᴄᴋ\n┃✰ ᴘʀᴏᴍᴏᴛᴇ\n┃✰ ᴛᴀɢᴀʟʟ\n╰─────────────━┈⊷\n*╭━❮ 𝐒𝐘𝐒𝐓𝐄𝐌 ❯━╮*\n┃✰ ᴄᴏᴍᴍᴀɴᴅ𝚜\n┃✰ ғᴇᴛᴄʜ\n┃✰ ʜᴇʟᴘ\n┃✰ ʟɪ𝚜ᴛ\n┃✰ ᴍᴇɴᴜ\n┃✰ ᴏᴡɴᴇʀ\n┃✰ ᴘɪɴɢ\n┃✰ 𝚜ᴛᴀᴛᴜ𝚜\n┃✰ ᴜᴘᴛɪᴍᴇ\n╰─────────────━┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n",
-    "type": "imageMessage",
-    "timestamp": 1759267684227,
+    "content": "\nGood Morning 🌄, *User*\n\n╭━━━ 〔 TREKKERMD LIFETIME BOT 〕━━━┈⊷\n┃╭──────────────\n┃│▸ *ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃│▸ *ᴘʀᴇғɪx:* *[ . ]*\n┃│▸ *ᴛɪᴍᴇ:* 00:36:46\n┃│▸ *ᴄᴏᴍᴍᴀɴᴅꜱ:* 41 \n┃│▸ *ᴅᴀᴛᴇ:* 01/10/2025\n┃│▸ *ᴍᴏᴅᴇ:* Public\n┃│▸ *ᴛɪᴍᴇ ᴢᴏɴᴇ:* Africa/Nairobi\n┃│▸ *ʀᴀᴍ:* 15.9GB/62.8GB\n┃│▸ *ᴜᴘᴛɪᴍᴇ:* 16 seconds\n┃╰──────────────\n╰━━━━━━━━━━━━━━━┈⊷\n> *Dream big, work hard.*\n\n*𝐓𝐑𝐄𝐊𝐊𝐄𝐑𝐌𝐃 𝐋𝐈𝐅𝐄𝐓𝐈𝐌𝐄 𝐁𝐎𝐓 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒*\n\n*╭─────「 𝐀𝐃𝐌𝐈𝐍 」──┈⊷*\n│◦│╭───────────────\n│◦│ 1. ᴀᴅᴅᴄᴍᴅ\n│◦│ 2. ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n│◦│ 3. ʙʟᴏᴄᴋ\n│◦│ 4. ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n│◦│ 5. 𝚜ᴇᴛᴅᴘ\n│◦│ 6. ᴜɴʙʟᴏᴄᴋ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 」──┈⊷*\n│◦│╭───────────────\n│◦│ 7. ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n│◦│ 8. ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 」──┈⊷*\n│◦│╭───────────────\n│◦│ 9. ғᴀᴄᴇʙᴏᴏᴋ\n│◦│ 10. ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n│◦│ 11. ᴘʟᴀʏ\n│◦│ 12. ᴛɪᴋᴛᴏᴋ\n│◦│ 13. ᴠɪᴅᴇᴏ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐅𝐔𝐍 」──┈⊷*\n│◦│╭───────────────\n│◦│ 14. ᴀᴅᴠɪᴄᴇ\n│◦│ 15. ᴀɴɢʀʏ\n│◦│ 16. ᴅᴀʀᴇ\n│◦│ 17. ғᴀᴄᴛ\n│◦│ 18. ʜᴀᴘᴘʏ\n│◦│ 19. ʟᴏᴠᴇ\n│◦│ 20. ǫᴜᴏᴛᴇ𝚜\n│◦│ 21. 𝚜ᴀᴅ\n│◦│ 22. ᴛʀɪᴠɪᴀ\n│◦│ 23. ᴛʀᴜᴛʜ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 」──┈⊷*\n│◦│╭───────────────\n│◦│ 24. ʙɪᴏ\n│◦│ 25. ᴅᴘ\n│◦│ 26. ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐆𝐑𝐎𝐔𝐏 」──┈⊷*\n│◦│╭───────────────\n│◦│ 27. ᴅᴇᴍᴏᴛᴇ\n│◦│ 28. ɢʀᴏᴜᴘɪɴғᴏ\n│◦│ 29. ɪɴᴠɪᴛᴇ\n│◦│ 30. ᴋɪᴄᴋ\n│◦│ 31. ᴘʀᴏᴍᴏᴛᴇ\n│◦│ 32. ᴛᴀɢᴀʟʟ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐒𝐘𝐒𝐓𝐄𝐌 」──┈⊷*\n│◦│╭───────────────\n│◦│ 33. ᴄᴏᴍᴍᴀɴᴅ𝚜\n│◦│ 34. ғᴇᴛᴄʜ\n│◦│ 35. ʜᴇʟᴘ\n│◦│ 36. ʟɪ𝚜ᴛ\n│◦│ 37. ᴍᴇɴᴜ\n│◦│ 38. ᴏᴡɴᴇʀ\n│◦│ 39. ᴘɪɴɢ\n│◦│ 40. 𝚜ᴛᴀᴛᴜ𝚜\n│◦│ 41. ᴜᴘᴛɪᴍᴇ\n│◦╰─────────────\n╰──────────────┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n",
+    "type": "extendedTextMessage",
+    "timestamp": 1759268208286,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0D46F61A9ADCCB114FA"
-      },
-      "message": {
-        "imageMessage": {
-          "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m238/AQOUg-El_FhK1cgHZo2Jj4hz5FXlbFDoXvR7qItlNZjeatzeCvA_f1mcHsjP9eKf0o-YmF4ktcfZGQvnFMemm-aDLUuKg2sO8ufXLAVDfQ?ccb=9-4&oh=01_Q5Aa2gEztGxw02IcMRxjvzh8qJzcjNCDbnMqrtsk9b6XIPD7eA&oe=6903CB91&_nc_sid=e6ed6c&mms3=true",
-          "mimetype": "image/jpeg",
-          "caption": "\nGood Morning 🌄, *User*\n\n╭━❮ TREKKERMD LIFETIME BOT ❯━╮ \n┃ *👤ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃ *🥏ᴘʀᴇғɪx:* *[ . ]*\n┃ *🕒ᴛɪᴍᴇ:* 00:28:01\n┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* 41 \n┃ *📆ᴅᴀᴛᴇ:* 01/10/2025\n┃ *🧑‍💻ᴍᴏᴅᴇ:* Public\n┃ *📼ʀᴀᴍ:* 18.0GB/62.8GB\n┃ *⏳ᴜᴘᴛɪᴍᴇ:* 3 minutes, 17 seconds\n╰─────────────━┈⊷\n> *Do more than just exist.*\n\n\n*╭━❮ 𝐀𝐃𝐌𝐈𝐍 ❯━╮*\n┃✰ ᴀᴅᴅᴄᴍᴅ\n┃✰ ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n┃✰ ʙʟᴏᴄᴋ\n┃✰ ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ 𝚜ᴇᴛᴅᴘ\n┃✰ ᴜɴʙʟᴏᴄᴋ\n╰─────────────━┈⊷\n*╭━❮ 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 ❯━╮*\n┃✰ ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 ❯━╮*\n┃✰ ғᴀᴄᴇʙᴏᴏᴋ\n┃✰ ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n┃✰ ᴘʟᴀʏ\n┃✰ ᴛɪᴋᴛᴏᴋ\n┃✰ ᴠɪᴅᴇᴏ\n╰─────────────━┈⊷\n*╭━❮ 𝐅𝐔𝐍 ❯━╮*\n┃✰ ᴀᴅᴠɪᴄᴇ\n┃✰ ᴀɴɢʀʏ\n┃✰ ᴅᴀʀᴇ\n┃✰ ғᴀᴄᴛ\n┃✰ ʜᴀᴘᴘʏ\n┃✰ ʟᴏᴠᴇ\n┃✰ ǫᴜᴏᴛᴇ𝚜\n┃✰ 𝚜ᴀᴅ\n┃✰ ᴛʀɪᴠɪᴀ\n┃✰ ᴛʀᴜᴛʜ\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 ❯━╮*\n┃✰ ʙɪᴏ\n┃✰ ᴅᴘ\n┃✰ ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐑𝐎𝐔𝐏 ❯━╮*\n┃✰ ᴅᴇᴍᴏᴛᴇ\n┃✰ ɢʀᴏᴜᴘɪɴғᴏ\n┃✰ ɪɴᴠɪᴛᴇ\n┃✰ ᴋɪᴄᴋ\n┃✰ ᴘʀᴏᴍᴏᴛᴇ\n┃✰ ᴛᴀɢᴀʟʟ\n╰─────────────━┈⊷\n*╭━❮ 𝐒𝐘𝐒𝐓𝐄𝐌 ❯━╮*\n┃✰ ᴄᴏᴍᴍᴀɴᴅ𝚜\n┃✰ ғᴇᴛᴄʜ\n┃✰ ʜᴇʟᴘ\n┃✰ ʟɪ𝚜ᴛ\n┃✰ ᴍᴇɴᴜ\n┃✰ ᴏᴡɴᴇʀ\n┃✰ ᴘɪɴɢ\n┃✰ 𝚜ᴛᴀᴛᴜ𝚜\n┃✰ ᴜᴘᴛɪᴍᴇ\n╰─────────────━┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n",
-          "fileSha256": "gpZ5DxbJySf7CDa4lC/WgV2OBFPsfF6dKAn6F4jHk8I=",
-          "fileLength": "166711",
-          "mediaKey": "dAikUinTdPB/Pf4ISmG6JDuStG9TMbJR+hdzDP7kE9s=",
-          "fileEncSha256": "zaF7ARnGKVr8MzD4xe6CP2Isz3Pv47euwNkusS4OLPI=",
-          "directPath": "/o1/v/t24/f2/m238/AQOUg-El_FhK1cgHZo2Jj4hz5FXlbFDoXvR7qItlNZjeatzeCvA_f1mcHsjP9eKf0o-YmF4ktcfZGQvnFMemm-aDLUuKg2sO8ufXLAVDfQ?ccb=9-4&oh=01_Q5Aa2gEztGxw02IcMRxjvzh8qJzcjNCDbnMqrtsk9b6XIPD7eA&oe=6903CB91&_nc_sid=e6ed6c",
-          "mediaKeyTimestamp": "1759267682"
-        }
-      },
-      "messageTimestamp": "1759267682",
-      "status": "SERVER_ACK"
-    }
-  },
-  "3EB0B32BA1B5488A64E21A": {
-    "id": "3EB0B32BA1B5488A64E21A",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267686159,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0B32BA1B5488A64E21A"
+        "id": "3EB08019A111CEED5E1FC5"
       },
       "message": {
         "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
+          "text": "\nGood Morning 🌄, *User*\n\n╭━━━ 〔 TREKKERMD LIFETIME BOT 〕━━━┈⊷\n┃╭──────────────\n┃│▸ *ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃│▸ *ᴘʀᴇғɪx:* *[ . ]*\n┃│▸ *ᴛɪᴍᴇ:* 00:36:46\n┃│▸ *ᴄᴏᴍᴍᴀɴᴅꜱ:* 41 \n┃│▸ *ᴅᴀᴛᴇ:* 01/10/2025\n┃│▸ *ᴍᴏᴅᴇ:* Public\n┃│▸ *ᴛɪᴍᴇ ᴢᴏɴᴇ:* Africa/Nairobi\n┃│▸ *ʀᴀᴍ:* 15.9GB/62.8GB\n┃│▸ *ᴜᴘᴛɪᴍᴇ:* 16 seconds\n┃╰──────────────\n╰━━━━━━━━━━━━━━━┈⊷\n> *Dream big, work hard.*\n\n*𝐓𝐑𝐄𝐊𝐊𝐄𝐑𝐌𝐃 𝐋𝐈𝐅𝐄𝐓𝐈𝐌𝐄 𝐁𝐎𝐓 𝐂𝐎𝐌𝐌𝐀𝐍𝐃𝐒*\n\n*╭─────「 𝐀𝐃𝐌𝐈𝐍 」──┈⊷*\n│◦│╭───────────────\n│◦│ 1. ᴀᴅᴅᴄᴍᴅ\n│◦│ 2. ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n│◦│ 3. ʙʟᴏᴄᴋ\n│◦│ 4. ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n│◦│ 5. 𝚜ᴇᴛᴅᴘ\n│◦│ 6. ᴜɴʙʟᴏᴄᴋ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 」──┈⊷*\n│◦│╭───────────────\n│◦│ 7. ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n│◦│ 8. ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 」──┈⊷*\n│◦│╭───────────────\n│◦│ 9. ғᴀᴄᴇʙᴏᴏᴋ\n│◦│ 10. ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n│◦│ 11. ᴘʟᴀʏ\n│◦│ 12. ᴛɪᴋᴛᴏᴋ\n│◦│ 13. ᴠɪᴅᴇᴏ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐅𝐔𝐍 」──┈⊷*\n│◦│╭───────────────\n│◦│ 14. ᴀᴅᴠɪᴄᴇ\n│◦│ 15. ᴀɴɢʀʏ\n│◦│ 16. ᴅᴀʀᴇ\n│◦│ 17. ғᴀᴄᴛ\n│◦│ 18. ʜᴀᴘᴘʏ\n│◦│ 19. ʟᴏᴠᴇ\n│◦│ 20. ǫᴜᴏᴛᴇ𝚜\n│◦│ 21. 𝚜ᴀᴅ\n│◦│ 22. ᴛʀɪᴠɪᴀ\n│◦│ 23. ᴛʀᴜᴛʜ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 」──┈⊷*\n│◦│╭───────────────\n│◦│ 24. ʙɪᴏ\n│◦│ 25. ᴅᴘ\n│◦│ 26. ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐆𝐑𝐎𝐔𝐏 」──┈⊷*\n│◦│╭───────────────\n│◦│ 27. ᴅᴇᴍᴏᴛᴇ\n│◦│ 28. ɢʀᴏᴜᴘɪɴғᴏ\n│◦│ 29. ɪɴᴠɪᴛᴇ\n│◦│ 30. ᴋɪᴄᴋ\n│◦│ 31. ᴘʀᴏᴍᴏᴛᴇ\n│◦│ 32. ᴛᴀɢᴀʟʟ\n│◦╰─────────────\n╰──────────────┈⊷\n\n*╭─────「 𝐒𝐘𝐒𝐓𝐄𝐌 」──┈⊷*\n│◦│╭───────────────\n│◦│ 33. ᴄᴏᴍᴍᴀɴᴅ𝚜\n│◦│ 34. ғᴇᴛᴄʜ\n│◦│ 35. ʜᴇʟᴘ\n│◦│ 36. ʟɪ𝚜ᴛ\n│◦│ 37. ᴍᴇɴᴜ\n│◦│ 38. ᴏᴡɴᴇʀ\n│◦│ 39. ᴘɪɴɢ\n│◦│ 40. 𝚜ᴛᴀᴛᴜ𝚜\n│◦│ 41. ᴜᴘᴛɪᴍᴇ\n│◦╰─────────────\n╰──────────────┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n"
         }
       },
-      "messageTimestamp": "1759267684",
+      "messageTimestamp": "1759268206",
       "status": "PENDING"
     }
   },
-  "3EB04E46DEAA6314185C3B": {
-    "id": "3EB04E46DEAA6314185C3B",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267691891,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB04E46DEAA6314185C3B"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267690",
-      "status": "PENDING"
-    }
-  },
-  "3EB043A8F92DADFC1BA06A": {
-    "id": "3EB043A8F92DADFC1BA06A",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267699077,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB043A8F92DADFC1BA06A"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267697",
-      "status": "PENDING"
-    }
-  },
-  "3EB00B15488B521FAC6B9E": {
-    "id": "3EB00B15488B521FAC6B9E",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267704648,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB00B15488B521FAC6B9E"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267703",
-      "status": "PENDING"
-    }
-  },
-  "3EB09F78BE1DF9F2132176": {
-    "id": "3EB09F78BE1DF9F2132176",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267710136,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB09F78BE1DF9F2132176"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267708",
-      "status": "PENDING"
-    }
-  },
-  "3EB097976DE3187D3A57B2": {
-    "id": "3EB097976DE3187D3A57B2",
-    "fromJid": "254797582445:22@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267715142,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254797582445:22@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB097976DE3187D3A57B2"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267713",
-      "status": "PENDING"
-    }
-  },
-  "3EB0ECA727F00BFF93B0C8": {
-    "id": "3EB0ECA727F00BFF93B0C8",
-    "fromJid": "254799257758:29@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267716715,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758:29@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0ECA727F00BFF93B0C8"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267715",
-      "status": "PENDING"
-    }
-  },
-  "3EB03C069FC17C08DB12E3": {
-    "id": "3EB03C069FC17C08DB12E3",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267717126,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB03C069FC17C08DB12E3"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267715",
-      "status": "PENDING"
-    }
-  },
-  "3EB014EB53C2782BD0E2FB": {
-    "id": "3EB014EB53C2782BD0E2FB",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267720311,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB014EB53C2782BD0E2FB"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267719",
-      "status": "PENDING"
-    }
-  },
-  "AC1FB40A3F17627415C23266443F38AB": {
-    "id": "AC1FB40A3F17627415C23266443F38AB",
-    "fromJid": "120363297897105149@g.us",
-    "senderJid": "self",
-    "content": "\"Na ule kerkerz anacheza kama dorgu\"\nNaishaaa😂😂😂",
-    "type": "unknown",
-    "timestamp": 1759267724651,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "120363297897105149@g.us",
-        "fromMe": false,
-        "id": "AC1FB40A3F17627415C23266443F38AB",
-        "participant": "88248709853384@lid",
-        "participantPn": "254742188014@s.whatsapp.net"
-      },
-      "messageTimestamp": 1759267723,
-      "pushName": "✝️𝕮𝖆𝖗𝖑ᵀᴹ🥷✨",
-      "broadcast": false,
-      "message": {
-        "senderKeyDistributionMessage": {
-          "groupId": "120363297897105149@g.us",
-          "axolotlSenderKeyDistributionMessage": "MwibpPKiBRADGiCTK1wsK0J9obYPfGdGMGfiUK1FCMxgudRSQ9gCSBXeriIhBZt4iUEzdssFbofG1SnDH0Dz3uu5Mx9BpeOyFGA0QrY6"
-        },
-        "extendedTextMessage": {
-          "text": "Naishaaa😂😂😂",
-          "previewType": "NONE",
-          "contextInfo": {
-            "stanzaId": "AC5793D64D942DCC6FFACAC26E5FFF5C",
-            "participant": "104539520774239@lid",
-            "quotedMessage": {
-              "conversation": "Na ule kerkerz anacheza kama dorgu"
-            }
-          },
-          "inviteLinkGroupTypeV2": "DEFAULT"
-        },
-        "messageContextInfo": {
-          "deviceListMetadata": {
-            "senderKeyHash": "/zZaAc10GSPL0w==",
-            "senderTimestamp": "1758747782",
-            "recipientKeyHash": "wbj0jojRcMmicQ==",
-            "recipientTimestamp": "1758435459"
-          },
-          "deviceListMetadataVersion": 2,
-          "messageSecret": "ipv4xkEo32Q0VfOZonnnTSkL5YCxbFFg7VEG9WVYs2k="
-        }
-      }
-    }
-  },
-  "3EB0A4246D839ABF2AD225": {
-    "id": "3EB0A4246D839ABF2AD225",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267727708,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0A4246D839ABF2AD225"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267725",
-      "status": "PENDING"
-    }
-  },
-  "3EB0FC7B906C2227C1CAB8": {
-    "id": "3EB0FC7B906C2227C1CAB8",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267729882,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0FC7B906C2227C1CAB8"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267728",
-      "status": "PENDING"
-    }
-  },
-  "3EB05A1E48627622A3A0EF": {
-    "id": "3EB05A1E48627622A3A0EF",
-    "fromJid": "254799257758:29@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267730026,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758:29@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB05A1E48627622A3A0EF"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267727",
-      "status": "PENDING"
-    }
-  },
-  "3EB01F5389FB8182E7C51D": {
-    "id": "3EB01F5389FB8182E7C51D",
-    "fromJid": "254797582445:22@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267730318,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254797582445:22@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB01F5389FB8182E7C51D"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267729",
-      "status": "PENDING"
-    }
-  },
-  "AC4EB62B0443209D11BE61AA26B421C1": {
-    "id": "AC4EB62B0443209D11BE61AA26B421C1",
-    "fromJid": "120363297897105149@g.us",
-    "senderJid": "self",
-    "content": "🤣🤣🤣🤣",
-    "type": "unknown",
-    "timestamp": 1759267733171,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "120363297897105149@g.us",
-        "fromMe": false,
-        "id": "AC4EB62B0443209D11BE61AA26B421C1",
-        "participant": "67688785297547@lid",
-        "participantPn": "254708917808@s.whatsapp.net"
-      },
-      "messageTimestamp": 1759267731,
-      "pushName": "Klaus",
-      "broadcast": false,
-      "message": {
-        "senderKeyDistributionMessage": {
-          "groupId": "120363297897105149@g.us",
-          "axolotlSenderKeyDistributionMessage": "MwjajI+DARAAGiD5Nh4GuEgK202jgTKhrMLy6rUyeG+u/F32rChT5H79QSIhBc6SXq7ebUI/i4m9dQIBxwVbjifAD9tywbY6X6Tu32My"
-        },
-        "extendedTextMessage": {
-          "text": "🤣🤣🤣🤣",
-          "previewType": "NONE",
-          "contextInfo": {
-            "stanzaId": "AC23093643419E87D264C8FA47FEAC6B",
-            "participant": "23416379846855@lid",
-            "quotedMessage": {
-              "imageMessage": {
-                "url": "https://mmg.whatsapp.net/v/t62.7118-24/556495214_1355786526121487_1179301249839850274_n.enc?ccb=11-4&oh=01_Q5Aa2gFDlA0R5UQTqSAsTL4q6soliliZC0FYNZDVpWfNYN7Wdg&oe=6903CF50&_nc_sid=5e03e0&mms3=true",
-                "mimetype": "image/jpeg",
-                "caption": "The difference is Clear 😂",
-                "fileSha256": "GxnTZu5amm87v0D0lZ8CPGOJGlgwGMZjUbuSSOFD0vg=",
-                "fileLength": "314863",
-                "height": 1280,
-                "width": 1280,
-                "mediaKey": "JFnGTYV3HcTPxrDALChg1iCdXP0FnWGpbqw8KqToaYM=",
-                "fileEncSha256": "SD71MYX9VepV7cEanSmMKQYqKdPiQzRdqNt1lS6I2cc=",
-                "directPath": "/v/t62.7118-24/556495214_1355786526121487_1179301249839850274_n.enc?ccb=11-4&oh=01_Q5Aa2gFDlA0R5UQTqSAsTL4q6soliliZC0FYNZDVpWfNYN7Wdg&oe=6903CF50&_nc_sid=5e03e0&_nc_hot=1759266896",
-                "mediaKeyTimestamp": "1759266202",
-                "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEABsbGxscGx4hIR4qLSgtKj04MzM4PV1CR0JHQl2NWGdYWGdYjX2Xe3N7l33gsJycsOD/2c7Z//////////////8BGxsbGxwbHiEhHiotKC0qPTgzMzg9XUJHQkdCXY1YZ1hYZ1iNfZd7c3uXfeCwnJyw4P/Zztn////////////////CABEIAEAAQAMBIgACEQEDEQH/xAAvAAADAQEBAAAAAAAAAAAAAAACAwQFAQABAQEBAQEAAAAAAAAAAAAAAAIAAQME/9oADAMBAAIQAxAAAADNMSpfOluTerTaLECsupRwz+TgFUhZ0xRrY3BhoLpi0AzpNFtrrI6bdGcxrcjuynnrTMleMw6T8/8A/8QAJBAAAgICAQQCAwEAAAAAAAAAAQIAEQMSIQQiMUETURRScZH/2gAIAQEAAT8AHxAAgGBtr/UzVFBqPqOCs9VA9QN7Bi/G5HOrCGggXyLhojgUPUReCYFJPMbEo5MZUDD6hHPbP7FxqQWJoS1CqPuIEDNzYEDITMtNQAj4wB3cTCEXYzLitTkJmr6iql5GIuhUpxsPuDGbPfUUPfnxHLOysxH8iBtWAIl5GXWgI+XRRoAYoOQ2BDjIBsCPjNwISo7Y+F7IMxZWw8ETOC9MBMfVaUrJE6nuBoQls4BSfA1jYioMLDgER+lJs7CNj1yEnxPkUUDVCBgTRUxGFgBTMHUsg0EbNqFDeTGznVnU8T8nISeZuxckgxnu7WMtegZpyKUf7FZsbNSgGJ1D8WoMyF3bzQ9Qo37QKQPMONmPPif/xAAgEQEBAAEDBAMAAAAAAAAAAAABABECMkEQEiEiMVFx/9oACAECAQE/AMdBb5ltXsboAN0ftmy/U90S+IcczqzzGov/xAAdEQEAAgEFAQAAAAAAAAAAAAABAAIRAxAhMUET/9oACAEDAQE/ANnG9bA9RuLFhXnE+dPbQrpessAuJVCw5lradnMq6IdkcZeZ/9k=",
-                "contextInfo": {
-                  "forwardingScore": 1,
-                  "isForwarded": true,
-                  "pairedMediaType": "NOT_PAIRED_MEDIA"
-                },
-                "scansSidecar": "DgHaTqToq9AM9LqtRpAyXiHeRTBRRKH+OOFcUaWXenX8yH/GgT/IWA==",
-                "scanLengths": [
-                  21204,
-                  131170,
-                  66602,
-                  95887
-                ],
-                "midQualityFileSha256": "REnqBCfQVdwoWou5cnBC8+9YMZePQgDFoZHyHD9tV64="
-              }
-            }
-          },
-          "inviteLinkGroupTypeV2": "DEFAULT"
-        },
-        "messageContextInfo": {
-          "messageSecret": "2XllpWTUshW+oc+yqwwh7HG2FaR40vvz+cc9O7i3U5w="
-        }
-      }
-    }
-  },
-  "3EB032E71C77E34FC28AD9": {
-    "id": "3EB032E71C77E34FC28AD9",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267735582,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB032E71C77E34FC28AD9"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267733",
-      "status": "PENDING"
-    }
-  },
-  "3EB02D096BD66CF6C39BF0": {
-    "id": "3EB02D096BD66CF6C39BF0",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267739214,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB02D096BD66CF6C39BF0"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267737",
-      "status": "PENDING"
-    }
-  },
-  "3EB087D2DE22DA8AF65C64": {
-    "id": "3EB087D2DE22DA8AF65C64",
-    "fromJid": "254768989551:70@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267739360,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254768989551:70@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB087D2DE22DA8AF65C64"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267731",
-      "status": "PENDING"
-    }
-  },
-  "3EB012BE6A6D03E0AB3FE7": {
-    "id": "3EB012BE6A6D03E0AB3FE7",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267746009,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB012BE6A6D03E0AB3FE7"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267743",
-      "status": "PENDING"
-    }
-  },
-  "3EB033A9476B0397AF9F8A": {
-    "id": "3EB033A9476B0397AF9F8A",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267750280,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB033A9476B0397AF9F8A"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267749",
-      "status": "PENDING"
-    }
-  },
-  "AC44A6BE42A9A8C6A9FF16268FADD49B": {
-    "id": "AC44A6BE42A9A8C6A9FF16268FADD49B",
+  "ACA57E97BDF489E9E2B516E322A139FF": {
+    "id": "ACA57E97BDF489E9E2B516E322A139FF",
     "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "self",
     "content": ".bio",
     "type": "conversation",
-    "timestamp": 1759267750501,
+    "timestamp": 1759268215038,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": true,
-        "id": "AC44A6BE42A9A8C6A9FF16268FADD49B"
+        "id": "ACA57E97BDF489E9E2B516E322A139FF"
       },
-      "messageTimestamp": 1759267749,
+      "messageTimestamp": 1759268213,
       "pushName": "Team Grill🙃",
       "broadcast": false,
       "status": 2,
@@ -1647,104 +157,103 @@
       }
     }
   },
-  "3EB0C4CC18A36EAB86ED2C": {
-    "id": "3EB0C4CC18A36EAB86ED2C",
+  "3EB0C0BA179506F99B9A98": {
+    "id": "3EB0C0BA179506F99B9A98",
     "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "self",
     "content": "📄 *Getting user bio...*\nPlease wait...",
     "type": "extendedTextMessage",
-    "timestamp": 1759267752485,
+    "timestamp": 1759268216903,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0C4CC18A36EAB86ED2C"
+        "id": "3EB0C0BA179506F99B9A98"
       },
       "message": {
         "extendedTextMessage": {
           "text": "📄 *Getting user bio...*\nPlease wait..."
         }
       },
-      "messageTimestamp": "1759267750",
-      "status": "PENDING"
+      "messageTimestamp": "1759268215",
+      "status": "SERVER_ACK"
     }
   },
-  "3EB08FF3CAAAAFFBBE6CE5": {
-    "id": "3EB08FF3CAAAAFFBBE6CE5",
+  "3EB0AC0A113CA5466EB049": {
+    "id": "3EB0AC0A113CA5466EB049",
     "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "self",
     "content": "📋 *User Bio Information*\n\n👤 *User:* @254704897825\n📝 *Bio:* No bio set or privacy settings prevent access.\n\n> Powered by TREKKERMD LIFETIME BOT",
     "type": "extendedTextMessage",
-    "timestamp": 1759267753596,
+    "timestamp": 1759268217013,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB08FF3CAAAAFFBBE6CE5"
+        "id": "3EB0AC0A113CA5466EB049"
       },
       "message": {
         "extendedTextMessage": {
           "text": "📋 *User Bio Information*\n\n👤 *User:* @254704897825\n📝 *Bio:* No bio set or privacy settings prevent access.\n\n> Powered by TREKKERMD LIFETIME BOT"
         }
       },
-      "messageTimestamp": "1759267751",
-      "status": "SERVER_ACK"
-    }
-  },
-  "3EB06736DB005203B27D9A": {
-    "id": "3EB06736DB005203B27D9A",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267756387,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB06736DB005203B27D9A"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267755",
+      "messageTimestamp": "1759268215",
       "status": "PENDING"
     }
   },
-  "ACFA5F79DE33B773F0D88F05ED9294A3": {
-    "id": "ACFA5F79DE33B773F0D88F05ED9294A3",
-    "fromJid": "120363297897105149@g.us",
+  "3EB0AA8DCE7B75915C5F4D": {
+    "id": "3EB0AA8DCE7B75915C5F4D",
+    "fromJid": "254768989551:70@s.whatsapp.net",
     "senderJid": "self",
-    "content": "\"Na ule kerkerz anacheza kama dorgu\"\nDourgu ni mkali kuliko  Karkez bro",
-    "type": "unknown",
-    "timestamp": 1759267756427,
+    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
+    "type": "extendedTextMessage",
+    "timestamp": 1759268222013,
     "originalMessage": {
       "key": {
-        "remoteJid": "120363297897105149@g.us",
-        "fromMe": false,
-        "id": "ACFA5F79DE33B773F0D88F05ED9294A3",
-        "participant": "207636100317298@lid",
-        "participantPn": "254726413731@s.whatsapp.net"
+        "remoteJid": "254768989551:70@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0AA8DCE7B75915C5F4D"
       },
-      "messageTimestamp": 1759267755,
-      "pushName": "Kevin Kevoh",
-      "broadcast": false,
+      "message": {
+        "extendedTextMessage": {
+          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
+        }
+      },
+      "messageTimestamp": "1759268215",
+      "status": "PENDING"
+    }
+  },
+  "AC79A4F35FEA3B8971E0B0C8617DAEDA": {
+    "id": "AC79A4F35FEA3B8971E0B0C8617DAEDA",
+    "fromJid": "status@broadcast",
+    "senderJid": "self",
+    "content": "💇‍♂️ bald",
+    "type": "unknown",
+    "timestamp": 1759268223639,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "status@broadcast",
+        "fromMe": false,
+        "id": "AC79A4F35FEA3B8971E0B0C8617DAEDA",
+        "participant": "254759477691@s.whatsapp.net",
+        "participantLid": "268220757966860@lid"
+      },
+      "messageTimestamp": 1759268222,
+      "pushName": "hilarrr_8",
+      "broadcast": true,
       "message": {
         "senderKeyDistributionMessage": {
-          "groupId": "120363297897105149@g.us",
-          "axolotlSenderKeyDistributionMessage": "Mwih4vvrBRAGGiA4aEOn+FLIElMwHWoPDUO/vstHzrNebx9GL2MCpUDFpCIhBasvalIjatnBm6sqo+R2GcB+hLx0uSTzJAbAJmk5tglI"
+          "groupId": "status@broadcast",
+          "axolotlSenderKeyDistributionMessage": "Mwi20Yv3BhAGGiDWMNNI7LNydVul1i7sIsECfjRB8o/Y1p77Ix/Y3suyLCIhBckyYscC9+dFctdBdEYVmt2fXqzmnpFaZI7dvxu8BZ55"
         },
         "extendedTextMessage": {
-          "text": "Dourgu ni mkali kuliko  Karkez bro",
+          "text": "💇‍♂️ bald",
+          "textArgb": 4294967295,
+          "backgroundArgb": 4280563264,
+          "font": 5,
           "previewType": "NONE",
           "contextInfo": {
-            "stanzaId": "AC5793D64D942DCC6FFACAC26E5FFF5C",
-            "participant": "104539520774239@lid",
-            "quotedMessage": {
-              "conversation": "Na ule kerkerz anacheza kama dorgu"
-            }
+            "statusSourceType": "TEXT"
           },
           "inviteLinkGroupTypeV2": "DEFAULT"
         },
@@ -1754,778 +263,181 @@
             "recipientTimestamp": "1758435459"
           },
           "deviceListMetadataVersion": 2,
-          "messageSecret": "HGf8kpwxT0VEdDPvx3rye6xy58nuuUOobuBjgA9chJI="
+          "messageSecret": "osZPB0cP5hLwhsHmBpI/DK4EwJBgaybvidD8knU9+U0="
         }
       }
     }
   },
-  "AC3B3288392BDDF2824CB3604A560024": {
-    "id": "AC3B3288392BDDF2824CB3604A560024",
-    "fromJid": "120363417179829104@newsletter",
-    "senderJid": "120363417179829104@newsletter",
-    "content": "⚡⚡",
-    "type": "videoMessage",
-    "timestamp": 1759267759612,
+  "AC32DAF6EFBC78E262C33F10CD37E9D5": {
+    "id": "AC32DAF6EFBC78E262C33F10CD37E9D5",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".block",
+    "type": "conversation",
+    "timestamp": 1759268225713,
     "originalMessage": {
       "key": {
-        "remoteJid": "120363417179829104@newsletter",
-        "fromMe": false,
-        "id": "AC3B3288392BDDF2824CB3604A560024",
-        "server_id": "2514"
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "AC32DAF6EFBC78E262C33F10CD37E9D5"
       },
-      "messageTimestamp": 1759267757,
+      "messageTimestamp": 1759268224,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".block"
+      }
+    }
+  },
+  "3EB030986E7A62D4B9F19A": {
+    "id": "3EB030986E7A62D4B9F19A",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🚫 *User Blocked*\n\n👤 @254704897825 has been blocked successfully!\n\n⚠️ They will no longer be able to message this bot.",
+    "type": "extendedTextMessage",
+    "timestamp": 1759268227559,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB030986E7A62D4B9F19A"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "🚫 *User Blocked*\n\n👤 @254704897825 has been blocked successfully!\n\n⚠️ They will no longer be able to message this bot."
+        }
+      },
+      "messageTimestamp": "1759268226",
+      "status": "ERROR",
+      "messageStubParameters": [
+        "403"
+      ]
+    }
+  },
+  "3EB052A50A938CA6F2721B": {
+    "id": "3EB052A50A938CA6F2721B",
+    "fromJid": "254797582445:22@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
+    "type": "extendedTextMessage",
+    "timestamp": 1759268234956,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254797582445:22@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB052A50A938CA6F2721B"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
+        }
+      },
+      "messageTimestamp": "1759268213",
+      "status": "PENDING"
+    }
+  },
+  "AC5CD1035CB0FE7809F9B9720B4C1B51": {
+    "id": "AC5CD1035CB0FE7809F9B9720B4C1B51",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".bio",
+    "type": "conversation",
+    "timestamp": 1759268254503,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "AC5CD1035CB0FE7809F9B9720B4C1B51"
+      },
+      "messageTimestamp": 1759268253,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".bio"
+      }
+    }
+  },
+  "3EB060AFE33CCEBE42BCD6": {
+    "id": "3EB060AFE33CCEBE42BCD6",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "📄 *Getting user bio...*\nPlease wait...",
+    "type": "extendedTextMessage",
+    "timestamp": 1759268256362,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB060AFE33CCEBE42BCD6"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "📄 *Getting user bio...*\nPlease wait..."
+        }
+      },
+      "messageTimestamp": "1759268254",
+      "status": "SERVER_ACK"
+    }
+  },
+  "3EB049D3989864736FC82F": {
+    "id": "3EB049D3989864736FC82F",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "📋 *User Bio Information*\n\n👤 *User:* @254704897825\n📝 *Bio:* No bio set or privacy settings prevent access.\n\n> Powered by TREKKERMD LIFETIME BOT",
+    "type": "extendedTextMessage",
+    "timestamp": 1759268256473,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB049D3989864736FC82F"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "📋 *User Bio Information*\n\n👤 *User:* @254704897825\n📝 *Bio:* No bio set or privacy settings prevent access.\n\n> Powered by TREKKERMD LIFETIME BOT"
+        }
+      },
+      "messageTimestamp": "1759268254",
+      "status": "PENDING"
+    }
+  },
+  "AC72C07D812D3053A71C3DDA1B174D1D": {
+    "id": "AC72C07D812D3053A71C3DDA1B174D1D",
+    "fromJid": "120363417294325680@newsletter",
+    "senderJid": "120363417294325680@newsletter",
+    "content": "🚨⚠️ Arne Slot announces Alisson will be out against Chelsea with an injury: “It is never a positive sign when a player has to go off like this”.\n\n“Alisson will not be available to play on Saturday”.",
+    "type": "imageMessage",
+    "timestamp": 1759268272926,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "120363417294325680@newsletter",
+        "fromMe": false,
+        "id": "AC72C07D812D3053A71C3DDA1B174D1D",
+        "server_id": "6665"
+      },
+      "messageTimestamp": 1759268262,
       "broadcast": false,
       "message": {
-        "videoMessage": {
-          "url": "https://mmg.whatsapp.net/m1/v/t24/An9ZZVjVpfcmuZkvb87VL7XmARJkc_PtLfJxYzArlD94fkIsAxsNjKKef8U0i-iQ17goZg3BwujWWZHvBtO-CW4Qx-e98HBifLF0piwntNc5uNfbmL6xPPva4CpAu5NW-KfD?ccb=10-5&oh=01_Q5Aa2gGEn7BIzo1rgWWRsRdKgNi73Luev1UlMBSUYD-_ShCKSg&oe=6903A7EA&_nc_sid=5e03e0&mms3=true",
-          "mimetype": "video/mp4",
-          "fileSha256": "VsfJ+3ChlhWU9+n7D8kN5NfuJkH2Jn6RvfAszkrdySE=",
-          "fileLength": "1053409",
-          "seconds": 24,
-          "caption": "⚡⚡",
-          "height": 642,
-          "width": 284,
-          "directPath": "/m1/v/t24/An9ZZVjVpfcmuZkvb87VL7XmARJkc_PtLfJxYzArlD94fkIsAxsNjKKef8U0i-iQ17goZg3BwujWWZHvBtO-CW4Qx-e98HBifLF0piwntNc5uNfbmL6xPPva4CpAu5NW-KfD?ccb=10-5&oh=01_Q5Aa2gGEn7BIzo1rgWWRsRdKgNi73Luev1UlMBSUYD-_ShCKSg&oe=6903A7EA&_nc_sid=5e03e0",
-          "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEABsbGxscGx4hIR4qLSgtKj04MzM4PV1CR0JHQl2NWGdYWGdYjX2Xe3N7l33gsJycsOD/2c7Z//////////////8BGxsbGxwbHiEhHiotKC0qPTgzMzg9XUJHQkdCXY1YZ1hYZ1iNfZd7c3uXfeCwnJyw4P/Zztn////////////////CABEIAEgAIAMBIgACEQEDEQH/xAAuAAADAAMBAAAAAAAAAAAAAAADBAUAAQYCAQEBAQAAAAAAAAAAAAAAAAAAAQL/2gAMAwEAAhADEAAAAEQMN3Er3TgHQ0Jzed++P7DkaplVbZ0ssJqkylRuYYXBKcGZGg5i/wD/xAAmEAACAgIABAYDAAAAAAAAAAABAgADBBEFEhMhECIxMlFhQlNy/9oACAEBAAE/AK8jKffTr5pbRl2sWaloMW+pSxRxFy7VUKANTApvsRijlRGxs4Hta8vqyxjMCzGcxnDCRjEqN+absYEkES1nNNoK9uTw4YoOKdn8ozrzerQmsV2N3ICdxHILEgaEw8tqUNa17h4qf1SviLW7qZff2mXgHHAYOGWYFQtaz6WDCDVEll2DLN1OQNfRELu3qxM4X7rv4lbVEsgRhzDUvULayg7A8OH3LTYxMvyFKkIEB+dx6Gckl1nQf5WUjD6Y52806TOxNaEruPWyDbIRNz//xAAcEQEAAgIDAQAAAAAAAAAAAAABAhEAEAMSITH/2gAIAQIBAT8AeST4rkZyPlmSQNdS7vVYlb//xAAcEQACAwADAQAAAAAAAAAAAAABEQACMRASIUH/2gAIAQMBAT8AFaA+ViF9rF2KiI+KevMhJsWRGA4C4AjvH//Z",
+        "imageMessage": {
+          "url": "https://mmg.whatsapp.net/m1/v/t24/An9NBSMbfwZ_x57WpDQdUbuX0yQXt20v9XsoNZYzaaId7vuyCk32xVKjo2efWTFfKrJ0dHGRPc4svp21DapAROVbt1s2yKoL1PDDdNCbn-1PzxCM0MwaoRXZzBJOKpuS5A?ccb=10-5&oh=01_Q5Aa2gFkwC_YF4PrDspgaQuRIdxehIvCo_kKkG1KbqHRCyD3ww&oe=6903CD86&_nc_sid=5e03e0&mms3=true",
+          "mimetype": "image/jpeg",
+          "caption": "🚨⚠️ Arne Slot announces Alisson will be out against Chelsea with an injury: “It is never a positive sign when a player has to go off like this”.\n\n“Alisson will not be available to play on Saturday”.",
+          "fileSha256": "UUhQHRoOZ+/69mLX9HwYYKGiYajHdg0uMvnvr+4l+UM=",
+          "fileLength": "43221",
+          "height": 378,
+          "width": 664,
+          "directPath": "/m1/v/t24/An9NBSMbfwZ_x57WpDQdUbuX0yQXt20v9XsoNZYzaaId7vuyCk32xVKjo2efWTFfKrJ0dHGRPc4svp21DapAROVbt1s2yKoL1PDDdNCbn-1PzxCM0MwaoRXZzBJOKpuS5A?ccb=10-5&oh=01_Q5Aa2gFkwC_YF4PrDspgaQuRIdxehIvCo_kKkG1KbqHRCyD3ww&oe=6903CD86&_nc_sid=5e03e0",
+          "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEABsbGxscGx4hIR4qLSgtKj04MzM4PV1CR0JHQl2NWGdYWGdYjX2Xe3N7l33gsJycsOD/2c7Z//////////////8BGxsbGxwbHiEhHiotKC0qPTgzMzg9XUJHQkdCXY1YZ1hYZ1iNfZd7c3uXfeCwnJyw4P/Zztn////////////////CABEIACkASAMBIgACEQEDEQH/xAAwAAACAwEBAAAAAAAAAAAAAAAEBQACAwEGAQEBAQEBAAAAAAAAAAAAAAACAAEDBf/aAAwDAQACEAMQAAAAF7W/H0dMTB4XZKA3y9NEJWk+L5iGFz7pKyw5A/Ek6S4pd3Q1gk1LCA7BMgKS09j5/q5tFlcVzbxRK//EACMQAAICAwACAgIDAAAAAAAAAAECABEDEiEEEyIxEEEyUYH/2gAIAQEAAT8AxlQtayxsPjCo6dYB2yOTxgffznIS36cXMVrZdp5DbKCrTY2ATFuxX3O7/KbUsG5BqqBgynE9k/qHyX2PZhzueE8jP8VAeoXvIF2s1LQJZPY2Y7CPnpOTHlJNMZ6vc+oMbxShrJMb4sBXlgx8mHM41HBBhxBtw0d7iqGUmCX2eC4OWjNCMjBhYImfAxc6nkxH1giDKQLPRAJhxKBZP+R8aVwgchSjPBUHL0wF1cjcGZCNgDwR2+fI+XCUW+RfqWZZ/uWYCQfubNf8jHJ50w/j/8QAHBEAAgICAwAAAAAAAAAAAAAAAAECERAhEjFB/9oACAECAQE/AMLrFCicUU6IR9Y47G2J0Lef/8QAIBEAAgIBAwUAAAAAAAAAAAAAAQIAETEhIkEDEBITkf/aAAgBAwEBPwDHyIxNx3p8Cee4NU9l8R+qWNKdIHZTcYqzXHbgRGWtSYqCgYyhodsOT2//2Q==",
           "contextInfo": {
             "pairedMediaType": "NOT_PAIRED_MEDIA",
-            "statusSourceType": "VIDEO"
+            "statusSourceType": "IMAGE"
           },
-          "thumbnailDirectPath": "/m1/v/t24/An9mTDVGOGcpAKgYSUdmrdRX5yTxnX8bKqmzycEwEadgk6EOHeLWASydZ62RfzD85w455z_wW-RVssnLVXEL354-ySshe32dikXgO7vQuudCZl2NE5Zs5pK6_z4w3yFAaS24qmqPmGCW3vh81FN92TaA-ojxb8bq3VspKQHCtr3TkCQop5lrJZnRujNLav4SxXW_HWq9EB5PlJA3NfINyRPC_6i8aLDBLqwDxsc.jpg$1330805592351516177?ccb=10-5&oh=01_Q5Aa2gFHu2wmz94Tqa2kTbwN6CEfhC5yqdNdTNlCJkyl1rmnCw&oe=6903B86B&_nc_sid=5e03e0",
-          "thumbnailSha256": "PI8YTIrOWMpl/72yhLwc3lQQF77C/NifmV0JhAiCAcY=",
-          "externalShareFullVideoDurationInSeconds": 0
+          "thumbnailDirectPath": "/m1/v/t24/An-wGjU2plrZYfQHbPkxdCGZLYFL8pQViJmJORICz_PDHgdyU_K_grUqjjn4BgQjQ9SkJjLb24Gn0nZxWID_PNJKOtSIxQWlL0RgkyrY37YvdqPZxEIpxYxNN6Hs0P7t0sc4mBTE_7F8ynei-9GpJsFwxA?ccb=10-5&oh=01_Q5Aa2gHjp7g021SsEPRb0eXddzv6mLRiKpiSeEn6i8X-DM_JSQ&oe=6903D208&_nc_sid=5e03e0",
+          "thumbnailSha256": "yWXANqYt3e+7+8q1nHIa012ES8UFf9cadu2poVU4f50="
         }
       }
-    }
-  },
-  "AC51B1B31E957C4BF3BA2EF55D405DDC": {
-    "id": "AC51B1B31E957C4BF3BA2EF55D405DDC",
-    "fromJid": "120363297897105149@g.us",
-    "senderJid": "self",
-    "content": "mafala hawataki kujua kama tumebet",
-    "type": "unknown",
-    "timestamp": 1759267763400,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "120363297897105149@g.us",
-        "fromMe": false,
-        "id": "AC51B1B31E957C4BF3BA2EF55D405DDC",
-        "participant": "207636100317298@lid",
-        "participantPn": "254726413731@s.whatsapp.net"
-      },
-      "messageTimestamp": 1759267761,
-      "pushName": "Kevin Kevoh",
-      "broadcast": false,
-      "message": {
-        "conversation": "mafala hawataki kujua kama tumebet",
-        "messageContextInfo": {
-          "messageSecret": "tpPgi7SSzxq9wi8WZHx6BDItcF/Dkc0sfGWk/L3MYhg="
-        }
-      }
-    }
-  },
-  "3EB04E675505C13FA15F8F": {
-    "id": "3EB04E675505C13FA15F8F",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267763499,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB04E675505C13FA15F8F"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267761",
-      "status": "PENDING"
-    }
-  },
-  "3EB0DD4F249737D510A825": {
-    "id": "3EB0DD4F249737D510A825",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267770413,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0DD4F249737D510A825"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267767",
-      "status": "PENDING"
-    }
-  },
-  "3EB0B1ED099DCDE136387E": {
-    "id": "3EB0B1ED099DCDE136387E",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267776305,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0B1ED099DCDE136387E"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267774",
-      "status": "PENDING"
-    }
-  },
-  "3EB04837ABA2207D9B4CB8": {
-    "id": "3EB04837ABA2207D9B4CB8",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267782111,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB04837ABA2207D9B4CB8"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267780",
-      "status": "PENDING"
-    }
-  },
-  "3EB024BC352F8DDC2188A2": {
-    "id": "3EB024BC352F8DDC2188A2",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267786676,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB024BC352F8DDC2188A2"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267785",
-      "status": "PENDING"
-    }
-  },
-  "3EB0E5EB6666CE847CF0B9": {
-    "id": "3EB0E5EB6666CE847CF0B9",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267792705,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0E5EB6666CE847CF0B9"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267791",
-      "status": "PENDING"
-    }
-  },
-  "3EB0586F47CF839A9095E6": {
-    "id": "3EB0586F47CF839A9095E6",
-    "fromJid": "254114282300:3@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"maina\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267795368,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254114282300:3@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0586F47CF839A9095E6"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"maina\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267794",
-      "status": "PENDING"
-    }
-  },
-  "3EB02C8617B987F7518466": {
-    "id": "3EB02C8617B987F7518466",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267797983,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB02C8617B987F7518466"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267796",
-      "status": "PENDING"
-    }
-  },
-  "3EB068FF9DDDAF963B25D8": {
-    "id": "3EB068FF9DDDAF963B25D8",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267800865,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB068FF9DDDAF963B25D8"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267798",
-      "status": "PENDING"
-    }
-  },
-  "3EB080B8C6BF183D06FBB5": {
-    "id": "3EB080B8C6BF183D06FBB5",
-    "fromJid": "254797582445:22@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267801218,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254797582445:22@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB080B8C6BF183D06FBB5"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267799",
-      "status": "PENDING"
-    }
-  },
-  "3EB090A4584FECBD32B1FA": {
-    "id": "3EB090A4584FECBD32B1FA",
-    "fromJid": "254768989551:70@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267804136,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254768989551:70@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB090A4584FECBD32B1FA"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267802",
-      "status": "PENDING"
-    }
-  },
-  "3EB043C09E9A2C05BD213B": {
-    "id": "3EB043C09E9A2C05BD213B",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267805811,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB043C09E9A2C05BD213B"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267804",
-      "status": "PENDING"
-    }
-  },
-  "3EB00C5688BFB92CFA42A8": {
-    "id": "3EB00C5688BFB92CFA42A8",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267810749,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB00C5688BFB92CFA42A8"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267809",
-      "status": "PENDING"
-    }
-  },
-  "3EB0D2379AA4571BF00FC0": {
-    "id": "3EB0D2379AA4571BF00FC0",
-    "fromJid": "254797582445:22@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267814844,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254797582445:22@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0D2379AA4571BF00FC0"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267813",
-      "status": "PENDING"
-    }
-  },
-  "3EB00FB42FCFD810CC94C9": {
-    "id": "3EB00FB42FCFD810CC94C9",
-    "fromJid": "254768989551:70@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267816075,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254768989551:70@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB00FB42FCFD810CC94C9"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Frank \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267814",
-      "status": "PENDING"
-    }
-  },
-  "3EB068750175F3D2E92935": {
-    "id": "3EB068750175F3D2E92935",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267816455,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB068750175F3D2E92935"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267814",
-      "status": "PENDING"
-    }
-  },
-  "3EB0961561B679C047B816": {
-    "id": "3EB0961561B679C047B816",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267817992,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0961561B679C047B816"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267816",
-      "status": "PENDING"
-    }
-  },
-  "3EB0324F7307D2C07A6293": {
-    "id": "3EB0324F7307D2C07A6293",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267823836,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0324F7307D2C07A6293"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267822",
-      "status": "PENDING"
-    }
-  },
-  "3EB021527600083933ED59": {
-    "id": "3EB021527600083933ED59",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267826578,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB021527600083933ED59"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267824",
-      "status": "PENDING"
-    }
-  },
-  "3EB091377AC7904700F697": {
-    "id": "3EB091377AC7904700F697",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267832199,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB091377AC7904700F697"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267830",
-      "status": "PENDING"
-    }
-  },
-  "3EB05B25F49D60F07F9582": {
-    "id": "3EB05B25F49D60F07F9582",
-    "fromJid": "254114282300:3@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"maina\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267834624,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254114282300:3@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB05B25F49D60F07F9582"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"maina\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267832",
-      "status": "PENDING"
-    }
-  },
-  "3EB007CF194636E6A4B313": {
-    "id": "3EB007CF194636E6A4B313",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267835400,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB007CF194636E6A4B313"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267833",
-      "status": "PENDING"
-    }
-  },
-  "3EB07D0656F5DE691443A3": {
-    "id": "3EB07D0656F5DE691443A3",
-    "fromJid": "254797582445:22@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267838587,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254797582445:22@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB07D0656F5DE691443A3"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267837",
-      "status": "PENDING"
-    }
-  },
-  "3EB0FEEA8E8E6D3512AD31": {
-    "id": "3EB0FEEA8E8E6D3512AD31",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267841131,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0FEEA8E8E6D3512AD31"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267839",
-      "status": "PENDING"
-    }
-  },
-  "3EB06144BFB5A02B6E6726": {
-    "id": "3EB06144BFB5A02B6E6726",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267843779,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB06144BFB5A02B6E6726"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267841",
-      "status": "PENDING"
-    }
-  },
-  "3EB08CF0192196F8BAF95C": {
-    "id": "3EB08CF0192196F8BAF95C",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267848896,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB08CF0192196F8BAF95C"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267847",
-      "status": "PENDING"
-    }
-  },
-  "3EB082B982B1CCDC3A8659": {
-    "id": "3EB082B982B1CCDC3A8659",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267851831,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB082B982B1CCDC3A8659"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267850",
-      "status": "PENDING"
-    }
-  },
-  "3EB0C4BF61F7816FCC35B1": {
-    "id": "3EB0C4BF61F7816FCC35B1",
-    "fromJid": "254797582445:22@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267852285,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254797582445:22@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0C4BF61F7816FCC35B1"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267850",
-      "status": "PENDING"
-    }
-  },
-  "3EB0B7ACA4A3CF82426227": {
-    "id": "3EB0B7ACA4A3CF82426227",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267857839,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0B7ACA4A3CF82426227"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267855",
-      "status": "PENDING"
-    }
-  },
-  "3EB02D95B53819E3A9AFE1": {
-    "id": "3EB02D95B53819E3A9AFE1",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267866922,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB02D95B53819E3A9AFE1"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267865",
-      "status": "PENDING"
-    }
-  },
-  "3EB0ED0DC41E3BA78FA162": {
-    "id": "3EB0ED0DC41E3BA78FA162",
-    "fromJid": "254797582445:22@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267868179,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254797582445:22@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0ED0DC41E3BA78FA162"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Deonscofield \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267866",
-      "status": "PENDING"
-    }
-  },
-  "3EB0BDB24585F50A313770": {
-    "id": "3EB0BDB24585F50A313770",
-    "fromJid": "254101793738:16@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1759267868674,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254101793738:16@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0BDB24585F50A313770"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Rushy\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
-        }
-      },
-      "messageTimestamp": "1759267866",
-      "status": "PENDING"
     }
   }
 }
