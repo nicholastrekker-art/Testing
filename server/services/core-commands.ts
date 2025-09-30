@@ -605,6 +605,217 @@ commandRegistry.register({
   }
 });
 
+// Register profile picture and user management commands
+commandRegistry.register({
+  name: 'dp',
+  aliases: ['getdp', 'profilepic'],
+  description: 'Get profile picture of a user',
+  category: 'GENERAL',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from } = context;
+
+    try {
+      // Get quoted message or tagged user
+      const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
+      const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+      
+      let targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
+      
+      // If no user specified, use sender
+      if (!targetUser) {
+        targetUser = message.key.participant || message.key.remoteJid;
+      }
+
+      await respond('🖼️ *Getting profile picture...*\nPlease wait...');
+
+      // Get profile picture URL
+      const ppUrl = await client.profilePictureUrl(targetUser, 'image');
+      
+      if (ppUrl) {
+        await client.sendMessage(from, {
+          image: { url: ppUrl },
+          caption: `📸 *Profile Picture*\n\n👤 *User:* @${targetUser.split('@')[0]}\n🔗 *High Quality:* Yes\n\n> Powered by TREKKERMD LIFETIME BOT`,
+          mentions: [targetUser]
+        });
+      } else {
+        await respond('❌ This user has no profile picture or privacy settings prevent access.');
+      }
+
+    } catch (error) {
+      console.error('Error getting profile picture:', error);
+      await respond('❌ Failed to get profile picture. User may have privacy settings enabled or no profile picture set.');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'block',
+  aliases: ['blockuser'],
+  description: 'Block a user (Owner only)',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client } = context;
+
+    // Check if sender is bot owner
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
+      const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
+      const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+      
+      const targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
+
+      if (!targetUser) {
+        await respond('❌ Please reply to a message or tag a user to block!');
+        return;
+      }
+
+      await client.updateBlockStatus(targetUser, 'block');
+      await respond(`🚫 *User Blocked*\n\n👤 @${targetUser.split('@')[0]} has been blocked successfully!\n\n⚠️ They will no longer be able to message this bot.`);
+
+    } catch (error) {
+      console.error('Error blocking user:', error);
+      await respond('❌ Failed to block user. Please try again.');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'unblock',
+  aliases: ['unblockuser'],
+  description: 'Unblock a user (Owner only)',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client } = context;
+
+    // Check if sender is bot owner
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
+      const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
+      const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+      
+      const targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
+
+      if (!targetUser) {
+        await respond('❌ Please reply to a message or tag a user to unblock!');
+        return;
+      }
+
+      await client.updateBlockStatus(targetUser, 'unblock');
+      await respond(`✅ *User Unblocked*\n\n👤 @${targetUser.split('@')[0]} has been unblocked successfully!\n\n💬 They can now message this bot again.`);
+
+    } catch (error) {
+      console.error('Error unblocking user:', error);
+      await respond('❌ Failed to unblock user. Please try again.');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'setdp',
+  aliases: ['setprofilepic', 'updateprofile'],
+  description: 'Set bot profile picture (Owner only)',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client } = context;
+
+    // Check if sender is bot owner
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
+      // Check if message has an image
+      const imageMessage = message.message?.imageMessage;
+      const quotedImageMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage;
+
+      if (!imageMessage && !quotedImageMessage) {
+        await respond('❌ Please send an image or reply to an image to set as profile picture!');
+        return;
+      }
+
+      await respond('🖼️ *Setting profile picture...*\nPlease wait...');
+
+      // Download the image
+      const imageMsg = imageMessage || quotedImageMessage;
+      const buffer = await client.downloadMediaMessage(imageMsg);
+
+      // Set profile picture
+      await client.updateProfilePicture(client.user.id, buffer);
+      await respond('✅ *Profile Picture Updated*\n\n📸 Bot profile picture has been successfully updated!\n\n> Changes may take a few minutes to appear for all users.');
+
+    } catch (error) {
+      console.error('Error setting profile picture:', error);
+      await respond('❌ Failed to set profile picture. Please ensure you sent a valid image.');
+    }
+  }
+});
+
+commandRegistry.register({
+  name: 'bio',
+  aliases: ['getbio', 'about'],
+  description: 'Get user bio/status message',
+  category: 'GENERAL',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, args } = context;
+
+    try {
+      // Get quoted message or tagged user
+      const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
+      const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+      
+      let targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
+      
+      // If no user specified, use sender
+      if (!targetUser) {
+        targetUser = message.key.participant || message.key.remoteJid;
+      }
+
+      // If command has "set" as first argument, handle setting bio (owner only)
+      if (args.length > 0 && args[0].toLowerCase() === 'set') {
+        if (!message.key.fromMe) {
+          await respond('❌ Only the bot owner can set bio!');
+          return;
+        }
+
+        const newBio = args.slice(1).join(' ');
+        if (!newBio) {
+          await respond('❌ Please provide a bio to set!\n\n*Example:* .bio set Your new bio here');
+          return;
+        }
+
+        await client.updateProfileStatus(newBio);
+        await respond(`✅ *Bio Updated*\n\n📝 New bio: "${newBio}"\n\n> Bio has been successfully updated!`);
+        return;
+      }
+
+      await respond('📄 *Getting user bio...*\nPlease wait...');
+
+      // Get user status/bio
+      const status = await client.fetchStatus(targetUser);
+      
+      if (status && status.status) {
+        const bioInfo = `📋 *User Bio Information*\n\n👤 *User:* @${targetUser.split('@')[0]}\n📝 *Bio:* ${status.status}\n📅 *Last Updated:* ${new Date(status.setAt).toLocaleString()}\n\n> Powered by TREKKERMD LIFETIME BOT`;
+        await respond(bioInfo);
+      } else {
+        await respond(`📋 *User Bio Information*\n\n👤 *User:* @${targetUser.split('@')[0]}\n📝 *Bio:* No bio set or privacy settings prevent access.\n\n> Powered by TREKKERMD LIFETIME BOT`);
+      }
+
+    } catch (error) {
+      console.error('Error getting user bio:', error);
+      await respond('❌ Failed to get user bio. User may have privacy settings enabled or bio is not accessible.');
+    }
+  }
+});
+
 // Register animation commands
 commandRegistry.register({
   name: 'happy',
