@@ -5,6 +5,8 @@ import moment from 'moment-timezone';
 import os from 'os';
 import axios from 'axios';
 import { join } from 'path';
+import './core-commands.js'; // Load core commands
+import './channel-commands.js'; // Load channel commands
 
 // Utility functions from the original commands
 const toFancyUppercaseFont = (text: string) => {
@@ -1100,8 +1102,8 @@ commandRegistry.register({
       await respond(`✅ *Group Created Successfully!*\n\n📋 *Name:* ${groupName}\n🆔 *Group ID:* ${group.gid}\n👥 *Members:* ${mentionedUsers.length}\n\n> Group created by TREKKERMD LIFETIME BOT`);
 
       // Send welcome message to the new group
-      await client.sendMessage(group.id, { 
-        text: `🎉 *Welcome to ${groupName}!*\n\n✨ This group was created by TREKKERMD LIFETIME BOT\n👋 Say hello everyone!` 
+      await client.sendMessage(group.id, {
+        text: `🎉 *Welcome to ${groupName}!*\n\n✨ This group was created by TREKKERMD LIFETIME BOT\n👋 Say hello everyone!`
       });
 
     } catch (error) {
@@ -1296,7 +1298,7 @@ commandRegistry.register({
 
     try {
       await respond('👋 *Goodbye everyone!*\n\n🤖 TREKKERMD LIFETIME BOT is leaving the group.\n\n> Thank you for using our service!');
-      
+
       // Wait a bit before leaving
       setTimeout(async () => {
         await client.groupLeave(from);
@@ -1457,7 +1459,7 @@ commandRegistry.register({
       }
 
       await client.groupToggleEphemeral(from, seconds);
-      
+
       const timeText = option === 'off' ? 'Disabled' : option.toUpperCase();
       await respond(`✅ *Disappearing Messages ${option === 'off' ? 'Disabled' : 'Enabled'}*\n\n⏱️ *Duration:* ${timeText}\n\n> Updated by TREKKERMD LIFETIME BOT`);
 
@@ -1535,7 +1537,7 @@ commandRegistry.register({
       }
 
       const requests = await client.groupRequestParticipantsList(from);
-      
+
       if (!requests || requests.length === 0) {
         await respond('✅ No pending join requests.');
         return;

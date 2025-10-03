@@ -17,6 +17,7 @@ import { AutoStatusService } from './auto-status.js';
 import { antideleteService } from './antidelete.js';
 import { getAntiViewOnceService } from './antiviewonce.js';
 import './core-commands.js'; // Load core commands
+import './channel-commands.js'; // Load channel commands
 
 export class WhatsAppBot {
   private sock: any;
