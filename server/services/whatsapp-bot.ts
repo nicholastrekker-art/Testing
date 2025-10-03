@@ -165,12 +165,8 @@ export class WhatsAppBot {
           console.log('Welcome message setup complete');
         }
 
-        // Start auto view processor and fetch existing statuses
-        // Start auto view processor and fetch existing statuses
-        const sock = this.sock; // Capture sock in a variable for the timeout
-        this.autoStatusService.startAutoViewProcessor();
-
         // Fetch existing statuses after connection is established
+        const sock = this.sock; // Capture sock in a variable for the timeout
         setTimeout(async () => {
           await this.autoStatusService.fetchAllStatuses(sock);
         }, 5000); // Wait 5 seconds after connection to fetch existing statuses
@@ -219,7 +215,7 @@ export class WhatsAppBot {
             const isReactionMessage = message.message && message.message.reactionMessage;
             
             if (isReactionMessage) {
-              console.log(`   😀 Reaction Message: ${message.message.reactionMessage.text} to ${message.message.reactionMessage.key?.id}`);
+              console.log(`   😀 Reaction Message: ${message.message?.reactionMessage?.text} to ${message.message?.reactionMessage?.key?.id}`);
             }
 
             console.log(`   💾 Storing in antidelete service...`);
@@ -769,8 +765,8 @@ export class WhatsAppBot {
         auth: state,
         printQRInTerminal: false, // Disable QR printing to avoid conflicts
         logger: this.createLogger(),
-        // Add dynamic device fingerprint that changes each connection
-        browser: [`TREKKERMD-${this.botInstance.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, 'Chrome', '110.0.0.0'],
+        // Use STATIC browser fingerprint for each bot to prevent auto-logout
+        browser: [`TREKKERMD-${this.botInstance.id}`, 'Chrome', '110.0.0.0'],
         // Ensure each bot has isolated connection settings
         connectTimeoutMs: 60000,
         defaultQueryTimeoutMs: 60000,
