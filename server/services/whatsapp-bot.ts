@@ -192,7 +192,7 @@ export class WhatsAppBot {
         return;
       }
 
-      console.log(`📨 [${this.botInstance.name}] MESSAGE BATCH RECEIVED`);
+      console.log(`📨 [${this.botInstance.name}] MESSAGE BATCH RECEIVED - Approval Status: ${this.botInstance.approvalStatus}`);
       console.log(`   📊 Batch Type: ${m.type}`);
       console.log(`   📈 Message Count: ${m.messages.length}`);
       console.log(`   🕐 Processing Time: ${new Date().toLocaleString()}`);
@@ -425,6 +425,12 @@ export class WhatsAppBot {
     try {
       if (!message.message) return;
 
+      // Skip messages from the bot itself to avoid loops
+      if (message.key.fromMe) {
+        console.log(`Bot ${this.botInstance.name}: Skipping own message`);
+        return;
+      }
+
       // Log detailed message activity
       this.logMessageActivity(message);
 
@@ -435,6 +441,7 @@ export class WhatsAppBot {
       });
 
       const messageText = this.extractMessageText(message.message);
+      console.log(`Bot ${this.botInstance.name}: Received message: "${messageText}" from ${message.key.remoteJid}`);
 
       // Get command prefix from environment variable (default: .)
       const commandPrefix = process.env.BOT_PREFIX || '.';
@@ -442,12 +449,26 @@ export class WhatsAppBot {
       // Handle commands (only respond to messages with the configured prefix)
       if (messageText && messageText.startsWith(commandPrefix)) {
         console.log(`Bot ${this.botInstance.name}: Detected command: "${messageText.trim()}"`);
+        
+        // Check if bot is approved before processing commands
+        if (this.botInstance.approvalStatus !== 'approved') {
+          console.log(`Bot ${this.botInstance.name}: Command blocked - bot not approved`);
+          if (message.key.remoteJid) {
+            await this.sock.sendMessage(message.key.remoteJid, { 
+              text: '⏳ This bot is pending approval. Commands will be available once approved by an admin.' 
+            });
+          }
+          return;
+        }
+
         await this.handleCommand(message, messageText);
         return;
       }
 
-      // Auto-reactions and features for non-command messages
-      await this.handleAutoFeatures(message);
+      // Auto-reactions and features for non-command messages (only for approved bots)
+      if (this.botInstance.approvalStatus === 'approved') {
+        await this.handleAutoFeatures(message);
+      }
 
       // No automatic ChatGPT responses - only respond to prefix commands
       // This prevents the bot from responding to every message

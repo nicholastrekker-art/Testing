@@ -1855,6 +1855,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: Send test message through bot
+  app.post("/api/admin/send-message/:botId", isAdmin, async (req, res) => {
+    try {
+      const { botId } = req.params;
+      const { recipient, message } = req.body;
+
+      if (!recipient || !message) {
+        return res.status(400).json({ message: "Recipient and message are required" });
+      }
+
+      // Get bot instance
+      const bot = botManager.getBot(botId);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot not found or not running" });
+      }
+
+      // Format recipient number
+      const jid = recipient.includes('@') ? recipient : `${recipient}@s.whatsapp.net`;
+
+      // Send message
+      await bot.sendDirectMessage(jid, message);
+
+      res.json({ 
+        success: true, 
+        message: "Message sent successfully",
+        recipient: jid
+      });
+    } catch (error) {
+      console.error("Error sending admin test message:", error);
+      res.status(500).json({ 
+        message: "Failed to send message",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Guest Bot Status Check - Check if bot exists and its status
   app.post("/api/guest/bot/status", async (req, res) => {
     try {
