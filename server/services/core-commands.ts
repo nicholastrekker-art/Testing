@@ -1688,7 +1688,4 @@ commandRegistry.register({
 });
 
 // Load core commands and privacy commands
-import './core-commands.js'; // Load core commands
-import './privacy-commands.js'; // Load privacy commands
-
-export class WhatsAppBot {
+console.log('✅ Core commands module loaded successfully');
