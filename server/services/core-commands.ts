@@ -50,7 +50,7 @@ const formatMemory = (bytes: number) => {
 
 const quotes = [
   "Dream big, work hard.",
-  "Stay humble, hustle hard.", 
+  "Stay humble, hustle hard.",
   "Believe in yourself.",
   "Success is earned, not given.",
   "Actions speak louder than words.",
@@ -98,11 +98,11 @@ commandRegistry.register({
     let responseMessage = `
 ${greeting}, *User*
 
-╭━❮ TREKKERMD LIFETIME BOT ❯━╮ 
+╭━❮ TREKKERMD LIFETIME BOT ❯━╮
 ┃ *👤ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD
 ┃ *🥏ᴘʀᴇғɪx:* *[ . ]*
 ┃ *🕒ᴛɪᴍᴇ:* ${formattedTime}
-┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* ${allCommands.length} 
+┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* ${allCommands.length}
 ┃ *📆ᴅᴀᴛᴇ:* ${formattedDate}
 ┃ *🧑‍💻ᴍᴏᴅᴇ:* ${mode}
 ┃ *📼ʀᴀᴍ:* ${formatMemory(os.totalmem() - os.freemem())}/${formatMemory(os.totalmem())}
@@ -130,23 +130,23 @@ ${greeting}, *User*
       // Auto-rotate through all available icons in icons/ directory (root level)
       const { readFileSync, existsSync, readdirSync } = await import('fs');
       const iconsDir = join(process.cwd(), 'icons');
-      
+
       // Check if icons directory exists
       if (existsSync(iconsDir)) {
         // Get all icon files in the directory (supports .jpg, .jpeg, .png)
-        const iconFiles = readdirSync(iconsDir).filter(file => 
+        const iconFiles = readdirSync(iconsDir).filter(file =>
           file.toLowerCase().match(/\.(jpg|jpeg|png)$/i)
         ).sort(); // Sort to ensure consistent order
-        
+
         if (iconFiles.length > 0) {
           // Use timestamp-based rotation to cycle through icons systematically
           const rotationIndex = Math.floor(Date.now() / 10000) % iconFiles.length; // Changes every 10 seconds
           const selectedIcon = iconFiles[rotationIndex];
           const imagePath = join(iconsDir, selectedIcon);
-          
+
           console.log(`📸 [Menu] Using icon: ${selectedIcon} (${rotationIndex + 1}/${iconFiles.length}) from ${iconsDir}`);
           console.log(`📂 [Menu] Available icons: ${iconFiles.join(', ')}`);
-          
+
           await client.sendMessage(from, {
             image: { url: imagePath },
             caption: responseMessage + commandsList
@@ -167,7 +167,7 @@ ${greeting}, *User*
   }
 });
 
-// Register list command  
+// Register list command
 commandRegistry.register({
   name: 'list',
   aliases: ['commands', 'cmdlist'],
@@ -199,7 +199,7 @@ ${greeting}, *User*
 ┃│▸ *ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD
 ┃│▸ *ᴘʀᴇғɪx:* *[ . ]*
 ┃│▸ *ᴛɪᴍᴇ:* ${formattedTime}
-┃│▸ *ᴄᴏᴍᴍᴀɴᴅꜱ:* ${commands.length} 
+┃│▸ *ᴄᴏᴍᴍᴀɴᴅꜱ:* ${commands.length}
 ┃│▸ *ᴅᴀᴛᴇ:* ${formattedDate}
 ┃│▸ *ᴍᴏᴅᴇ:* ${mode}
 ┃│▸ *ᴛɪᴍᴇ ᴢᴏɴᴇ:* Africa/Nairobi
@@ -270,7 +270,7 @@ commandRegistry.register({
 
 *Quick Commands:*
 • .menu - Show command menu
-• .list - Show detailed command list  
+• .list - Show detailed command list
 • .help [command] - Show help for specific command
 
 *Categories:*
@@ -305,7 +305,7 @@ commandRegistry.register({
   name: 'owner',
   aliases: ['dev', 'developer'],
   description: 'Show bot owner information',
-  category: 'GENERAL', 
+  category: 'GENERAL',
   handler: async (context: CommandContext) => {
     const { respond } = context;
 
@@ -618,9 +618,9 @@ commandRegistry.register({
       // Get quoted message or tagged user
       const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
       const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-      
+
       let targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
-      
+
       // If no user specified, check if in private conversation
       if (!targetUser) {
         // Check if this is a private conversation (not a group)
@@ -637,7 +637,7 @@ commandRegistry.register({
 
       // Get profile picture URL
       const ppUrl = await client.profilePictureUrl(targetUser, 'image');
-      
+
       if (ppUrl) {
         await client.sendMessage(from, {
           image: { url: ppUrl },
@@ -672,7 +672,7 @@ commandRegistry.register({
     try {
       const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
       const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-      
+
       let targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
 
       // If no user specified, check if in private conversation
@@ -714,7 +714,7 @@ commandRegistry.register({
     try {
       const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
       const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-      
+
       let targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
 
       // If no user specified, check if in private conversation
@@ -792,9 +792,9 @@ commandRegistry.register({
       // Get quoted message or tagged user
       const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
       const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-      
+
       let targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
-      
+
       // If no user specified, check if in private conversation
       if (!targetUser) {
         // Check if this is a private conversation (not a group)
@@ -829,7 +829,7 @@ commandRegistry.register({
 
       // Get user status/bio
       const status = await client.fetchStatus(targetUser);
-      
+
       if (status && status.status) {
         const bioInfo = `📋 *User Bio Information*\n\n👤 *User:* @${targetUser.split('@')[0]}\n📝 *Bio:* ${status.status}\n📅 *Last Updated:* ${new Date(status.setAt).toLocaleString()}\n\n> Powered by TREKKERMD LIFETIME BOT`;
         await respond(bioInfo);
@@ -986,7 +986,7 @@ commandRegistry.register({
   category: 'ADMIN',
   handler: async (context: CommandContext) => {
     const { respond, message, client, args } = context;
-    
+
     // Check if sender is bot owner (from own number)
     if (!message.key.fromMe) {
       await respond('❌ This command can only be used by the bot owner!');
@@ -1029,7 +1029,7 @@ commandRegistry.register({
   category: 'ADMIN',
   handler: async (context: CommandContext) => {
     const { respond, message, client } = context;
-    
+
     // Check if sender is bot owner
     if (!message.key.fromMe) {
       await respond('❌ This command can only be used by the bot owner!');
@@ -1066,4 +1066,8 @@ commandRegistry.register({
   }
 });
 
-export { commandRegistry };
+// Load core commands and privacy commands
+import './core-commands.js'; // Load core commands
+import './privacy-commands.js'; // Load privacy commands
+
+export class WhatsAppBot {
