@@ -777,8 +777,15 @@ export class WhatsAppBot {
         maxMsgRetryCount: 5
       });
 
-      // Save credentials when they change (isolated per bot)
-      this.sock.ev.on('creds.update', saveCreds);
+      // Save credentials when they change (isolated per bot) with error handling
+      this.sock.ev.on('creds.update', async () => {
+        try {
+          await saveCreds();
+        } catch (error) {
+          // Silently handle credential save errors (e.g., directory deleted)
+          console.log(`Bot ${this.botInstance.name}: Credential save skipped (directory may be cleaned up)`);
+        }
+      });
 
       await this.setupEventHandlers();
       this.startHeartbeat(); // Start heartbeat monitoring

@@ -14,7 +14,7 @@ export class ValidationBot {
   constructor(phoneNumber: string, credentials?: string) {
     this.phoneNumber = phoneNumber;
     this.authDir = join(process.cwd(), 'temp_auth', `validation_${phoneNumber}_${Date.now()}`);
-    
+
     // Create auth directory
     if (!existsSync(this.authDir)) {
       mkdirSync(this.authDir, { recursive: true });
@@ -29,7 +29,7 @@ export class ValidationBot {
   private saveCredentialsToAuthDir(credentials: string) {
     try {
       let credentialsData;
-      
+
       // Try to parse as JSON first (for when credentials are already parsed)
       try {
         credentialsData = JSON.parse(credentials);
@@ -41,13 +41,13 @@ export class ValidationBot {
           throw new Error('Credentials must be valid JSON or base64-encoded JSON');
         }
       }
-      
+
       // Save creds.json
       writeFileSync(
-        join(this.authDir, 'creds.json'), 
+        join(this.authDir, 'creds.json'),
         JSON.stringify(credentialsData, null, 2)
       );
-      
+
       console.log(`✅ Credentials saved for validation bot ${this.phoneNumber}`);
     } catch (error) {
       console.error(`❌ Error saving credentials for validation bot ${this.phoneNumber}:`, error);
@@ -71,10 +71,10 @@ export class ValidationBot {
   private async _connect(): Promise<boolean> {
     try {
       console.log(`🔄 Establishing temporary connection for validation bot ${this.phoneNumber}`);
-      
+
       // Use isolated auth state for this validation bot
       const { state, saveCreds } = await useMultiFileAuthState(this.authDir);
-      
+
       // Create isolated socket connection
       this.sock = makeWASocket({
         auth: state,
@@ -90,7 +90,7 @@ export class ValidationBot {
 
       // Save credentials when they change
       this.sock.ev.on('creds.update', saveCreds);
-      
+
       // Set up connection handler
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
@@ -99,22 +99,22 @@ export class ValidationBot {
 
         this.sock.ev.on('connection.update', async (update: Partial<ConnectionState>) => {
           const { connection, lastDisconnect, qr } = update;
-          
+
           console.log(`Validation bot ${this.phoneNumber}: Connection update -`, { connection, qr: !!qr });
-          
+
           if (qr) {
             clearTimeout(timeout);
             reject(new Error('QR code required - credentials may be invalid or expired'));
             return;
           }
-          
+
           if (connection === 'close') {
             const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
             console.log(`Validation bot ${this.phoneNumber}: Connection closed`, lastDisconnect?.error);
-            
+
             clearTimeout(timeout);
             this.isConnected = false;
-            
+
             if (!shouldReconnect) {
               reject(new Error('Connection closed - credentials invalid'));
             } else {
@@ -128,7 +128,7 @@ export class ValidationBot {
           }
         });
       });
-      
+
     } catch (error) {
       console.error(`❌ Error connecting validation bot ${this.phoneNumber}:`, error);
       throw error;
@@ -139,14 +139,14 @@ export class ValidationBot {
     if (!this.isConnected || !this.sock) {
       throw new Error('Bot is not connected');
     }
-    
+
     try {
       // Format phone number for WhatsApp (add @s.whatsapp.net)
       const jid = `${this.phoneNumber}@s.whatsapp.net`;
-      
+
       await this.sock.sendMessage(jid, { text: message });
       console.log(`✅ Validation message sent to ${this.phoneNumber}`);
-      
+
       return true;
     } catch (error) {
       console.error(`❌ Failed to send validation message to ${this.phoneNumber}:`, error);
@@ -158,7 +158,7 @@ export class ValidationBot {
     try {
       if (this.sock) {
         console.log(`🔌 Disconnecting validation bot ${this.phoneNumber}`);
-        
+
         if (preserveCredentials) {
           // For guest bots: gracefully close connection without logout to preserve credentials
           console.log(`📱 Preserving credentials for guest bot ${this.phoneNumber}`);
@@ -167,12 +167,12 @@ export class ValidationBot {
           // For regular validation: full logout
           await this.sock.logout();
         }
-        
+
         this.sock = null;
       }
-      
+
       this.isConnected = false;
-      
+
       // Clean up auth directory
       if (existsSync(this.authDir)) {
         rmSync(this.authDir, { recursive: true, force: true });
@@ -194,14 +194,14 @@ export class ValidationBot {
 
 export async function sendValidationMessage(phoneNumber: string, credentials: string, message: string): Promise<boolean> {
   const validationBot = new ValidationBot(phoneNumber, credentials);
-  
+
   try {
     // Connect to WhatsApp
     await validationBot.connect();
-    
+
     // Send validation message
     await validationBot.sendValidationMessage(message);
-    
+
     return true;
   } finally {
     // Always disconnect and cleanup - preserving credentials for regular validation
@@ -212,13 +212,13 @@ export async function sendValidationMessage(phoneNumber: string, credentials: st
 // Special function for guest bot validation that preserves credentials
 export async function validateWhatsAppCredentials(phoneNumber: string, credentials: any): Promise<{isValid: boolean, message?: string}> {
   const validationBot = new ValidationBot(phoneNumber, Buffer.from(JSON.stringify(credentials), 'utf-8').toString('base64'));
-  
+
   try {
     console.log(`🔄 Testing WhatsApp connection for credential validation ${phoneNumber}`);
-    
+
     // Try to connect to WhatsApp to validate credentials
     const connected = await validationBot.connect();
-    
+
     if (connected) {
       console.log(`✅ Credentials validated successfully for ${phoneNumber}`);
       return { isValid: true, message: "Credentials are valid and connection established" };
@@ -237,14 +237,14 @@ export async function validateWhatsAppCredentials(phoneNumber: string, credentia
 
 export async function sendGuestValidationMessage(phoneNumber: string, credentials: string, message: string, preserveCredentials = true): Promise<boolean> {
   const validationBot = new ValidationBot(phoneNumber, credentials);
-  
+
   try {
     // Connect to WhatsApp
     await validationBot.connect();
-    
+
     // Send validation message
     await validationBot.sendValidationMessage(message);
-    
+
     return true;
   } finally {
     // Disconnect with credential preservation option (true = preserve, false = logout)
