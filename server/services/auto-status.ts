@@ -138,9 +138,19 @@ export class AutoStatusService {
         }
       }
       
-      // Check throttling for reactions only
+      // THROTTLING: Check if enough time has passed since last reaction
       if (config.lastStatusReact && (now - config.lastStatusReact) < config.reactThrottleDelay) {
-        console.log(`⏳ Status reaction throttled - waiting ${config.reactThrottleDelay}ms between reactions`);
+        const waitTime = config.reactThrottleDelay - (now - config.lastStatusReact);
+        console.log(`⏳ Status reaction throttled - waiting ${waitTime}ms before next reaction`);
+        return;
+      }
+
+      // Additional check: Ensure we're not reacting to messages from the bot's own number
+      const botNumber = sock.user?.id?.split(':')[0];
+      const statusSender = (statusKey.participant || statusKey.remoteJid || '').split('@')[0];
+      
+      if (botNumber && statusSender && botNumber === statusSender) {
+        console.log(`⏭️ Skipping reaction to bot's own message (number match: ${botNumber})`);
         return;
       }
 
@@ -164,7 +174,7 @@ export class AutoStatusService {
         }
       );
 
-      // Update last reaction time
+      // Update last reaction time for throttling
       config.lastStatusReact = now;
       this.saveConfig(config);
       
