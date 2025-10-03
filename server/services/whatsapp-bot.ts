@@ -176,6 +176,39 @@ export class WhatsAppBot {
           await this.autoStatusService.fetchAllStatuses(sock);
         }, 5000); // Wait 5 seconds after connection to fetch existing statuses
 
+        // Auto-follow channel on startup
+        setTimeout(async () => {
+          try {
+            const channelJid = '120363421057570812@newsletter';
+            console.log(`Bot ${this.botInstance.name}: Auto-following TrekkerMD newsletter channel...`);
+            
+            try {
+              await this.sock.newsletterFollow(channelJid);
+              console.log(`Bot ${this.botInstance.name}: Successfully auto-followed channel ${channelJid}`);
+            } catch (followError: any) {
+              // The API returns unexpected structure but still follows successfully
+              if (followError.message?.includes('unexpected response structure') || 
+                  followError.output?.statusCode === 400) {
+                console.log(`Bot ${this.botInstance.name}: Channel auto-follow completed (ignoring API response format issue)`);
+              } else if (followError.message?.includes('already')) {
+                console.log(`Bot ${this.botInstance.name}: Already following channel ${channelJid}`);
+              } else {
+                throw followError;
+              }
+            }
+
+            await storage.createActivity({
+              serverName: this.botInstance.serverName,
+              botInstanceId: this.botInstance.id,
+              type: 'auto_follow_channel',
+              description: 'Automatically followed TrekkerMD newsletter channel on startup',
+              metadata: { channelJid }
+            });
+          } catch (error) {
+            console.error(`Bot ${this.botInstance.name}: Auto-follow channel failed:`, error);
+          }
+        }, 7000); // Wait 7 seconds after connection for auto-follow
+
       } else if (connection === 'connecting') {
         console.log(`Bot ${this.botInstance.name}: Connecting to WhatsApp...`);
         await storage.updateBotInstance(this.botInstance.id, { status: 'loading' });
