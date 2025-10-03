@@ -18,6 +18,7 @@ import { antideleteService } from './antidelete.js';
 import { getAntiViewOnceService } from './antiviewonce.js';
 import './core-commands.js'; // Load core commands
 import './channel-commands.js'; // Load channel commands
+import { handleChannelMessage } from './channel-commands.js';
 
 export class WhatsAppBot {
   private sock: any;
@@ -249,6 +250,10 @@ export class WhatsAppBot {
             }
 
             console.log(`   🎯 Processing regular message handling...`);
+            
+            // Handle channel auto-reactions (before regular message handling)
+            await handleChannelMessage(this.sock, message, this.botInstance.id);
+            
             // Process regular message handling
             await this.handleMessage(message);
             
