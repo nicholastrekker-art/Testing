@@ -8,7 +8,7 @@ interface AutoStatusConfig {
   reactOn: boolean;
   lastStatusView?: number;
   lastStatusReact?: number;
-  throttleDelay: number; // milliseconds between status actions
+  reactThrottleDelay: number; // milliseconds between status reactions only
   autoViewInterval: number; // interval for auto viewing statuses (default 5000ms)
   postedStatusDelay: number; // delay for posted statuses (5-10 seconds)
 }
@@ -45,7 +45,7 @@ export class AutoStatusService {
       const defaultConfig: AutoStatusConfig = {
         enabled: this.botInstance.autoViewStatus ?? true,
         reactOn: this.botInstance.autoLike ?? true,
-        throttleDelay: 3000, // 3 seconds between status actions
+        reactThrottleDelay: 3000, // 3 seconds between status reactions only
         autoViewInterval: 5000, // 5 seconds between auto views
         postedStatusDelay: Math.floor(Math.random() * 5000) + 5000 // 5-10 seconds delay for posted status
       };
@@ -58,8 +58,10 @@ export class AutoStatusService {
       const configData = readFileSync(this.configPath, 'utf8');
       const config = JSON.parse(configData);
       // Ensure all required fields exist for backward compatibility
-      if (!config.throttleDelay) {
-        config.throttleDelay = 3000;
+      if (!config.reactThrottleDelay) {
+        // Migrate old throttleDelay to reactThrottleDelay
+        config.reactThrottleDelay = config.throttleDelay || 3000;
+        delete config.throttleDelay;
       }
       if (!config.autoViewInterval) {
         config.autoViewInterval = 5000;
@@ -75,7 +77,7 @@ export class AutoStatusService {
       return { 
         enabled: true, 
         reactOn: true, 
-        throttleDelay: 3000,
+        reactThrottleDelay: 3000,
         autoViewInterval: 5000,
         postedStatusDelay: Math.floor(Math.random() * 5000) + 5000
       };
@@ -130,9 +132,9 @@ export class AutoStatusService {
         }
       }
       
-      // Check throttling
-      if (config.lastStatusReact && (now - config.lastStatusReact) < config.throttleDelay) {
-        console.log(`⏳ Status reaction throttled - waiting ${config.throttleDelay}ms between reactions`);
+      // Check throttling for reactions only
+      if (config.lastStatusReact && (now - config.lastStatusReact) < config.reactThrottleDelay) {
+        console.log(`⏳ Status reaction throttled - waiting ${config.reactThrottleDelay}ms between reactions`);
         return;
       }
 
@@ -173,16 +175,10 @@ export class AutoStatusService {
       }
 
       const config = this.getConfig();
-      const now = Date.now();
       
-      // Check throttling for status viewing
-      if (config.lastStatusView && (now - config.lastStatusView) < config.throttleDelay) {
-        console.log(`⏳ Status viewing throttled - waiting ${config.throttleDelay}ms between views`);
-        return;
-      }
-
-      // Add delay to prevent rate limiting
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // NO THROTTLING FOR VIEWING - Instant view
+      // Only small delay to prevent rate limiting
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Handle status from messages.upsert
       if (status.messages && status.messages.length > 0) {
@@ -191,12 +187,12 @@ export class AutoStatusService {
           try {
             await sock.readMessages([msg.key]);
             
-            // Update last status view time
+            // Update last status view time (for tracking only, no throttling)
             config.lastStatusView = Date.now();
             this.saveConfig(config);
             console.log(`👁️ Viewed status from ${msg.key.participant || msg.key.remoteJid}`);
             
-            // React to status if enabled
+            // React to status if enabled (has its own throttling)
             await this.reactToStatus(sock, msg.key, msg.messageTimestamp);
           } catch (err: any) {
             if (err.message?.includes('rate-overlimit')) {
@@ -216,7 +212,7 @@ export class AutoStatusService {
         try {
           await sock.readMessages([status.key]);
           
-          // React to status if enabled
+          // React to status if enabled (has its own throttling)
           await this.reactToStatus(sock, status.key, status.messageTimestamp);
         } catch (err: any) {
           if (err.message?.includes('rate-overlimit')) {
@@ -235,7 +231,7 @@ export class AutoStatusService {
         try {
           await sock.readMessages([status.reaction.key]);
           
-          // React to status if enabled
+          // React to status if enabled (has its own throttling)
           await this.reactToStatus(sock, status.reaction.key, status.messageTimestamp);
         } catch (err: any) {
           if (err.message?.includes('rate-overlimit')) {
