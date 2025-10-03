@@ -26,6 +26,11 @@ import {
   type AuthRequest,
   type GuestAuthRequest
 } from './middleware/auth';
+
+// Helper function to check if user is admin (for middleware-less routes)
+const isAdmin = (req: any, res: any, next: any) => {
+  return authenticateAdmin(req as AuthRequest, res, next);
+};
 import { sendValidationMessage, sendGuestValidationMessage, validateWhatsAppCredentials } from "./services/validation-bot";
 import { CrossTenancyClient } from "./services/crossTenancyClient";
 import { z } from "zod";
