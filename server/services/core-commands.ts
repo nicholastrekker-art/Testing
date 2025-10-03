@@ -1066,6 +1066,627 @@ commandRegistry.register({
   }
 });
 
+// Group Management Commands
+
+// Create Group
+commandRegistry.register({
+  name: 'creategroup',
+  aliases: ['newgroup', 'makegroup'],
+  description: 'Create a new WhatsApp group (Owner only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, args } = context;
+
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    if (args.length < 2) {
+      await respond('❌ Usage: .creategroup <group name> @user1 @user2...\n\nExample: .creategroup "My Group" @254712345678');
+      return;
+    }
+
+    try {
+      const groupName = args[0].replace(/['"]/g, '');
+      const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+
+      if (mentionedUsers.length === 0) {
+        await respond('❌ Please mention at least one user to add to the group!');
+        return;
+      }
+
+      const group = await client.groupCreate(groupName, mentionedUsers);
+      await respond(`✅ *Group Created Successfully!*\n\n📋 *Name:* ${groupName}\n🆔 *Group ID:* ${group.gid}\n👥 *Members:* ${mentionedUsers.length}\n\n> Group created by TREKKERMD LIFETIME BOT`);
+
+      // Send welcome message to the new group
+      await client.sendMessage(group.id, { 
+        text: `🎉 *Welcome to ${groupName}!*\n\n✨ This group was created by TREKKERMD LIFETIME BOT\n👋 Say hello everyone!` 
+      });
+
+    } catch (error) {
+      console.error('Error creating group:', error);
+      await respond('❌ Failed to create group. Make sure all mentioned users are valid WhatsApp numbers.');
+    }
+  }
+});
+
+// Change Group Subject/Name
+commandRegistry.register({
+  name: 'setname',
+  aliases: ['changename', 'groupname'],
+  description: 'Change group name (Admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from, args } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    if (args.length === 0) {
+      await respond('❌ Usage: .setname <new group name>\n\nExample: .setname My Awesome Group');
+      return;
+    }
+
+    try {
+      const groupMetadata = await client.groupMetadata(from);
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can change the group name!');
+        return;
+      }
+
+      const newName = args.join(' ');
+      await client.groupUpdateSubject(from, newName);
+      await respond(`✅ *Group Name Updated!*\n\n📝 *New Name:* ${newName}\n\n> Updated by TREKKERMD LIFETIME BOT`);
+
+    } catch (error) {
+      console.error('Error changing group name:', error);
+      await respond('❌ Failed to change group name!');
+    }
+  }
+});
+
+// Change Group Description
+commandRegistry.register({
+  name: 'setdesc',
+  aliases: ['changedesc', 'groupdesc'],
+  description: 'Change group description (Admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from, args } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    if (args.length === 0) {
+      await respond('❌ Usage: .setdesc <new description>\n\nExample: .setdesc Welcome to our community group!');
+      return;
+    }
+
+    try {
+      const groupMetadata = await client.groupMetadata(from);
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can change the group description!');
+        return;
+      }
+
+      const newDesc = args.join(' ');
+      await client.groupUpdateDescription(from, newDesc);
+      await respond(`✅ *Group Description Updated!*\n\n📝 *New Description:* ${newDesc}\n\n> Updated by TREKKERMD LIFETIME BOT`);
+
+    } catch (error) {
+      console.error('Error changing group description:', error);
+      await respond('❌ Failed to change group description!');
+    }
+  }
+});
+
+// Group Settings - Announcement Mode
+commandRegistry.register({
+  name: 'announce',
+  aliases: ['announcement', 'adminonly'],
+  description: 'Toggle announcement mode (Admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from, args } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      const groupMetadata = await client.groupMetadata(from);
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can change group settings!');
+        return;
+      }
+
+      const mode = args[0]?.toLowerCase();
+      if (mode === 'on' || mode === 'enable') {
+        await client.groupSettingUpdate(from, 'announcement');
+        await respond('✅ *Announcement Mode Enabled*\n\n🔒 Only admins can send messages now.\n\n> Updated by TREKKERMD LIFETIME BOT');
+      } else if (mode === 'off' || mode === 'disable') {
+        await client.groupSettingUpdate(from, 'not_announcement');
+        await respond('✅ *Announcement Mode Disabled*\n\n🔓 Everyone can send messages now.\n\n> Updated by TREKKERMD LIFETIME BOT');
+      } else {
+        await respond('❌ Usage: .announce on/off\n\n*on* - Only admins can send messages\n*off* - Everyone can send messages');
+      }
+
+    } catch (error) {
+      console.error('Error changing announcement mode:', error);
+      await respond('❌ Failed to change announcement mode!');
+    }
+  }
+});
+
+// Lock/Unlock Group Settings
+commandRegistry.register({
+  name: 'locksettings',
+  aliases: ['lockgroup', 'grouplock'],
+  description: 'Lock/unlock group settings (Admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from, args } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      const groupMetadata = await client.groupMetadata(from);
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can change group settings!');
+        return;
+      }
+
+      const mode = args[0]?.toLowerCase();
+      if (mode === 'on' || mode === 'lock') {
+        await client.groupSettingUpdate(from, 'locked');
+        await respond('✅ *Group Settings Locked*\n\n🔒 Only admins can modify group settings now.\n\n> Updated by TREKKERMD LIFETIME BOT');
+      } else if (mode === 'off' || mode === 'unlock') {
+        await client.groupSettingUpdate(from, 'unlocked');
+        await respond('✅ *Group Settings Unlocked*\n\n🔓 Everyone can modify group settings now.\n\n> Updated by TREKKERMD LIFETIME BOT');
+      } else {
+        await respond('❌ Usage: .locksettings on/off\n\n*on* - Only admins can modify settings\n*off* - Everyone can modify settings');
+      }
+
+    } catch (error) {
+      console.error('Error changing group lock settings:', error);
+      await respond('❌ Failed to change group lock settings!');
+    }
+  }
+});
+
+// Leave Group
+commandRegistry.register({
+  name: 'leave',
+  aliases: ['leavegroup', 'exit'],
+  description: 'Leave the group (Owner only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
+      await respond('👋 *Goodbye everyone!*\n\n🤖 TREKKERMD LIFETIME BOT is leaving the group.\n\n> Thank you for using our service!');
+      
+      // Wait a bit before leaving
+      setTimeout(async () => {
+        await client.groupLeave(from);
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error leaving group:', error);
+      await respond('❌ Failed to leave the group!');
+    }
+  }
+});
+
+// Revoke Invite Link
+commandRegistry.register({
+  name: 'revoke',
+  aliases: ['revokelink', 'resetlink'],
+  description: 'Revoke and generate new group invite link (Admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      const groupMetadata = await client.groupMetadata(from);
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can revoke invite links!');
+        return;
+      }
+
+      const code = await client.groupRevokeInvite(from);
+      const inviteLink = `https://chat.whatsapp.com/${code}`;
+      await respond(`✅ *Invite Link Revoked!*\n\n🔗 *New Invite Link:*\n${inviteLink}\n\n⚠️ Old link is no longer valid.\n\n> Updated by TREKKERMD LIFETIME BOT`);
+
+    } catch (error) {
+      console.error('Error revoking invite link:', error);
+      await respond('❌ Failed to revoke invite link!');
+    }
+  }
+});
+
+// Join Group via Invite Code
+commandRegistry.register({
+  name: 'join',
+  aliases: ['joingroup', 'acceptinvite'],
+  description: 'Join a group using invite code (Owner only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, args } = context;
+
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    if (args.length === 0) {
+      await respond('❌ Usage: .join <invite_code>\n\nExample: .join ABC123DEF456\nor\n.join https://chat.whatsapp.com/ABC123DEF456');
+      return;
+    }
+
+    try {
+      // Extract code from link if full URL is provided
+      let code = args[0];
+      if (code.includes('chat.whatsapp.com/')) {
+        code = code.split('chat.whatsapp.com/')[1];
+      }
+
+      const response = await client.groupAcceptInvite(code);
+      await respond(`✅ *Successfully Joined Group!*\n\n🆔 *Group ID:* ${response}\n\n> Joined by TREKKERMD LIFETIME BOT`);
+
+    } catch (error) {
+      console.error('Error joining group:', error);
+      await respond('❌ Failed to join group. Invalid invite code or link expired.');
+    }
+  }
+});
+
+// Get Group Invite Info
+commandRegistry.register({
+  name: 'groupinviteinfo',
+  aliases: ['inviteinfo', 'checklink'],
+  description: 'Get group information from invite code',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, args, client } = context;
+
+    if (args.length === 0) {
+      await respond('❌ Usage: .groupinviteinfo <invite_code>\n\nExample: .groupinviteinfo ABC123DEF456');
+      return;
+    }
+
+    try {
+      let code = args[0];
+      if (code.includes('chat.whatsapp.com/')) {
+        code = code.split('chat.whatsapp.com/')[1];
+      }
+
+      const info = await client.groupGetInviteInfo(code);
+      const infoText = `📋 *Group Invite Information*\n\n` +
+        `🏷️ *Name:* ${info.subject}\n` +
+        `👥 *Size:* ${info.size} members\n` +
+        `📝 *Description:* ${info.desc || 'No description'}\n` +
+        `🆔 *Group ID:* ${info.id}\n\n` +
+        `> Information retrieved by TREKKERMD LIFETIME BOT`;
+
+      await respond(infoText);
+
+    } catch (error) {
+      console.error('Error getting invite info:', error);
+      await respond('❌ Failed to get group information. Invalid invite code.');
+    }
+  }
+});
+
+// Toggle Disappearing Messages
+commandRegistry.register({
+  name: 'disappear',
+  aliases: ['ephemeral', 'vanish'],
+  description: 'Toggle disappearing messages (Admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from, args } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      const groupMetadata = await client.groupMetadata(from);
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can change disappearing message settings!');
+        return;
+      }
+
+      const timeOptions: Record<string, number> = {
+        'off': 0,
+        '24h': 86400,
+        '7d': 604800,
+        '90d': 7776000
+      };
+
+      const option = args[0]?.toLowerCase();
+      const seconds = timeOptions[option];
+
+      if (seconds === undefined) {
+        await respond('❌ Usage: .disappear <time>\n\n*Options:*\n• off - Disable\n• 24h - 24 hours\n• 7d - 7 days\n• 90d - 90 days');
+        return;
+      }
+
+      await client.groupToggleEphemeral(from, seconds);
+      
+      const timeText = option === 'off' ? 'Disabled' : option.toUpperCase();
+      await respond(`✅ *Disappearing Messages ${option === 'off' ? 'Disabled' : 'Enabled'}*\n\n⏱️ *Duration:* ${timeText}\n\n> Updated by TREKKERMD LIFETIME BOT`);
+
+    } catch (error) {
+      console.error('Error toggling disappearing messages:', error);
+      await respond('❌ Failed to update disappearing message settings!');
+    }
+  }
+});
+
+// Change Add Mode
+commandRegistry.register({
+  name: 'addmode',
+  aliases: ['memberadd', 'addpermission'],
+  description: 'Change who can add members (Admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from, args } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      const groupMetadata = await client.groupMetadata(from);
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can change member add settings!');
+        return;
+      }
+
+      const mode = args[0]?.toLowerCase();
+      if (mode === 'all' || mode === 'everyone') {
+        await client.groupMemberAddMode(from, 'all_member_add');
+        await respond('✅ *Add Mode Updated*\n\n👥 Everyone can add members now.\n\n> Updated by TREKKERMD LIFETIME BOT');
+      } else if (mode === 'admin' || mode === 'admins') {
+        await client.groupMemberAddMode(from, 'admin_add');
+        await respond('✅ *Add Mode Updated*\n\n👑 Only admins can add members now.\n\n> Updated by TREKKERMD LIFETIME BOT');
+      } else {
+        await respond('❌ Usage: .addmode <mode>\n\n*Options:*\n• all - Everyone can add\n• admin - Only admins can add');
+      }
+
+    } catch (error) {
+      console.error('Error changing add mode:', error);
+      await respond('❌ Failed to update member add settings!');
+    }
+  }
+});
+
+// Get Join Request List
+commandRegistry.register({
+  name: 'requests',
+  aliases: ['joinrequests', 'pendingrequests'],
+  description: 'View pending join requests (Admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      const groupMetadata = await client.groupMetadata(from);
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can view join requests!');
+        return;
+      }
+
+      const requests = await client.groupRequestParticipantsList(from);
+      
+      if (!requests || requests.length === 0) {
+        await respond('✅ No pending join requests.');
+        return;
+      }
+
+      let requestList = '📋 *Pending Join Requests*\n\n';
+      requests.forEach((req: any, index: number) => {
+        requestList += `${index + 1}. @${req.jid.split('@')[0]}\n`;
+      });
+      requestList += '\n> Use .approverequest or .rejectrequest to manage requests';
+
+      await client.sendMessage(from, {
+        text: requestList,
+        mentions: requests.map((r: any) => r.jid)
+      });
+
+    } catch (error) {
+      console.error('Error getting join requests:', error);
+      await respond('❌ Failed to get join requests!');
+    }
+  }
+});
+
+// Approve Join Request
+commandRegistry.register({
+  name: 'approverequest',
+  aliases: ['approve', 'acceptrequest'],
+  description: 'Approve join request (Admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      const groupMetadata = await client.groupMetadata(from);
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can approve join requests!');
+        return;
+      }
+
+      const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
+      const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+
+      const usersToApprove = quotedUser ? [quotedUser] : mentionedUsers;
+
+      if (usersToApprove.length === 0) {
+        await respond('❌ Please reply to a message or mention users to approve!');
+        return;
+      }
+
+      await client.groupRequestParticipantsUpdate(from, usersToApprove, 'approve');
+      await respond(`✅ *Join Request Approved*\n\n👥 ${usersToApprove.length} user(s) approved.\n\n> Approved by TREKKERMD LIFETIME BOT`);
+
+    } catch (error) {
+      console.error('Error approving request:', error);
+      await respond('❌ Failed to approve join request!');
+    }
+  }
+});
+
+// Reject Join Request
+commandRegistry.register({
+  name: 'rejectrequest',
+  aliases: ['reject', 'denyrequest'],
+  description: 'Reject join request (Admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command can only be used in group chats!');
+      return;
+    }
+
+    try {
+      const groupMetadata = await client.groupMetadata(from);
+      const senderNumber = message.key.participant || message.key.remoteJid;
+      const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+      if (!senderIsAdmin) {
+        await respond('❌ Only group admins can reject join requests!');
+        return;
+      }
+
+      const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
+      const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
+
+      const usersToReject = quotedUser ? [quotedUser] : mentionedUsers;
+
+      if (usersToReject.length === 0) {
+        await respond('❌ Please reply to a message or mention users to reject!');
+        return;
+      }
+
+      await client.groupRequestParticipantsUpdate(from, usersToReject, 'reject');
+      await respond(`✅ *Join Request Rejected*\n\n👥 ${usersToReject.length} user(s) rejected.\n\n> Rejected by TREKKERMD LIFETIME BOT`);
+
+    } catch (error) {
+      console.error('Error rejecting request:', error);
+      await respond('❌ Failed to reject join request!');
+    }
+  }
+});
+
+// Get All Groups
+commandRegistry.register({
+  name: 'mygroups',
+  aliases: ['groups', 'allgroups'],
+  description: 'List all groups bot is in (Owner only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client } = context;
+
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
+      const groups = await client.groupFetchAllParticipating();
+      const groupList = Object.values(groups);
+
+      if (groupList.length === 0) {
+        await respond('❌ Bot is not in any groups.');
+        return;
+      }
+
+      let groupsText = `📋 *Bot Groups (${groupList.length})*\n\n`;
+      groupList.forEach((group: any, index: number) => {
+        groupsText += `${index + 1}. *${group.subject}*\n`;
+        groupsText += `   👥 ${group.participants.length} members\n`;
+        groupsText += `   🆔 ${group.id}\n\n`;
+      });
+      groupsText += '> Powered by TREKKERMD LIFETIME BOT';
+
+      await respond(groupsText);
+
+    } catch (error) {
+      console.error('Error getting groups:', error);
+      await respond('❌ Failed to get group list!');
+    }
+  }
+});
+
 // Load core commands and privacy commands
 import './core-commands.js'; // Load core commands
 import './privacy-commands.js'; // Load privacy commands
