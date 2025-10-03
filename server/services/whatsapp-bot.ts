@@ -151,18 +151,21 @@ export class WhatsAppBot {
 
         // Send welcome message to the bot owner
         try {
-          const welcomeMessage = `╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  "${this.botInstance.name}" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝`;
+          const welcomeMessage = `╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  "${this.botInstance.name}" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!`;
 
-          // Get the bot's own number and send welcome message
+          // Get the bot's own number and send welcome message to yourself
           const me = this.sock.user?.id;
           if (me) {
-            await this.sock.sendMessage(me, { text: welcomeMessage });
-            console.log(`TREKKERMD LIFETIME BOT: Welcome message sent to ${me}`);
+            // Extract just the phone number part (before the colon)
+            const phoneNumber = me.split(':')[0];
+            const jid = `${phoneNumber}@s.whatsapp.net`;
+            await this.sock.sendMessage(jid, { text: welcomeMessage });
+            console.log(`TREKKERMD LIFETIME BOT: Welcome message sent to ${jid}`);
           } else {
             console.log('TREKKERMD LIFETIME BOT READY:', welcomeMessage);
           }
         } catch (error) {
-          console.log('Welcome message setup complete');
+          console.error('Welcome message error:', error);
         }
 
         // Fetch existing statuses after connection is established
@@ -425,9 +428,15 @@ export class WhatsAppBot {
     try {
       if (!message.message) return;
 
-      // Skip messages from the bot itself to avoid loops
-      if (message.key.fromMe) {
-        console.log(`Bot ${this.botInstance.name}: Skipping own message`);
+      // Get message text first to check if it's a command
+      const messageText = this.extractMessageText(message.message);
+      const commandPrefix = process.env.BOT_PREFIX || '.';
+      const isCommand = messageText && messageText.startsWith(commandPrefix);
+
+      // Skip messages from the bot itself ONLY if they're not commands
+      // This allows the bot owner to execute commands
+      if (message.key.fromMe && !isCommand) {
+        console.log(`Bot ${this.botInstance.name}: Skipping own message (not a command)`);
         return;
       }
 
@@ -440,14 +449,10 @@ export class WhatsAppBot {
         lastActivity: new Date()
       });
 
-      const messageText = this.extractMessageText(message.message);
       console.log(`Bot ${this.botInstance.name}: Received message: "${messageText}" from ${message.key.remoteJid}`);
 
-      // Get command prefix from environment variable (default: .)
-      const commandPrefix = process.env.BOT_PREFIX || '.';
-
       // Handle commands (only respond to messages with the configured prefix)
-      if (messageText && messageText.startsWith(commandPrefix)) {
+      if (isCommand) {
         console.log(`Bot ${this.botInstance.name}: Detected command: "${messageText.trim()}"`);
         
         // Check if bot is approved before processing commands
