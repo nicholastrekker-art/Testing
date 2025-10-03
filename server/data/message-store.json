@@ -1,0 +1,746 @@
+{
+  "3EB0BCB995B2152A1D0D92": {
+    "id": "3EB0BCB995B2152A1D0D92",
+    "fromJid": "254799257758:33@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Treker1 \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝",
+    "type": "extendedTextMessage",
+    "timestamp": 1759488438356,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758:33@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0BCB995B2152A1D0D92"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Treker1 \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝"
+        }
+      },
+      "messageTimestamp": 1759488410,
+      "status": 1
+    }
+  },
+  "3EB09EBA3B39E6ED156BE2": {
+    "id": "3EB09EBA3B39E6ED156BE2",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "╔══════════════════════════════════════════╗\n║ 🎉        TREKKER-MD APPROVAL        🎉   ║\n╠══════════════════════════════════════════╣\n║ ✅ Bot \"Treker1 \" is now ACTIVE!           ║\n║ 📱 Phone: 254799257758                    ║\n║ 📅 Approved: 10/3/2025                    ║\n║ ⏳ Valid: 12 Months                       ║\n╠══════════════════════════════════════════╣\n║ 🚀 Features Enabled:                      ║\n║ • Automation & ChatGPT                    ║\n║ • Auto-like / Auto-react                  ║\n║ • Status Viewing                          ║\n╠══════════════════════════════════════════╣\n║ 🔥 Thank you for choosing TREKKER-MD!     ║\n╚══════════════════════════════════════════╝",
+    "type": "extendedTextMessage",
+    "timestamp": 1759488438357,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB09EBA3B39E6ED156BE2"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "╔══════════════════════════════════════════╗\n║ 🎉        TREKKER-MD APPROVAL        🎉   ║\n╠══════════════════════════════════════════╣\n║ ✅ Bot \"Treker1 \" is now ACTIVE!           ║\n║ 📱 Phone: 254799257758                    ║\n║ 📅 Approved: 10/3/2025                    ║\n║ ⏳ Valid: 12 Months                       ║\n╠══════════════════════════════════════════╣\n║ 🚀 Features Enabled:                      ║\n║ • Automation & ChatGPT                    ║\n║ • Auto-like / Auto-react                  ║\n║ • Status Viewing                          ║\n╠══════════════════════════════════════════╣\n║ 🔥 Thank you for choosing TREKKER-MD!     ║\n╚══════════════════════════════════════════╝"
+        }
+      },
+      "messageTimestamp": 1759488412,
+      "status": 1
+    }
+  },
+  "AC792D35C8E3370631E1B79848376306": {
+    "id": "AC792D35C8E3370631E1B79848376306",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ". ping",
+    "type": "conversation",
+    "timestamp": 1759488475316,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJidAlt": "280234452607229@lid",
+        "fromMe": true,
+        "id": "AC792D35C8E3370631E1B79848376306",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1759488411,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ". ping"
+      }
+    }
+  },
+  "AC8909479BB08A1AC7AAEB4926A6FACA": {
+    "id": "AC8909479BB08A1AC7AAEB4926A6FACA",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".menu",
+    "type": "conversation",
+    "timestamp": 1759488475334,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJidAlt": "280234452607229@lid",
+        "fromMe": true,
+        "id": "AC8909479BB08A1AC7AAEB4926A6FACA",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1759488412,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".menu"
+      }
+    }
+  },
+  "AC99A24480E01383771A3BA735E939E2": {
+    "id": "AC99A24480E01383771A3BA735E939E2",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ". ping",
+    "type": "conversation",
+    "timestamp": 1759488476445,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "remoteJidAlt": "7198767878239@lid",
+        "fromMe": true,
+        "id": "AC99A24480E01383771A3BA735E939E2",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1759488475,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ". ping"
+      }
+    }
+  },
+  "AC1D7BF76753073F38126F8DB1449B52": {
+    "id": "AC1D7BF76753073F38126F8DB1449B52",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".ping",
+    "type": "unknown",
+    "timestamp": 1759488485310,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "AC1D7BF76753073F38126F8DB1449B52"
+      },
+      "message": {
+        "conversation": ".ping",
+        "messageContextInfo": {
+          "messageSecret": {
+            "type": "Buffer",
+            "data": [
+              140,
+              182,
+              134,
+              120,
+              56,
+              215,
+              188,
+              222,
+              78,
+              70,
+              109,
+              243,
+              94,
+              157,
+              91,
+              152,
+              178,
+              2,
+              192,
+              181,
+              223,
+              247,
+              72,
+              237,
+              155,
+              206,
+              155,
+              26,
+              129,
+              187,
+              249,
+              232
+            ]
+          }
+        }
+      },
+      "messageTimestamp": {
+        "low": 1759488433,
+        "high": 0,
+        "unsigned": true
+      },
+      "status": 4,
+      "messageSecret": {
+        "type": "Buffer",
+        "data": [
+          140,
+          182,
+          134,
+          120,
+          56,
+          215,
+          188,
+          222,
+          78,
+          70,
+          109,
+          243,
+          94,
+          157,
+          91,
+          152,
+          178,
+          2,
+          192,
+          181,
+          223,
+          247,
+          72,
+          237,
+          155,
+          206,
+          155,
+          26,
+          129,
+          187,
+          249,
+          232
+        ]
+      },
+      "originalSelfAuthorUserJidString": "254799257758@s.whatsapp.net",
+      "isMentionedInStatus": false
+    }
+  },
+  "AC655C28EF7DA34BEFBF4F981607D909": {
+    "id": "AC655C28EF7DA34BEFBF4F981607D909",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".ping",
+    "type": "conversation",
+    "timestamp": 1759488477217,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "remoteJidAlt": "7198767878239@lid",
+        "fromMe": true,
+        "id": "AC655C28EF7DA34BEFBF4F981607D909",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1759488476,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".ping"
+      }
+    }
+  },
+  "AC9A6A3635A357B2DF507CB700EFA166": {
+    "id": "AC9A6A3635A357B2DF507CB700EFA166",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".menu",
+    "type": "unknown",
+    "timestamp": 1759488486029,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [
+        {
+          "pendingDeviceJid": [],
+          "deliveredDeviceJid": [],
+          "userJid": "254704897825@s.whatsapp.net",
+          "receiptTimestamp": {
+            "low": 1759471246,
+            "high": 0,
+            "unsigned": false
+          },
+          "readTimestamp": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "playedTimestamp": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          }
+        }
+      ],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "AC9A6A3635A357B2DF507CB700EFA166"
+      },
+      "message": {
+        "conversation": ".menu",
+        "messageContextInfo": {
+          "messageSecret": {
+            "type": "Buffer",
+            "data": [
+              222,
+              30,
+              84,
+              33,
+              104,
+              127,
+              98,
+              194,
+              186,
+              45,
+              108,
+              222,
+              216,
+              196,
+              138,
+              179,
+              4,
+              186,
+              117,
+              57,
+              189,
+              32,
+              254,
+              235,
+              56,
+              155,
+              198,
+              190,
+              70,
+              161,
+              215,
+              162
+            ]
+          }
+        }
+      },
+      "messageTimestamp": {
+        "low": 1759471188,
+        "high": 0,
+        "unsigned": true
+      },
+      "status": 3,
+      "messageC2STimestamp": {
+        "low": 1759471190,
+        "high": 0,
+        "unsigned": true
+      },
+      "messageSecret": {
+        "type": "Buffer",
+        "data": [
+          222,
+          30,
+          84,
+          33,
+          104,
+          127,
+          98,
+          194,
+          186,
+          45,
+          108,
+          222,
+          216,
+          196,
+          138,
+          179,
+          4,
+          186,
+          117,
+          57,
+          189,
+          32,
+          254,
+          235,
+          56,
+          155,
+          198,
+          190,
+          70,
+          161,
+          215,
+          162
+        ]
+      },
+      "originalSelfAuthorUserJidString": "254799257758@s.whatsapp.net",
+      "isMentionedInStatus": false
+    }
+  },
+  "AC42A4AB6CF69BDA76F46DBCCDD48E90": {
+    "id": "AC42A4AB6CF69BDA76F46DBCCDD48E90",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ". ping",
+    "type": "conversation",
+    "timestamp": 1759488478003,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJidAlt": "280234452607229@lid",
+        "fromMe": true,
+        "id": "AC42A4AB6CF69BDA76F46DBCCDD48E90",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1759488476,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ". ping"
+      }
+    }
+  },
+  "AC2B30F508F32B19B3209D7FABCF4CAC": {
+    "id": "AC2B30F508F32B19B3209D7FABCF4CAC",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".menu",
+    "type": "unknown",
+    "timestamp": 1759488486790,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "AC2B30F508F32B19B3209D7FABCF4CAC"
+      },
+      "message": {
+        "conversation": ".menu",
+        "messageContextInfo": {
+          "messageSecret": {
+            "type": "Buffer",
+            "data": [
+              209,
+              132,
+              36,
+              25,
+              222,
+              242,
+              43,
+              90,
+              202,
+              127,
+              114,
+              244,
+              251,
+              175,
+              33,
+              91,
+              114,
+              98,
+              224,
+              118,
+              1,
+              94,
+              137,
+              184,
+              108,
+              204,
+              254,
+              140,
+              31,
+              110,
+              28,
+              192
+            ]
+          }
+        }
+      },
+      "messageTimestamp": {
+        "low": 1759488441,
+        "high": 0,
+        "unsigned": true
+      },
+      "status": 4,
+      "messageC2STimestamp": {
+        "low": 1759488442,
+        "high": 0,
+        "unsigned": true
+      },
+      "messageSecret": {
+        "type": "Buffer",
+        "data": [
+          209,
+          132,
+          36,
+          25,
+          222,
+          242,
+          43,
+          90,
+          202,
+          127,
+          114,
+          244,
+          251,
+          175,
+          33,
+          91,
+          114,
+          98,
+          224,
+          118,
+          1,
+          94,
+          137,
+          184,
+          108,
+          204,
+          254,
+          140,
+          31,
+          110,
+          28,
+          192
+        ]
+      },
+      "originalSelfAuthorUserJidString": "254799257758@s.whatsapp.net",
+      "isMentionedInStatus": false
+    }
+  },
+  "AC5BFB56ED8432F6BD7D12D86D884A2F": {
+    "id": "AC5BFB56ED8432F6BD7D12D86D884A2F",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".ping",
+    "type": "conversation",
+    "timestamp": 1759488478505,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "remoteJidAlt": "7198767878239@lid",
+        "fromMe": true,
+        "id": "AC5BFB56ED8432F6BD7D12D86D884A2F",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1759488477,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".ping"
+      }
+    }
+  },
+  "ACAF15DAE403DBB75D6DC05500DD2BC9": {
+    "id": "ACAF15DAE403DBB75D6DC05500DD2BC9",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".ping",
+    "type": "conversation",
+    "timestamp": 1759488479525,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJidAlt": "280234452607229@lid",
+        "fromMe": true,
+        "id": "ACAF15DAE403DBB75D6DC05500DD2BC9",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1759488478,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".ping"
+      }
+    }
+  },
+  "AC5F83845569E3D9FC65D9B074E5279A": {
+    "id": "AC5F83845569E3D9FC65D9B074E5279A",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".ping",
+    "type": "unknown",
+    "timestamp": 1759488488843,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [
+        {
+          "pendingDeviceJid": [],
+          "deliveredDeviceJid": [],
+          "userJid": "254704897825@s.whatsapp.net",
+          "receiptTimestamp": {
+            "low": 1759488463,
+            "high": 0,
+            "unsigned": false
+          },
+          "readTimestamp": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          },
+          "playedTimestamp": {
+            "low": 0,
+            "high": 0,
+            "unsigned": false
+          }
+        }
+      ],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "AC5F83845569E3D9FC65D9B074E5279A"
+      },
+      "message": {
+        "conversation": ".ping",
+        "messageContextInfo": {
+          "messageSecret": {
+            "type": "Buffer",
+            "data": [
+              238,
+              128,
+              78,
+              13,
+              70,
+              10,
+              67,
+              142,
+              55,
+              27,
+              38,
+              112,
+              57,
+              125,
+              116,
+              13,
+              238,
+              122,
+              198,
+              175,
+              104,
+              130,
+              156,
+              213,
+              12,
+              179,
+              182,
+              107,
+              94,
+              35,
+              117,
+              31
+            ]
+          }
+        }
+      },
+      "messageTimestamp": {
+        "low": 1759488461,
+        "high": 0,
+        "unsigned": true
+      },
+      "status": 3,
+      "messageC2STimestamp": {
+        "low": 1759488462,
+        "high": 0,
+        "unsigned": true
+      },
+      "messageSecret": {
+        "type": "Buffer",
+        "data": [
+          238,
+          128,
+          78,
+          13,
+          70,
+          10,
+          67,
+          142,
+          55,
+          27,
+          38,
+          112,
+          57,
+          125,
+          116,
+          13,
+          238,
+          122,
+          198,
+          175,
+          104,
+          130,
+          156,
+          213,
+          12,
+          179,
+          182,
+          107,
+          94,
+          35,
+          117,
+          31
+        ]
+      },
+      "originalSelfAuthorUserJidString": "254799257758@s.whatsapp.net",
+      "isMentionedInStatus": false
+    }
+  }
+}
