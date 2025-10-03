@@ -587,7 +587,8 @@ export class WhatsAppBot {
 
   private async handleAutoFeatures(message: WAMessage) {
     // Auto-react to messages (skip messages from the bot itself) - completely silent
-    if (this.botInstance.autoReact && message.key.remoteJid && !message.key.fromMe) {
+    // Only react to messages NOT sent by the bot (fromMe must be false)
+    if (this.botInstance.autoReact && message.key.remoteJid && message.key.fromMe === false) {
       const reactions = ['👍', '❤️', '😊', '🔥', '👏'];
       const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
 

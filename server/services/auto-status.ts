@@ -118,6 +118,12 @@ export class AutoStatusService {
         return;
       }
 
+      // Skip reacting to own status updates (fromMe: true)
+      if (statusKey.fromMe === true) {
+        console.log(`⏭️ Skipping reaction to own status from ${statusKey.participant || statusKey.remoteJid}`);
+        return;
+      }
+
       const config = this.getConfig();
       const now = Date.now();
       
