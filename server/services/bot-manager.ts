@@ -48,6 +48,7 @@ class BotManager {
       const currentStatus = existingBot?.getStatus();
       
       if (existingBot && currentStatus === 'online') {
+        console.log(`BotManager: Bot ${botId} is already online`);
         return;
       }
 
@@ -57,23 +58,32 @@ class BotManager {
         throw new Error(`Bot with ID ${botId} not found`);
       }
 
-      // Only stop existing bot if it's offline (to restart it)
-      if (existingBot && currentStatus === 'offline') {
-        await existingBot.stop();
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+      // Only approved bots should be auto-started
+      if (botInstance.approvalStatus !== 'approved') {
+        console.log(`BotManager: Bot ${botId} is not approved, skipping auto-start`);
+        return;
       }
 
-      // Create new isolated bot instance only if none exists or if it was offline
-      if (!existingBot || currentStatus === 'offline') {
-        // Always clear session files for fresh start (like first deployment)
-        this.clearBotSessionFiles(botId);
-        
-        const newBot = new WhatsAppBot(botInstance);
-        this.bots.set(botId, newBot);
-        
-        // Start bot silently
-        await newBot.start();
+      // Stop existing bot if it exists and is not online
+      if (existingBot && currentStatus !== 'online') {
+        await existingBot.stop();
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+        this.bots.delete(botId);
       }
+
+      // Always create fresh instance for approved bots
+      console.log(`BotManager: Starting approved bot ${botId} (${botInstance.name})`);
+      
+      // Clear session files for fresh start
+      this.clearBotSessionFiles(botId);
+      
+      const newBot = new WhatsAppBot(botInstance);
+      this.bots.set(botId, newBot);
+      
+      // Start bot and keep connection alive
+      await newBot.start();
+      
+      console.log(`BotManager: Bot ${botId} started successfully and connection maintained`);
     } catch (error) {
       console.error(`BotManager: Failed to start bot ${botId}:`, error);
       

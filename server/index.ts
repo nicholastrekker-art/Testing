@@ -38,6 +38,8 @@ async function startScheduledBotMonitoring() {
         return;
       }
       
+      console.log(`🔍 Monitoring: Checking ${approvedBots.length} approved bots...`);
+      
       for (const bot of approvedBots) {
         try {
           // Check if bot is in the bot manager and its status
@@ -45,11 +47,13 @@ async function startScheduledBotMonitoring() {
           const isOnline = existingBot?.getStatus() === 'online';
           
           if (!existingBot || !isOnline) {
+            console.log(`🔄 Monitoring: Restarting bot ${bot.name} (${bot.id}) - Status: ${existingBot?.getStatus() || 'not found'}`);
+            
             // Create activity log
             await storage.createActivity({
               botInstanceId: bot.id,
               type: 'monitoring',
-              description: 'Bot restarted by scheduled monitoring - was offline or not found',
+              description: 'Bot auto-restarted by monitoring - was offline or disconnected',
               serverName: bot.serverName
             });
             
@@ -58,27 +62,30 @@ async function startScheduledBotMonitoring() {
               await botManager.createBot(bot.id, bot);
             }
             await botManager.startBot(bot.id);
+            
+            console.log(`✅ Monitoring: Bot ${bot.name} restarted successfully`);
           }
         } catch (error) {
+          console.error(`❌ Monitoring: Failed to restart bot ${bot.name}:`, error);
           // Log the error as an activity
           await storage.createActivity({
             botInstanceId: bot.id,
             type: 'error',
-            description: `Scheduled monitoring failed to restart bot: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            description: `Monitoring failed to restart bot: ${error instanceof Error ? error.message : 'Unknown error'}`,
             serverName: bot.serverName
           });
         }
       }
     } catch (error) {
-      // Silent error handling
+      console.error('❌ Monitoring: Error in checkApprovedBots:', error);
     }
   };
   
-  // Initial check after 30 seconds
-  setTimeout(checkApprovedBots, 30000);
+  // Initial check after 10 seconds (faster startup)
+  setTimeout(checkApprovedBots, 10000);
   
-  // Schedule checks every 3 minutes (180,000 milliseconds)
-  setInterval(checkApprovedBots, 180000);
+  // Schedule checks every 30 seconds (reduced from 3 minutes for faster recovery)
+  setInterval(checkApprovedBots, 30000);
   
   } catch (error) {
     console.error('❌ Failed to start scheduled bot monitoring:', error);

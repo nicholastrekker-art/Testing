@@ -873,7 +873,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Approve Bot (Admin only)
-  app.post("/api/bots/:id/approve", authenticateAdmin, async (req, res) => {
+  app.post("/api/bot-instances/:id/approve", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const { id } = req.params;
       const { expirationMonths = 3 } = req.body;
@@ -2371,7 +2371,7 @@ Thank you for using TREKKER-MD! 🚀
                   eq(botInstances.serverName, botServer)
                 )
               );
-            
+
             // Set validation failure flag for response
             botActive = false;
           }
@@ -2391,7 +2391,7 @@ Thank you for using TREKKER-MD! 🚀
                 eq(botInstances.serverName, botServer)
               )
             );
-          
+
           // Set validation failure flag for response
           botActive = false;
         }
@@ -2822,8 +2822,8 @@ Thank you for using TREKKER-MD! 🚀
     }
   });
 
-  // ======= CROSS-TENANCY BOT MANAGEMENT =======
-  
+  // ======= CROSS-TENANCY MANAGEMENT =======
+
   // Cross-tenancy bot feature toggle (for bots on same database but different tenancies)
   app.post("/api/bots/:id/toggle-feature", async (req, res) => {
     try {

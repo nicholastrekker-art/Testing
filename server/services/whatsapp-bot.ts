@@ -827,16 +827,27 @@ export class WhatsAppBot {
     // Clear any existing heartbeat
     this.stopHeartbeat();
 
-    // Set up heartbeat to monitor bot health
+    // Set up heartbeat to monitor bot health and keep connection alive
     this.heartbeatInterval = setInterval(async () => {
       try {
         if (this.isRunning && this.sock?.user?.id) {
           await this.safeUpdateBotStatus('online', { lastActivity: new Date() });
+          
+          // Send keep-alive ping to WhatsApp to prevent connection timeout
+          try {
+            await this.sock.sendPresenceUpdate('available');
+          } catch (pingError) {
+            console.log(`Bot ${this.botInstance.name}: Keep-alive ping failed, attempting reconnect...`);
+            // If ping fails, attempt to reconnect
+            if (this.isRunning) {
+              await this.restart();
+            }
+          }
         }
       } catch (error) {
         console.error(`Bot ${this.botInstance.name}: Heartbeat error:`, error);
       }
-    }, 30000); // Update every 30 seconds
+    }, 15000); // Update every 15 seconds (reduced from 30 for more frequent keep-alive)
   }
 
   private stopHeartbeat() {
