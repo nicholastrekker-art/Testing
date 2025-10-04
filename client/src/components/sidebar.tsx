@@ -148,7 +148,6 @@ export default function Sidebar() {
           setShowLoginModal(false);
         }}
       />
-      </aside>
     </>
   );
 }
