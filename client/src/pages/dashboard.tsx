@@ -220,10 +220,13 @@ export default function Dashboard() {
   }, [isAdmin]);
 
   return (
-    <div>
+    <div className="min-h-screen">
+      {/* Offer Countdown Banner - Show only for guest users */}
+      {!isAdmin && <OfferCountdownBanner />}
+
       {/* Header */}
-      <header className="bg-card border-b border-border px-6 py-4">
-        <div className="flex items-center justify-between">
+      <header className="bg-card border-b border-border px-4 sm:px-6 py-4 pt-16 lg:pt-4">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-bold text-foreground">🤖 {serverInfo.serverName || 'TREKKER-MD'} Dashboard</h2>

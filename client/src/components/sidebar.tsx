@@ -1,207 +1,127 @@
 import { Link, useLocation } from "wouter";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
+import { 
+  LayoutDashboard, 
+  Bot, 
+  Terminal, 
+  Settings, 
+  LogOut,
+  Server,
+  Menu,
+  X
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { LoginModal } from "./login-modal";
-import { ValidateCredentialsModal } from "./validate-credentials-modal";
-import { Button } from "./ui/button";
-import GuestBotRegistration from "./guest-bot-registration";
-import GuestBotSearch from "./guest-bot-search";
-
-// Guest mode navigation - only Dashboard
-const guestNavigationItems = [
-  { href: "/", label: "Dashboard", icon: "fas fa-tachometer-alt" },
-  { href: "/guest/verification", label: "Phone Verification", icon: "fas fa-phone" },
-  { href: "/guest/bot-management", label: "Bot Management", icon: "fas fa-robot" },
-  { href: "/guest/credentials", label: "Credential Manager", icon: "fas fa-key" },
-  { href: "/guest/cross-server", label: "Cross-Server Bots", icon: "fas fa-network-wired" },
-];
-
-// Admin mode navigation - full access
-const adminNavigationItems = [
-  { href: "/", label: "Dashboard", icon: "fas fa-tachometer-alt" },
-  { href: "/bot-instances", label: "Bot Instances", icon: "fas fa-robot" },
-  { href: "/commands", label: "Commands", icon: "fas fa-terminal" },
-  { href: "/chatgpt", label: "ChatGPT Integration", icon: "fas fa-brain" },
-  { href: "/groups", label: "Group Management", icon: "fas fa-users" },
-  { href: "/analytics", label: "Analytics", icon: "fas fa-chart-line" },
-  { href: "/settings", label: "Settings", icon: "fas fa-cog" },
-];
-
-// Admin console items
-const adminConsoleItems = [
-  { href: "/admin", label: "Admin Console", icon: "fas fa-shield-alt" },
-];
 
 export default function Sidebar() {
   const [location] = useLocation();
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showValidateModal, setShowValidateModal] = useState(false);
-  const [showGuestRegistration, setShowGuestRegistration] = useState(false);
+  const { user, isAdmin, logout } = useAuth();
+  const { toast } = useToast();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const logoutMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/logout"),
+    onSuccess: () => {
+      logout();
+      toast({ title: "Logged out successfully" });
+    }
+  });
+
+  const menuItems = isAdmin ? [
+    { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+    { icon: Bot, label: "Bot Instances", path: "/bot-instances" },
+    { icon: Terminal, label: "Commands", path: "/commands" },
+    { icon: Server, label: "Cross-Server Bots", path: "/cross-server-bots" },
+    { icon: Settings, label: "Admin Console", path: "/admin" },
+  ] : [
+    { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+    { icon: Bot, label: "My Bots", path: "/guest/bot-management" },
+  ];
 
   return (
-    <aside className="w-64 bg-card border-r border-border flex flex-col" data-testid="sidebar">
-      <div className="p-6 border-b border-border">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <i className="fab fa-whatsapp text-primary-foreground text-xl"></i>
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">Bot Manager</h1>
-            <p className="text-sm text-muted-foreground">WhatsApp Automation</p>
+    <>
+      {/* Mobile Toggle Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed top-4 left-4 z-50 lg:hidden bg-primary text-primary-foreground p-2 rounded-lg shadow-lg hover:bg-primary/90 transition-colors"
+        aria-label="Toggle menu"
+      >
+        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {/* Overlay for mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-40
+        w-64 bg-card border-r border-border flex flex-col
+        transform transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        <div className="p-4 lg:p-6 border-b border-border">
+          <div className="flex items-center gap-2 lg:gap-3">
+            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-primary rounded-lg flex items-center justify-center">
+              <Bot className="w-5 h-5 lg:w-6 lg:h-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-base lg:text-lg font-bold text-foreground">TREKKER-MD</h1>
+              <p className="text-xs text-muted-foreground">Bot Manager</p>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <nav className="flex-1 p-4 space-y-2">
-        {/* Show different navigation items based on user role */}
-        {(isAdmin ? adminNavigationItems : guestNavigationItems).map((item) => (
-          <Link key={item.href} href={item.href}>
-            <div
-              className={cn(
-                "flex items-center space-x-3 px-3 py-2 rounded-md transition-colors cursor-pointer",
-                location === item.href
-                  ? "bg-primary/10 text-primary border border-primary/20"
-                  : "hover:bg-muted text-muted-foreground hover:text-foreground"
-              )}
-              data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
-            >
-              <i className={`${item.icon} w-5`}></i>
-              <span>{item.label}</span>
-            </div>
-          </Link>
-        ))}
-        
-        {/* Guest Bot Management */}
-        {!isAdmin && (
-          <>
-            <div className="border-t border-border my-4"></div>
-            <div className="space-y-3">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3">
-                My Bots
-              </h3>
-              <GuestBotSearch />
-            </div>
-          </>
-        )}
 
-        {/* Session ID Tools */}
-        {!isAdmin && !isAuthenticated && (
-          <>
-            <div className="border-t border-border my-4"></div>
-            
-            {/* Generate Session ID Button */}
-            <Button 
-              onClick={() => window.open('https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/', '_blank')}
-              variant="outline"
-              className="w-full mx-3 mb-3"
-              data-testid="button-generate-session"
-            >
-              <i className="fas fa-key mr-2"></i>
-              Generate Session ID
-            </Button>
-            
-            {/* Validate Session ID Button */}
-            <Button 
-              onClick={() => setShowValidateModal(true)}
-              variant="outline"
-              className="w-full mx-3 mb-3"
-              data-testid="button-validate-session"
-            >
-              <i className="fas fa-check-circle mr-2"></i>
-              Validate Session ID
-            </Button>
-            
-            {/* Register Bot Button */}
-            <Button 
-              onClick={() => setShowGuestRegistration(true)}
-              className="w-full mx-3 bg-green-600 hover:bg-green-700 text-white"
-              data-testid="sidebar-register-bot"
-            >
-              <i className="fas fa-plus mr-2"></i>
-              Register Bot
-            </Button>
-          </>
-        )}
-        
-        {/* Admin Console navigation */}
-        {isAdmin && (
-          <>
-            <div className="border-t border-border my-4"></div>
-            <div className="px-3 py-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Administration
-              </p>
-            </div>
-            {adminConsoleItems.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <div
-                  className={cn(
-                    "flex items-center space-x-3 px-3 py-2 rounded-md transition-colors cursor-pointer",
-                    location === item.href
-                      ? "bg-red-500/10 text-red-600 border border-red-500/20"
-                      : "hover:bg-red-500/5 text-muted-foreground hover:text-red-600"
-                  )}
-                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+        <nav className="flex-1 p-3 lg:p-4 space-y-1 lg:space-y-2 overflow-y-auto">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location === item.path;
+            return (
+              <Link key={item.path} href={item.path}>
+                <a
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg transition-colors ${
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
                 >
-                  <i className={`${item.icon} w-5`}></i>
-                  <span>{item.label}</span>
-                </div>
+                  <Icon className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
+                  <span className="font-medium text-sm lg:text-base">{item.label}</span>
+                </a>
               </Link>
-            ))}
-          </>
-        )}
-      </nav>
-      
-      <div className="p-4 border-t border-border">
-        {isAuthenticated ? (
-          <div className="flex items-center space-x-3 px-3 py-2">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-              <i className="fas fa-user text-primary-foreground text-sm"></i>
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">{user?.username || 'User'}</p>
-              <p className="text-xs text-muted-foreground">{isAdmin ? 'Administrator' : 'User'}</p>
-            </div>
-            <button 
-              onClick={logout}
-              className="text-muted-foreground hover:text-foreground" 
-              data-testid="button-logout"
-              title="Logout"
-            >
-              <i className="fas fa-sign-out-alt"></i>
-            </button>
+            );
+          })}
+        </nav>
+
+        <div className="p-3 lg:p-4 border-t border-border">
+          <div className="mb-3 lg:mb-4 p-2.5 lg:p-3 bg-muted rounded-lg">
+            <p className="text-sm font-medium text-foreground truncate">{user?.username || 'Guest'}</p>
+            <p className="text-xs text-muted-foreground">
+              {isAdmin ? 'Administrator' : 'Guest User'}
+            </p>
           </div>
-        ) : (
-          <Button 
-            onClick={() => setShowLoginModal(true)}
-            className="w-full"
+          <Button
+            onClick={() => {
+              logoutMutation.mutate();
+              setIsOpen(false);
+            }}
+            disabled={logoutMutation.isPending}
+            variant="outline"
+            className="w-full text-sm lg:text-base"
           >
-            <i className="fas fa-sign-in-alt mr-2"></i>
-            Admin Login
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
           </Button>
-        )}
-      </div>
-      
-      <LoginModal 
-        isOpen={showLoginModal} 
-        onClose={() => setShowLoginModal(false)}
-        onLogin={(token, user) => {
-          // The login is handled by the useAuth hook
-          setShowLoginModal(false);
-        }} 
-      />
-      
-      <ValidateCredentialsModal 
-        isOpen={showValidateModal} 
-        onClose={() => setShowValidateModal(false)}
-      />
-      
-      <GuestBotRegistration 
-        open={showGuestRegistration} 
-        onClose={() => setShowGuestRegistration(false)} 
-      />
-    </aside>
+        </div>
+      </aside>
+    </>
   );
 }
