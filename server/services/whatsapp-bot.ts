@@ -476,10 +476,10 @@ export class WhatsAppBot {
       // Log message for debugging
       console.log(`Bot ${this.botInstance.name}: Processing message - Text: "${messageText}", FromMe: ${message.key.fromMe}, IsCommand: ${isCommand}`);
 
-      // Skip messages from the bot itself ONLY if they're not commands
-      // This allows the bot owner to execute commands from their own number
+      // UNIVERSAL RULE: Skip messages from the bot itself ONLY if they're not commands
+      // This applies to ALL bots (current and future) - allows bot owner to execute commands
       if (message.key.fromMe && !isCommand) {
-        console.log(`Bot ${this.botInstance.name}: Skipping own message (not a command)`);
+        console.log(`Bot ${this.botInstance.name}: Skipping own non-command message (applies to all bots)`);
         return;
       }
 
