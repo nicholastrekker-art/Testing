@@ -962,6 +962,304 @@ commandRegistry.register({
 });
 
 commandRegistry.register({
+  name: 'horny',
+  aliases: ['hot', 'spicy'],
+  description: 'Animated horny emoji sequence',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { client, from } = context;
+    const hornyEmojis = ['💦', '🔥', '💦', '🥵', '💦', '🍆', '🍑', '💦', '💯'];
+    
+    const sentMsg = await client.sendMessage(from, { text: hornyEmojis[0] });
+    
+    for (let i = 1; i < hornyEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: hornyEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    // Final message - just the last emoji
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: hornyEmojis[hornyEmojis.length - 1],
+      edit: sentMsg.key
+    });
+  }
+});
+
+commandRegistry.register({
+  name: 'fuck',
+  aliases: ['wtf', 'damn'],
+  description: 'Animated fuck emoji sequence',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { client, from } = context;
+    const fuckEmojis = ['🖕', '😤', '🤬', '💢', '😡', '🔥', '💥', '🖕'];
+    
+    const sentMsg = await client.sendMessage(from, { text: fuckEmojis[0] });
+    
+    for (let i = 1; i < fuckEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: fuckEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: fuckEmojis[fuckEmojis.length - 1],
+      edit: sentMsg.key
+    });
+  }
+});
+
+commandRegistry.register({
+  name: 'kiss',
+  aliases: ['smooch', 'kisses'],
+  description: 'Animated kiss emoji sequence',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { client, from } = context;
+    const kissEmojis = ['😘', '💋', '😗', '💕', '😚', '💖', '😙', '💋'];
+    
+    const sentMsg = await client.sendMessage(from, { text: kissEmojis[0] });
+    
+    for (let i = 1; i < kissEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: kissEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: kissEmojis[kissEmojis.length - 1],
+      edit: sentMsg.key
+    });
+  }
+});
+
+commandRegistry.register({
+  name: 'party',
+  aliases: ['celebrate', 'fiesta'],
+  description: 'Animated party emoji sequence',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { client, from } = context;
+    const partyEmojis = ['🎉', '🥳', '🎊', '🍾', '🎈', '🎆', '🎇', '✨', '🎉'];
+    
+    const sentMsg = await client.sendMessage(from, { text: partyEmojis[0] });
+    
+    for (let i = 1; i < partyEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: partyEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: partyEmojis[partyEmojis.length - 1],
+      edit: sentMsg.key
+    });
+  }
+});
+
+commandRegistry.register({
+  name: 'crazy',
+  aliases: ['insane', 'wild'],
+  description: 'Animated crazy emoji sequence',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { client, from } = context;
+    const crazyEmojis = ['🤪', '😜', '🤯', '😵', '🥴', '🤡', '👻', '🤪'];
+    
+    const sentMsg = await client.sendMessage(from, { text: crazyEmojis[0] });
+    
+    for (let i = 1; i < crazyEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: crazyEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: crazyEmojis[crazyEmojis.length - 1],
+      edit: sentMsg.key
+    });
+  }
+});
+
+commandRegistry.register({
+  name: 'cool',
+  aliases: ['chill', 'swag'],
+  description: 'Animated cool emoji sequence',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { client, from } = context;
+    const coolEmojis = ['😎', '🕶️', '🆒', '💯', '🔥', '✨', '⭐', '😎'];
+    
+    const sentMsg = await client.sendMessage(from, { text: coolEmojis[0] });
+    
+    for (let i = 1; i < coolEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: coolEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: coolEmojis[coolEmojis.length - 1],
+      edit: sentMsg.key
+    });
+  }
+});
+
+commandRegistry.register({
+  name: 'skull',
+  aliases: ['dead', 'lmao'],
+  description: 'Animated skull emoji sequence',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { client, from } = context;
+    const skullEmojis = ['💀', '☠️', '😂', '🤣', '💀', '😵', '👻', '💀'];
+    
+    const sentMsg = await client.sendMessage(from, { text: skullEmojis[0] });
+    
+    for (let i = 1; i < skullEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: skullEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: skullEmojis[skullEmojis.length - 1],
+      edit: sentMsg.key
+    });
+  }
+});
+
+commandRegistry.register({
+  name: 'evil',
+  aliases: ['devil', 'demon'],
+  description: 'Animated evil emoji sequence',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { client, from } = context;
+    const evilEmojis = ['😈', '👿', '🔥', '💀', '👹', '👺', '🖤', '😈'];
+    
+    const sentMsg = await client.sendMessage(from, { text: evilEmojis[0] });
+    
+    for (let i = 1; i < evilEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: evilEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: evilEmojis[evilEmojis.length - 1],
+      edit: sentMsg.key
+    });
+  }
+});
+
+commandRegistry.register({
+  name: 'vomit',
+  aliases: ['puke', 'sick'],
+  description: 'Animated vomit emoji sequence',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { client, from } = context;
+    const vomitEmojis = ['🤢', '🤮', '🤧', '😷', '🤒', '🤕', '💚', '🤮'];
+    
+    const sentMsg = await client.sendMessage(from, { text: vomitEmojis[0] });
+    
+    for (let i = 1; i < vomitEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: vomitEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: vomitEmojis[vomitEmojis.length - 1],
+      edit: sentMsg.key
+    });
+  }
+});
+
+commandRegistry.register({
+  name: 'money',
+  aliases: ['rich', 'cash'],
+  description: 'Animated money emoji sequence',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { client, from } = context;
+    const moneyEmojis = ['💰', '💵', '💴', '💶', '💷', '💸', '🤑', '💰'];
+    
+    const sentMsg = await client.sendMessage(from, { text: moneyEmojis[0] });
+    
+    for (let i = 1; i < moneyEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: moneyEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: moneyEmojis[moneyEmojis.length - 1],
+      edit: sentMsg.key
+    });
+  }
+});
+
+commandRegistry.register({
+  name: 'flex',
+  aliases: ['strong', 'muscle'],
+  description: 'Animated flex emoji sequence',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { client, from } = context;
+    const flexEmojis = ['💪', '🦾', '💯', '🔥', '😤', '👑', '⚡', '💪'];
+    
+    const sentMsg = await client.sendMessage(from, { text: flexEmojis[0] });
+    
+    for (let i = 1; i < flexEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: flexEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: flexEmojis[flexEmojis.length - 1],
+      edit: sentMsg.key
+    });
+  }
+});
+
+commandRegistry.register({
   name: 'truth',
   aliases: ['truthgame'],
   description: 'Get a truth question',
