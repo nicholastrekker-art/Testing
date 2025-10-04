@@ -8,19 +8,22 @@ import {
   LogOut,
   Server,
   Menu,
-  X
+  X,
+  LogIn
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { LoginModal } from "@/components/login-modal";
 
 export default function Sidebar() {
   const [location] = useLocation();
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, logout, login } = useAuth();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const logoutMutation = useMutation({
     mutationFn: () => apiRequest("POST", "/api/logout"),
@@ -108,19 +111,43 @@ export default function Sidebar() {
               {isAdmin ? 'Administrator' : 'Guest User'}
             </p>
           </div>
-          <Button
-            onClick={() => {
-              logoutMutation.mutate();
-              setIsOpen(false);
-            }}
-            disabled={logoutMutation.isPending}
-            variant="outline"
-            className="w-full text-sm lg:text-base"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
+          {user ? (
+            <Button
+              onClick={() => {
+                logoutMutation.mutate();
+                setIsOpen(false);
+              }}
+              disabled={logoutMutation.isPending}
+              variant="outline"
+              className="w-full text-sm lg:text-base"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          ) : (
+            <Button
+              onClick={() => {
+                setShowLoginModal(true);
+                setIsOpen(false);
+              }}
+              variant="default"
+              className="w-full text-sm lg:text-base"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              Admin Login
+            </Button>
+          )}
         </div>
+      </aside>
+
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLogin={(token, user) => {
+          login(token, user);
+          setShowLoginModal(false);
+        }}
+      />
       </aside>
     </>
   );
