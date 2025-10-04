@@ -106,7 +106,8 @@ export function OfferManagement() {
     return new Date(dateString).toLocaleString();
   };
 
-  const envOfferEnabled = process.env.OFFER?.toLowerCase() === 'true';
+  // Note: Offer feature availability is determined by the server
+  const offerFeatureAvailable = offerStatus?.isActive !== undefined;
 
   return (
     <div className="space-y-6">
@@ -121,30 +122,28 @@ export function OfferManagement() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Environment Variable Status */}
+          {/* Offer Feature Status */}
           <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-blue-800 dark:text-blue-200" data-testid="text-env-status">
-                  Environment Variable: OFFER
+                  Promotional Offer Feature
                 </p>
                 <p className="text-sm text-blue-700 dark:text-blue-300" data-testid="text-env-value">
-                  Current Value: {envOfferEnabled ? "true" : "false"}
+                  Status: {offerFeatureAvailable ? "Available" : "Loading..."}
                 </p>
               </div>
               <Badge 
-                variant={envOfferEnabled ? "default" : "outline"}
-                className={envOfferEnabled ? "bg-green-500" : ""}
+                variant={offerFeatureAvailable ? "default" : "outline"}
+                className={offerFeatureAvailable ? "bg-green-500" : ""}
                 data-testid="badge-env-status"
               >
-                {envOfferEnabled ? "Enabled" : "Disabled"}
+                {offerFeatureAvailable ? "Ready" : "Loading"}
               </Badge>
             </div>
-            {!envOfferEnabled && (
-              <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-2" data-testid="text-env-warning">
-                ⚠️ Set OFFER=true in environment variables to enable promotional offers
-              </p>
-            )}
+            <p className="text-sm text-blue-700 dark:text-blue-300 mt-2" data-testid="text-env-warning">
+              ℹ️ Configure offer duration and activate promotional auto-approval below
+            </p>
           </div>
 
           {/* Current Offer Status */}
@@ -231,7 +230,7 @@ export function OfferManagement() {
             <div className="flex gap-2">
               <Button
                 onClick={handleActivateOffer}
-                disabled={!envOfferEnabled || updateOfferMutation.isPending || offerStatus?.isActive}
+                disabled={!offerFeatureAvailable || updateOfferMutation.isPending || offerStatus?.isActive}
                 className="flex-1"
                 data-testid="button-activate-offer"
               >
