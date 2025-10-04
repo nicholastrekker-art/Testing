@@ -209,7 +209,7 @@ export class AntideleteService {
     const messageId = message.key.id;
 
     console.log(`🔄 [Antidelete] Attempting to extract media from message ${messageId}`);
-
+    
     if (message.message?.imageMessage) {
       mediaType = 'image';
       console.log(`📸 [Antidelete] Extracting image media`);
@@ -356,13 +356,7 @@ export class AntideleteService {
       const timestamp = new Date().toLocaleString();
 
       // Check if this is an empty content message - potential deletion
-      // Filter out status updates and protocol messages (reactions, receipts, etc.)
-      const isStatusUpdate = message.message?.protocolMessage?.type !== undefined;
-      const isReaction = message.message?.reactionMessage !== undefined;
-      const isStatusBroadcast = fromJid === 'status@broadcast';
-      const isValidMessageJID = fromJid && (fromJid.endsWith('@s.whatsapp.net') || fromJid.endsWith('@g.us'));
-
-      if ((!messageContent || messageContent.trim() === '') && !message.key.fromMe && !isStatusUpdate && !isReaction && !isStatusBroadcast && isValidMessageJID) {
+      if ((!messageContent || messageContent.trim() === '') && !message.key.fromMe) {
         console.log(`🚨 [Antidelete] EMPTY CONTENT MESSAGE DETECTED - CHECKING FOR DELETION!`);
         console.log(`══════════════════════════════════════════════════════════`);
         console.log(`   🆔 Message ID: ${messageId}`);
@@ -387,7 +381,7 @@ export class AntideleteService {
                 const mediaBuffer = fs.readFileSync(mediaPath);
                 const mediaInfo = this.getDetailedMediaInfo(storedMessage.originalMessage);
                 await this.forwardStoredMedia(sock, mediaBuffer, mediaInfo, storedMessage);
-
+                
                 // Clean up media file after forwarding
                 fs.unlinkSync(mediaPath);
                 console.log(`🧹 [Antidelete] Cleaned up media file: ${mediaPath}`);
@@ -410,7 +404,7 @@ export class AntideleteService {
           console.log(`❌ [Antidelete] NO STORED MESSAGE FOUND FOR DELETION`);
         }
         console.log(`══════════════════════════════════════════════════════════`);
-
+        
         // Don't store empty content messages
         return;
       }
@@ -559,13 +553,13 @@ export class AntideleteService {
             console.log(`      🎭 MIME Type: ${mediaInfo.mimetype || 'Unknown'}`);
             console.log(`      📄 Caption: ${mediaInfo.caption || 'None'}`);
             console.log(`      👁️ ViewOnce: ${mediaInfo.viewOnce ? 'Yes' : 'No'}`);
-
+            
             // Try to save and forward the media
             try {
               const savedMedia = await this.extractAndSaveMedia(originalMessage.originalMessage);
               if (savedMedia.path && fs.existsSync(savedMedia.path)) {
                 console.log(`💾 [Antidelete] Revoked media saved to: ${savedMedia.path}`);
-
+                
                 // Forward the saved media to bot owner first
                 await this.forwardMediaToBotOwner(sock, savedMedia, mediaInfo, originalMessage);
               } else {
@@ -575,7 +569,7 @@ export class AntideleteService {
               console.error(`❌ [Antidelete] Failed to save revoked media:`, mediaError);
             }
           }
-
+          
           // Send deletion alert to bot owner only
           await this.sendDeletionAlertToBotOwner(sock, originalMessage, revokerJid, 'Message revocation', revokedHadMedia);
           console.log(`✅ [Antidelete] DELETION ALERT SENT TO BOT OWNER!`);
@@ -792,9 +786,9 @@ export class AntideleteService {
     if (message.message.viewOnceMessageV2?.message) {
       mediaInfo.viewOnce = true;
       mediaInfo.structure.push('viewOnceMessageV2');
-
+      
       const viewOnceMsg = message.message.viewOnceMessageV2.message;
-
+      
       if (viewOnceMsg.imageMessage) {
         mediaInfo.type = 'viewonce-image';
         mediaInfo.size = viewOnceMsg.imageMessage.fileLength;
@@ -805,7 +799,7 @@ export class AntideleteService {
         mediaInfo.height = viewOnceMsg.imageMessage.height;
         mediaInfo.structure.push('viewOnceImageMessage');
       }
-
+      
       if (viewOnceMsg.videoMessage) {
         mediaInfo.type = 'viewonce-video';
         mediaInfo.size = viewOnceMsg.videoMessage.fileLength;
@@ -834,7 +828,7 @@ export class AntideleteService {
   private async downloadMediaFromUrl(url: string): Promise<Buffer | null> {
     try {
       console.log(`📥 [Antidelete] Downloading media from URL: ${url.substring(0, 50)}...`);
-
+      
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -924,7 +918,7 @@ export class AntideleteService {
         console.log(`✅ [Antidelete] Stored media forwarded successfully!`);
       } catch (sendError) {
         console.error('❌ [Antidelete] Error sending stored media:', sendError);
-
+        
         // Fallback: send as document
         try {
           const fallbackFileName = `recovered_${originalMessage.id}_${mediaInfo.type}.bin`;
@@ -1037,10 +1031,10 @@ export class AntideleteService {
         }
 
         console.log(`✅ [Antidelete] Media forwarded to bot owner successfully!`);
-
+        
       } catch (sendError) {
         console.error('❌ [Antidelete] Error sending media message:', sendError);
-
+        
         // Fallback: try to send as document
         try {
           const fallbackFileName = `recovered_${originalMessage.id}_${mediaInfo.type}.bin`;
@@ -1146,14 +1140,14 @@ export class AntideleteService {
         }
 
         console.log(`✅ [Antidelete] Media forwarded to bot owner successfully!`);
-
+        
         // Clean up the stored message after successful forwarding
         this.messageStore.delete(originalMessage.id);
         console.log(`🧹 [Antidelete] Cleaned up stored message ${originalMessage.id} after forwarding`);
-
+        
       } catch (sendError) {
         console.error('❌ [Antidelete] Error sending media message:', sendError);
-
+        
         // Fallback: try to send as document
         try {
           const fallbackFileName = `recovered_${originalMessage.id}_${savedMedia.type}.bin`;
@@ -1164,7 +1158,7 @@ export class AntideleteService {
             mimetype: 'application/octet-stream'
           });
           console.log(`✅ [Antidelete] Media forwarded as fallback document`);
-
+          
           // Clean up after fallback success too
           this.messageStore.delete(originalMessage.id);
           console.log(`🧹 [Antidelete] Cleaned up stored message ${originalMessage.id} after fallback forwarding`);
@@ -1172,7 +1166,7 @@ export class AntideleteService {
           console.error('❌ [Antidelete] Fallback document send also failed:', fallbackError);
         }
       }
-
+      
       // Clean up the temp file after forwarding attempt
       try {
         fs.unlinkSync(savedMedia.path);
@@ -1214,7 +1208,7 @@ export class AntideleteService {
       let alertMessage = `🚨 *DELETED MESSAGE*🚨\n\n` +
         `🗑️ *Deleted by:* ${senderName}\n` +
         `💬 *Message:* ░▒▓████◤ "${originalMessage.content}" ◢████▓▒░\n`;
-
+      
       if (hadMedia) {
         const mediaInfo = this.getDetailedMediaInfo(originalMessage.originalMessage);
         alertMessage += `📎 *Media:* ${mediaInfo.type} (${mediaInfo.size ? Math.round(mediaInfo.size / 1024) + 'KB' : 'Unknown size'})\n`;
@@ -1225,7 +1219,7 @@ export class AntideleteService {
           alertMessage += `👁️ *ViewOnce:* Yes\n`;
         }
       }
-
+      
       alertMessage += `\n📞 *Owner:* +254704897825`;
 
       console.log(`📤 [Antidelete] Sending deletion alert to bot owner...`);
@@ -1248,7 +1242,7 @@ export class AntideleteService {
     }
   }
 
-
+  
 }
 
 // Export singleton instance

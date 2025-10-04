@@ -274,7 +274,7 @@ const upload = multer({
 // This function was causing downtime by stopping all bots unnecessarily.
 // Cross-server registrations now work properly without server context switching.
 
-export async function registerRoutes(app: Express): Server {
+export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
   // WebSocket setup for real-time updates
@@ -1406,10 +1406,9 @@ export async function registerRoutes(app: Express): Server {
         serverName: getServerName()
       });
 
-      // Automatically start the bot after approval (ALL approved bots will be automatically started and monitored)
+      // Automatically start the bot after approval
       try {
-        console.log(`🚀 AUTO-START POLICY: Starting newly approved bot ${bot.name} (${bot.id})...`);
-        console.log(`   📋 ALL approved bots will be automatically started and monitored`);
+        console.log(`Auto-starting approved bot ${bot.name} (${bot.id})...`);
         await botManager.startBot(id);
 
         // Wait a moment for the bot to initialize before sending notification
@@ -1833,7 +1832,7 @@ export async function registerRoutes(app: Express): Server {
       if (feature === 'typingIndicator') {
         updateData.typingMode = enabled ? 'typing' : 'none';
       } else {
-        updateData[dbField] = enabled;
+        updateData[feature] = enabled;
       }
 
       // Also update settings.features

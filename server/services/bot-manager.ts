@@ -13,17 +13,14 @@ class BotManager {
   }
 
   // Clear all container data for a bot (like first deployment)
-  private clearBotSessionFiles(botId: string, serverName?: string) {
-    // Use serverName from the bot instance if available
-    const tenantPath = serverName || 'default-server';
-    const authDir = join(process.cwd(), 'auth', tenantPath, `bot_${botId}`);
+  private clearBotSessionFiles(botId: string) {
+    const authDir = join(process.cwd(), 'auth', `bot_${botId}`);
     
     if (existsSync(authDir)) {
       try {
         rmSync(authDir, { recursive: true, force: true });
-        console.log(`🧹 Cleared session files for bot ${botId} in tenant ${tenantPath}`);
       } catch (error) {
-        console.error(`Failed to clear session files for bot ${botId}:`, error);
+        // Silent error handling
       }
     }
   }
@@ -61,7 +58,7 @@ class BotManager {
         throw new Error(`Bot with ID ${botId} not found`);
       }
 
-      // AUTO-START POLICY: Only approved bots are auto-started (applies to ALL approved bots)
+      // Only approved bots should be auto-started
       if (botInstance.approvalStatus !== 'approved') {
         console.log(`BotManager: Bot ${botId} is not approved, skipping auto-start`);
         return;
@@ -74,12 +71,11 @@ class BotManager {
         this.bots.delete(botId);
       }
 
-      // Always create fresh instance for ALL approved bots (including newly approved ones)
-      console.log(`BotManager: Starting approved bot ${botId} (${botInstance.name}) on server ${botInstance.serverName}`);
-      console.log(`BotManager: AUTO-START POLICY - ALL approved bots will be started and monitored`);
+      // Always create fresh instance for approved bots
+      console.log(`BotManager: Starting approved bot ${botId} (${botInstance.name})`);
       
-      // Clear session files for fresh start (tenant-isolated)
-      this.clearBotSessionFiles(botId, botInstance.serverName);
+      // Clear session files for fresh start
+      this.clearBotSessionFiles(botId);
       
       const newBot = new WhatsAppBot(botInstance);
       this.bots.set(botId, newBot);
@@ -116,13 +112,7 @@ class BotManager {
   async restartBot(botId: string) {
     try {
       const bot = this.bots.get(botId);
-      let serverName: string | undefined;
-      
       if (bot) {
-        // Get serverName before stopping
-        const botInstance = await storage.getBotInstance(botId);
-        serverName = botInstance?.serverName;
-        
         await bot.stop();
         await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds for complete shutdown
         
@@ -130,8 +120,8 @@ class BotManager {
         this.bots.delete(botId);
       }
       
-      // Clear all session files for fresh start (tenant-isolated)
-      this.clearBotSessionFiles(botId, serverName);
+      // Clear all session files for fresh start (like first deployment)
+      this.clearBotSessionFiles(botId);
       
       // Start fresh isolated instance
       await this.startBot(botId);
@@ -143,18 +133,12 @@ class BotManager {
 
   async destroyBot(botId: string) {
     const bot = this.bots.get(botId);
-    let serverName: string | undefined;
-    
     if (bot) {
-      // Get serverName before stopping
-      const botInstance = await storage.getBotInstance(botId);
-      serverName = botInstance?.serverName;
-      
       await bot.stop();
       this.bots.delete(botId);
       
-      // Clear all container data when destroying bot (tenant-isolated)
-      this.clearBotSessionFiles(botId, serverName);
+      // Clear all container data when destroying bot
+      this.clearBotSessionFiles(botId);
     }
   }
 
