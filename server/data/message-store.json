@@ -1,11 +1,11 @@
 {
-  "3EB0D41D8BF97B4DCE427A": {
-    "id": "3EB0D41D8BF97B4DCE427A",
+  "3EB076E04469A7E06D0CF8": {
+    "id": "3EB076E04469A7E06D0CF8",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Treker1 \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1759568430788,
+    "timestamp": 1759568829871,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -20,478 +20,34 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0D41D8BF97B4DCE427A"
+        "id": "3EB076E04469A7E06D0CF8"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Treker1 \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": 1759568430,
+      "messageTimestamp": 1759568829,
       "status": 1
     }
   },
-  "AC6E9493F2E536C353224EDE70428001": {
-    "id": "AC6E9493F2E536C353224EDE70428001",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": ".horny",
-    "type": "conversation",
-    "timestamp": 1759568485916,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "AC6E9493F2E536C353224EDE70428001",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759568485,
-      "pushName": "Team Grill🙃",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "conversation": ".horny"
-      }
-    }
-  },
-  "3EB0662D4123C87F6273B4": {
-    "id": "3EB0662D4123C87F6273B4",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "💦",
-    "type": "extendedTextMessage",
-    "timestamp": 1759568486965,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0662D4123C87F6273B4"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "💦"
-        }
-      },
-      "messageTimestamp": 1759568486,
-      "status": 1
-    }
-  },
-  "3EB0E4AFAF11A57C08F7C6": {
-    "id": "3EB0E4AFAF11A57C08F7C6",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568487284,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0E4AFAF11A57C08F7C6"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB0662D4123C87F6273B4"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "🔥"
-            }
-          },
-          "timestampMs": 1759568486711,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568486,
-      "status": 1
-    }
-  },
-  "3EB0A0803DEB9EE12BA9AB": {
-    "id": "3EB0A0803DEB9EE12BA9AB",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568487741,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0A0803DEB9EE12BA9AB"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB0662D4123C87F6273B4"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "💦"
-            }
-          },
-          "timestampMs": 1759568487072,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568487,
-      "status": 1
-    }
-  },
-  "3EB0832982AD331F371FCB": {
-    "id": "3EB0832982AD331F371FCB",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568488051,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0832982AD331F371FCB"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB0662D4123C87F6273B4"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "🥵"
-            }
-          },
-          "timestampMs": 1759568487440,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568487,
-      "status": 1
-    }
-  },
-  "3EB00F9564CA97B0E6AFFC": {
-    "id": "3EB00F9564CA97B0E6AFFC",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568488451,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB00F9564CA97B0E6AFFC"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB0662D4123C87F6273B4"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "💦"
-            }
-          },
-          "timestampMs": 1759568487821,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568487,
-      "status": 1
-    }
-  },
-  "3EB0D407114F9356B20CD6": {
-    "id": "3EB0D407114F9356B20CD6",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568488842,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0D407114F9356B20CD6"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB0662D4123C87F6273B4"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "🍆"
-            }
-          },
-          "timestampMs": 1759568488180,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568488,
-      "status": 1
-    }
-  },
-  "3EB073E479528CC6222AAB": {
-    "id": "3EB073E479528CC6222AAB",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568489164,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB073E479528CC6222AAB"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB0662D4123C87F6273B4"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "🍑"
-            }
-          },
-          "timestampMs": 1759568488538,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568488,
-      "status": 1
-    }
-  },
-  "3EB0C7D1530B57A1A2664A": {
-    "id": "3EB0C7D1530B57A1A2664A",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568489489,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0C7D1530B57A1A2664A"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB0662D4123C87F6273B4"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "💦"
-            }
-          },
-          "timestampMs": 1759568488901,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568488,
-      "status": 1
-    }
-  },
-  "3EB0C6FB90F731B94D9836": {
-    "id": "3EB0C6FB90F731B94D9836",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568489934,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0C6FB90F731B94D9836"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB0662D4123C87F6273B4"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "💯"
-            }
-          },
-          "timestampMs": 1759568489258,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568489,
-      "status": 1
-    }
-  },
-  "3EB0FFEE9C424B96B86E52": {
-    "id": "3EB0FFEE9C424B96B86E52",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568490217,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0FFEE9C424B96B86E52"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB0662D4123C87F6273B4"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "💯"
-            }
-          },
-          "timestampMs": 1759568489632,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568489,
-      "status": 1
-    }
-  },
-  "ACC7CE3FA4609AC509CF2CAEDBAEE74B": {
-    "id": "ACC7CE3FA4609AC509CF2CAEDBAEE74B",
+  "AC0B32780FB135CC1C2B0B1BD02B7695": {
+    "id": "AC0B32780FB135CC1C2B0B1BD02B7695",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": ".fuck",
     "type": "conversation",
-    "timestamp": 1759568499878,
+    "timestamp": 1759568844683,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "remoteJidAlt": "280234452607229@lid",
         "fromMe": true,
-        "id": "ACC7CE3FA4609AC509CF2CAEDBAEE74B",
+        "id": "AC0B32780FB135CC1C2B0B1BD02B7695",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1759568499,
+      "messageTimestamp": 1759568844,
       "pushName": "Team Grill🙃",
       "broadcast": false,
       "status": 2,
@@ -500,13 +56,13 @@
       }
     }
   },
-  "3EB0BCF2B34F11C11C5B3D": {
-    "id": "3EB0BCF2B34F11C11C5B3D",
+  "3EB0171E09381DF96C5209": {
+    "id": "3EB0171E09381DF96C5209",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "🖕",
     "type": "extendedTextMessage",
-    "timestamp": 1759568500960,
+    "timestamp": 1759568845799,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -521,24 +77,24 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0BCF2B34F11C11C5B3D"
+        "id": "3EB0171E09381DF96C5209"
       },
       "message": {
         "extendedTextMessage": {
           "text": "🖕"
         }
       },
-      "messageTimestamp": 1759568500,
+      "messageTimestamp": 1759568845,
       "status": 1
     }
   },
-  "3EB045E75B0C3E8BBEA6C1": {
-    "id": "3EB045E75B0C3E8BBEA6C1",
+  "3EB0C60C707EECAA45A80E": {
+    "id": "3EB0C60C707EECAA45A80E",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568501321,
+    "timestamp": 1759568846443,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -553,35 +109,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB045E75B0C3E8BBEA6C1"
+        "id": "3EB0C60C707EECAA45A80E"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0BCF2B34F11C11C5B3D"
+            "id": "3EB0171E09381DF96C5209"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "😤"
             }
           },
-          "timestampMs": 1759568500660,
+          "timestampMs": 1759568845715,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568500,
+      "messageTimestamp": 1759568845,
       "status": 1
     }
   },
-  "3EB055C2B1091E567D22C7": {
-    "id": "3EB055C2B1091E567D22C7",
+  "3EB095460101690C2AE1A7": {
+    "id": "3EB095460101690C2AE1A7",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568501688,
+    "timestamp": 1759568847065,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -596,35 +152,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB055C2B1091E567D22C7"
+        "id": "3EB095460101690C2AE1A7"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0BCF2B34F11C11C5B3D"
+            "id": "3EB0171E09381DF96C5209"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "🤬"
             }
           },
-          "timestampMs": 1759568501021,
+          "timestampMs": 1759568846340,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568501,
+      "messageTimestamp": 1759568846,
       "status": 1
     }
   },
-  "3EB0201505282908A155D0": {
-    "id": "3EB0201505282908A155D0",
+  "3EB065ACD6C0E804B83D5A": {
+    "id": "3EB065ACD6C0E804B83D5A",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568502047,
+    "timestamp": 1759568847614,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -639,35 +195,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0201505282908A155D0"
+        "id": "3EB065ACD6C0E804B83D5A"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0BCF2B34F11C11C5B3D"
+            "id": "3EB0171E09381DF96C5209"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "💢"
             }
           },
-          "timestampMs": 1759568501386,
+          "timestampMs": 1759568846964,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568501,
+      "messageTimestamp": 1759568846,
       "status": 1
     }
   },
-  "3EB0D6F12A6C84AEBAE042": {
-    "id": "3EB0D6F12A6C84AEBAE042",
+  "3EB0D3FA36E122F8AC2426": {
+    "id": "3EB0D3FA36E122F8AC2426",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568502314,
+    "timestamp": 1759568848291,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -682,35 +238,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0D6F12A6C84AEBAE042"
+        "id": "3EB0D3FA36E122F8AC2426"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0BCF2B34F11C11C5B3D"
+            "id": "3EB0171E09381DF96C5209"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "😡"
             }
           },
-          "timestampMs": 1759568501747,
+          "timestampMs": 1759568847576,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568501,
+      "messageTimestamp": 1759568847,
       "status": 1
     }
   },
-  "3EB0448C56D6C0569076B9": {
-    "id": "3EB0448C56D6C0569076B9",
+  "3EB069947F7BF9972759D6": {
+    "id": "3EB069947F7BF9972759D6",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568502751,
+    "timestamp": 1759568848905,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -725,35 +281,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0448C56D6C0569076B9"
+        "id": "3EB069947F7BF9972759D6"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0BCF2B34F11C11C5B3D"
+            "id": "3EB0171E09381DF96C5209"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "🔥"
             }
           },
-          "timestampMs": 1759568502110,
+          "timestampMs": 1759568848191,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568502,
+      "messageTimestamp": 1759568848,
       "status": 1
     }
   },
-  "3EB00CDA64C1E4741E7861": {
-    "id": "3EB00CDA64C1E4741E7861",
+  "3EB0308C043BEDB223C4DE": {
+    "id": "3EB0308C043BEDB223C4DE",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568503081,
+    "timestamp": 1759568849524,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -768,35 +324,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB00CDA64C1E4741E7861"
+        "id": "3EB0308C043BEDB223C4DE"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0BCF2B34F11C11C5B3D"
+            "id": "3EB0171E09381DF96C5209"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "💥"
             }
           },
-          "timestampMs": 1759568502484,
+          "timestampMs": 1759568848805,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568502,
+      "messageTimestamp": 1759568848,
       "status": 1
     }
   },
-  "3EB0E92A5A617934C0BA06": {
-    "id": "3EB0E92A5A617934C0BA06",
+  "3EB0D1A0DE72D941DD05B5": {
+    "id": "3EB0D1A0DE72D941DD05B5",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568503511,
+    "timestamp": 1759568850135,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -811,35 +367,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0E92A5A617934C0BA06"
+        "id": "3EB0D1A0DE72D941DD05B5"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0BCF2B34F11C11C5B3D"
+            "id": "3EB0171E09381DF96C5209"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "🖕"
             }
           },
-          "timestampMs": 1759568502852,
+          "timestampMs": 1759568849418,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568502,
+      "messageTimestamp": 1759568849,
       "status": 1
     }
   },
-  "3EB093375DDEDD359262F4": {
-    "id": "3EB093375DDEDD359262F4",
+  "3EB0F3415F473B713E6ED2": {
+    "id": "3EB0F3415F473B713E6ED2",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568503872,
+    "timestamp": 1759568850749,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -854,45 +410,45 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB093375DDEDD359262F4"
+        "id": "3EB0F3415F473B713E6ED2"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0BCF2B34F11C11C5B3D"
+            "id": "3EB0171E09381DF96C5209"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "🖕"
             }
           },
-          "timestampMs": 1759568503214,
+          "timestampMs": 1759568850027,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568503,
+      "messageTimestamp": 1759568850,
       "status": 1
     }
   },
-  "ACAEEBB764AFE7E8B194AE9D3BE3FD53": {
-    "id": "ACAEEBB764AFE7E8B194AE9D3BE3FD53",
+  "AC22570E78F39D1EDBEC87B71399A219": {
+    "id": "AC22570E78F39D1EDBEC87B71399A219",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": ".horny",
     "type": "conversation",
-    "timestamp": 1759568510266,
+    "timestamp": 1759568860240,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "remoteJidAlt": "280234452607229@lid",
         "fromMe": true,
-        "id": "ACAEEBB764AFE7E8B194AE9D3BE3FD53",
+        "id": "AC22570E78F39D1EDBEC87B71399A219",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1759568509,
+      "messageTimestamp": 1759568859,
       "pushName": "Team Grill🙃",
       "broadcast": false,
       "status": 2,
@@ -901,13 +457,13 @@
       }
     }
   },
-  "3EB0B3F37D63F835D419CD": {
-    "id": "3EB0B3F37D63F835D419CD",
+  "3EB0786E2319172DFF1AE9": {
+    "id": "3EB0786E2319172DFF1AE9",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "💦",
     "type": "extendedTextMessage",
-    "timestamp": 1759568511354,
+    "timestamp": 1759568861371,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -922,24 +478,24 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0B3F37D63F835D419CD"
+        "id": "3EB0786E2319172DFF1AE9"
       },
       "message": {
         "extendedTextMessage": {
           "text": "💦"
         }
       },
-      "messageTimestamp": 1759568510,
+      "messageTimestamp": 1759568860,
       "status": 1
     }
   },
-  "3EB03B07E2D7C6C7F22681": {
-    "id": "3EB03B07E2D7C6C7F22681",
+  "3EB05BF3423B0116FCAF27": {
+    "id": "3EB05BF3423B0116FCAF27",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568511631,
+    "timestamp": 1759568861987,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -954,35 +510,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB03B07E2D7C6C7F22681"
+        "id": "3EB05BF3423B0116FCAF27"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B3F37D63F835D419CD"
+            "id": "3EB0786E2319172DFF1AE9"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "🔥"
             }
           },
-          "timestampMs": 1759568511052,
+          "timestampMs": 1759568861269,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568511,
+      "messageTimestamp": 1759568861,
       "status": 1
     }
   },
-  "3EB06CFDC30561F9D8E4F9": {
-    "id": "3EB06CFDC30561F9D8E4F9",
+  "3EB05E9CB3DD20EAB3EF67": {
+    "id": "3EB05E9CB3DD20EAB3EF67",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568512021,
+    "timestamp": 1759568862602,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -997,35 +553,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB06CFDC30561F9D8E4F9"
+        "id": "3EB05E9CB3DD20EAB3EF67"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B3F37D63F835D419CD"
+            "id": "3EB0786E2319172DFF1AE9"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "💦"
             }
           },
-          "timestampMs": 1759568511414,
+          "timestampMs": 1759568861884,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568511,
+      "messageTimestamp": 1759568861,
       "status": 1
     }
   },
-  "3EB0D7DC239D9CF6835B5E": {
-    "id": "3EB0D7DC239D9CF6835B5E",
+  "3EB0754A535E43BFA01FEE": {
+    "id": "3EB0754A535E43BFA01FEE",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568512360,
+    "timestamp": 1759568863217,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1040,35 +596,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0D7DC239D9CF6835B5E"
+        "id": "3EB0754A535E43BFA01FEE"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B3F37D63F835D419CD"
+            "id": "3EB0786E2319172DFF1AE9"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "🥵"
             }
           },
-          "timestampMs": 1759568511774,
+          "timestampMs": 1759568862501,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568511,
+      "messageTimestamp": 1759568862,
       "status": 1
     }
   },
-  "3EB0CDF784FFD4CF59E306": {
-    "id": "3EB0CDF784FFD4CF59E306",
+  "3EB03EF1E6DE8C18F90878": {
+    "id": "3EB03EF1E6DE8C18F90878",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568512791,
+    "timestamp": 1759568863831,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1083,35 +639,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0CDF784FFD4CF59E306"
+        "id": "3EB03EF1E6DE8C18F90878"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B3F37D63F835D419CD"
+            "id": "3EB0786E2319172DFF1AE9"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "💦"
             }
           },
-          "timestampMs": 1759568512139,
+          "timestampMs": 1759568863115,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568512,
+      "messageTimestamp": 1759568863,
       "status": 1
     }
   },
-  "3EB034EC8BEAB37568E306": {
-    "id": "3EB034EC8BEAB37568E306",
+  "3EB04E0D303EB3D3D2C5AD": {
+    "id": "3EB04E0D303EB3D3D2C5AD",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568513120,
+    "timestamp": 1759568864439,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1126,35 +682,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB034EC8BEAB37568E306"
+        "id": "3EB04E0D303EB3D3D2C5AD"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B3F37D63F835D419CD"
+            "id": "3EB0786E2319172DFF1AE9"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "🍆"
             }
           },
-          "timestampMs": 1759568512512,
+          "timestampMs": 1759568863727,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568512,
+      "messageTimestamp": 1759568863,
       "status": 1
     }
   },
-  "3EB0AD924842884DF738BD": {
-    "id": "3EB0AD924842884DF738BD",
+  "3EB0A520C64A2DD8FA1DE0": {
+    "id": "3EB0A520C64A2DD8FA1DE0",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568513511,
+    "timestamp": 1759568865057,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1169,35 +725,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0AD924842884DF738BD"
+        "id": "3EB0A520C64A2DD8FA1DE0"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B3F37D63F835D419CD"
+            "id": "3EB0786E2319172DFF1AE9"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "🍑"
             }
           },
-          "timestampMs": 1759568512871,
+          "timestampMs": 1759568864338,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568512,
+      "messageTimestamp": 1759568864,
       "status": 1
     }
   },
-  "3EB0C1F0610C8DFA9FEAEA": {
-    "id": "3EB0C1F0610C8DFA9FEAEA",
+  "3EB0095B6927360120986B": {
+    "id": "3EB0095B6927360120986B",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568513821,
+    "timestamp": 1759568865662,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1212,35 +768,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0C1F0610C8DFA9FEAEA"
+        "id": "3EB0095B6927360120986B"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B3F37D63F835D419CD"
+            "id": "3EB0786E2319172DFF1AE9"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "💦"
             }
           },
-          "timestampMs": 1759568513237,
+          "timestampMs": 1759568864954,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568513,
+      "messageTimestamp": 1759568864,
       "status": 1
     }
   },
-  "3EB075F754DD61C5C139ED": {
-    "id": "3EB075F754DD61C5C139ED",
+  "3EB02F34778727E48A6E13": {
+    "id": "3EB02F34778727E48A6E13",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568514256,
+    "timestamp": 1759568866278,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1255,35 +811,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB075F754DD61C5C139ED"
+        "id": "3EB02F34778727E48A6E13"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B3F37D63F835D419CD"
+            "id": "3EB0786E2319172DFF1AE9"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "💯"
             }
           },
-          "timestampMs": 1759568513611,
+          "timestampMs": 1759568865562,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568513,
+      "messageTimestamp": 1759568865,
       "status": 1
     }
   },
-  "3EB05D2BC8C45B293D8B4A": {
-    "id": "3EB05D2BC8C45B293D8B4A",
+  "3EB01EE79E6DD3B1FED7AC": {
+    "id": "3EB01EE79E6DD3B1FED7AC",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568514648,
+    "timestamp": 1759568866684,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1298,60 +854,60 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB05D2BC8C45B293D8B4A"
+        "id": "3EB01EE79E6DD3B1FED7AC"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B3F37D63F835D419CD"
+            "id": "3EB0786E2319172DFF1AE9"
           },
           "editedMessage": {
             "extendedTextMessage": {
               "text": "💯"
             }
           },
-          "timestampMs": 1759568513972,
+          "timestampMs": 1759568865977,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568513,
+      "messageTimestamp": 1759568865,
       "status": 1
     }
   },
-  "ACBEF59A934BF352A53DC855C2F21FE4": {
-    "id": "ACBEF59A934BF352A53DC855C2F21FE4",
+  "ACF3CF75962BD62C7861C16069B97CE3": {
+    "id": "ACF3CF75962BD62C7861C16069B97CE3",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": ".flex",
+    "content": ".hack",
     "type": "conversation",
-    "timestamp": 1759568518807,
+    "timestamp": 1759568896276,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "remoteJidAlt": "280234452607229@lid",
         "fromMe": true,
-        "id": "ACBEF59A934BF352A53DC855C2F21FE4",
+        "id": "ACF3CF75962BD62C7861C16069B97CE3",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1759568518,
+      "messageTimestamp": 1759568895,
       "pushName": "Team Grill🙃",
       "broadcast": false,
       "status": 2,
       "message": {
-        "conversation": ".flex"
+        "conversation": ".hack"
       }
     }
   },
-  "3EB02A4B48B89538217154": {
-    "id": "3EB02A4B48B89538217154",
+  "3EB0F635912244AA2C1B06": {
+    "id": "3EB0F635912244AA2C1B06",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": "💪",
+    "content": "❌ Please mention or reply to someone to hack!",
     "type": "extendedTextMessage",
-    "timestamp": 1759568519882,
+    "timestamp": 1759568897408,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1366,393 +922,62 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB02A4B48B89538217154"
+        "id": "3EB0F635912244AA2C1B06"
       },
       "message": {
         "extendedTextMessage": {
-          "text": "💪"
+          "text": "❌ Please mention or reply to someone to hack!"
         }
       },
-      "messageTimestamp": 1759568519,
+      "messageTimestamp": 1759568896,
       "status": 1
     }
   },
-  "3EB03BFA5274FA0F4F7F91": {
-    "id": "3EB03BFA5274FA0F4F7F91",
+  "ACAE44C00752886E61578D9E4D7517D6": {
+    "id": "ACAE44C00752886E61578D9E4D7517D6",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568520250,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB03BFA5274FA0F4F7F91"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB02A4B48B89538217154"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "🦾"
-            }
-          },
-          "timestampMs": 1759568519582,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568519,
-      "status": 1
-    }
-  },
-  "3EB0C20CFFD9CA79EB77F9": {
-    "id": "3EB0C20CFFD9CA79EB77F9",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568520619,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0C20CFFD9CA79EB77F9"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB02A4B48B89538217154"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "💯"
-            }
-          },
-          "timestampMs": 1759568519949,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568519,
-      "status": 1
-    }
-  },
-  "3EB020A85EDF2D35809072": {
-    "id": "3EB020A85EDF2D35809072",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568520978,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB020A85EDF2D35809072"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB02A4B48B89538217154"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "🔥"
-            }
-          },
-          "timestampMs": 1759568520318,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568520,
-      "status": 1
-    }
-  },
-  "3EB043D5FB138AF6B14D3A": {
-    "id": "3EB043D5FB138AF6B14D3A",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568521350,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB043D5FB138AF6B14D3A"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB02A4B48B89538217154"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "😤"
-            }
-          },
-          "timestampMs": 1759568520678,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568520,
-      "status": 1
-    }
-  },
-  "3EB06BFFA54827F2D1001A": {
-    "id": "3EB06BFFA54827F2D1001A",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568521660,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB06BFFA54827F2D1001A"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB02A4B48B89538217154"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "👑"
-            }
-          },
-          "timestampMs": 1759568521046,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568521,
-      "status": 1
-    }
-  },
-  "3EB08988FCD89E1D7183F3": {
-    "id": "3EB08988FCD89E1D7183F3",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568522068,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB08988FCD89E1D7183F3"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB02A4B48B89538217154"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "⚡"
-            }
-          },
-          "timestampMs": 1759568521407,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568521,
-      "status": 1
-    }
-  },
-  "3EB0939F8042D7AAE7DBFF": {
-    "id": "3EB0939F8042D7AAE7DBFF",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568522390,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0939F8042D7AAE7DBFF"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB02A4B48B89538217154"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "💪"
-            }
-          },
-          "timestampMs": 1759568521767,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568521,
-      "status": 1
-    }
-  },
-  "3EB0714122ADCBD15F6A0F": {
-    "id": "3EB0714122ADCBD15F6A0F",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1759568522798,
-    "originalMessage": {
-      "messageStubParameters": [],
-      "labels": [],
-      "userReceipt": [],
-      "reactions": [],
-      "pollUpdates": [],
-      "eventResponses": [],
-      "statusMentions": [],
-      "messageAddOns": [],
-      "statusMentionSources": [],
-      "supportAiCitations": [],
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0714122ADCBD15F6A0F"
-      },
-      "message": {
-        "protocolMessage": {
-          "key": {
-            "remoteJid": "254799257758@s.whatsapp.net",
-            "fromMe": true,
-            "id": "3EB02A4B48B89538217154"
-          },
-          "editedMessage": {
-            "extendedTextMessage": {
-              "text": "💪"
-            }
-          },
-          "timestampMs": 1759568522131,
-          "type": 14
-        }
-      },
-      "messageTimestamp": 1759568522,
-      "status": 1
-    }
-  },
-  "ACFCD5E1CE886D054AF4A8E77D92E1CB": {
-    "id": "ACFCD5E1CE886D054AF4A8E77D92E1CB",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": ".party",
-    "type": "conversation",
-    "timestamp": 1759568554869,
+    "content": "\"❌ Please mention or reply to someone to hack!\"\n.hack",
+    "type": "extendedTextMessage",
+    "timestamp": 1759568909315,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "remoteJidAlt": "280234452607229@lid",
         "fromMe": true,
-        "id": "ACFCD5E1CE886D054AF4A8E77D92E1CB",
+        "id": "ACAE44C00752886E61578D9E4D7517D6",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1759568554,
+      "messageTimestamp": 1759568908,
       "pushName": "Team Grill🙃",
       "broadcast": false,
       "status": 2,
       "message": {
-        "conversation": ".party"
+        "extendedTextMessage": {
+          "text": ".hack",
+          "previewType": 0,
+          "contextInfo": {
+            "mentionedJid": [],
+            "groupMentions": [],
+            "stanzaId": "3EB0F635912244AA2C1B06",
+            "participant": "254799257758@s.whatsapp.net",
+            "quotedMessage": {
+              "conversation": "❌ Please mention or reply to someone to hack!"
+            }
+          },
+          "inviteLinkGroupTypeV2": 0
+        }
       }
     }
   },
-  "3EB0B05A74FD5AEE34BAAC": {
-    "id": "3EB0B05A74FD5AEE34BAAC",
+  "3EB0E57A33919B0E8DAE5E": {
+    "id": "3EB0E57A33919B0E8DAE5E",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": "🎉",
+    "content": "🔐 Initializing hack...",
     "type": "extendedTextMessage",
-    "timestamp": 1759568555949,
+    "timestamp": 1759568910452,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1767,24 +992,24 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0B05A74FD5AEE34BAAC"
+        "id": "3EB0E57A33919B0E8DAE5E"
       },
       "message": {
         "extendedTextMessage": {
-          "text": "🎉"
+          "text": "🔐 Initializing hack..."
         }
       },
-      "messageTimestamp": 1759568555,
+      "messageTimestamp": 1759568909,
       "status": 1
     }
   },
-  "3EB0DE336EA148E49D688E": {
-    "id": "3EB0DE336EA148E49D688E",
+  "3EB0DE8BDC1183E3F44334": {
+    "id": "3EB0DE8BDC1183E3F44334",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568556313,
+    "timestamp": 1759568911076,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1799,35 +1024,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0DE336EA148E49D688E"
+        "id": "3EB0DE8BDC1183E3F44334"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B05A74FD5AEE34BAAC"
+            "id": "3EB0E57A33919B0E8DAE5E"
           },
           "editedMessage": {
             "extendedTextMessage": {
-              "text": "🥳"
+              "text": "📡 Connecting to server..."
             }
           },
-          "timestampMs": 1759568555648,
+          "timestampMs": 1759568910351,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568555,
+      "messageTimestamp": 1759568910,
       "status": 1
     }
   },
-  "3EB0EDCF46AFAB1444FCAA": {
-    "id": "3EB0EDCF46AFAB1444FCAA",
+  "3EB05D816E2C079D49062F": {
+    "id": "3EB05D816E2C079D49062F",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568556671,
+    "timestamp": 1759568911695,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1842,35 +1067,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0EDCF46AFAB1444FCAA"
+        "id": "3EB05D816E2C079D49062F"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B05A74FD5AEE34BAAC"
+            "id": "3EB0E57A33919B0E8DAE5E"
           },
           "editedMessage": {
             "extendedTextMessage": {
-              "text": "🎊"
+              "text": "💻 Bypassing firewall..."
             }
           },
-          "timestampMs": 1759568556013,
+          "timestampMs": 1759568910973,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568556,
+      "messageTimestamp": 1759568910,
       "status": 1
     }
   },
-  "3EB0E6D15DDE2CB425655D": {
-    "id": "3EB0E6D15DDE2CB425655D",
+  "3EB0AAB1AB19AE9E208861": {
+    "id": "3EB0AAB1AB19AE9E208861",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568557029,
+    "timestamp": 1759568912306,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1885,35 +1110,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0E6D15DDE2CB425655D"
+        "id": "3EB0AAB1AB19AE9E208861"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B05A74FD5AEE34BAAC"
+            "id": "3EB0E57A33919B0E8DAE5E"
           },
           "editedMessage": {
             "extendedTextMessage": {
-              "text": "🍾"
+              "text": "🔓 Accessing database..."
             }
           },
-          "timestampMs": 1759568556369,
+          "timestampMs": 1759568911592,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568556,
+      "messageTimestamp": 1759568911,
       "status": 1
     }
   },
-  "3EB0F7B241D223C4E3B492": {
-    "id": "3EB0F7B241D223C4E3B492",
+  "3EB02CD30DFDC7354587C3": {
+    "id": "3EB02CD30DFDC7354587C3",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568557383,
+    "timestamp": 1759568912919,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1928,35 +1153,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0F7B241D223C4E3B492"
+        "id": "3EB02CD30DFDC7354587C3"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B05A74FD5AEE34BAAC"
+            "id": "3EB0E57A33919B0E8DAE5E"
           },
           "editedMessage": {
             "extendedTextMessage": {
-              "text": "🎈"
+              "text": "👤 Target: +254799257758"
             }
           },
-          "timestampMs": 1759568556727,
+          "timestampMs": 1759568912205,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568556,
+      "messageTimestamp": 1759568912,
       "status": 1
     }
   },
-  "3EB08A8574043C39F21730": {
-    "id": "3EB08A8574043C39F21730",
+  "3EB06C23D6D97E0AD35CAC": {
+    "id": "3EB06C23D6D97E0AD35CAC",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568557671,
+    "timestamp": 1759568913521,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -1971,35 +1196,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB08A8574043C39F21730"
+        "id": "3EB06C23D6D97E0AD35CAC"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B05A74FD5AEE34BAAC"
+            "id": "3EB0E57A33919B0E8DAE5E"
           },
           "editedMessage": {
             "extendedTextMessage": {
-              "text": "🎆"
+              "text": "🔍 Scanning device..."
             }
           },
-          "timestampMs": 1759568557096,
+          "timestampMs": 1759568912817,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568557,
+      "messageTimestamp": 1759568912,
       "status": 1
     }
   },
-  "3EB078879D40CEF28D3E27": {
-    "id": "3EB078879D40CEF28D3E27",
+  "3EB020F24A65BF59BFD79B": {
+    "id": "3EB020F24A65BF59BFD79B",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568558103,
+    "timestamp": 1759568914134,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -2014,35 +1239,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB078879D40CEF28D3E27"
+        "id": "3EB020F24A65BF59BFD79B"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B05A74FD5AEE34BAAC"
+            "id": "3EB0E57A33919B0E8DAE5E"
           },
           "editedMessage": {
             "extendedTextMessage": {
-              "text": "🎇"
+              "text": "📱 Device: WhatsApp Client"
             }
           },
-          "timestampMs": 1759568557458,
+          "timestampMs": 1759568913420,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568557,
+      "messageTimestamp": 1759568913,
       "status": 1
     }
   },
-  "3EB020869A87C4E3E83405": {
-    "id": "3EB020869A87C4E3E83405",
+  "3EB097C856C763B2A169D8": {
+    "id": "3EB097C856C763B2A169D8",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568558432,
+    "timestamp": 1759568914746,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -2057,35 +1282,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB020869A87C4E3E83405"
+        "id": "3EB097C856C763B2A169D8"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B05A74FD5AEE34BAAC"
+            "id": "3EB0E57A33919B0E8DAE5E"
           },
           "editedMessage": {
             "extendedTextMessage": {
-              "text": "✨"
+              "text": "⚙️ OS: Android/iOS"
             }
           },
-          "timestampMs": 1759568557824,
+          "timestampMs": 1759568914032,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568557,
+      "messageTimestamp": 1759568914,
       "status": 1
     }
   },
-  "3EB0AF4B84B8F84317AC39": {
-    "id": "3EB0AF4B84B8F84317AC39",
+  "3EB06C9CA730E42AEF9C26": {
+    "id": "3EB06C9CA730E42AEF9C26",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568558854,
+    "timestamp": 1759568915352,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -2100,35 +1325,35 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0AF4B84B8F84317AC39"
+        "id": "3EB06C9CA730E42AEF9C26"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B05A74FD5AEE34BAAC"
+            "id": "3EB0E57A33919B0E8DAE5E"
           },
           "editedMessage": {
             "extendedTextMessage": {
-              "text": "🎉"
+              "text": "🌐 IP: 192.168.1.195"
             }
           },
-          "timestampMs": 1759568558187,
+          "timestampMs": 1759568914646,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568558,
+      "messageTimestamp": 1759568914,
       "status": 1
     }
   },
-  "3EB0BC3D42B1E5A3E3B736": {
-    "id": "3EB0BC3D42B1E5A3E3B736",
+  "3EB00EDD05D627A339CF54": {
+    "id": "3EB00EDD05D627A339CF54",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1759568559147,
+    "timestamp": 1759568915967,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -2143,25 +1368,3209 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0BC3D42B1E5A3E3B736"
+        "id": "3EB00EDD05D627A339CF54"
       },
       "message": {
         "protocolMessage": {
           "key": {
             "remoteJid": "254799257758@s.whatsapp.net",
             "fromMe": true,
-            "id": "3EB0B05A74FD5AEE34BAAC"
+            "id": "3EB0E57A33919B0E8DAE5E"
           },
           "editedMessage": {
             "extendedTextMessage": {
-              "text": "🎉"
+              "text": "📊 Gathering data..."
             }
           },
-          "timestampMs": 1759568558554,
+          "timestampMs": 1759568915251,
           "type": 14
         }
       },
-      "messageTimestamp": 1759568558,
+      "messageTimestamp": 1759568915,
+      "status": 1
+    }
+  },
+  "3EB0DFF6245E25724A7F3C": {
+    "id": "3EB0DFF6245E25724A7F3C",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568916968,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0DFF6245E25724A7F3C"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💾 Extracting messages... 15%"
+            }
+          },
+          "timestampMs": 1759568916166,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568916,
+      "status": 1
+    }
+  },
+  "3EB01910B1565FB178622B": {
+    "id": "3EB01910B1565FB178622B",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568917874,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB01910B1565FB178622B"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💾 Extracting messages... 47%"
+            }
+          },
+          "timestampMs": 1759568917165,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568917,
+      "status": 1
+    }
+  },
+  "3EB09C841F2D1DB35FE9BA": {
+    "id": "3EB09C841F2D1DB35FE9BA",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568918800,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB09C841F2D1DB35FE9BA"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💾 Extracting messages... 89%"
+            }
+          },
+          "timestampMs": 1759568918073,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568918,
+      "status": 1
+    }
+  },
+  "3EB03BCD99AB04EA7AFDC0": {
+    "id": "3EB03BCD99AB04EA7AFDC0",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568919712,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB03BCD99AB04EA7AFDC0"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💾 Extracting messages... 100%"
+            }
+          },
+          "timestampMs": 1759568918999,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568918,
+      "status": 1
+    }
+  },
+  "3EB045672BCC102D551590": {
+    "id": "3EB045672BCC102D551590",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568920329,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB045672BCC102D551590"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "📷 Accessing camera..."
+            }
+          },
+          "timestampMs": 1759568919611,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568919,
+      "status": 1
+    }
+  },
+  "3EB0B067F8541BCB67181B": {
+    "id": "3EB0B067F8541BCB67181B",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568920952,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0B067F8541BCB67181B"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🎤 Accessing microphone..."
+            }
+          },
+          "timestampMs": 1759568920227,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568920,
+      "status": 1
+    }
+  },
+  "3EB01AA3A21365FA2C9624": {
+    "id": "3EB01AA3A21365FA2C9624",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568921552,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB01AA3A21365FA2C9624"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "📍 Location tracked: [REDACTED]"
+            }
+          },
+          "timestampMs": 1759568920851,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568920,
+      "status": 1
+    }
+  },
+  "3EB09B6CCE9AD665B722E8": {
+    "id": "3EB09B6CCE9AD665B722E8",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568922162,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB09B6CCE9AD665B722E8"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🔑 Password: ********"
+            }
+          },
+          "timestampMs": 1759568921452,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568921,
+      "status": 1
+    }
+  },
+  "3EB00FF26A4B715AF0FCF2": {
+    "id": "3EB00FF26A4B715AF0FCF2",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568922775,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB00FF26A4B715AF0FCF2"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💳 Bank details: [ENCRYPTED]"
+            }
+          },
+          "timestampMs": 1759568922061,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568922,
+      "status": 1
+    }
+  },
+  "3EB03270AE975D8C9E82C2": {
+    "id": "3EB03270AE975D8C9E82C2",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568923885,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB03270AE975D8C9E82C2"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "⚠️ SYSTEM BREACH DETECTED!"
+            }
+          },
+          "timestampMs": 1759568923175,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568923,
+      "status": 1
+    }
+  },
+  "3EB0C22D0A0AB8EFA2D0DE": {
+    "id": "3EB0C22D0A0AB8EFA2D0DE",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568924991,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0C22D0A0AB8EFA2D0DE"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🚨 FBI ALERT: ILLEGAL ACCESS"
+            }
+          },
+          "timestampMs": 1759568924282,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568924,
+      "status": 1
+    }
+  },
+  "3EB0627969DFA012B01B5A": {
+    "id": "3EB0627969DFA012B01B5A",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568925601,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0627969DFA012B01B5A"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "❌ CONNECTION TERMINATED"
+            }
+          },
+          "timestampMs": 1759568924887,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568924,
+      "status": 1
+    }
+  },
+  "3EB0C0AD4A7BFA3CB616BB": {
+    "id": "3EB0C0AD4A7BFA3CB616BB",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568926207,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0C0AD4A7BFA3CB616BB"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": ""
+            }
+          },
+          "timestampMs": 1759568925499,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568925,
+      "status": 1
+    }
+  },
+  "3EB0A55373FFAC56FD595B": {
+    "id": "3EB0A55373FFAC56FD595B",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568927809,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0A55373FFAC56FD595B"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "😂 Just kidding! You've been pranked! 😂"
+            }
+          },
+          "timestampMs": 1759568927102,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568927,
+      "status": 1
+    }
+  },
+  "3EB041B18C51A8D7892A4A": {
+    "id": "3EB041B18C51A8D7892A4A",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568928442,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB041B18C51A8D7892A4A"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB0E57A33919B0E8DAE5E"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🎭 @254799257758 is safe... for now! 😈",
+              "contextInfo": {
+                "mentionedJid": [
+                  "254799257758@s.whatsapp.net"
+                ]
+              }
+            }
+          },
+          "timestampMs": 1759568927708,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568927,
+      "status": 1
+    }
+  },
+  "ACF40B2A205D81F64D0E01F0E5DF39CB": {
+    "id": "ACF40B2A205D81F64D0E01F0E5DF39CB",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".hack",
+    "type": "conversation",
+    "timestamp": 1759568944292,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJidAlt": "280234452607229@lid",
+        "fromMe": true,
+        "id": "ACF40B2A205D81F64D0E01F0E5DF39CB",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1759568943,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".hack"
+      }
+    }
+  },
+  "3EB03BF083320B0A6F03B6": {
+    "id": "3EB03BF083320B0A6F03B6",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "❌ Please mention or reply to someone to hack!",
+    "type": "extendedTextMessage",
+    "timestamp": 1759568945425,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB03BF083320B0A6F03B6"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "❌ Please mention or reply to someone to hack!"
+        }
+      },
+      "messageTimestamp": 1759568944,
+      "status": 1
+    }
+  },
+  "ACAF52FF3CE782E0DEDA39E0A079CAC0": {
+    "id": "ACAF52FF3CE782E0DEDA39E0A079CAC0",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "\"❌ Please mention or reply to someone to hack!\"\n.hack",
+    "type": "extendedTextMessage",
+    "timestamp": 1759568955211,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJidAlt": "280234452607229@lid",
+        "fromMe": true,
+        "id": "ACAF52FF3CE782E0DEDA39E0A079CAC0",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1759568954,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "extendedTextMessage": {
+          "text": ".hack",
+          "previewType": 0,
+          "contextInfo": {
+            "mentionedJid": [],
+            "groupMentions": [],
+            "stanzaId": "3EB03BF083320B0A6F03B6",
+            "participant": "254799257758@s.whatsapp.net",
+            "quotedMessage": {
+              "conversation": "❌ Please mention or reply to someone to hack!"
+            }
+          },
+          "inviteLinkGroupTypeV2": 0
+        }
+      }
+    }
+  },
+  "3EB01732DED13E1F913DEB": {
+    "id": "3EB01732DED13E1F913DEB",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🔐 Initializing hack...",
+    "type": "extendedTextMessage",
+    "timestamp": 1759568956347,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB01732DED13E1F913DEB"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "🔐 Initializing hack..."
+        }
+      },
+      "messageTimestamp": 1759568955,
+      "status": 1
+    }
+  },
+  "3EB07F6199BB3C2E39BEB9": {
+    "id": "3EB07F6199BB3C2E39BEB9",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568956969,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB07F6199BB3C2E39BEB9"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "📡 Connecting to server..."
+            }
+          },
+          "timestampMs": 1759568956246,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568956,
+      "status": 1
+    }
+  },
+  "3EB0DDF93947314B99F4EA": {
+    "id": "3EB0DDF93947314B99F4EA",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568957581,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0DDF93947314B99F4EA"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💻 Bypassing firewall..."
+            }
+          },
+          "timestampMs": 1759568956869,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568956,
+      "status": 1
+    }
+  },
+  "3EB055AE1EB45111EA30FF": {
+    "id": "3EB055AE1EB45111EA30FF",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568958202,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB055AE1EB45111EA30FF"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🔓 Accessing database..."
+            }
+          },
+          "timestampMs": 1759568957479,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568957,
+      "status": 1
+    }
+  },
+  "3EB0007F0FFE0D1F369180": {
+    "id": "3EB0007F0FFE0D1F369180",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568958805,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0007F0FFE0D1F369180"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "👤 Target: +254799257758"
+            }
+          },
+          "timestampMs": 1759568958094,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568958,
+      "status": 1
+    }
+  },
+  "3EB09359BDC286C1A3B6A7": {
+    "id": "3EB09359BDC286C1A3B6A7",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568959423,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB09359BDC286C1A3B6A7"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🔍 Scanning device..."
+            }
+          },
+          "timestampMs": 1759568958704,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568958,
+      "status": 1
+    }
+  },
+  "3EB0E66F0024EE0CF489C1": {
+    "id": "3EB0E66F0024EE0CF489C1",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568960033,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0E66F0024EE0CF489C1"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "📱 Device: WhatsApp Client"
+            }
+          },
+          "timestampMs": 1759568959322,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568959,
+      "status": 1
+    }
+  },
+  "3EB01933F153549EFCCD6B": {
+    "id": "3EB01933F153549EFCCD6B",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568960642,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB01933F153549EFCCD6B"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "⚙️ OS: Android/iOS"
+            }
+          },
+          "timestampMs": 1759568959932,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568959,
+      "status": 1
+    }
+  },
+  "3EB04FA450CA8C0CD560AC": {
+    "id": "3EB04FA450CA8C0CD560AC",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568961273,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB04FA450CA8C0CD560AC"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🌐 IP: 192.168.1.170"
+            }
+          },
+          "timestampMs": 1759568960540,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568960,
+      "status": 1
+    }
+  },
+  "3EB0C4EEB45425D5C7438A": {
+    "id": "3EB0C4EEB45425D5C7438A",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568961879,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0C4EEB45425D5C7438A"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "📊 Gathering data..."
+            }
+          },
+          "timestampMs": 1759568961169,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568961,
+      "status": 1
+    }
+  },
+  "3EB0BE0B9E9AF3BA64E43E": {
+    "id": "3EB0BE0B9E9AF3BA64E43E",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568962783,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0BE0B9E9AF3BA64E43E"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💾 Extracting messages... 15%"
+            }
+          },
+          "timestampMs": 1759568962078,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568962,
+      "status": 1
+    }
+  },
+  "3EB09B2E94508385A174F2": {
+    "id": "3EB09B2E94508385A174F2",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568963688,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB09B2E94508385A174F2"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💾 Extracting messages... 47%"
+            }
+          },
+          "timestampMs": 1759568962982,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568962,
+      "status": 1
+    }
+  },
+  "3EB05B53C32DA967A365A8": {
+    "id": "3EB05B53C32DA967A365A8",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568964595,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB05B53C32DA967A365A8"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💾 Extracting messages... 89%"
+            }
+          },
+          "timestampMs": 1759568963887,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568963,
+      "status": 1
+    }
+  },
+  "3EB093ADE39C25DE68E370": {
+    "id": "3EB093ADE39C25DE68E370",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568965518,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB093ADE39C25DE68E370"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💾 Extracting messages... 100%"
+            }
+          },
+          "timestampMs": 1759568964793,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568964,
+      "status": 1
+    }
+  },
+  "3EB0683220E51B0873F959": {
+    "id": "3EB0683220E51B0873F959",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568966128,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0683220E51B0873F959"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "📷 Accessing camera..."
+            }
+          },
+          "timestampMs": 1759568965416,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568965,
+      "status": 1
+    }
+  },
+  "3EB05A3F48994F12B5D84C": {
+    "id": "3EB05A3F48994F12B5D84C",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568966741,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB05A3F48994F12B5D84C"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🎤 Accessing microphone..."
+            }
+          },
+          "timestampMs": 1759568966028,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568966,
+      "status": 1
+    }
+  },
+  "3EB0699A9E79E3B2B4BAC5": {
+    "id": "3EB0699A9E79E3B2B4BAC5",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568967282,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0699A9E79E3B2B4BAC5"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "📍 Location tracked: [REDACTED]"
+            }
+          },
+          "timestampMs": 1759568966636,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568966,
+      "status": 1
+    }
+  },
+  "3EB09DC86EC55BBCA353DF": {
+    "id": "3EB09DC86EC55BBCA353DF",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568967955,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB09DC86EC55BBCA353DF"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🔑 Password: ********"
+            }
+          },
+          "timestampMs": 1759568967243,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568967,
+      "status": 1
+    }
+  },
+  "3EB0C3B196BAEAB2819503": {
+    "id": "3EB0C3B196BAEAB2819503",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568968569,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0C3B196BAEAB2819503"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💳 Bank details: [ENCRYPTED]"
+            }
+          },
+          "timestampMs": 1759568967854,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568967,
+      "status": 1
+    }
+  },
+  "3EB0364A84708BF499D25A": {
+    "id": "3EB0364A84708BF499D25A",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568969671,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0364A84708BF499D25A"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "⚠️ SYSTEM BREACH DETECTED!"
+            }
+          },
+          "timestampMs": 1759568968966,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568968,
+      "status": 1
+    }
+  },
+  "3EB08A63777E215CB6A3E4": {
+    "id": "3EB08A63777E215CB6A3E4",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568970783,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB08A63777E215CB6A3E4"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🚨 FBI ALERT: ILLEGAL ACCESS"
+            }
+          },
+          "timestampMs": 1759568970071,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568970,
+      "status": 1
+    }
+  },
+  "3EB0A612F4B829857F17D7": {
+    "id": "3EB0A612F4B829857F17D7",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568971399,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0A612F4B829857F17D7"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "❌ CONNECTION TERMINATED"
+            }
+          },
+          "timestampMs": 1759568970684,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568970,
+      "status": 1
+    }
+  },
+  "3EB0F2E3D2CCBF669C0E92": {
+    "id": "3EB0F2E3D2CCBF669C0E92",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568972010,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0F2E3D2CCBF669C0E92"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": ""
+            }
+          },
+          "timestampMs": 1759568971297,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568971,
+      "status": 1
+    }
+  },
+  "3EB01482D69BFEC32E6B78": {
+    "id": "3EB01482D69BFEC32E6B78",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568973614,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB01482D69BFEC32E6B78"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "😂 Just kidding! You've been pranked! 😂"
+            }
+          },
+          "timestampMs": 1759568972910,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568972,
+      "status": 1
+    }
+  },
+  "3EB026E8AEEEE66FAFBB69": {
+    "id": "3EB026E8AEEEE66FAFBB69",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759568974224,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB026E8AEEEE66FAFBB69"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "254799257758@s.whatsapp.net",
+            "fromMe": true,
+            "id": "3EB01732DED13E1F913DEB"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🎭 @254799257758 is safe... for now! 😈",
+              "contextInfo": {
+                "mentionedJid": [
+                  "254799257758@s.whatsapp.net"
+                ]
+              }
+            }
+          },
+          "timestampMs": 1759568973514,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759568973,
+      "status": 1
+    }
+  },
+  "AC5944E51D2AFC12D9FDAE7AB7B9541D": {
+    "id": "AC5944E51D2AFC12D9FDAE7AB7B9541D",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": ".hack",
+    "type": "unknown",
+    "timestamp": 1759568994444,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "AC5944E51D2AFC12D9FDAE7AB7B9541D",
+        "participant": "280234452607229@lid",
+        "addressingMode": "lid"
+      },
+      "messageTimestamp": 1759568993,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "senderKeyDistributionMessage": {
+          "groupId": "120363404795599832@g.us",
+          "axolotlSenderKeyDistributionMessage": {
+            "type": "Buffer",
+            "data": [
+              51,
+              8,
+              236,
+              229,
+              222,
+              192,
+              3,
+              16,
+              56,
+              26,
+              32,
+              235,
+              3,
+              204,
+              107,
+              217,
+              182,
+              104,
+              193,
+              253,
+              50,
+              102,
+              64,
+              201,
+              106,
+              129,
+              165,
+              36,
+              45,
+              134,
+              97,
+              69,
+              246,
+              31,
+              236,
+              110,
+              41,
+              225,
+              47,
+              72,
+              89,
+              8,
+              20,
+              34,
+              33,
+              5,
+              195,
+              16,
+              182,
+              130,
+              216,
+              145,
+              176,
+              36,
+              243,
+              180,
+              14,
+              166,
+              74,
+              118,
+              100,
+              137,
+              186,
+              29,
+              183,
+              98,
+              173,
+              195,
+              247,
+              80,
+              24,
+              7,
+              96,
+              248,
+              71,
+              52,
+              179,
+              99
+            ]
+          }
+        },
+        "messageContextInfo": {
+          "messageSecret": {
+            "type": "Buffer",
+            "data": [
+              171,
+              86,
+              117,
+              164,
+              149,
+              35,
+              97,
+              154,
+              117,
+              3,
+              170,
+              176,
+              43,
+              231,
+              26,
+              171,
+              252,
+              8,
+              4,
+              59,
+              172,
+              191,
+              210,
+              204,
+              122,
+              63,
+              43,
+              217,
+              250,
+              127,
+              3,
+              53
+            ]
+          }
+        },
+        "extendedTextMessage": {
+          "text": ".hack",
+          "previewType": 0,
+          "contextInfo": {
+            "mentionedJid": [],
+            "groupMentions": [],
+            "expiration": 7776000,
+            "disappearingMode": {
+              "initiator": 0,
+              "trigger": 0
+            }
+          },
+          "inviteLinkGroupTypeV2": 0
+        }
+      }
+    }
+  },
+  "3EB085E752C8E4D9CED182": {
+    "id": "3EB085E752C8E4D9CED182",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "❌ Please mention or reply to someone to hack!",
+    "type": "extendedTextMessage",
+    "timestamp": 1759568995815,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB085E752C8E4D9CED182"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "❌ Please mention or reply to someone to hack!"
+        }
+      },
+      "messageTimestamp": 1759568994,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "AC70397023F1FB1105686E2EC849AEE1": {
+    "id": "AC70397023F1FB1105686E2EC849AEE1",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "\"❌ Please mention or reply to someone to hack!\"\n.hack",
+    "type": "unknown",
+    "timestamp": 1759569003166,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "AC70397023F1FB1105686E2EC849AEE1",
+        "participant": "280234452607229@lid",
+        "addressingMode": "lid"
+      },
+      "messageTimestamp": 1759569002,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "extendedTextMessage": {
+          "text": ".hack",
+          "previewType": 0,
+          "contextInfo": {
+            "mentionedJid": [],
+            "groupMentions": [],
+            "stanzaId": "3EB085E752C8E4D9CED182",
+            "participant": "254799257758@s.whatsapp.net",
+            "quotedMessage": {
+              "conversation": "❌ Please mention or reply to someone to hack!"
+            },
+            "expiration": 7776000,
+            "disappearingMode": {
+              "initiator": 0,
+              "trigger": 0
+            }
+          },
+          "inviteLinkGroupTypeV2": 0
+        },
+        "messageContextInfo": {
+          "messageSecret": {
+            "type": "Buffer",
+            "data": [
+              139,
+              73,
+              151,
+              5,
+              10,
+              216,
+              184,
+              252,
+              58,
+              134,
+              192,
+              110,
+              143,
+              176,
+              13,
+              136,
+              149,
+              184,
+              171,
+              236,
+              63,
+              121,
+              201,
+              148,
+              30,
+              28,
+              235,
+              159,
+              74,
+              246,
+              7,
+              13
+            ]
+          }
+        }
+      }
+    }
+  },
+  "3EB0E8EDFEF09BD956FD78": {
+    "id": "3EB0E8EDFEF09BD956FD78",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "🔐 Initializing hack...",
+    "type": "extendedTextMessage",
+    "timestamp": 1759569004230,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB0E8EDFEF09BD956FD78"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "🔐 Initializing hack..."
+        }
+      },
+      "messageTimestamp": 1759569003,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB08769B07B2FBB30515D": {
+    "id": "3EB08769B07B2FBB30515D",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569004946,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB08769B07B2FBB30515D"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "📡 Connecting to server..."
+            }
+          },
+          "timestampMs": 1759569004221,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569004,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB0CC9D60CEB95D7B64DA": {
+    "id": "3EB0CC9D60CEB95D7B64DA",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569005578,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB0CC9D60CEB95D7B64DA"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💻 Bypassing firewall..."
+            }
+          },
+          "timestampMs": 1759569004846,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569004,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB020177D3FF77C4C3D05": {
+    "id": "3EB020177D3FF77C4C3D05",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569006243,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB020177D3FF77C4C3D05"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🔓 Accessing database..."
+            }
+          },
+          "timestampMs": 1759569005477,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569005,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB0E2DDBC9990580E5392": {
+    "id": "3EB0E2DDBC9990580E5392",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569006860,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB0E2DDBC9990580E5392"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "👤 Target: +254799257758"
+            }
+          },
+          "timestampMs": 1759569006140,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569006,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB0447BA6B7DD785ED394": {
+    "id": "3EB0447BA6B7DD785ED394",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569007480,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB0447BA6B7DD785ED394"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🔍 Scanning device..."
+            }
+          },
+          "timestampMs": 1759569006757,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569006,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB0C84B7AAC46BCB9C903": {
+    "id": "3EB0C84B7AAC46BCB9C903",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569008094,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB0C84B7AAC46BCB9C903"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "📱 Device: WhatsApp Client"
+            }
+          },
+          "timestampMs": 1759569007379,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569007,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB07E044945B345F65732": {
+    "id": "3EB07E044945B345F65732",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569008710,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB07E044945B345F65732"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "⚙️ OS: Android/iOS"
+            }
+          },
+          "timestampMs": 1759569007992,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569007,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB063BF956843F47181F4": {
+    "id": "3EB063BF956843F47181F4",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569009331,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB063BF956843F47181F4"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🌐 IP: 192.168.1.215"
+            }
+          },
+          "timestampMs": 1759569008610,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569008,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB0E806E92A6D6197F94C": {
+    "id": "3EB0E806E92A6D6197F94C",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569009952,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB0E806E92A6D6197F94C"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "📊 Gathering data..."
+            }
+          },
+          "timestampMs": 1759569009229,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569009,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB0DFECC89F64C6025D01": {
+    "id": "3EB0DFECC89F64C6025D01",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569010878,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB0DFECC89F64C6025D01"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💾 Extracting messages... 15%"
+            }
+          },
+          "timestampMs": 1759569010152,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569010,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB094A27DD132437B6BFF": {
+    "id": "3EB094A27DD132437B6BFF",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569011806,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB094A27DD132437B6BFF"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💾 Extracting messages... 47%"
+            }
+          },
+          "timestampMs": 1759569011077,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569011,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB04BC0A16CB61B408C28": {
+    "id": "3EB04BC0A16CB61B408C28",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569012733,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB04BC0A16CB61B408C28"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💾 Extracting messages... 89%"
+            }
+          },
+          "timestampMs": 1759569012005,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569012,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB005ACDBBCB33F845773": {
+    "id": "3EB005ACDBBCB33F845773",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569013646,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB005ACDBBCB33F845773"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💾 Extracting messages... 100%"
+            }
+          },
+          "timestampMs": 1759569012930,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569012,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB09E6ACC60A2079A8C9D": {
+    "id": "3EB09E6ACC60A2079A8C9D",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569014198,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB09E6ACC60A2079A8C9D"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "📷 Accessing camera..."
+            }
+          },
+          "timestampMs": 1759569013543,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569013,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB0AB060BA50F1C095A58": {
+    "id": "3EB0AB060BA50F1C095A58",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569014883,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB0AB060BA50F1C095A58"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🎤 Accessing microphone..."
+            }
+          },
+          "timestampMs": 1759569014165,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569014,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB05CB3EB5AC66498D9A8": {
+    "id": "3EB05CB3EB5AC66498D9A8",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569015507,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB05CB3EB5AC66498D9A8"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "📍 Location tracked: [REDACTED]"
+            }
+          },
+          "timestampMs": 1759569014782,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569014,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB008FF52E9A4902AACD7": {
+    "id": "3EB008FF52E9A4902AACD7",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569016128,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB008FF52E9A4902AACD7"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🔑 Password: ********"
+            }
+          },
+          "timestampMs": 1759569015406,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569015,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB0C45B4F539D51D1B721": {
+    "id": "3EB0C45B4F539D51D1B721",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569016754,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB0C45B4F539D51D1B721"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "💳 Bank details: [ENCRYPTED]"
+            }
+          },
+          "timestampMs": 1759569016027,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569016,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB04DDB0C96E9C528069B": {
+    "id": "3EB04DDB0C96E9C528069B",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569017873,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB04DDB0C96E9C528069B"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "⚠️ SYSTEM BREACH DETECTED!"
+            }
+          },
+          "timestampMs": 1759569017153,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569017,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB051B22FF85E71E092A0": {
+    "id": "3EB051B22FF85E71E092A0",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569018995,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB051B22FF85E71E092A0"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🚨 FBI ALERT: ILLEGAL ACCESS"
+            }
+          },
+          "timestampMs": 1759569018273,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569018,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB06FD8B43EEA0C792550": {
+    "id": "3EB06FD8B43EEA0C792550",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569019616,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB06FD8B43EEA0C792550"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "❌ CONNECTION TERMINATED"
+            }
+          },
+          "timestampMs": 1759569018894,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569018,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB07FF119841B7BD75875": {
+    "id": "3EB07FF119841B7BD75875",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569020232,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB07FF119841B7BD75875"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": ""
+            }
+          },
+          "timestampMs": 1759569019515,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569019,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB0FA3F2F3A5E9E26A2FC": {
+    "id": "3EB0FA3F2F3A5E9E26A2FC",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569021853,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB0FA3F2F3A5E9E26A2FC"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "😂 Just kidding! You've been pranked! 😂"
+            }
+          },
+          "timestampMs": 1759569021131,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569021,
+      "participant": "254799257758:33@s.whatsapp.net",
+      "status": 1
+    }
+  },
+  "3EB02498E72872B476FB2F": {
+    "id": "3EB02498E72872B476FB2F",
+    "fromJid": "120363404795599832@g.us",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1759569022406,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "120363404795599832@g.us",
+        "fromMe": true,
+        "id": "3EB02498E72872B476FB2F"
+      },
+      "message": {
+        "protocolMessage": {
+          "key": {
+            "remoteJid": "120363404795599832@g.us",
+            "fromMe": true,
+            "id": "3EB0E8EDFEF09BD956FD78"
+          },
+          "editedMessage": {
+            "extendedTextMessage": {
+              "text": "🎭 @254799257758 is safe... for now! 😈",
+              "contextInfo": {
+                "mentionedJid": [
+                  "254799257758@s.whatsapp.net"
+                ]
+              }
+            }
+          },
+          "timestampMs": 1759569021752,
+          "type": 14
+        }
+      },
+      "messageTimestamp": 1759569021,
+      "participant": "254799257758:33@s.whatsapp.net",
       "status": 1
     }
   }
