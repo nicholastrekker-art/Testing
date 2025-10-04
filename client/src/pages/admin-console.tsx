@@ -9,12 +9,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Play, Square, Trash2, Shield, Activity, Bot, Users, BarChart3, LogOut } from "lucide-react";
+import { Play, Square, Trash2, Shield, Activity, Bot, Users, BarChart3, LogOut, Gift } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import type { BotInstance, Activity as ActivityType } from "@shared/schema";
 import MasterControlPanel from "@/components/master-control-panel";
 import ServerConfigModal from "@/components/server-config-modal";
 import ServerOverviewDashboard from "@/components/server-overview-dashboard";
+import { OfferManagement } from "@/components/offer-management";
 
 export default function AdminConsole() {
   const { toast } = useToast();
@@ -237,6 +238,10 @@ export default function AdminConsole() {
           <TabsTrigger value="bots" data-testid="tab-bots">Bot Management</TabsTrigger>
           <TabsTrigger value="activities" data-testid="tab-activities">Recent Activity</TabsTrigger>
           <TabsTrigger value="server" data-testid="tab-server">Server Config</TabsTrigger>
+          <TabsTrigger value="offer" data-testid="tab-offer">
+            <Gift className="h-4 w-4 mr-2" />
+            Promotional Offers
+          </TabsTrigger>
           <TabsTrigger value="master" data-testid="tab-master">Master Control</TabsTrigger>
         </TabsList>
 
@@ -446,6 +451,10 @@ export default function AdminConsole() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="offer" className="space-y-4">
+          <OfferManagement />
         </TabsContent>
 
         <TabsContent value="master" className="space-y-4">
