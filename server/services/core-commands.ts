@@ -846,56 +846,115 @@ commandRegistry.register({
   }
 });
 
-// Register animation commands
+// Register animation commands with message editing
 commandRegistry.register({
   name: 'happy',
   aliases: ['smile', 'joy'],
-  description: 'Send happy emoji animation',
+  description: 'Animated happy emoji sequence',
   category: 'FUN',
   handler: async (context: CommandContext) => {
-    const { respond } = context;
+    const { client, from } = context;
     const happyEmojis = ['😃', '😄', '😁', '😊', '😎', '🥳', '😸', '😹', '🌞', '🌈'];
-    const randomEmoji = happyEmojis[Math.floor(Math.random() * happyEmojis.length)];
-    await respond(`${randomEmoji} *Feeling Happy!* ${randomEmoji}\n\n✨ Spread the joy and happiness! ✨`);
+    
+    // Send initial message
+    const sentMsg = await client.sendMessage(from, { text: happyEmojis[0] });
+    
+    // Animate through emojis by editing
+    for (let i = 1; i < happyEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300)); // 300ms delay
+      await client.sendMessage(from, {
+        text: happyEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    // Final message
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: `${happyEmojis[happyEmojis.length - 1]} *Feeling Happy!* ${happyEmojis[happyEmojis.length - 1]}\n\n✨ Spread the joy and happiness! ✨`,
+      edit: sentMsg.key
+    });
   }
 });
 
 commandRegistry.register({
   name: 'sad',
   aliases: ['cry', 'heartbroken'],
-  description: 'Send sad emoji animation',
+  description: 'Animated sad emoji sequence',
   category: 'FUN',
   handler: async (context: CommandContext) => {
-    const { respond } = context;
+    const { client, from } = context;
     const sadEmojis = ['😢', '😭', '💔', '😞', '😔', '🥺', '😿'];
-    const randomEmoji = sadEmojis[Math.floor(Math.random() * sadEmojis.length)];
-    await respond(`${randomEmoji} *Feeling Sad* ${randomEmoji}\n\n💙 Hope you feel better soon! 💙`);
+    
+    const sentMsg = await client.sendMessage(from, { text: sadEmojis[0] });
+    
+    for (let i = 1; i < sadEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: sadEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: `${sadEmojis[sadEmojis.length - 1]} *Feeling Sad* ${sadEmojis[sadEmojis.length - 1]}\n\n💙 Hope you feel better soon! 💙`,
+      edit: sentMsg.key
+    });
   }
 });
 
 commandRegistry.register({
   name: 'angry',
   aliases: ['mad', 'rage'],
-  description: 'Send angry emoji animation',
+  description: 'Animated angry emoji sequence',
   category: 'FUN',
   handler: async (context: CommandContext) => {
-    const { respond } = context;
-    const angryEmojis = ['😡', '😠', '🤬', '😤', '😾'];
-    const randomEmoji = angryEmojis[Math.floor(Math.random() * angryEmojis.length)];
-    await respond(`${randomEmoji} *Feeling Angry!* ${randomEmoji}\n\n T*ake a deep breath and calm down!* 🌪️`);
+    const { client, from } = context;
+    const angryEmojis = ['😡', '😬', '🤬', '😠', '😤', '😾'];
+    
+    const sentMsg = await client.sendMessage(from, { text: angryEmojis[0] });
+    
+    for (let i = 1; i < angryEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: angryEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: `${angryEmojis[angryEmojis.length - 1]} *Feeling Angry!* ${angryEmojis[angryEmojis.length - 1]}\n\n*Take a deep breath and calm down!* 🌪️`,
+      edit: sentMsg.key
+    });
   }
 });
 
 commandRegistry.register({
   name: 'love',
   aliases: ['heart', 'hrt'],
-  description: 'Send love emoji animation',
+  description: 'Animated love emoji sequence',
   category: 'FUN',
   handler: async (context: CommandContext) => {
-    const { respond } = context;
+    const { client, from } = context;
     const loveEmojis = ['💖', '💗', '💕', '❤️', '💛', '💚', '💙', '💜', '🖤', '🤍', '♥️'];
-    const randomEmoji = loveEmojis[Math.floor(Math.random() * loveEmojis.length)];
-    await respond(`${randomEmoji} *Sending Love!* ${randomEmoji}\n\n💝 Love and peace to everyone! 💝`);
+    
+    const sentMsg = await client.sendMessage(from, { text: loveEmojis[0] });
+    
+    for (let i = 1; i < loveEmojis.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await client.sendMessage(from, {
+        text: loveEmojis[i],
+        edit: sentMsg.key
+      });
+    }
+    
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await client.sendMessage(from, {
+      text: `${loveEmojis[loveEmojis.length - 1]} *Sending Love!* ${loveEmojis[loveEmojis.length - 1]}\n\n💝 Love and peace to everyone! 💝`,
+      edit: sentMsg.key
+    });
   }
 });
 
