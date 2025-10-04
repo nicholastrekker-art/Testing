@@ -136,6 +136,18 @@ export const externalBotConnections = pgTable("external_bot_connections", {
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
+// Promotional offer configuration table
+export const offerConfig = pgTable("offer_config", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  isActive: boolean("is_active").default(false), // Whether offer is currently active
+  durationType: text("duration_type").notNull().default("days"), // 'days' or 'months'
+  durationValue: integer("duration_value").notNull().default(7), // Number of days or months
+  startDate: timestamp("start_date").default(sql`CURRENT_TIMESTAMP`),
+  endDate: timestamp("end_date"), // Calculated from startDate + duration
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
 // Relations
 export const botInstancesRelations = relations(botInstances, ({ many }) => ({
   commands: many(commands),
@@ -236,6 +248,12 @@ export const insertExternalBotConnectionSchema = createInsertSchema(externalBotC
   updatedAt: true,
 });
 
+export const insertOfferConfigSchema = createInsertSchema(offerConfig).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -263,3 +281,6 @@ export type InsertViewedStatusId = z.infer<typeof insertViewedStatusIdSchema>;
 
 export type ExternalBotConnection = typeof externalBotConnections.$inferSelect;
 export type InsertExternalBotConnection = z.infer<typeof insertExternalBotConnectionSchema>;
+
+export type OfferConfig = typeof offerConfig.$inferSelect;
+export type InsertOfferConfig = z.infer<typeof insertOfferConfigSchema>;

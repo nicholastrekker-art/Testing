@@ -25,7 +25,10 @@ import {
   type ViewedStatusId,
   type InsertViewedStatusId,
   type ExternalBotConnection,
-  type InsertExternalBotConnection
+  type InsertExternalBotConnection,
+  offerConfig,
+  type OfferConfig,
+  type InsertOfferConfig
 } from "@shared/schema";
 import { db, getServerName } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -189,6 +192,12 @@ export interface IStorage {
   revokeBotApproval(id: string, targetServerName: string): Promise<BotInstance>;
   deleteBotCrossServer(id: string, targetServerName: string): Promise<void>;
   deleteServer(serverName: string): Promise<void>;
+  
+  // Promotional Offer methods
+  getOfferConfig(): Promise<OfferConfig | undefined>;
+  updateOfferConfig(updates: Partial<InsertOfferConfig>): Promise<OfferConfig>;
+  isOfferActive(): Promise<boolean>;
+  getOfferTimeRemaining(): Promise<number | null>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1476,6 +1485,82 @@ export class DatabaseStorage implements IStorage {
     await db.delete(serverRegistry).where(eq(serverRegistry.serverName, serverName));
     
     console.log(`🗑️ Deleted server ${serverName} from registry`);
+  }
+
+  // Promotional Offer methods
+  async getOfferConfig(): Promise<OfferConfig | undefined> {
+    const configs = await db.select().from(offerConfig).limit(1);
+    return configs[0];
+  }
+
+  async updateOfferConfig(updates: Partial<InsertOfferConfig>): Promise<OfferConfig> {
+    const existing = await this.getOfferConfig();
+    
+    // Calculate endDate if duration changes
+    if (updates.durationType || updates.durationValue || updates.startDate) {
+      const durationType = updates.durationType || existing?.durationType || 'days';
+      const durationValue = updates.durationValue || existing?.durationValue || 7;
+      const startDate = updates.startDate || existing?.startDate || new Date();
+      
+      const endDate = new Date(startDate);
+      if (durationType === 'months') {
+        endDate.setMonth(endDate.getMonth() + durationValue);
+      } else {
+        endDate.setDate(endDate.getDate() + durationValue);
+      }
+      
+      updates.endDate = endDate;
+    }
+    
+    if (existing) {
+      const [updated] = await db.update(offerConfig)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(offerConfig.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(offerConfig)
+        .values(updates as InsertOfferConfig)
+        .returning();
+      return created;
+    }
+  }
+
+  async isOfferActive(): Promise<boolean> {
+    const offerEnvVar = process.env.OFFER?.toLowerCase();
+    if (offerEnvVar !== 'true') {
+      return false;
+    }
+    
+    const config = await this.getOfferConfig();
+    if (!config || !config.isActive) {
+      return false;
+    }
+    
+    const now = new Date();
+    if (config.endDate && now > config.endDate) {
+      await this.updateOfferConfig({ isActive: false });
+      return false;
+    }
+    
+    return true;
+  }
+
+  async getOfferTimeRemaining(): Promise<number | null> {
+    const config = await this.getOfferConfig();
+    if (!config || !config.endDate || !config.isActive) {
+      return null;
+    }
+    
+    const now = new Date();
+    const remaining = config.endDate.getTime() - now.getTime();
+    
+    if (remaining <= 0) {
+      await this.updateOfferConfig({ isActive: false });
+      return null;
+    }
+    
+    return remaining;
   }
 }
 
