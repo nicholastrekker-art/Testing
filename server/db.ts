@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from "@shared/schema";
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import { sql } from 'drizzle-orm';
 
 // STRICT DATABASE_URL ONLY RULE: This application only works with DATABASE_URL from secrets
 // No other database configuration is supported (no PG* variables, no Replit built-in database)
@@ -93,12 +94,12 @@ export async function getServerNameWithFallback(): Promise<string> {
   if (process.env.RUNTIME_SERVER_NAME) {
     return process.env.RUNTIME_SERVER_NAME.toUpperCase();
   }
-  
+
   // Then try static environment variable
   if (process.env.SERVER_NAME) {
     return process.env.SERVER_NAME.toUpperCase();
   }
-  
+
   // Then try database
   try {
     const { storage } = await import('./storage');
@@ -110,7 +111,7 @@ export async function getServerNameWithFallback(): Promise<string> {
   } catch (error) {
     console.warn('Failed to get server name from database:', error);
   }
-  
+
   // Finally fallback to default
   return 'SERVER1';
 }
@@ -119,14 +120,37 @@ export async function getServerNameWithFallback(): Promise<string> {
 export async function initializeDatabase() {
   try {
     console.log('🔄 Checking database connectivity...');
-    
+
     // Get server name for this instance
     const serverName = getServerName();
     console.log(`🏷️ Server instance: ${serverName}`);
-    
+
     // Test database connection
     await client`SELECT 1`;
     console.log('✅ Database connection established');
+
+    // Create offer_config table if it doesn't exist
+    await client`
+      CREATE TABLE IF NOT EXISTS offer_config (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        is_active BOOLEAN DEFAULT FALSE,
+        duration_type VARCHAR(50) NOT NULL DEFAULT 'days',
+        duration_value INTEGER NOT NULL DEFAULT 7,
+        start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        end_date TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Insert default configuration if table is empty
+    await client`
+      INSERT INTO offer_config (is_active, duration_type, duration_value)
+      SELECT false, 'days', 7
+      WHERE NOT EXISTS (SELECT 1 FROM offer_config)
+    `;
+
+    console.log('✅ Offer config table initialized');
 
     // Check if tables exist by checking the information schema first
     try {
@@ -137,10 +161,10 @@ export async function initializeDatabase() {
           AND table_name = 'bot_instances'
         )
       `;
-      
+
       if (tableExists[0].exists) {
         console.log('✅ Bot instances table exists, checking schema...');
-        
+
         // Check if required columns exist
         const columnsExist = await client`
           SELECT column_name 
@@ -148,19 +172,19 @@ export async function initializeDatabase() {
           WHERE table_name = 'bot_instances' 
           AND column_name IN ('approval_status', 'is_guest', 'approval_date', 'expiration_months', 'server_name')
         `;
-        
+
         if (columnsExist.length >= 5) {
           console.log('✅ Database schema is up to date');
-          
+
           // Try querying to verify everything works
           try {
             await db.query.botInstances.findFirst();
             console.log('✅ Database tables functional');
-            
+
             // Check for expired bots on startup
             const { storage } = await import('./storage');
             await storage.checkAndExpireBots();
-            
+
             // Initialize server registry for multi-tenancy
             await storage.initializeCurrentServer();
             return;
@@ -173,13 +197,13 @@ export async function initializeDatabase() {
       } else {
         console.log('⚠️ Bot instances table does not exist');
       }
-      
+
       // If we reach here, we need to create or update the schema
       console.log('⚠️ Database tables missing or schema outdated, creating/updating them...');
     } catch (error: any) {
       console.log('⚠️ Database schema check failed, will create/update tables:', error.message);
     }
-    
+
     // Create or update tables
     try {
       // Create tables manually using raw SQL with proper schema
@@ -193,7 +217,7 @@ export async function initializeDatabase() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
-        
+
         await client`
           CREATE TABLE IF NOT EXISTS bot_instances (
             id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -219,7 +243,7 @@ export async function initializeDatabase() {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
-        
+
         await client`
           CREATE TABLE IF NOT EXISTS commands (
             id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -233,7 +257,7 @@ export async function initializeDatabase() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
-        
+
         await client`
           CREATE TABLE IF NOT EXISTS activities (
             id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -248,7 +272,7 @@ export async function initializeDatabase() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
-        
+
         await client`
           CREATE TABLE IF NOT EXISTS groups (
             id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -262,7 +286,7 @@ export async function initializeDatabase() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
-        
+
         await client`
           CREATE TABLE IF NOT EXISTS god_register (
             id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -271,7 +295,7 @@ export async function initializeDatabase() {
             registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `;
-        
+
         await client`
           CREATE TABLE IF NOT EXISTS server_registry (
             id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -294,42 +318,42 @@ export async function initializeDatabase() {
           await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS approval_date TEXT`;
           await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS expiration_months INTEGER`;
           await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS server_name TEXT`;
-          
+
           // Update existing rows without server_name to use current server
           await client`UPDATE bot_instances SET server_name = ${serverName} WHERE server_name IS NULL`;
-          
+
           // Make server_name NOT NULL after setting values
           await client`ALTER TABLE bot_instances ALTER COLUMN server_name SET NOT NULL`;
-          
+
           // Update other tables with server_name column
           await client`ALTER TABLE users ADD COLUMN IF NOT EXISTS server_name TEXT`;
           await client`UPDATE users SET server_name = ${serverName} WHERE server_name IS NULL`;
           await client`ALTER TABLE users ALTER COLUMN server_name SET NOT NULL`;
-          
+
           await client`ALTER TABLE commands ADD COLUMN IF NOT EXISTS server_name TEXT`;
           await client`UPDATE commands SET server_name = ${serverName} WHERE server_name IS NULL`;
           await client`ALTER TABLE commands ALTER COLUMN server_name SET NOT NULL`;
-          
+
           await client`ALTER TABLE activities ADD COLUMN IF NOT EXISTS server_name TEXT`;
           await client`UPDATE activities SET server_name = ${serverName} WHERE server_name IS NULL`;
           await client`ALTER TABLE activities ALTER COLUMN server_name SET NOT NULL`;
-          
+
           await client`ALTER TABLE groups ADD COLUMN IF NOT EXISTS server_name TEXT`;
           await client`UPDATE groups SET server_name = ${serverName} WHERE server_name IS NULL`;
           await client`ALTER TABLE groups ALTER COLUMN server_name SET NOT NULL`;
-          
+
           console.log('✅ Database schema updated with missing columns');
         } catch (alterError: any) {
           console.log('ℹ️ Some schema updates may have already been applied:', alterError.message);
         }
-        
+
       console.log('✅ Database tables created/updated successfully');
-      
+
       // Initialize server registry for multi-tenancy after tables are created
       const { storage } = await import('./storage');
       await storage.checkAndExpireBots();
       await storage.initializeCurrentServer();
-      
+
     } catch (createError: any) {
       console.error('❌ Failed to create/update database tables:', createError);
       throw createError;
