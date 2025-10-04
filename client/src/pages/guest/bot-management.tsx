@@ -506,7 +506,7 @@ export default function GuestBotManagement() {
   return (
     <div className="min-h-screen w-full p-6 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Offer Countdown Dialog */}
+        {/* Offer Countdown Dialog - Always render for guests */}
         <OfferCountdownDialog />
 
         {/* Header */}

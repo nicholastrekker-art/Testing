@@ -24,13 +24,29 @@ export function OfferCountdownDialog() {
   const [open, setOpen] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
-  const { data: offerStatus } = useQuery<OfferStatus>({
+  const { data: offerStatus, isError, error } = useQuery<OfferStatus>({
     queryKey: ["/api/offer/status"],
     refetchInterval: 10000, // Refresh every 10 seconds
+    retry: 3,
+    staleTime: 5000,
   });
 
+  // Debug logging for troubleshooting
   useEffect(() => {
-    if (offerStatus?.isActive && offerStatus?.timeRemaining) {
+    if (offerStatus) {
+      console.log('Offer Status Data:', {
+        isActive: offerStatus.isActive,
+        timeRemaining: offerStatus.timeRemaining,
+        config: offerStatus.config
+      });
+    }
+    if (isError) {
+      console.error('Offer Status Error:', error);
+    }
+  }, [offerStatus, isError, error]);
+
+  useEffect(() => {
+    if (offerStatus?.isActive && offerStatus?.timeRemaining && offerStatus.timeRemaining > 0) {
       setTimeRemaining(offerStatus.timeRemaining);
       setOpen(true);
 
@@ -47,8 +63,11 @@ export function OfferCountdownDialog() {
 
       return () => clearInterval(interval);
     } else {
-      setOpen(false);
-      setTimeRemaining(null);
+      // Only close if we're sure there's no active offer
+      if (offerStatus?.isActive === false || (offerStatus?.timeRemaining !== undefined && offerStatus.timeRemaining <= 0)) {
+        setOpen(false);
+        setTimeRemaining(null);
+      }
     }
   }, [offerStatus]);
 
