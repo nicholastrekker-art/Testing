@@ -182,6 +182,13 @@ export interface IStorage {
     error?: string;
   }>;
   cleanupExpiredExternalConnections(): Promise<number>;
+
+  // Master Control methods for cross-server management
+  getAllBotsAcrossServers(): Promise<BotInstance[]>;
+  approveBotCrossServer(id: string, targetServerName: string, expirationMonths?: number): Promise<BotInstance>;
+  revokeBotApproval(id: string, targetServerName: string): Promise<BotInstance>;
+  deleteBotCrossServer(id: string, targetServerName: string): Promise<void>;
+  deleteServer(serverName: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1363,6 +1370,112 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`🧹 Cleaned up ${result.length} expired external bot connections`);
     return result.length;
+  }
+
+  // Master Control methods for cross-server management
+  async getAllBotsAcrossServers(): Promise<BotInstance[]> {
+    return await db.select().from(botInstances).orderBy(desc(botInstances.createdAt));
+  }
+
+  async approveBotCrossServer(id: string, targetServerName: string, expirationMonths?: number): Promise<BotInstance> {
+    const now = new Date();
+    
+    const [botInstance] = await db
+      .update(botInstances)
+      .set({
+        approvalStatus: 'approved',
+        approvalDate: now.toISOString(),
+        expirationMonths: expirationMonths || null,
+        updatedAt: sql`CURRENT_TIMESTAMP`
+      })
+      .where(and(eq(botInstances.id, id), eq(botInstances.serverName, targetServerName)))
+      .returning();
+
+    if (!botInstance) {
+      throw new Error(`Bot ${id} not found on server ${targetServerName}`);
+    }
+
+    await this.createCrossTenancyActivity({
+      type: 'approval',
+      description: `Bot approved by master control${expirationMonths ? ` for ${expirationMonths} months` : ' with unlimited access'}`,
+      metadata: { approvalDate: now.toISOString(), expirationMonths, approvedBy: 'master_control' },
+      serverName: targetServerName,
+      botInstanceId: id
+    });
+
+    return botInstance;
+  }
+
+  async revokeBotApproval(id: string, targetServerName: string): Promise<BotInstance> {
+    const [botInstance] = await db
+      .update(botInstances)
+      .set({
+        approvalStatus: 'pending',
+        status: 'offline',
+        approvalDate: null,
+        expirationMonths: null,
+        updatedAt: sql`CURRENT_TIMESTAMP`
+      })
+      .where(and(eq(botInstances.id, id), eq(botInstances.serverName, targetServerName)))
+      .returning();
+
+    if (!botInstance) {
+      throw new Error(`Bot ${id} not found on server ${targetServerName}`);
+    }
+
+    await this.createCrossTenancyActivity({
+      type: 'revocation',
+      description: `Bot approval revoked by master control`,
+      metadata: { revokedAt: new Date().toISOString(), revokedBy: 'master_control' },
+      serverName: targetServerName,
+      botInstanceId: id
+    });
+
+    return botInstance;
+  }
+
+  async deleteBotCrossServer(id: string, targetServerName: string): Promise<void> {
+    const botInstance = await db
+      .select()
+      .from(botInstances)
+      .where(and(eq(botInstances.id, id), eq(botInstances.serverName, targetServerName)))
+      .limit(1);
+
+    if (botInstance.length === 0) {
+      throw new Error(`Bot ${id} not found on server ${targetServerName}`);
+    }
+
+    const bot = botInstance[0];
+
+    if (bot.phoneNumber) {
+      await this.deleteGlobalRegistration(bot.phoneNumber);
+    }
+
+    await db.delete(botInstances).where(and(eq(botInstances.id, id), eq(botInstances.serverName, targetServerName)));
+
+    await this.updateBotCountAfterChange(targetServerName);
+
+    await this.createCrossTenancyActivity({
+      type: 'deletion',
+      description: `Bot ${bot.name} deleted by master control`,
+      metadata: { deletedAt: new Date().toISOString(), deletedBy: 'master_control', botName: bot.name },
+      serverName: targetServerName,
+      phoneNumber: bot.phoneNumber || undefined
+    });
+
+    console.log(`📊 Updated bot count for ${targetServerName} after deleting bot ${bot.name || id}`);
+  }
+
+  async deleteServer(serverName: string): Promise<void> {
+    const serverBots = await this.getBotInstancesForServer(serverName);
+    
+    if (serverBots.length > 0) {
+      throw new Error(`Cannot delete server ${serverName}: ${serverBots.length} bots still exist on this server`);
+    }
+
+    await db.delete(serverRegistry).where(eq(serverRegistry.serverName, serverName));
+    
+    console.log(`🗑️ Deleted server ${serverName} from registry`);
   }
 }
 

@@ -830,6 +830,141 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ======= MASTER CONTROL ENDPOINTS =======
+
+  // Get all servers (tenancies) for master control
+  app.get("/api/master/tenancies", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const servers = await storage.getAllServers();
+      const tenancies = servers.map(server => ({
+        name: server.serverName,
+        url: server.serverUrl,
+        status: server.serverStatus,
+        botCount: server.currentBotCount,
+        lastSync: server.updatedAt,
+        registrations: []
+      }));
+      res.json(tenancies);
+    } catch (error) {
+      console.error("Get tenancies error:", error);
+      res.status(500).json({ message: "Failed to fetch tenancies" });
+    }
+  });
+
+  // Get all bots across all servers
+  app.get("/api/master/cross-tenancy-bots", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const allBots = await storage.getAllBotsAcrossServers();
+      const crossTenancyBots = allBots.map(bot => ({
+        id: bot.id,
+        name: bot.name,
+        phoneNumber: bot.phoneNumber,
+        status: bot.status,
+        approvalStatus: bot.approvalStatus,
+        tenancy: bot.serverName,
+        serverName: bot.serverName,
+        lastActivity: bot.lastActivity,
+        isLocal: bot.serverName === getServerName(),
+        settings: bot.settings,
+        autoLike: bot.autoLike,
+        autoReact: bot.autoReact,
+        autoViewStatus: bot.autoViewStatus,
+        chatgptEnabled: bot.chatgptEnabled,
+        credentials: bot.credentials,
+        messagesCount: bot.messagesCount,
+        commandsCount: bot.commandsCount,
+        approvalDate: bot.approvalDate,
+        expirationMonths: bot.expirationMonths,
+        createdAt: bot.createdAt,
+        updatedAt: bot.updatedAt
+      }));
+      res.json(crossTenancyBots);
+    } catch (error) {
+      console.error("Get cross-tenancy bots error:", error);
+      res.status(500).json({ message: "Failed to fetch cross-tenancy bots" });
+    }
+  });
+
+  // Get all approved bots across all servers
+  app.get("/api/master/approved-bots", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const approvedBots = await storage.getAllApprovedBots();
+      res.json(approvedBots);
+    } catch (error) {
+      console.error("Get approved bots error:", error);
+      res.status(500).json({ message: "Failed to fetch approved bots" });
+    }
+  });
+
+  // Perform bot action cross-server (approve, revoke, start, stop, delete)
+  app.post("/api/master/bot-action", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { action, botId, tenancy, data } = req.body;
+
+      if (!action || !botId || !tenancy) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      switch (action) {
+        case 'approve':
+          const duration = data?.duration;
+          const approvedBot = await storage.approveBotCrossServer(botId, tenancy, duration);
+          res.json({ success: true, bot: approvedBot });
+          break;
+
+        case 'revoke':
+          const revokedBot = await storage.revokeBotApproval(botId, tenancy);
+          res.json({ success: true, bot: revokedBot });
+          break;
+
+        case 'delete':
+          await storage.deleteBotCrossServer(botId, tenancy);
+          res.json({ success: true, message: 'Bot deleted successfully' });
+          break;
+
+        case 'start':
+        case 'stop':
+        case 'restart':
+          if (tenancy === getServerName()) {
+            if (action === 'start') {
+              await botManager.startBot(botId);
+            } else if (action === 'stop') {
+              await botManager.stopBot(botId);
+            } else if (action === 'restart') {
+              await botManager.restartBot(botId);
+            }
+            res.json({ success: true, message: `Bot ${action}ed successfully` });
+          } else {
+            res.status(400).json({ message: `Cannot ${action} bot on remote server ${tenancy}` });
+          }
+          break;
+
+        default:
+          res.status(400).json({ message: `Unknown action: ${action}` });
+      }
+    } catch (error) {
+      console.error("Bot action error:", error);
+      res.status(500).json({ message: error instanceof Error ? error.message : "Failed to perform bot action" });
+    }
+  });
+
+  // Delete server from registry
+  app.delete("/api/master/server/:serverName", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { serverName } = req.params;
+      
+      if (!serverName) {
+        return res.status(400).json({ message: "Server name is required" });
+      }
+
+      await storage.deleteServer(serverName);
+      res.json({ success: true, message: `Server ${serverName} deleted successfully` });
+    } catch (error) {
+      console.error("Delete server error:", error);
+      res.status(500).json({ message: error instanceof Error ? error.message : "Failed to delete server" });
+    }
+  });
+
   // Bot Instances
   app.get("/api/bot-instances", async (req, res) => {
     try {

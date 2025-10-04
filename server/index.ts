@@ -132,10 +132,6 @@ app.use((req, res, next) => {
   // Initialize database (create tables if they don't exist)
   await initializeDatabase();
   
-  // Start scheduled bot monitoring immediately after database initialization
-  console.log('🚀 Bootstrap: Starting scheduled monitoring system...');
-  await startMonitoringOnce();
-  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -160,6 +156,12 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    
+    // Start scheduled bot monitoring in background (non-blocking)
+    console.log('🚀 Starting scheduled monitoring system in background...');
+    startMonitoringOnce().catch(error => {
+      console.error('❌ Failed to start monitoring:', error);
+    });
   });
 
   // Graceful shutdown handling for containerized environments
