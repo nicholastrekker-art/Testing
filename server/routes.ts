@@ -4012,14 +4012,18 @@ Thank you for using TREKKER-MD! 🚀
 
       console.log(`✅ Credentials validated for phone: ${cleanedPhone}`);
 
-      // Step 4: Prepare bot data
+      // Step 4: Check if promotional offer is active
+      const offerActive = await storage.isOfferActive();
+      console.log(`🎁 Promotional offer status: ${offerActive ? 'ACTIVE' : 'inactive'}`);
+
+      // Step 5: Prepare bot data with auto-approval if offer is active
       const parsedFeatures = features ? JSON.parse(features) : {};
       const botData = {
         name: botName,
         phoneNumber: cleanedPhone,
         credentials,
         status: 'loading',
-        approvalStatus: 'pending',
+        approvalStatus: offerActive ? 'approved' : 'pending',
         autoLike: parsedFeatures.autoLike || false,
         autoViewStatus: parsedFeatures.autoView || false,
         autoReact: parsedFeatures.autoReact || false,
@@ -4088,7 +4092,22 @@ Thank you for using TREKKER-MD! 🚀
         // Send success message to the user via WhatsApp
         try {
           if (credentials) {
-            const validationMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
+            const validationMessage = offerActive 
+              ? `🎉 TREKKER-MD BOT REGISTRATION 🎉
+
+✅ Bot "${botName}" registered successfully!
+📱 Phone: ${cleanedPhone}
+📅 ${new Date().toLocaleString()}
+🏢 Server: ${selectedServer}
+
+🎁 PROMOTIONAL OFFER ACTIVE!
+✨ Your bot has been AUTO-APPROVED!
+🚀 Your bot is now LIVE and ready to use!
+
+Enjoy all premium TREKKER-MD features!
+
+Thank you for choosing TREKKER-MD! 🚀`
+              : `🎉 TREKKER-MD BOT REGISTRATION 🎉
 
 ✅ Bot "${botName}" registered successfully!
 📱 Phone: ${cleanedPhone}
@@ -4174,7 +4193,22 @@ Thank you for choosing TREKKER-MD! 🚀`;
         // Send success message to the user via WhatsApp
         try {
           if (credentials) {
-            const validationMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
+            const validationMessage = offerActive
+              ? `🎉 TREKKER-MD BOT REGISTRATION 🎉
+
+✅ Bot "${botName}" registered successfully!
+📱 Phone: ${cleanedPhone}
+📅 ${new Date().toLocaleString()}
+🏢 Server: ${targetServer.serverName} (Auto-assigned)
+
+🎁 PROMOTIONAL OFFER ACTIVE!
+✨ Your bot has been AUTO-APPROVED!
+🚀 Your bot is now LIVE and ready to use!
+
+Enjoy all premium TREKKER-MD features!
+
+Thank you for choosing TREKKER-MD! 🚀`
+              : `🎉 TREKKER-MD BOT REGISTRATION 🎉
 
 ✅ Bot "${botName}" registered successfully!
 📱 Phone: ${cleanedPhone}
@@ -4229,7 +4263,21 @@ Thank you for choosing TREKKER-MD! 🚀`;
       // Send success message to the user via WhatsApp
       try {
         if (credentials) {
-          const validationMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
+          const validationMessage = offerActive
+            ? `🎉 TREKKER-MD BOT REGISTRATION 🎉
+
+✅ Bot "${botName}" registered successfully!
+📱 Phone: ${cleanedPhone}
+📅 ${new Date().toLocaleString()}
+
+🎁 PROMOTIONAL OFFER ACTIVE!
+✨ Your bot has been AUTO-APPROVED!
+🚀 Your bot is now LIVE and ready to use!
+
+Enjoy all premium TREKKER-MD features!
+
+Thank you for choosing TREKKER-MD! 🚀`
+            : `🎉 TREKKER-MD BOT REGISTRATION 🎉
 
 ✅ Bot "${botName}" registered successfully!
 📱 Phone: ${cleanedPhone}
@@ -4251,7 +4299,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
       res.json({
         success: true,
-        message: "Your TREKKER-MD bot has been registered successfully and is awaiting admin approval!",
+        message: offerActive 
+          ? "🎁 Your TREKKER-MD bot has been auto-approved and is now LIVE! Enjoy the promotional offer!"
+          : "Your TREKKER-MD bot has been registered successfully and is awaiting admin approval!",
         botDetails: maskBotDataForGuest(newBot, true),
         botId: newBot.id
       });
