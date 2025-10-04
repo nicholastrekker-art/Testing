@@ -861,7 +861,7 @@ commandRegistry.register({
     
     // Animate through emojis by editing
     for (let i = 1; i < happyEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300)); // 300ms delay
+      await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
       await client.sendMessage(from, {
         text: happyEmojis[i],
         edit: sentMsg.key
@@ -869,7 +869,7 @@ commandRegistry.register({
     }
     
     // Final message - just the last emoji
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: happyEmojis[happyEmojis.length - 1],
       edit: sentMsg.key
@@ -889,7 +889,7 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: sadEmojis[0] });
     
     for (let i = 1; i < sadEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: sadEmojis[i],
         edit: sentMsg.key
@@ -897,7 +897,7 @@ commandRegistry.register({
     }
     
     // Final message - just the last emoji
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: sadEmojis[sadEmojis.length - 1],
       edit: sentMsg.key
@@ -917,7 +917,7 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: angryEmojis[0] });
     
     for (let i = 1; i < angryEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: angryEmojis[i],
         edit: sentMsg.key
@@ -925,7 +925,7 @@ commandRegistry.register({
     }
     
     // Final message - just the last emoji
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: angryEmojis[angryEmojis.length - 1],
       edit: sentMsg.key
@@ -945,7 +945,7 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: loveEmojis[0] });
     
     for (let i = 1; i < loveEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: loveEmojis[i],
         edit: sentMsg.key
@@ -953,7 +953,7 @@ commandRegistry.register({
     }
     
     // Final message - just the last emoji
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: loveEmojis[loveEmojis.length - 1],
       edit: sentMsg.key
@@ -973,7 +973,7 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: hornyEmojis[0] });
     
     for (let i = 1; i < hornyEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: hornyEmojis[i],
         edit: sentMsg.key
@@ -1001,18 +1001,84 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: fuckEmojis[0] });
     
     for (let i = 1; i < fuckEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: fuckEmojis[i],
         edit: sentMsg.key
       });
     }
     
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: fuckEmojis[fuckEmojis.length - 1],
       edit: sentMsg.key
     });
+  }
+});
+
+commandRegistry.register({
+  name: 'hack',
+  aliases: ['hacking', 'hackprank'],
+  description: 'Enhanced hacking prank animation',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { client, from, message } = context;
+    
+    // Get target user
+    const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
+    const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+    const targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
+    
+    if (!targetUser) {
+      await client.sendMessage(from, { text: '❌ Please mention or reply to someone to hack!' });
+      return;
+    }
+    
+    const targetNumber = targetUser.split('@')[0];
+    const hackingStages = [
+      '🔐 Initializing hack...',
+      '📡 Connecting to server...',
+      '💻 Bypassing firewall...',
+      '🔓 Accessing database...',
+      `👤 Target: +${targetNumber}`,
+      '🔍 Scanning device...',
+      '📱 Device: WhatsApp Client',
+      '⚙️ OS: Android/iOS',
+      '🌐 IP: 192.168.1.' + Math.floor(Math.random() * 255),
+      '📊 Gathering data...',
+      '💾 Extracting messages... 15%',
+      '💾 Extracting messages... 47%',
+      '💾 Extracting messages... 89%',
+      '💾 Extracting messages... 100%',
+      '📷 Accessing camera...',
+      '🎤 Accessing microphone...',
+      '📍 Location tracked: [REDACTED]',
+      '🔑 Password: ********',
+      '💳 Bank details: [ENCRYPTED]',
+      '⚠️ SYSTEM BREACH DETECTED!',
+      '🚨 FBI ALERT: ILLEGAL ACCESS',
+      '❌ CONNECTION TERMINATED',
+      '',
+      '😂 Just kidding! You\'ve been pranked! 😂',
+      `🎭 @${targetNumber} is safe... for now! 😈`
+    ];
+    
+    const sentMsg = await client.sendMessage(from, { text: hackingStages[0] });
+    
+    for (let i = 1; i < hackingStages.length; i++) {
+      // Vary delays for dramatic effect
+      let delay = 500;
+      if (hackingStages[i].includes('Extracting')) delay = 800;
+      if (hackingStages[i].includes('BREACH') || hackingStages[i].includes('FBI')) delay = 1000;
+      if (hackingStages[i].includes('kidding')) delay = 1500;
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+      await client.sendMessage(from, {
+        text: hackingStages[i],
+        edit: sentMsg.key,
+        mentions: hackingStages[i].includes('@') ? [targetUser] : undefined
+      });
+    }
   }
 });
 
@@ -1028,14 +1094,14 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: kissEmojis[0] });
     
     for (let i = 1; i < kissEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: kissEmojis[i],
         edit: sentMsg.key
       });
     }
     
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: kissEmojis[kissEmojis.length - 1],
       edit: sentMsg.key
@@ -1055,14 +1121,14 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: partyEmojis[0] });
     
     for (let i = 1; i < partyEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: partyEmojis[i],
         edit: sentMsg.key
       });
     }
     
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: partyEmojis[partyEmojis.length - 1],
       edit: sentMsg.key
@@ -1082,14 +1148,14 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: crazyEmojis[0] });
     
     for (let i = 1; i < crazyEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: crazyEmojis[i],
         edit: sentMsg.key
       });
     }
     
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: crazyEmojis[crazyEmojis.length - 1],
       edit: sentMsg.key
@@ -1109,14 +1175,14 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: coolEmojis[0] });
     
     for (let i = 1; i < coolEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: coolEmojis[i],
         edit: sentMsg.key
       });
     }
     
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: coolEmojis[coolEmojis.length - 1],
       edit: sentMsg.key
@@ -1136,14 +1202,14 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: skullEmojis[0] });
     
     for (let i = 1; i < skullEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: skullEmojis[i],
         edit: sentMsg.key
       });
     }
     
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: skullEmojis[skullEmojis.length - 1],
       edit: sentMsg.key
@@ -1163,14 +1229,14 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: evilEmojis[0] });
     
     for (let i = 1; i < evilEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: evilEmojis[i],
         edit: sentMsg.key
       });
     }
     
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: evilEmojis[evilEmojis.length - 1],
       edit: sentMsg.key
@@ -1190,14 +1256,14 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: vomitEmojis[0] });
     
     for (let i = 1; i < vomitEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: vomitEmojis[i],
         edit: sentMsg.key
       });
     }
     
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: vomitEmojis[vomitEmojis.length - 1],
       edit: sentMsg.key
@@ -1217,14 +1283,14 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: moneyEmojis[0] });
     
     for (let i = 1; i < moneyEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: moneyEmojis[i],
         edit: sentMsg.key
       });
     }
     
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: moneyEmojis[moneyEmojis.length - 1],
       edit: sentMsg.key
@@ -1244,14 +1310,14 @@ commandRegistry.register({
     const sentMsg = await client.sendMessage(from, { text: flexEmojis[0] });
     
     for (let i = 1; i < flexEmojis.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
         text: flexEmojis[i],
         edit: sentMsg.key
       });
     }
     
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: flexEmojis[flexEmojis.length - 1],
       edit: sentMsg.key
