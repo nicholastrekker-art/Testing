@@ -307,25 +307,28 @@ commandRegistry.register({
 commandRegistry.register({
   name: 'owner',
   aliases: ['dev', 'developer'],
-  description: 'Show bot owner information',
+  description: 'Get bot owner contact',
   category: 'GENERAL',
   handler: async (context: CommandContext) => {
-    const { respond } = context;
+    const { client, from } = context;
 
-    const ownerInfo = `
-👤 *Bot Owner Information*
+    // Create vCard for bot owner
+    const vcard = 'BEGIN:VCARD\n'
+      + 'VERSION:3.0\n'
+      + 'FN:Trekker - Your Guide\n'
+      + 'ORG:TREKKERMD LIFETIME BOT;\n'
+      + 'TEL;type=CELL;type=VOICE;waid=254704897825:+254 704 897825\n'
+      + 'END:VCARD';
 
-*Name:* TrekkerMD
-*Bot:* TREKKERMD LIFETIME BOT
-*Version:* 2.0.0
-*Platform:* Baileys WhatsApp Bot
-
-📞 *Contact:* Available via WhatsApp
-🌍 *Region:* Kenya (Africa/Nairobi)
-
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ`;
-
-    await respond(ownerInfo);
+    await client.sendMessage(
+      from,
+      {
+        contacts: {
+          displayName: 'Trekker',
+          contacts: [{ vcard }]
+        }
+      }
+    );
   }
 });
 

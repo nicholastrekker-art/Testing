@@ -1,15 +1,86 @@
 import { WhatsAppBot } from './whatsapp-bot';
 import { storage } from '../storage';
 import type { BotInstance } from '@shared/schema';
-import { existsSync, rmSync } from 'fs';
+import { existsSync, rmSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+
+interface BotSkipData {
+  botId: string;
+  failureCount: number;
+  lastFailure: number;
+  skipped: boolean;
+}
 
 class BotManager {
   private bots: Map<string, WhatsAppBot> = new Map();
   private broadcastFunction?: (data: any) => void;
+  private skipDataPath: string = join(process.cwd(), 'data', 'bot-skip-tracking.json');
+  private skipData: Map<string, BotSkipData> = new Map();
 
   setBroadcastFunction(broadcast: (data: any) => void) {
     this.broadcastFunction = broadcast;
+  }
+
+  // Load skip tracking data from local file
+  private loadSkipData() {
+    try {
+      if (existsSync(this.skipDataPath)) {
+        const data = JSON.parse(readFileSync(this.skipDataPath, 'utf-8'));
+        this.skipData = new Map(data.map((item: BotSkipData) => [item.botId, item]));
+        console.log(`📂 Loaded skip data for ${this.skipData.size} bot(s)`);
+      }
+    } catch (error) {
+      console.error('Failed to load skip data:', error);
+      this.skipData = new Map();
+    }
+  }
+
+  // Save skip tracking data to local file
+  private saveSkipData() {
+    try {
+      const dataDir = join(process.cwd(), 'data');
+      if (!existsSync(dataDir)) {
+        require('fs').mkdirSync(dataDir, { recursive: true });
+      }
+      const data = Array.from(this.skipData.values());
+      writeFileSync(this.skipDataPath, JSON.stringify(data, null, 2));
+    } catch (error) {
+      console.error('Failed to save skip data:', error);
+    }
+  }
+
+  // Check if bot should be skipped
+  private shouldSkipBot(botId: string): boolean {
+    const skipInfo = this.skipData.get(botId);
+    return skipInfo?.skipped === true;
+  }
+
+  // Record bot failure
+  private recordBotFailure(botId: string) {
+    const skipInfo = this.skipData.get(botId) || {
+      botId,
+      failureCount: 0,
+      lastFailure: Date.now(),
+      skipped: false
+    };
+
+    skipInfo.failureCount += 1;
+    skipInfo.lastFailure = Date.now();
+
+    // Skip if failed 2 times
+    if (skipInfo.failureCount >= 2) {
+      skipInfo.skipped = true;
+      console.log(`⏭️ Bot ${botId} will be skipped in next monitoring cycle (failed ${skipInfo.failureCount} times)`);
+    }
+
+    this.skipData.set(botId, skipInfo);
+    this.saveSkipData();
+  }
+
+  // Reset bot skip status (when manually started or fixed)
+  private resetBotFailures(botId: string) {
+    this.skipData.delete(botId);
+    this.saveSkipData();
   }
 
   // Clear all container data for a bot (like first deployment)
@@ -46,12 +117,19 @@ class BotManager {
 
   async startBot(botId: string) {
     try {
+      // Load skip data if not loaded
+      if (this.skipData.size === 0) {
+        this.loadSkipData();
+      }
+
       // Check if bot is already running
       const existingBot = this.bots.get(botId);
       const currentStatus = existingBot?.getStatus();
       
       if (existingBot && currentStatus === 'online') {
         console.log(`BotManager: Bot ${botId} is already online`);
+        // Reset failures since bot is running
+        this.resetBotFailures(botId);
         return;
       }
 
@@ -66,6 +144,9 @@ class BotManager {
         console.log(`BotManager: Bot ${botId} is not approved, skipping auto-start`);
         return;
       }
+
+      // Reset failure count on successful manual start
+      this.resetBotFailures(botId);
 
       // Stop existing bot if it exists and is not online
       if (existingBot && currentStatus !== 'online') {
@@ -101,6 +182,9 @@ class BotManager {
         }
         this.bots.delete(botId);
       }
+      
+      // Record failure for monitoring
+      this.recordBotFailure(botId);
       
       throw error;
     }
