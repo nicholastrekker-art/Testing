@@ -306,18 +306,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('🔄 Starting bot resume process...');
 
-      // Run analysis to mark inactive bots as non-auto-start
+      // Analyze inactive bots and update their auto-start status
       await storage.analyzeInactiveBots();
 
-      // Get only bots that are approved, verified, and marked for auto-start
-      const resumableBots = await storage.getBotInstancesForAutoStart();
+      // Get all approved bots (regardless of autoStart flag)
+      const approvedBots = await storage.getApprovedBots();
+
+      // Filter for bots with verified credentials or no credential requirement
+      const resumableBots = approvedBots.filter(bot => {
+        // Start if credentials are verified OR if credentials haven't been set yet (backward compatibility)
+        return bot.credentialVerified === true || bot.credentials === null || bot.credentials === undefined;
+      });
 
       if (resumableBots.length === 0) {
-        console.log('📋 No bots eligible for auto-start found');
+        console.log('📋 No approved bots found for auto-start');
         return;
       }
 
-      console.log(`🚀 Resuming ${resumableBots.length} auto-start bot(s) with verified credentials...`);
+      console.log(`🚀 Resuming ${resumableBots.length} approved bot(s)...`);
 
       // Set all bots to loading status initially
       for (const bot of resumableBots) {
@@ -838,7 +844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const config = await storage.getOfferConfig();
       const isActive = await storage.isOfferActive();
       const timeRemaining = await storage.getOfferTimeRemaining();
-      
+
       res.json({
         isActive,
         config,
@@ -854,7 +860,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/offer/configure", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const { durationType, durationValue, isActive } = req.body;
-      
+
       const updates: Partial<any> = {};
       if (durationType !== undefined) updates.durationType = durationType;
       if (durationValue !== undefined) updates.durationValue = durationValue;
@@ -864,16 +870,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updates.startDate = new Date();
         }
       }
-      
+
       const config = await storage.updateOfferConfig(updates);
-      
+
       await storage.createActivity({
         type: 'system',
         description: `Promotional offer ${isActive ? 'activated' : 'updated'}: ${durationValue} ${durationType}`,
         metadata: { config },
         serverName: getServerName()
       });
-      
+
       res.json(config);
     } catch (error) {
       console.error("Update offer config error:", error);
@@ -1012,7 +1018,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Missing required fields: botId, tenancy, feature, enabled" });
       }
 
-      // Get bot instance across tenancies
+      // Get bot instance
       const bot = await storage.getBotInstance(botId);
       if (!bot) {
         return res.status(404).json({ message: "Bot not found" });
@@ -1048,7 +1054,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Build update object
       const updateData: any = {};
-      
+
       if (dbColumn === 'typingMode') {
         updateData[dbColumn] = enabled ? 'composing' : 'none';
       } else if (dbColumn === 'presenceMode') {
@@ -1102,7 +1108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           commands.push(command);
         }
       }
-      
+
       if (commands.length === 0) {
         return res.status(404).json({ message: "No commands found with provided IDs" });
       }
@@ -1170,7 +1176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check target server capacity
       const targetServerInfo = await storage.getServerByName(targetServer);
       const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
-      
+
       if (targetServerInfo && (targetServerInfo.currentBotCount || 0) >= targetServerInfo.maxBotCount) {
         return res.status(400).json({ message: "Target server is at full capacity" });
       }
@@ -1316,7 +1322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/master/server/:serverName", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const { serverName } = req.params;
-      
+
       if (!serverName) {
         return res.status(400).json({ message: "Server name is required" });
       }
@@ -4018,7 +4024,7 @@ Thank you for using TREKKER-MD! 🚀
 
       // Step 5: Prepare bot data with auto-approval if offer is active
       const parsedFeatures = features ? JSON.parse(features) : {};
-      
+
       // Note: serverName will be added dynamically based on target server selection
       const botData: any = {
         name: botName,

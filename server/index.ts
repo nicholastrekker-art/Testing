@@ -31,14 +31,14 @@ async function startScheduledBotMonitoring() {
   
   const checkApprovedBots = async () => {
     try {
-      // Get all approved bots that should be auto-started
-      const approvedBots = await storage.getBotInstancesForAutoStart();
+      // Get all approved bots (not just autoStart ones)
+      const approvedBots = await storage.getApprovedBots();
       
       if (approvedBots.length === 0) {
         return;
       }
       
-      console.log(`🔍 Monitoring: Checking ${approvedBots.length} approved bots...`);
+      console.log(`🔍 Monitoring: Checking ${approvedBots.length} approved bot(s)...`);
       
       for (const bot of approvedBots) {
         try {
