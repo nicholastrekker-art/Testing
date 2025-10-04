@@ -114,8 +114,8 @@ export class ValidationBot {
 
           if (qr) {
             clearTimeout(timeout);
-            this.sock.ev.removeListener('connection.update', this.connectionUpdateHandler);
-            this.sock.ev.removeListener('creds.update', this.credsUpdateHandler);
+            this.sock.ev.off('connection.update', this.connectionUpdateHandler);
+            this.sock.ev.off('creds.update', this.credsUpdateHandler);
             reject(new Error('QR code required - credentials may be invalid or expired'));
             return;
           }
@@ -128,8 +128,8 @@ export class ValidationBot {
             this.isConnected = false;
 
             // Remove listeners before rejecting
-            this.sock.ev.removeListener('connection.update', this.connectionUpdateHandler);
-            this.sock.ev.removeListener('creds.update', this.credsUpdateHandler);
+            this.sock.ev.off('connection.update', this.connectionUpdateHandler);
+            this.sock.ev.off('creds.update', this.credsUpdateHandler);
 
             if (!shouldReconnect) {
               reject(new Error('Connection closed - credentials invalid'));
@@ -177,23 +177,40 @@ export class ValidationBot {
       if (this.sock) {
         console.log(`🔌 Disconnecting validation bot ${this.phoneNumber}`);
 
-        // Remove event listeners
-        if (this.connectionUpdateHandler) {
-          this.sock.ev.removeListener('connection.update', this.connectionUpdateHandler);
-          this.connectionUpdateHandler = null;
+        // Remove event listeners with error handling
+        try {
+          if (this.connectionUpdateHandler) {
+            this.sock.ev.off('connection.update', this.connectionUpdateHandler);
+            this.connectionUpdateHandler = null;
+          }
+        } catch (err) {
+          console.log(`⚠️ Could not remove connection.update listener:`, err);
         }
-        if (this.credsUpdateHandler) {
-          this.sock.ev.removeListener('creds.update', this.credsUpdateHandler);
-          this.credsUpdateHandler = null;
+
+        try {
+          if (this.credsUpdateHandler) {
+            this.sock.ev.off('creds.update', this.credsUpdateHandler);
+            this.credsUpdateHandler = null;
+          }
+        } catch (err) {
+          console.log(`⚠️ Could not remove creds.update listener:`, err);
         }
 
         if (preserveCredentials) {
           // For guest bots: gracefully close connection without logout to preserve credentials
           console.log(`📱 Preserving credentials for guest bot ${this.phoneNumber}`);
-          this.sock.end(undefined); // Gracefully close without logout
+          try {
+            this.sock.end(undefined); // Gracefully close without logout
+          } catch (endErr) {
+            console.log(`⚠️ Could not end socket gracefully:`, endErr);
+          }
         } else {
           // For regular validation: full logout
-          await this.sock.logout();
+          try {
+            await this.sock.logout();
+          } catch (logoutErr) {
+            console.log(`⚠️ Could not logout:`, logoutErr);
+          }
         }
 
         this.sock = null;
@@ -202,19 +219,23 @@ export class ValidationBot {
       this.isConnected = false;
 
       // Clean up auth directory
-      if (existsSync(this.authDir)) {
-        rmSync(this.authDir, { recursive: true, force: true });
-        console.log(`🧹 Cleaned up validation bot auth directory for ${this.phoneNumber}`);
+      try {
+        if (existsSync(this.authDir)) {
+          rmSync(this.authDir, { recursive: true, force: true });
+          console.log(`🧹 Cleaned up validation bot auth directory for ${this.phoneNumber}`);
+        }
+      } catch (cleanupErr) {
+        console.log(`⚠️ Could not clean up auth directory:`, cleanupErr);
       }
     } catch (error) {
       console.error(`❌ Error disconnecting validation bot ${this.phoneNumber}:`, error);
-      // Continue cleanup even if logout fails
+      // Ensure cleanup always happens even if other operations fail
       try {
         if (existsSync(this.authDir)) {
           rmSync(this.authDir, { recursive: true, force: true });
         }
       } catch (cleanupError) {
-        console.error(`❌ Error cleaning up auth directory:`, cleanupError);
+        console.log(`⚠️ Final cleanup also failed:`, cleanupError);
       }
     }
   }
