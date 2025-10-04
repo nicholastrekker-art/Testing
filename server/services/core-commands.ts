@@ -7,6 +7,7 @@ import axios from 'axios';
 import { join } from 'path';
 import './core-commands.js'; // Load core commands
 import './channel-commands.js'; // Load channel commands
+import './settings-commands.js'; // Load settings commands
 
 // Utility functions from the original commands
 const toFancyUppercaseFont = (text: string) => {
