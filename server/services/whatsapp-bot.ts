@@ -34,10 +34,11 @@ export class WhatsAppBot {
 
   constructor(botInstance: BotInstance) {
     this.botInstance = botInstance;
-    // Each bot gets its own isolated auth directory
-    this.authDir = join(process.cwd(), 'auth', `bot_${botInstance.id}`);
+    // Each bot gets its own isolated auth directory under its tenancy
+    // Structure: auth/{serverName}/bot_{botId}
+    this.authDir = join(process.cwd(), 'auth', botInstance.serverName, `bot_${botInstance.id}`);
 
-    // Create auth directory if it doesn't exist
+    // Create auth directory if it doesn't exist (including parent directories)
     if (!existsSync(this.authDir)) {
       mkdirSync(this.authDir, { recursive: true });
     }
