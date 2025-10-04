@@ -948,6 +948,315 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Master feature management for cross-tenancy bot feature toggles
+  app.post("/api/master/feature-management", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { action, botId, tenancy, feature, enabled } = req.body;
+
+      if (action !== 'toggle_feature') {
+        return res.status(400).json({ message: "Invalid action. Only 'toggle_feature' is supported" });
+      }
+
+      if (!botId || !tenancy || !feature || enabled === undefined) {
+        return res.status(400).json({ message: "Missing required fields: botId, tenancy, feature, enabled" });
+      }
+
+      // Get bot instance across tenancies
+      const bot = await storage.getBotInstance(botId);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+
+      if (bot.serverName !== tenancy) {
+        return res.status(400).json({ message: "Bot does not belong to specified tenancy" });
+      }
+
+      // Only allow approved bots to have features toggled
+      if (bot.approvalStatus !== 'approved') {
+        return res.status(400).json({ message: "Only approved bots can have features toggled" });
+      }
+
+      // Map feature names to database columns
+      const featureMap: Record<string, string> = {
+        'autoLike': 'autoLike',
+        'autoReact': 'autoReact',
+        'autoView': 'autoViewStatus',
+        'autoViewStatus': 'autoViewStatus',
+        'chatGPT': 'chatgptEnabled',
+        'chatgptEnabled': 'chatgptEnabled',
+        'alwaysOnline': 'alwaysOnline',
+        'typingIndicator': 'typingMode',
+        'autoRecording': 'presenceMode',
+        'presenceAutoSwitch': 'presenceAutoSwitch'
+      };
+
+      const dbColumn = featureMap[feature];
+      if (!dbColumn) {
+        return res.status(400).json({ message: `Unknown feature: ${feature}` });
+      }
+
+      // Build update object
+      const updateData: any = {};
+      
+      if (dbColumn === 'typingMode') {
+        updateData[dbColumn] = enabled ? 'composing' : 'none';
+      } else if (dbColumn === 'presenceMode') {
+        updateData[dbColumn] = enabled ? 'recording' : 'none';
+      } else {
+        updateData[dbColumn] = enabled;
+      }
+
+      // Update bot instance
+      await storage.updateBotInstance(botId, updateData);
+
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: botId,
+        type: 'feature_toggle',
+        description: `Master control toggled ${feature} to ${enabled} for bot ${bot.name}`,
+        metadata: { feature, enabled, tenancy },
+        serverName: getServerName()
+      });
+
+      res.json({ 
+        success: true, 
+        message: `Feature ${feature} ${enabled ? 'enabled' : 'disabled'} successfully` 
+      });
+    } catch (error) {
+      console.error("Feature management error:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to toggle feature" 
+      });
+    }
+  });
+
+  // Command sync across tenancies
+  app.post("/api/master/sync-commands", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { sourceServer, targetServers, commandIds } = req.body;
+
+      if (!sourceServer || !targetServers || !commandIds) {
+        return res.status(400).json({ message: "Missing required fields: sourceServer, targetServers, commandIds" });
+      }
+
+      if (!Array.isArray(targetServers) || !Array.isArray(commandIds)) {
+        return res.status(400).json({ message: "targetServers and commandIds must be arrays" });
+      }
+
+      // Get commands from source server
+      const commands = await storage.getCommandsByIds(commandIds);
+      if (commands.length === 0) {
+        return res.status(404).json({ message: "No commands found with provided IDs" });
+      }
+
+      let syncedCount = 0;
+      const errors: string[] = [];
+
+      // Sync to each target server
+      for (const targetServer of targetServers) {
+        try {
+          for (const command of commands) {
+            // Create command in target server (with new ID)
+            await storage.createCommand({
+              name: command.name,
+              trigger: command.trigger,
+              response: command.response,
+              description: command.description,
+              category: command.category,
+              isActive: command.isActive,
+              serverName: targetServer
+            });
+            syncedCount++;
+          }
+        } catch (error) {
+          errors.push(`Failed to sync to ${targetServer}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        syncedCount,
+        totalAttempts: targetServers.length * commandIds.length,
+        errors: errors.length > 0 ? errors : undefined
+      });
+    } catch (error) {
+      console.error("Command sync error:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to sync commands" 
+      });
+    }
+  });
+
+  // Bot migration between servers
+  app.post("/api/master/migrate-bot", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { botId, sourceServer, targetServer } = req.body;
+
+      if (!botId || !sourceServer || !targetServer) {
+        return res.status(400).json({ message: "Missing required fields: botId, sourceServer, targetServer" });
+      }
+
+      if (sourceServer === targetServer) {
+        return res.status(400).json({ message: "Source and target servers must be different" });
+      }
+
+      // Get bot from source server
+      const bot = await storage.getBotInstance(botId);
+      if (!bot) {
+        return res.status(404).json({ message: "Bot not found" });
+      }
+
+      if (bot.serverName !== sourceServer) {
+        return res.status(400).json({ message: "Bot does not belong to source server" });
+      }
+
+      // Check target server capacity
+      const targetServerInfo = await storage.getServerByName(targetServer);
+      const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
+      
+      if (targetServerInfo && targetServerInfo.currentBotCount >= targetServerInfo.maxBotCount) {
+        return res.status(400).json({ message: "Target server is at full capacity" });
+      }
+
+      // Update bot's server assignment
+      await storage.updateBotInstance(botId, {
+        serverName: targetServer
+      });
+
+      // Update server bot counts
+      await storage.updateServerBotCount(sourceServer, -1);
+      await storage.updateServerBotCount(targetServer, 1);
+
+      // Update God Registry
+      if (bot.phoneNumber) {
+        const cleanedPhone = bot.phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+        await storage.updateGlobalRegistration(cleanedPhone, {
+          tenancyName: targetServer
+        });
+      }
+
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: botId,
+        type: 'migration',
+        description: `Bot migrated from ${sourceServer} to ${targetServer}`,
+        metadata: { sourceServer, targetServer },
+        serverName: getServerName()
+      });
+
+      res.json({ 
+        success: true, 
+        message: `Bot successfully migrated from ${sourceServer} to ${targetServer}` 
+      });
+    } catch (error) {
+      console.error("Bot migration error:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to migrate bot" 
+      });
+    }
+  });
+
+  // Batch operations on multiple bots
+  app.post("/api/master/batch-operation", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { operation, botIds, targetServer } = req.body;
+
+      if (!operation || !botIds || !Array.isArray(botIds)) {
+        return res.status(400).json({ message: "Missing required fields: operation, botIds (array)" });
+      }
+
+      let completedCount = 0;
+      let failedCount = 0;
+      const errors: string[] = [];
+
+      for (const botId of botIds) {
+        try {
+          const bot = await storage.getBotInstance(botId);
+          if (!bot) {
+            errors.push(`Bot ${botId} not found`);
+            failedCount++;
+            continue;
+          }
+
+          switch (operation) {
+            case 'approve':
+              await storage.updateBotInstance(botId, {
+                approvalStatus: 'approved',
+                approvalDate: new Date().toISOString(),
+                expirationMonths: 3
+              });
+              completedCount++;
+              break;
+
+            case 'revoke':
+              await storage.updateBotInstance(botId, {
+                approvalStatus: 'dormant'
+              });
+              completedCount++;
+              break;
+
+            case 'delete':
+              await storage.deleteBotInstance(botId);
+              completedCount++;
+              break;
+
+            case 'migrate':
+              if (!targetServer) {
+                errors.push(`Bot ${botId}: targetServer required for migration`);
+                failedCount++;
+                continue;
+              }
+              await storage.updateBotInstance(botId, {
+                serverName: targetServer
+              });
+              completedCount++;
+              break;
+
+            case 'start':
+              if (bot.serverName === getServerName()) {
+                await botManager.startBot(botId);
+                completedCount++;
+              } else {
+                errors.push(`Bot ${botId}: Cannot start bot on remote server ${bot.serverName}`);
+                failedCount++;
+              }
+              break;
+
+            case 'stop':
+              if (bot.serverName === getServerName()) {
+                await botManager.stopBot(botId);
+                completedCount++;
+              } else {
+                errors.push(`Bot ${botId}: Cannot stop bot on remote server ${bot.serverName}`);
+                failedCount++;
+              }
+              break;
+
+            default:
+              errors.push(`Bot ${botId}: Unknown operation ${operation}`);
+              failedCount++;
+          }
+        } catch (error) {
+          errors.push(`Bot ${botId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          failedCount++;
+        }
+      }
+
+      res.json({
+        success: true,
+        completedCount,
+        failedCount,
+        totalCount: botIds.length,
+        errors: errors.length > 0 ? errors : undefined
+      });
+    } catch (error) {
+      console.error("Batch operation error:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to perform batch operation" 
+      });
+    }
+  });
+
   // Delete server from registry
   app.delete("/api/master/server/:serverName", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
