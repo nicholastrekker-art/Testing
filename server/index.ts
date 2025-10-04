@@ -31,14 +31,14 @@ async function startScheduledBotMonitoring() {
 
   const checkApprovedBots = async () => {
     try {
-      // Get all approved bots (not just autoStart ones)
+      // Get ALL approved bots for this server - includes existing and newly approved bots
       const approvedBots = await storage.getApprovedBots();
 
       if (approvedBots.length === 0) {
         return;
       }
 
-      console.log(`🔍 Monitoring: Checking ${approvedBots.length} approved bot(s)...`);
+      console.log(`🔍 Monitoring: Checking ${approvedBots.length} approved bot(s) - ALL approved bots will be auto-started...`);
 
       for (const bot of approvedBots) {
         try {
@@ -46,38 +46,21 @@ async function startScheduledBotMonitoring() {
           const existingBot = botManager.getBot(bot.id);
           const isOnline = existingBot?.getStatus() === 'online';
 
+          // Auto-start ALL approved bots that are not online (including newly approved ones)
           if (!existingBot || !isOnline) {
-            console.log(`🔄 Monitoring: Restarting bot ${bot.name} (${bot.id}) - Status: ${existingBot?.getStatus() || 'not found'}`);
-
-            // Create activity log
-            await storage.createActivity({
-              botInstanceId: bot.id,
-              type: 'monitoring',
-              description: 'Bot auto-restarted by monitoring - was offline or disconnected',
-              serverName: bot.serverName
-            });
-
-            // Start the bot
-            if (!existingBot) {
-              await botManager.createBot(bot.id, bot);
-            }
+            console.log(`🔄 Monitoring: Auto-starting approved bot ${bot.name} (${bot.id}) - Status: ${existingBot?.getStatus() || 'not found'}`);
+            console.log(`   📋 This applies to ALL approved bots, including newly approved ones`);
             await botManager.startBot(bot.id);
-
-            console.log(`✅ Monitoring: Bot ${bot.name} restarted successfully`);
+            console.log(`   ✅ Bot ${bot.name} auto-started successfully`);
+          } else {
+            console.log(`   ✓ Bot ${bot.name} already online`);
           }
         } catch (error) {
-          console.error(`❌ Monitoring: Failed to restart bot ${bot.name}:`, error);
-          // Log the error as an activity
-          await storage.createActivity({
-            botInstanceId: bot.id,
-            type: 'error',
-            description: `Monitoring failed to restart bot: ${error instanceof Error ? error.message : 'Unknown error'}`,
-            serverName: bot.serverName
-          });
+          console.error(`❌ Monitoring: Failed to auto-start bot ${bot.id}:`, error);
         }
       }
     } catch (error) {
-      console.error('❌ Monitoring: Error in checkApprovedBots:', error);
+      console.error('❌ Monitoring check failed:', error);
     }
   };
 

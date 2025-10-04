@@ -61,7 +61,7 @@ class BotManager {
         throw new Error(`Bot with ID ${botId} not found`);
       }
 
-      // Only approved bots should be auto-started
+      // AUTO-START POLICY: Only approved bots are auto-started (applies to ALL approved bots)
       if (botInstance.approvalStatus !== 'approved') {
         console.log(`BotManager: Bot ${botId} is not approved, skipping auto-start`);
         return;
@@ -74,8 +74,9 @@ class BotManager {
         this.bots.delete(botId);
       }
 
-      // Always create fresh instance for approved bots
+      // Always create fresh instance for ALL approved bots (including newly approved ones)
       console.log(`BotManager: Starting approved bot ${botId} (${botInstance.name}) on server ${botInstance.serverName}`);
+      console.log(`BotManager: AUTO-START POLICY - ALL approved bots will be started and monitored`);
       
       // Clear session files for fresh start (tenant-isolated)
       this.clearBotSessionFiles(botId, botInstance.serverName);
