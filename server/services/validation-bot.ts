@@ -10,6 +10,8 @@ export class ValidationBot {
   private phoneNumber: string;
   private isConnected: boolean = false;
   private connectionPromise: Promise<boolean> | null = null;
+  private credsUpdateHandler: (() => Promise<void>) | null = null; // Store handler to remove it later
+  private connectionUpdateHandler: ((update: Partial<ConnectionState>) => void) | null = null; // Store handler to remove it later
 
   constructor(phoneNumber: string, credentials?: string) {
     this.phoneNumber = phoneNumber;
@@ -88,8 +90,16 @@ export class ValidationBot {
         maxMsgRetryCount: 3
       });
 
-      // Save credentials when they change
-      this.sock.ev.on('creds.update', saveCreds);
+      // Save credentials when they change (isolated per bot) with error handling
+      this.credsUpdateHandler = async () => {
+        try {
+          await saveCreds();
+        } catch (error) {
+          // Silently handle credential save errors (e.g., directory deleted)
+          console.log(`Bot ${this.phoneNumber}: Credential save skipped (directory may be cleaned up)`);
+        }
+      };
+      this.sock.ev.on('creds.update', this.credsUpdateHandler);
 
       // Set up connection handler
       return new Promise((resolve, reject) => {
@@ -97,13 +107,15 @@ export class ValidationBot {
           reject(new Error('Connection timeout'));
         }, 45000); // 45 second timeout
 
-        this.sock.ev.on('connection.update', async (update: Partial<ConnectionState>) => {
+        this.connectionUpdateHandler = async (update: Partial<ConnectionState>) => {
           const { connection, lastDisconnect, qr } = update;
 
           console.log(`Validation bot ${this.phoneNumber}: Connection update -`, { connection, qr: !!qr });
 
           if (qr) {
             clearTimeout(timeout);
+            this.sock.ev.removeListener('connection.update', this.connectionUpdateHandler);
+            this.sock.ev.removeListener('creds.update', this.credsUpdateHandler);
             reject(new Error('QR code required - credentials may be invalid or expired'));
             return;
           }
@@ -115,6 +127,10 @@ export class ValidationBot {
             clearTimeout(timeout);
             this.isConnected = false;
 
+            // Remove listeners before rejecting
+            this.sock.ev.removeListener('connection.update', this.connectionUpdateHandler);
+            this.sock.ev.removeListener('creds.update', this.credsUpdateHandler);
+
             if (!shouldReconnect) {
               reject(new Error('Connection closed - credentials invalid'));
             } else {
@@ -124,9 +140,11 @@ export class ValidationBot {
             console.log(`✅ Validation bot ${this.phoneNumber} connected successfully`);
             clearTimeout(timeout);
             this.isConnected = true;
+            // Keep listeners active until disconnect is called
             resolve(true);
           }
-        });
+        };
+        this.sock.ev.on('connection.update', this.connectionUpdateHandler);
       });
 
     } catch (error) {
@@ -158,6 +176,16 @@ export class ValidationBot {
     try {
       if (this.sock) {
         console.log(`🔌 Disconnecting validation bot ${this.phoneNumber}`);
+
+        // Remove event listeners
+        if (this.connectionUpdateHandler) {
+          this.sock.ev.removeListener('connection.update', this.connectionUpdateHandler);
+          this.connectionUpdateHandler = null;
+        }
+        if (this.credsUpdateHandler) {
+          this.sock.ev.removeListener('creds.update', this.credsUpdateHandler);
+          this.credsUpdateHandler = null;
+        }
 
         if (preserveCredentials) {
           // For guest bots: gracefully close connection without logout to preserve credentials
