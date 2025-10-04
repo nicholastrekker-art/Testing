@@ -281,29 +281,81 @@ export default function Dashboard() {
       <div className="p-6">
         {/* TREKKER-MD Welcome & Contact */}
         <Card className="bg-gradient-to-r from-blue-600 to-purple-600 border-none mb-8 text-white">
-          <CardContent className="p-4">
-            <div className="text-left">
-              <pre className="text-xs md:text-sm font-mono text-white whitespace-pre-wrap leading-relaxed">
-{`╔════◇
-║『 𝐘𝐎𝐔'𝐕𝐄 𝐂𝐇𝐎𝐒𝐄𝐍 TREKKER-MD LIFETIME BOT  』
-╚══════════════╝
-╔═════◇
-║ 『••• 𝗩𝗶𝘀𝗶𝘁 𝗙𝗼𝗿 𝗛𝗲𝗹𝗽 •••』
-║❒ TELEGRAM: https://t.me/trekkermd
-║❒ INSTAGRAM: https://www.instagram.com/nicholaso_tesla?igsh=eG5oNWVuNXF6eGU0_
-║📞 WhatsApp: +254704897825
-║❒ PairSite: https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/
-║❒ 𝐖𝐚𝐂𝐡𝐚𝐧𝐧𝐞𝐥: https://whatsapp.com/channel/0029Vb6vpSv6WaKiG6ZIy73H
-║ 💜💜💜
-╚══════════════╝ 
- DM the owner only for lifetime TREKKER-MD bot __No expiry__
-______________________________
+          <CardContent className="p-6">
+            <div className="text-center">
+              <div className="mb-6">
+                <h2 className="text-3xl font-bold mb-3">🚀 TREKKER-MD LIFETIME BOT</h2>
+                <p className="text-lg text-blue-100 mb-2">You've Chosen the Ultra-Fast WhatsApp Automation</p>
+                <p className="text-sm text-blue-200">No Expiry • Lifetime Access • Premium Features</p>
+              </div>
 
-Use the Quoted Session ID to Deploy your Bot.
-❤️Support us donations keeps this services running❤️
+              <div className="bg-white/10 rounded-lg p-4 mb-6 backdrop-blur-sm">
+                <h3 className="text-xl font-semibold mb-3">📋 Quick Start Guide</h3>
+                <div className="text-left space-y-2 text-sm">
+                  <p>✅ Use the Quoted Session ID to Deploy your Bot</p>
+                  <p>✅ DM the owner for lifetime TREKKER-MD bot support</p>
+                  <p>✅ Support us - Donations keep this service running</p>
+                </div>
+              </div>
 
-Powered by TREKKER-MD....ultra fast bot.`}
-              </pre>
+              <div className="border-t border-white/20 pt-6 mt-6">
+                <h3 className="text-lg font-semibold mb-4">🔗 Connect With Us</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <a
+                    href="https://t.me/trekkermd"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
+                  >
+                    <i className="fab fa-telegram text-xl"></i>
+                    <span>Telegram</span>
+                  </a>
+
+                  <a
+                    href="https://www.instagram.com/nicholaso_tesla?igsh=eG5oNWVuNXF6eGU0_"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
+                  >
+                    <i className="fab fa-instagram text-xl"></i>
+                    <span>Instagram</span>
+                  </a>
+
+                  <a
+                    href="https://wa.me/254704897825"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
+                  >
+                    <i className="fab fa-whatsapp text-xl"></i>
+                    <span>WhatsApp</span>
+                  </a>
+
+                  <a
+                    href="https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
+                  >
+                    <i className="fas fa-qrcode text-xl"></i>
+                    <span>Pair Site</span>
+                  </a>
+
+                  <a
+                    href="https://whatsapp.com/channel/0029Vb6vpSv6WaKiG6ZIy73H"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium sm:col-span-2 lg:col-span-1"
+                  >
+                    <i className="fab fa-whatsapp text-xl"></i>
+                    <span>WhatsApp Channel</span>
+                  </a>
+                </div>
+              </div>
+
+              <p className="text-xs text-blue-200 mt-6 italic">
+                Powered by TREKKER-MD • Ultra Fast Bot 💜
+              </p>
             </div>
           </CardContent>
         </Card>
