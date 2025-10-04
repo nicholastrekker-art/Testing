@@ -39,13 +39,16 @@ export function OfferManagement() {
 
   const updateOfferMutation = useMutation({
     mutationFn: async (data: { durationType?: string; durationValue?: number; isActive?: boolean }) => {
-      return apiRequest("/api/offer/configure", {
+      const response = await fetch("/api/offer/configure", {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error("Failed to update offer");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/offer/status"] });

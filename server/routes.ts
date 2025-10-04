@@ -4018,7 +4018,9 @@ Thank you for using TREKKER-MD! 🚀
 
       // Step 5: Prepare bot data with auto-approval if offer is active
       const parsedFeatures = features ? JSON.parse(features) : {};
-      const botData = {
+      
+      // Note: serverName will be added dynamically based on target server selection
+      const botData: any = {
         name: botName,
         phoneNumber: cleanedPhone,
         credentials,
