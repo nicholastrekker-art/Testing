@@ -34,10 +34,11 @@ export class WhatsAppBot {
 
   constructor(botInstance: BotInstance) {
     this.botInstance = botInstance;
-    // Each bot gets its own isolated auth directory
-    this.authDir = join(process.cwd(), 'auth', `bot_${botInstance.id}`);
+    // Each bot gets its own isolated auth directory under its tenancy
+    // Structure: auth/{serverName}/bot_{botId}
+    this.authDir = join(process.cwd(), 'auth', botInstance.serverName, `bot_${botInstance.id}`);
 
-    // Create auth directory if it doesn't exist
+    // Create auth directory if it doesn't exist (including parent directories)
     if (!existsSync(this.authDir)) {
       mkdirSync(this.authDir, { recursive: true });
     }
@@ -470,12 +471,15 @@ export class WhatsAppBot {
       // Get message text first to check if it's a command
       const messageText = this.extractMessageText(message.message);
       const commandPrefix = process.env.BOT_PREFIX || '.';
-      const isCommand = messageText && messageText.startsWith(commandPrefix);
+      const isCommand = messageText && messageText.trim().startsWith(commandPrefix);
 
-      // Skip messages from the bot itself ONLY if they're not commands
-      // This allows the bot owner to execute commands
+      // Log message for debugging
+      console.log(`Bot ${this.botInstance.name}: Processing message - Text: "${messageText}", FromMe: ${message.key.fromMe}, IsCommand: ${isCommand}`);
+
+      // UNIVERSAL RULE: Skip messages from the bot itself ONLY if they're not commands
+      // This applies to ALL bots (current and future) - allows bot owner to execute commands
       if (message.key.fromMe && !isCommand) {
-        console.log(`Bot ${this.botInstance.name}: Skipping own message (not a command)`);
+        console.log(`Bot ${this.botInstance.name}: Skipping own non-command message (applies to all bots)`);
         return;
       }
 
@@ -488,29 +492,19 @@ export class WhatsAppBot {
         lastActivity: new Date()
       });
 
-      console.log(`Bot ${this.botInstance.name}: Received message: "${messageText}" from ${message.key.remoteJid}`);
-
       // Handle commands (only respond to messages with the configured prefix)
       if (isCommand) {
-        console.log(`Bot ${this.botInstance.name}: Detected command: "${messageText.trim()}"`);
+        console.log(`Bot ${this.botInstance.name}: ✅ COMMAND DETECTED: "${messageText.trim()}" from ${message.key.remoteJid}`);
         
-        // Check if bot is approved before processing commands
-        if (this.botInstance.approvalStatus !== 'approved') {
-          console.log(`Bot ${this.botInstance.name}: Command blocked - bot not approved`);
-          if (message.key.remoteJid) {
-            await this.sock.sendMessage(message.key.remoteJid, { 
-              text: '⏳ This bot is pending approval. Commands will be available once approved by an admin.' 
-            });
-          }
-          return;
-        }
-
+        // Process commands for all bots regardless of approval status
         await this.handleCommand(message, messageText);
         return;
+      } else {
+        console.log(`Bot ${this.botInstance.name}: Not a command (no prefix or empty text)`);
       }
 
-      // Auto-reactions and features for non-command messages (only for approved bots)
-      if (this.botInstance.approvalStatus === 'approved') {
+      // Auto-reactions and features for non-command messages (for all bots)
+      if (!message.key.fromMe) {
         await this.handleAutoFeatures(message);
       }
 
