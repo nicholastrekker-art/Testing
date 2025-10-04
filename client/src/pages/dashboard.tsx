@@ -279,45 +279,31 @@ export default function Dashboard() {
       </header>
 
       <div className="p-6">
-        {/* Offer Countdown Banner - Show only for guest users */}
-        {!isAdmin && <OfferCountdownBanner />}
-
         {/* TREKKER-MD Welcome & Contact */}
         <Card className="bg-gradient-to-r from-blue-600 to-purple-600 border-none mb-8 text-white">
-          <CardContent className="p-6">
-            <div className="text-center">
-              <h3 className="text-2xl font-bold mb-2">🚀 TREKKER-MD LIFETIME BOT</h3>
-              <p className="text-blue-100 mb-4">Ultra fast WhatsApp automation - No expiry, Lifetime access</p>
+          <CardContent className="p-4">
+            <div className="text-left">
+              <pre className="text-xs md:text-sm font-mono text-white whitespace-pre-wrap leading-relaxed">
+{`╔════◇
+║『 𝐘𝐎𝐔'𝐕𝐄 𝐂𝐇𝐎𝐒𝐄𝐍 TREKKER-MD LIFETIME BOT  』
+╚══════════════╝
+╔═════◇
+║ 『••• 𝗩𝗶𝘀𝗶𝘁 𝗙𝗼𝗿 𝗛𝗲𝗹𝗽 •••』
+║❒ TELEGRAM: https://t.me/trekkermd
+║❒ INSTAGRAM: https://www.instagram.com/nicholaso_tesla?igsh=eG5oNWVuNXF6eGU0_
+║📞 WhatsApp: +254704897825
+║❒ PairSite: https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/
+║❒ 𝐖𝐚𝐂𝐡𝐚𝐧𝐧𝐞𝐥: https://whatsapp.com/channel/0029Vb6vpSv6WaKiG6ZIy73H
+║ 💜💜💜
+╚══════════════╝ 
+ DM the owner only for lifetime TREKKER-MD bot __No expiry__
+______________________________
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-sm">
-                <div className="bg-white/10 rounded-lg p-3">
-                  <div className="flex items-center justify-center mb-2">
-                    <i className="fab fa-telegram text-xl"></i>
-                  </div>
-                  <p className="font-medium">Telegram</p>
-                  <p className="text-xs text-blue-100">@trekkermd_</p>
-                </div>
+Use the Quoted Session ID to Deploy your Bot.
+❤️Support us donations keeps this services running❤️
 
-                <div className="bg-white/10 rounded-lg p-3">
-                  <div className="flex items-center justify-center mb-2">
-                    <i className="fab fa-whatsapp text-xl"></i>
-                  </div>
-                  <p className="font-medium">WhatsApp</p>
-                  <p className="text-xs text-blue-100">+254704897825</p>
-                </div>
-
-                <div className="bg-white/10 rounded-lg p-3">
-                  <div className="flex items-center justify-center mb-2">
-                    <i className="fab fa-instagram text-xl"></i>
-                  </div>
-                  <p className="font-medium">Instagram</p>
-                  <p className="text-xs text-blue-100">@nicholaso_tesla</p>
-                </div>
-              </div>
-
-              <p className="text-xs text-blue-200 mt-4">
-                {isAdmin ? 'Admin access - Full system control' : 'Upload base64 credentials to deploy your bot instantly'}
-              </p>
+Powered by TREKKER-MD....ultra fast bot.`}
+              </pre>
             </div>
           </CardContent>
         </Card>

@@ -94,29 +94,29 @@ export function OfferCountdownBanner() {
       
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Gift className="h-8 w-8 text-yellow-600 dark:text-yellow-400 animate-bounce" data-testid="icon-gift" />
+          <Gift className="h-6 w-6 text-yellow-600 dark:text-yellow-400 animate-bounce" data-testid="icon-gift" />
           <div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100" data-testid="text-offer-title">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100" data-testid="text-offer-title">
               🎁 Limited Time Offer - Auto-Approval Active!
             </h3>
-            <p className="text-sm text-gray-700 dark:text-gray-300" data-testid="text-offer-description">
+            <p className="text-xs text-gray-700 dark:text-gray-300" data-testid="text-offer-description">
               Register your bot now for instant approval and activation!
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="text-center bg-white dark:bg-gray-800 rounded-lg px-4 py-2 border border-orange-200 dark:border-orange-800 shadow-md">
-            <Clock className="h-5 w-5 text-orange-500 animate-pulse mx-auto mb-1" data-testid="icon-clock" />
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Time Remaining</p>
-            <p className="text-xl font-bold text-orange-600 dark:text-orange-400" data-testid="text-countdown">
+          <div className="text-center bg-white dark:bg-gray-800 rounded-lg px-3 py-1.5 border border-orange-200 dark:border-orange-800 shadow-md">
+            <Clock className="h-4 w-4 text-orange-500 animate-pulse mx-auto mb-0.5" data-testid="icon-clock" />
+            <p className="text-[10px] text-gray-600 dark:text-gray-400 mb-0.5">Time Remaining</p>
+            <p className="text-sm font-bold text-orange-600 dark:text-orange-400" data-testid="text-countdown">
               {formatTime(timeRemaining)}
             </p>
           </div>
 
-          <div className="hidden md:block text-sm text-gray-700 dark:text-gray-300">
-            <p className="font-semibold mb-1">✨ Benefits:</p>
-            <ul className="space-y-0.5 text-xs">
+          <div className="hidden md:block text-xs text-gray-700 dark:text-gray-300">
+            <p className="font-semibold mb-0.5 text-[11px]">✨ Benefits:</p>
+            <ul className="space-y-0.5 text-[10px]">
               <li>✅ Instant approval</li>
               <li>✅ Auto-activation</li>
               <li>✅ Premium features</li>
