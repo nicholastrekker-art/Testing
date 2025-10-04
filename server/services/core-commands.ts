@@ -868,10 +868,10 @@ commandRegistry.register({
       });
     }
     
-    // Final message
+    // Final message - just the last emoji
     await new Promise(resolve => setTimeout(resolve, 300));
     await client.sendMessage(from, {
-      text: `${happyEmojis[happyEmojis.length - 1]} *Feeling Happy!* ${happyEmojis[happyEmojis.length - 1]}\n\n✨ Spread the joy and happiness! ✨`,
+      text: happyEmojis[happyEmojis.length - 1],
       edit: sentMsg.key
     });
   }
@@ -896,9 +896,10 @@ commandRegistry.register({
       });
     }
     
+    // Final message - just the last emoji
     await new Promise(resolve => setTimeout(resolve, 300));
     await client.sendMessage(from, {
-      text: `${sadEmojis[sadEmojis.length - 1]} *Feeling Sad* ${sadEmojis[sadEmojis.length - 1]}\n\n💙 Hope you feel better soon! 💙`,
+      text: sadEmojis[sadEmojis.length - 1],
       edit: sentMsg.key
     });
   }
@@ -923,9 +924,10 @@ commandRegistry.register({
       });
     }
     
+    // Final message - just the last emoji
     await new Promise(resolve => setTimeout(resolve, 300));
     await client.sendMessage(from, {
-      text: `${angryEmojis[angryEmojis.length - 1]} *Feeling Angry!* ${angryEmojis[angryEmojis.length - 1]}\n\n*Take a deep breath and calm down!* 🌪️`,
+      text: angryEmojis[angryEmojis.length - 1],
       edit: sentMsg.key
     });
   }
@@ -950,9 +952,10 @@ commandRegistry.register({
       });
     }
     
+    // Final message - just the last emoji
     await new Promise(resolve => setTimeout(resolve, 300));
     await client.sendMessage(from, {
-      text: `${loveEmojis[loveEmojis.length - 1]} *Sending Love!* ${loveEmojis[loveEmojis.length - 1]}\n\n💝 Love and peace to everyone! 💝`,
+      text: loveEmojis[loveEmojis.length - 1],
       edit: sentMsg.key
     });
   }
