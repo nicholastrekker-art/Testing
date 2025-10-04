@@ -7,6 +7,7 @@ import Dashboard from "@/pages/dashboard";
 import BotInstances from "@/pages/bot-instances";
 import Commands from "@/pages/commands";
 import AdminConsole from "@/pages/admin-console";
+import CrossServerBots from "@/pages/cross-server-bots";
 import NotFound from "@/pages/not-found";
 import GuestPhoneVerification from "@/pages/guest/verification";
 import GuestBotManagement from "@/pages/guest/bot-management";
@@ -35,6 +36,11 @@ function Router() {
           <Route path="/admin">
             <ProtectedRoute requireAdmin={true}>
               <AdminConsole />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/cross-server-bots">
+            <ProtectedRoute requireAdmin={true}>
+              <CrossServerBots />
             </ProtectedRoute>
           </Route>
           <Route path="/guest/verification" component={GuestPhoneVerification} />
