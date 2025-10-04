@@ -8,9 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Bot, Play, Square, RefreshCw, Settings, Trash2, ExternalLink, AlertTriangle, Shield, CheckCircle, Phone, Eye, EyeOff, Upload, Power, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { OfferCountdownDialog } from "@/components/offer-countdown-dialog";
-
-
 interface BotInfo {
   id: string;
   botId: string;
@@ -506,9 +503,6 @@ export default function GuestBotManagement() {
   return (
     <div className="min-h-screen w-full p-6 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Offer Countdown Dialog - Always render for guests */}
-        <OfferCountdownDialog />
-
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-3">

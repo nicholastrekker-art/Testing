@@ -11,6 +11,7 @@ import { useWebSocket } from "@/hooks/use-websocket";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { OfferCountdownDialog } from "@/components/offer-countdown-dialog";
 import AddBotModal from "@/components/add-bot-modal";
 import CommandManagement from "@/components/command-management";
 import GuestBotRegistration from "@/components/guest-bot-registration";
@@ -220,6 +221,9 @@ export default function Dashboard() {
 
   return (
     <div>
+      {/* Offer Countdown Dialog - Show only for guest users */}
+      {!isAdmin && <OfferCountdownDialog />}
+      
       {/* Header */}
       <header className="bg-card border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
