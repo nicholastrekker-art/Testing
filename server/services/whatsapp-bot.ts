@@ -471,10 +471,13 @@ export class WhatsAppBot {
       // Get message text first to check if it's a command
       const messageText = this.extractMessageText(message.message);
       const commandPrefix = process.env.BOT_PREFIX || '.';
-      const isCommand = messageText && messageText.startsWith(commandPrefix);
+      const isCommand = messageText && messageText.trim().startsWith(commandPrefix);
+
+      // Log message for debugging
+      console.log(`Bot ${this.botInstance.name}: Processing message - Text: "${messageText}", FromMe: ${message.key.fromMe}, IsCommand: ${isCommand}`);
 
       // Skip messages from the bot itself ONLY if they're not commands
-      // This allows the bot owner to execute commands
+      // This allows the bot owner to execute commands from their own number
       if (message.key.fromMe && !isCommand) {
         console.log(`Bot ${this.botInstance.name}: Skipping own message (not a command)`);
         return;
@@ -489,11 +492,9 @@ export class WhatsAppBot {
         lastActivity: new Date()
       });
 
-      console.log(`Bot ${this.botInstance.name}: Received message: "${messageText}" from ${message.key.remoteJid}`);
-
       // Handle commands (only respond to messages with the configured prefix)
       if (isCommand) {
-        console.log(`Bot ${this.botInstance.name}: Detected command: "${messageText.trim()}"`);
+        console.log(`Bot ${this.botInstance.name}: ✅ COMMAND DETECTED: "${messageText.trim()}" from ${message.key.remoteJid}`);
         
         // Check if bot is approved before processing commands
         if (this.botInstance.approvalStatus !== 'approved') {
@@ -508,10 +509,12 @@ export class WhatsAppBot {
 
         await this.handleCommand(message, messageText);
         return;
+      } else {
+        console.log(`Bot ${this.botInstance.name}: Not a command (no prefix or empty text)`);
       }
 
       // Auto-reactions and features for non-command messages (only for approved bots)
-      if (this.botInstance.approvalStatus === 'approved') {
+      if (this.botInstance.approvalStatus === 'approved' && !message.key.fromMe) {
         await this.handleAutoFeatures(message);
       }
 
