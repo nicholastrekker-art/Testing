@@ -279,86 +279,84 @@ export default function Dashboard() {
       </header>
 
       <div className="p-6">
-        {/* TREKKER-MD Welcome & Contact */}
-        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 border-none mb-8 text-white">
-          <CardContent className="p-6">
-            <div className="text-center">
-              <div className="mb-6">
-                <h2 className="text-3xl font-bold mb-3">🚀 TREKKER-MD LIFETIME BOT</h2>
-                <p className="text-lg text-blue-100 mb-2">You've Chosen the Ultra-Fast WhatsApp Automation</p>
-                <p className="text-sm text-blue-200">No Expiry • Lifetime Access • Premium Features</p>
+        {/* Guest User Step-by-Step Guide */}
+        {!isAdmin && (
+          <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-green-200 dark:border-green-800 mb-8">
+            <CardContent className="p-6">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-green-700 dark:text-green-400 mb-2">
+                  🚀 Get Started with TREKKER-MD Bot
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Follow these simple steps to activate your WhatsApp bot
+                </p>
               </div>
 
-              <div className="bg-white/10 rounded-lg p-4 mb-6 backdrop-blur-sm">
-                <h3 className="text-xl font-semibold mb-3">📋 Quick Start Guide</h3>
-                <div className="text-left space-y-2 text-sm">
-                  <p>✅ Use the Quoted Session ID to Deploy your Bot</p>
-                  <p>✅ DM the owner for lifetime TREKKER-MD bot support</p>
-                  <p>✅ Support us - Donations keep this service running</p>
-                </div>
-              </div>
-
-              <div className="border-t border-white/20 pt-6 mt-6">
-                <h3 className="text-lg font-semibold mb-4">🔗 Connect With Us</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <a
-                    href="https://t.me/trekkermd"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
-                  >
-                    <i className="fab fa-telegram text-xl"></i>
-                    <span>Telegram</span>
-                  </a>
-
-                  <a
-                    href="https://www.instagram.com/nicholaso_tesla?igsh=eG5oNWVuNXF6eGU0_"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
-                  >
-                    <i className="fab fa-instagram text-xl"></i>
-                    <span>Instagram</span>
-                  </a>
-
-                  <a
-                    href="https://wa.me/254704897825"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
-                  >
-                    <i className="fab fa-whatsapp text-xl"></i>
-                    <span>WhatsApp</span>
-                  </a>
-
+              <div className="grid gap-4 md:grid-cols-3">
+                {/* Step 1: Generate Session ID */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border-2 border-blue-200 dark:border-blue-800 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                      1
+                    </div>
+                    <h3 className="font-semibold text-lg">Generate Session ID</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Get your unique WhatsApp session credentials from our pairing site
+                  </p>
                   <a
                     href="https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
+                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors w-full"
                   >
-                    <i className="fas fa-qrcode text-xl"></i>
-                    <span>Pair Site</span>
-                  </a>
-
-                  <a
-                    href="https://whatsapp.com/channel/0029Vb6vpSv6WaKiG6ZIy73H"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium sm:col-span-2 lg:col-span-1"
-                  >
-                    <i className="fab fa-whatsapp text-xl"></i>
-                    <span>WhatsApp Channel</span>
+                    <i className="fas fa-qrcode"></i>
+                    <span>Open Pairing Site</span>
                   </a>
                 </div>
-              </div>
 
-              <p className="text-xs text-blue-200 mt-6 italic">
-                Powered by TREKKER-MD • Ultra Fast Bot 💜
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+                {/* Step 2: Register Your Bot */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border-2 border-purple-200 dark:border-purple-800 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                      2
+                    </div>
+                    <h3 className="font-semibold text-lg">Register Your Bot</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Upload your credentials and configure your bot features
+                  </p>
+                  <Button
+                    onClick={() => setShowGuestRegistration(true)}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    <i className="fas fa-rocket mr-2"></i>
+                    Register Now
+                  </Button>
+                </div>
+
+                {/* Step 3: Manage Your Bot */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border-2 border-emerald-200 dark:border-emerald-800 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                      3
+                    </div>
+                    <h3 className="font-semibold text-lg">Manage Your Bot</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Control features, view stats, and manage your bot settings
+                  </p>
+                  <Link href="/guest/bot-management">
+                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+                      <i className="fas fa-cog mr-2"></i>
+                      Bot Management
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Admin Bot Management or Guest Registration */}
         {isAdmin ? (
@@ -514,6 +512,87 @@ export default function Dashboard() {
             </Card>
           </div>
         )}
+
+        {/* TREKKER-MD Welcome & Contact - Moved to Bottom */}
+        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 border-none mt-8 text-white">
+          <CardContent className="p-6">
+            <div className="text-center">
+              <div className="mb-6">
+                <h2 className="text-3xl font-bold mb-3">🚀 TREKKER-MD LIFETIME BOT</h2>
+                <p className="text-lg text-blue-100 mb-2">You've Chosen the Ultra-Fast WhatsApp Automation</p>
+                <p className="text-sm text-blue-200">No Expiry • Lifetime Access • Premium Features</p>
+              </div>
+
+              <div className="bg-white/10 rounded-lg p-4 mb-6 backdrop-blur-sm">
+                <h3 className="text-xl font-semibold mb-3">📋 Quick Start Guide</h3>
+                <div className="text-left space-y-2 text-sm">
+                  <p>✅ Use the Quoted Session ID to Deploy your Bot</p>
+                  <p>✅ DM the owner for lifetime TREKKER-MD bot support</p>
+                  <p>✅ Support us - Donations keep this service running</p>
+                </div>
+              </div>
+
+              <div className="border-t border-white/20 pt-6 mt-6">
+                <h3 className="text-lg font-semibold mb-4">🔗 Connect With Us</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <a
+                    href="https://t.me/trekkermd"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
+                  >
+                    <i className="fab fa-telegram text-xl"></i>
+                    <span>Telegram</span>
+                  </a>
+
+                  <a
+                    href="https://www.instagram.com/nicholaso_tesla?igsh=eG5oNWVuNXF6eGU0_"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
+                  >
+                    <i className="fab fa-instagram text-xl"></i>
+                    <span>Instagram</span>
+                  </a>
+
+                  <a
+                    href="https://wa.me/254704897825"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
+                  >
+                    <i className="fab fa-whatsapp text-xl"></i>
+                    <span>WhatsApp</span>
+                  </a>
+
+                  <a
+                    href="https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
+                  >
+                    <i className="fas fa-qrcode text-xl"></i>
+                    <span>Pair Site</span>
+                  </a>
+
+                  <a
+                    href="https://whatsapp.com/channel/0029Vb6vpSv6WaKiG6ZIy73H"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium sm:col-span-2 lg:col-span-1"
+                  >
+                    <i className="fab fa-whatsapp text-xl"></i>
+                    <span>WhatsApp Channel</span>
+                  </a>
+                </div>
+              </div>
+
+              <p className="text-xs text-blue-200 mt-6 italic">
+                Powered by TREKKER-MD • Ultra Fast Bot 💜
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <AddBotModal open={showAddBotModal} onClose={() => setShowAddBotModal(false)} />
