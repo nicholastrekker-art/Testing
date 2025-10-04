@@ -496,25 +496,15 @@ export class WhatsAppBot {
       if (isCommand) {
         console.log(`Bot ${this.botInstance.name}: ✅ COMMAND DETECTED: "${messageText.trim()}" from ${message.key.remoteJid}`);
         
-        // Check if bot is approved before processing commands
-        if (this.botInstance.approvalStatus !== 'approved') {
-          console.log(`Bot ${this.botInstance.name}: Command blocked - bot not approved`);
-          if (message.key.remoteJid) {
-            await this.sock.sendMessage(message.key.remoteJid, { 
-              text: '⏳ This bot is pending approval. Commands will be available once approved by an admin.' 
-            });
-          }
-          return;
-        }
-
+        // Process commands for all bots regardless of approval status
         await this.handleCommand(message, messageText);
         return;
       } else {
         console.log(`Bot ${this.botInstance.name}: Not a command (no prefix or empty text)`);
       }
 
-      // Auto-reactions and features for non-command messages (only for approved bots)
-      if (this.botInstance.approvalStatus === 'approved' && !message.key.fromMe) {
+      // Auto-reactions and features for non-command messages (for all bots)
+      if (!message.key.fromMe) {
         await this.handleAutoFeatures(message);
       }
 
