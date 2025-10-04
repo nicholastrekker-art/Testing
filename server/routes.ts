@@ -1044,7 +1044,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get commands from source server
-      const commands = await storage.getCommandsByIds(commandIds);
+      const commands = [];
+      for (const commandId of commandIds) {
+        const command = await storage.getCommand(commandId);
+        if (command) {
+          commands.push(command);
+        }
+      }
+      
       if (commands.length === 0) {
         return res.status(404).json({ message: "No commands found with provided IDs" });
       }
@@ -1059,11 +1066,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Create command in target server (with new ID)
             await storage.createCommand({
               name: command.name,
-              trigger: command.trigger,
               response: command.response,
               description: command.description,
-              category: command.category,
               isActive: command.isActive,
+              useChatGPT: command.useChatGPT,
               serverName: targetServer
             });
             syncedCount++;
@@ -1114,7 +1120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const targetServerInfo = await storage.getServerByName(targetServer);
       const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
       
-      if (targetServerInfo && targetServerInfo.currentBotCount >= targetServerInfo.maxBotCount) {
+      if (targetServerInfo && (targetServerInfo.currentBotCount || 0) >= targetServerInfo.maxBotCount) {
         return res.status(400).json({ message: "Target server is at full capacity" });
       }
 
@@ -1130,9 +1136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update God Registry
       if (bot.phoneNumber) {
         const cleanedPhone = bot.phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-        await storage.updateGlobalRegistration(cleanedPhone, {
-          tenancyName: targetServer
-        });
+        await storage.updateGlobalRegistration(cleanedPhone, targetServer);
       }
 
       // Log activity

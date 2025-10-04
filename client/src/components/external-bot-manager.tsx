@@ -360,7 +360,7 @@ export default function ExternalBotManager() {
   };
 
   // Group bots by server tenancy
-  const botsByTenancy = otherTenancyBots.reduce((acc: Record<string, CrossTenancyBot[]>, bot) => {
+  const botsByTenancy = otherTenancyBots.reduce((acc: Record<string, CrossTenancyBot[]>, bot: CrossTenancyBot) => {
     if (!acc[bot.serverName]) {
       acc[bot.serverName] = [];
     }
@@ -408,7 +408,7 @@ export default function ExternalBotManager() {
             ))}
           </TabsList>
 
-          {Object.entries(botsByTenancy).map(([tenancy, bots]) => (
+          {Object.entries(botsByTenancy).map(([tenancy, bots]: [string, CrossTenancyBot[]]) => (
             <TabsContent key={tenancy} value={tenancy} className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
                 <h3 className="font-medium text-blue-800 dark:text-blue-200 mb-2">
@@ -420,7 +420,7 @@ export default function ExternalBotManager() {
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {bots.map((bot) => (
+                {bots.map((bot: CrossTenancyBot) => (
                   <CrossTenancyBotCard
                     key={bot.id}
                     bot={bot}

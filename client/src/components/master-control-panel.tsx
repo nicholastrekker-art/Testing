@@ -92,7 +92,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
   });
 
   // Fetch cross-tenancy bots
-  const { data: crossTenancyBots = [], isLoading: botsLoading, refetch: refetchBots } = useQuery({
+  const { data: crossTenancyBots = [], isLoading: botsLoading, refetch: refetchBots } = useQuery<CrossTenancyBot[]>({
     queryKey: ['/api/master/cross-tenancy-bots'],
     enabled: open,
     refetchInterval: 10000 // Refresh every 10 seconds for real-time updates
