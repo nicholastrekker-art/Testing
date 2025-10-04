@@ -122,6 +122,12 @@ class BotManager {
         this.loadSkipData();
       }
 
+      // Check if bot should be skipped due to repeated failures
+      if (this.shouldSkipBot(botId)) {
+        console.log(`⏭️ BotManager: Skipping bot ${botId} (failed 2+ times, requires manual intervention)`);
+        return;
+      }
+
       // Check if bot is already running
       const existingBot = this.bots.get(botId);
       const currentStatus = existingBot?.getStatus();
@@ -136,7 +142,8 @@ class BotManager {
       // Get bot instance from database
       const botInstance = await storage.getBotInstance(botId);
       if (!botInstance) {
-        throw new Error(`Bot with ID ${botId} not found`);
+        console.error(`BotManager: Bot with ID ${botId} not found in database`);
+        return; // Don't throw - just skip this bot
       }
 
       // AUTO-START POLICY: Only approved bots are auto-started (applies to ALL approved bots)
@@ -145,19 +152,19 @@ class BotManager {
         return;
       }
 
-      // Reset failure count on successful manual start
-      this.resetBotFailures(botId);
-
       // Stop existing bot if it exists and is not online
       if (existingBot && currentStatus !== 'online') {
-        await existingBot.stop();
+        try {
+          await existingBot.stop();
+        } catch (stopError) {
+          console.error(`BotManager: Error stopping existing bot ${botId}:`, stopError);
+        }
         await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
         this.bots.delete(botId);
       }
 
       // Always create fresh instance for ALL approved bots (including newly approved ones)
       console.log(`BotManager: Starting approved bot ${botId} (${botInstance.name}) on server ${botInstance.serverName}`);
-      console.log(`BotManager: AUTO-START POLICY - ALL approved bots will be started and monitored`);
       
       // Clear session files for fresh start (tenant-isolated)
       this.clearBotSessionFiles(botId, botInstance.serverName);
@@ -165,12 +172,20 @@ class BotManager {
       const newBot = new WhatsAppBot(botInstance);
       this.bots.set(botId, newBot);
       
-      // Start bot and keep connection alive
+      // Start bot and keep connection alive (errors handled internally)
       await newBot.start();
       
-      console.log(`BotManager: Bot ${botId} started successfully and connection maintained`);
+      // Only log success if bot actually started (check status)
+      if (newBot.getStatus() === 'online') {
+        console.log(`✅ BotManager: Bot ${botId} started successfully`);
+        // Reset failures on successful start
+        this.resetBotFailures(botId);
+      } else {
+        console.log(`⚠️ BotManager: Bot ${botId} start initiated, waiting for connection`);
+      }
+      
     } catch (error) {
-      console.error(`BotManager: Failed to start bot ${botId}:`, error);
+      console.error(`❌ BotManager: Failed to start bot ${botId}:`, error);
       
       // Clean up failed bot
       const failedBot = this.bots.get(botId);
@@ -183,10 +198,11 @@ class BotManager {
         this.bots.delete(botId);
       }
       
-      // Record failure for monitoring
+      // Record failure for monitoring (will skip after 2 failures)
       this.recordBotFailure(botId);
       
-      throw error;
+      // NEVER throw - server must continue running
+      console.log(`✅ Server continues running despite bot ${botId} failure`);
     }
   }
 

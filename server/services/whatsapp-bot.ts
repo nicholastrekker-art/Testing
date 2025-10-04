@@ -851,14 +851,23 @@ export class WhatsAppBot {
       this.startHeartbeat(); // Start heartbeat monitoring
 
     } catch (error) {
-      console.error(`Error starting Baileys bot ${this.botInstance.name}:`, error);
+      console.error(`❌ Error starting bot ${this.botInstance.name}:`, error);
       this.isRunning = false;
       this.stopHeartbeat();
+      
+      // Handle different error types gracefully
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const is401Error = errorMessage.includes('401') || errorMessage.includes('Unauthorized');
+      
+      if (is401Error) {
+        console.error(`🔐 Bot ${this.botInstance.name}: Invalid or expired credentials (401). Please re-authenticate this bot.`);
+      }
+      
       await this.safeUpdateBotStatus('error');
-      await this.safeCreateActivity('error', `Bot startup failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      await this.safeCreateActivity('error', `Bot startup failed: ${errorMessage}`);
 
-      // Don't throw error to prevent app crash - just log it
-      console.error(`Bot ${this.botInstance.name} failed to start but app continues running`);
+      // NEVER throw error - server must continue running regardless of bot failures
+      console.log(`✅ Server continues running despite bot ${this.botInstance.name} failure`);
     }
   }
 

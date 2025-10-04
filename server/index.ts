@@ -49,18 +49,21 @@ async function startScheduledBotMonitoring() {
           // Auto-start ALL approved bots that are not online (including newly approved ones)
           if (!existingBot || !isOnline) {
             console.log(`🔄 Monitoring: Auto-starting approved bot ${bot.name} (${bot.id}) - Status: ${existingBot?.getStatus() || 'not found'}`);
-            console.log(`   📋 This applies to ALL approved bots, including newly approved ones`);
             await botManager.startBot(bot.id);
-            console.log(`   ✅ Bot ${bot.name} auto-started successfully`);
+            // Note: Success message is logged inside startBot if successful
           } else {
             console.log(`   ✓ Bot ${bot.name} already online`);
           }
         } catch (error) {
+          // Log but continue - one bot failure should not stop monitoring
           console.error(`❌ Monitoring: Failed to auto-start bot ${bot.id}:`, error);
+          console.log(`✅ Monitoring continues despite bot failure`);
         }
       }
     } catch (error) {
+      // Log but don't crash - monitoring should be resilient
       console.error('❌ Monitoring check failed:', error);
+      console.log(`✅ Server continues running despite monitoring error`);
     }
   };
 
