@@ -11,7 +11,7 @@ import { useWebSocket } from "@/hooks/use-websocket";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { OfferCountdownDialog } from "@/components/offer-countdown-dialog";
+import { OfferCountdownBanner } from "@/components/offer-countdown-dialog";
 import AddBotModal from "@/components/add-bot-modal";
 import CommandManagement from "@/components/command-management";
 import GuestBotRegistration from "@/components/guest-bot-registration";
@@ -221,9 +221,6 @@ export default function Dashboard() {
 
   return (
     <div>
-      {/* Offer Countdown Dialog - Show only for guest users */}
-      {!isAdmin && <OfferCountdownDialog />}
-      
       {/* Header */}
       <header className="bg-card border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
@@ -279,110 +276,8 @@ export default function Dashboard() {
       </header>
 
       <div className="p-6">
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-card border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-muted-foreground text-sm">{isAdmin ? 'Total Bots' : 'Your Bots'}</p>
-                  <p className="text-2xl font-bold text-foreground" data-testid="stat-total-bots">
-                    {statsLoading || botsLoading ? "..." : isAdmin ? (stats as any)?.totalBots || 0 : (botInstances as any[]).length}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-robot text-primary text-xl"></i>
-                </div>
-              </div>
-              <div className="mt-4 flex items-center space-x-2">
-                {isAdmin ? (
-                  <>
-                    <span className="text-green-400 text-sm">+{(stats as any)?.activeBots || 0}</span>
-                    <span className="text-muted-foreground text-sm">instances</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-green-400 text-sm">{Math.max(0, 10 - (botInstances as any[]).length)}</span>
-                    <span className="text-muted-foreground text-sm">slots remaining</span>
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-muted-foreground text-sm">{isAdmin ? 'Active Bots' : 'Online Bots'}</p>
-                  <p className="text-2xl font-bold text-foreground" data-testid="stat-active-bots">
-                    {statsLoading || botsLoading ? "..." : isAdmin ? (stats as any)?.activeBots || 0 : (botInstances as any[]).filter((bot: any) => bot.status === 'online').length}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-check-circle text-green-400 text-xl"></i>
-                </div>
-              </div>
-              <div className="mt-4 flex items-center space-x-2">
-                {isAdmin ? (
-                  <>
-                    <span className="text-green-400 text-sm">
-                      {(stats as any)?.totalBots ? Math.round(((stats as any).activeBots / (stats as any).totalBots) * 100) : 0}%
-                    </span>
-                    <span className="text-muted-foreground text-sm">uptime</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-green-400 text-sm">
-                      {(botInstances as any[]).length > 0 ? Math.round(((botInstances as any[]).filter((bot: any) => bot.status === 'online').length / (botInstances as any[]).length) * 100) : 0}%
-                    </span>
-                    <span className="text-muted-foreground text-sm">online rate</span>
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-muted-foreground text-sm">Messages Today</p>
-                  <p className="text-2xl font-bold text-foreground" data-testid="stat-messages">
-                    {statsLoading ? "..." : (stats as any)?.messagesCount || 0}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-comment text-blue-400 text-xl"></i>
-                </div>
-              </div>
-              <div className="mt-4 flex items-center space-x-2">
-                <span className="text-green-400 text-sm">+12.5%</span>
-                <span className="text-muted-foreground text-sm">vs yesterday</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-muted-foreground text-sm">Commands Executed</p>
-                  <p className="text-2xl font-bold text-foreground" data-testid="stat-commands">
-                    {statsLoading ? "..." : (stats as any)?.commandsCount || 0}
-                  </p>
-                </div>
-                <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
-                  <i className="fas fa-terminal text-purple-400 text-xl"></i>
-                </div>
-              </div>
-              <div className="mt-4 flex items-center space-x-2">
-                <span className="text-green-400 text-sm">+8.2%</span>
-                <span className="text-muted-foreground text-sm">from last hour</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Offer Countdown Banner - Show only for guest users */}
+        {!isAdmin && <OfferCountdownBanner />}
 
         {/* TREKKER-MD Welcome & Contact */}
         <Card className="bg-gradient-to-r from-blue-600 to-purple-600 border-none mb-8 text-white">
