@@ -830,6 +830,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ======= PROMOTIONAL OFFER ENDPOINTS =======
+
+  // Get offer configuration and status
+  app.get("/api/offer/status", async (req, res) => {
+    try {
+      const config = await storage.getOfferConfig();
+      const isActive = await storage.isOfferActive();
+      const timeRemaining = await storage.getOfferTimeRemaining();
+      
+      res.json({
+        isActive,
+        config,
+        timeRemaining
+      });
+    } catch (error) {
+      console.error("Get offer status error:", error);
+      res.status(500).json({ message: "Failed to fetch offer status" });
+    }
+  });
+
+  // Update offer configuration (Admin only)
+  app.post("/api/offer/configure", authenticateAdmin, async (req: AuthRequest, res) => {
+    try {
+      const { durationType, durationValue, isActive } = req.body;
+      
+      const updates: Partial<any> = {};
+      if (durationType !== undefined) updates.durationType = durationType;
+      if (durationValue !== undefined) updates.durationValue = durationValue;
+      if (isActive !== undefined) {
+        updates.isActive = isActive;
+        if (isActive) {
+          updates.startDate = new Date();
+        }
+      }
+      
+      const config = await storage.updateOfferConfig(updates);
+      
+      await storage.createActivity({
+        type: 'system',
+        description: `Promotional offer ${isActive ? 'activated' : 'updated'}: ${durationValue} ${durationType}`,
+        metadata: { config },
+        serverName: getServerName()
+      });
+      
+      res.json(config);
+    } catch (error) {
+      console.error("Update offer config error:", error);
+      res.status(500).json({ message: "Failed to update offer configuration" });
+    }
+  });
+
   // ======= MASTER CONTROL ENDPOINTS =======
 
   // Get all servers (tenancies) for master control
