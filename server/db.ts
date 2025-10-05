@@ -313,6 +313,8 @@ export async function initializeDatabase() {
             current_bot_count INTEGER DEFAULT 0,
             server_status TEXT DEFAULT 'active',
             server_url TEXT,
+            base_url TEXT,
+            shared_secret TEXT,
             description TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -335,6 +337,10 @@ export async function initializeDatabase() {
           await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS credential_phone TEXT`;
           await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS invalid_reason TEXT`;
           await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS auth_message_sent_at TIMESTAMP`;
+
+          // Update server_registry table with missing columns
+          await client`ALTER TABLE server_registry ADD COLUMN IF NOT EXISTS base_url TEXT`;
+          await client`ALTER TABLE server_registry ADD COLUMN IF NOT EXISTS shared_secret TEXT`;
 
           // Update existing rows without server_name to use current server
           await client`UPDATE bot_instances SET server_name = ${serverName} WHERE server_name IS NULL`;
