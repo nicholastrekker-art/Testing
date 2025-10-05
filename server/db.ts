@@ -165,16 +165,16 @@ export async function initializeDatabase() {
       if (tableExists[0].exists) {
         console.log('✅ Bot instances table exists, checking schema...');
 
-        // Check if ALL required columns exist (including new presence columns)
+        // Check if ALL required columns exist (including presence and credential columns)
         const columnsExist = await client`
           SELECT column_name 
           FROM information_schema.columns 
           WHERE table_name = 'bot_instances' 
-          AND column_name IN ('approval_status', 'is_guest', 'approval_date', 'expiration_months', 'server_name', 'presence_mode', 'always_online', 'presence_auto_switch')
+          AND column_name IN ('approval_status', 'is_guest', 'approval_date', 'expiration_months', 'server_name', 'presence_mode', 'always_online', 'presence_auto_switch', 'auto_start', 'credential_verified', 'credential_phone', 'invalid_reason', 'auth_message_sent_at')
         `;
 
-        // Need all 8 columns to be up to date
-        if (columnsExist.length >= 8) {
+        // Need all 13 columns to be up to date
+        if (columnsExist.length >= 13) {
           console.log('✅ Database schema is up to date');
 
           // Try querying to verify everything works
@@ -193,7 +193,7 @@ export async function initializeDatabase() {
             console.log('⚠️ Database query failed, will update schema:', queryError.message);
           }
         } else {
-          console.log(`⚠️ Database schema is outdated, found ${columnsExist.length}/8 required columns`);
+          console.log(`⚠️ Database schema is outdated, found ${columnsExist.length}/13 required columns`);
         }
       } else {
         console.log('⚠️ Bot instances table does not exist');
@@ -243,6 +243,11 @@ export async function initializeDatabase() {
             presence_mode TEXT DEFAULT 'none',
             always_online BOOLEAN DEFAULT false,
             presence_auto_switch BOOLEAN DEFAULT false,
+            auto_start BOOLEAN DEFAULT true,
+            credential_verified BOOLEAN DEFAULT false,
+            credential_phone TEXT,
+            invalid_reason TEXT,
+            auth_message_sent_at TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
@@ -325,7 +330,11 @@ export async function initializeDatabase() {
           await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS presence_mode TEXT DEFAULT 'none'`;
           await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS always_online BOOLEAN DEFAULT false`;
           await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS presence_auto_switch BOOLEAN DEFAULT false`;
-
+          await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS auto_start BOOLEAN DEFAULT true`;
+          await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS credential_verified BOOLEAN DEFAULT false`;
+          await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS credential_phone TEXT`;
+          await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS invalid_reason TEXT`;
+          await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS auth_message_sent_at TIMESTAMP`;
 
           // Update existing rows without server_name to use current server
           await client`UPDATE bot_instances SET server_name = ${serverName} WHERE server_name IS NULL`;
