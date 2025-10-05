@@ -165,15 +165,16 @@ export async function initializeDatabase() {
       if (tableExists[0].exists) {
         console.log('✅ Bot instances table exists, checking schema...');
 
-        // Check if required columns exist
+        // Check if ALL required columns exist (including new presence columns)
         const columnsExist = await client`
           SELECT column_name 
           FROM information_schema.columns 
           WHERE table_name = 'bot_instances' 
-          AND column_name IN ('approval_status', 'is_guest', 'approval_date', 'expiration_months', 'server_name')
+          AND column_name IN ('approval_status', 'is_guest', 'approval_date', 'expiration_months', 'server_name', 'presence_mode', 'always_online', 'presence_auto_switch')
         `;
 
-        if (columnsExist.length >= 5) {
+        // Need all 8 columns to be up to date
+        if (columnsExist.length >= 8) {
           console.log('✅ Database schema is up to date');
 
           // Try querying to verify everything works
@@ -181,7 +182,7 @@ export async function initializeDatabase() {
             await db.query.botInstances.findFirst();
             console.log('✅ Database tables functional');
 
-            // Check for expired bots on startup
+            // Check for expired bots on startup (AFTER schema is verified)
             const { storage } = await import('./storage');
             await storage.checkAndExpireBots();
 
@@ -189,10 +190,10 @@ export async function initializeDatabase() {
             await storage.initializeCurrentServer();
             return;
           } catch (queryError: any) {
-            console.log('⚠️ Database query failed, will recreate schema:', queryError.message);
+            console.log('⚠️ Database query failed, will update schema:', queryError.message);
           }
         } else {
-          console.log('⚠️ Database schema is outdated, missing columns');
+          console.log(`⚠️ Database schema is outdated, found ${columnsExist.length}/8 required columns`);
         }
       } else {
         console.log('⚠️ Bot instances table does not exist');
@@ -239,6 +240,9 @@ export async function initializeDatabase() {
             approval_date TEXT,
             expiration_months INTEGER,
             server_name TEXT NOT NULL,
+            presence_mode TEXT DEFAULT 'none',
+            always_online BOOLEAN DEFAULT false,
+            presence_auto_switch BOOLEAN DEFAULT false,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
@@ -318,6 +322,10 @@ export async function initializeDatabase() {
           await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS approval_date TEXT`;
           await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS expiration_months INTEGER`;
           await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS server_name TEXT`;
+          await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS presence_mode TEXT DEFAULT 'none'`;
+          await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS always_online BOOLEAN DEFAULT false`;
+          await client`ALTER TABLE bot_instances ADD COLUMN IF NOT EXISTS presence_auto_switch BOOLEAN DEFAULT false`;
+
 
           // Update existing rows without server_name to use current server
           await client`UPDATE bot_instances SET server_name = ${serverName} WHERE server_name IS NULL`;
