@@ -1,6 +1,7 @@
 import { commandRegistry, type CommandContext } from './command-registry.js';
 import { antideleteService } from './antidelete.js';
 import { getAntiViewOnceService } from './antiviewonce.js';
+import { storage } from '../storage.js';
 import moment from 'moment-timezone';
 import os from 'os';
 import axios from 'axios';
