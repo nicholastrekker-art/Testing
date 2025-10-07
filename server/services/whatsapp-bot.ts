@@ -365,6 +365,57 @@ export class WhatsAppBot {
       console.log(`🎉 [${this.botInstance.name}] MESSAGE UPDATES COMPLETE - ${updates.length} updates processed`);
       console.log(`─────────────────────────────────────────────────────────`);
     });
+
+    // Handle incoming calls - reject if anti-call is enabled
+    this.sock.ev.on('call', async (callEvents: any[]) => {
+      for (const call of callEvents) {
+        console.log(`📞 [${this.botInstance.name}] INCOMING CALL DETECTED`);
+        console.log(`   👤 From: ${call.from}`);
+        console.log(`   📞 Call ID: ${call.id}`);
+        console.log(`   🔔 Status: ${call.status}`);
+
+        // Check if anti-call is enabled
+        const settings = this.botInstance.settings as any || {};
+        const antiCallEnabled = settings.antiCall || false;
+
+        if (antiCallEnabled && call.status === 'offer') {
+          try {
+            // Reject the call
+            await this.sock.rejectCall(call.id, call.from);
+            console.log(`🚫 [${this.botInstance.name}] Call rejected from ${call.from}`);
+
+            // Log activity
+            await storage.createActivity({
+              serverName: this.botInstance.serverName,
+              botInstanceId: this.botInstance.id,
+              type: 'call_rejected',
+              description: `Auto-rejected incoming call from ${call.from}`,
+              metadata: { callId: call.id, from: call.from }
+            });
+
+            // Optionally send a message to the caller
+            try {
+              await this.sock.sendMessage(call.from, {
+                text: '📵 *Auto-Call Rejection*\n\nSorry, this bot does not accept calls. Please send a text message instead.\n\n> Anti-Call Protection Active'
+              });
+            } catch (msgError) {
+              console.log(`Could not send rejection message: ${msgError}`);
+            }
+          } catch (error) {
+            console.error(`Error rejecting call: ${error}`);
+            await storage.createActivity({
+              serverName: this.botInstance.serverName,
+              botInstanceId: this.botInstance.id,
+              type: 'error',
+              description: `Failed to reject call from ${call.from}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              metadata: { callId: call.id, from: call.from }
+            });
+          }
+        } else if (!antiCallEnabled) {
+          console.log(`📞 [${this.botInstance.name}] Call received but anti-call is disabled`);
+        }
+      }
+    });
   }
 
   private hasViewOnceContent(message: WAMessage): boolean {
