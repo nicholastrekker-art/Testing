@@ -1720,7 +1720,18 @@ commandRegistry.register({
 
       await respond('🔄 *Converting sticker to image...*\nPlease wait...');
 
-      const buffer = await client.downloadMediaMessage(stickerMessage);
+      // Import downloadContentFromMessage from Baileys
+      const { downloadContentFromMessage } = await import('@whiskeysockets/baileys');
+      
+      // Download sticker content
+      const stream = await downloadContentFromMessage(stickerMessage, 'sticker');
+      const chunks: Buffer[] = [];
+      
+      for await (const chunk of stream) {
+        chunks.push(chunk);
+      }
+      
+      const buffer = Buffer.concat(chunks);
       
       await client.sendMessage(from, {
         image: buffer,
@@ -1734,7 +1745,7 @@ commandRegistry.register({
   }
 });
 
-// Image to Sticker Command
+// Image/Video to Sticker Command
 commandRegistry.register({
   name: 'sticker',
   aliases: ['s', 'stick', 'tosticker'],
@@ -1755,13 +1766,27 @@ commandRegistry.register({
 
       await respond('🎨 *Creating sticker...*\nPlease wait...');
 
+      // Import downloadContentFromMessage from Baileys
+      const { downloadContentFromMessage } = await import('@whiskeysockets/baileys');
+      
+      // Determine media type and download content
+      const mediaType = imageMessage ? 'image' : 'video';
       const mediaMessage = imageMessage || videoMessage;
-      const buffer = await client.downloadMediaMessage(mediaMessage);
+      
+      const stream = await downloadContentFromMessage(mediaMessage!, mediaType);
+      const chunks: Buffer[] = [];
+      
+      for await (const chunk of stream) {
+        chunks.push(chunk);
+      }
+      
+      const buffer = Buffer.concat(chunks);
 
       await client.sendMessage(from, {
-        sticker: buffer,
-        caption: '✅ *Sticker created!*'
+        sticker: buffer
       });
+
+      await respond('✅ *Sticker created successfully!*\n\n> Powered by TREKKERMD LIFETIME BOT');
 
     } catch (error) {
       console.error('Error creating sticker:', error);
