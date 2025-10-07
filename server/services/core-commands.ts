@@ -122,7 +122,8 @@ ${greeting}, *User*
       commandsList += `\n*╭━❮ ${toFancyUppercaseFont(category)} ❯━╮*`;
       const sortedCommands = categorizedCommands[category].sort((a, b) => a.name.localeCompare(b.name));
       for (const command of sortedCommands) {
-        commandsList += `\n┃✰ ${toFancyLowercaseFont(command.name)}`;
+        const aliases = command.aliases && command.aliases.length > 0 ? ` (${command.aliases.slice(0, 2).join(', ')})` : '';
+        commandsList += `\n┃✰ ${toFancyLowercaseFont(command.name)}${aliases ? '' : ''}`;
       }
       commandsList += "\n╰─────────────━┈⊷";
     }
@@ -1449,6 +1450,709 @@ commandRegistry.register({
     } catch (error) {
       console.error('Error in antiviewonce command:', error);
       await respond('❌ Error managing anti-viewonce settings.');
+    }
+  }
+});
+
+// Set Custom Prefix Command
+commandRegistry.register({
+  name: 'setprefix',
+  aliases: ['changeprefix', 'prefix'],
+  description: 'Set custom command prefix (Owner only)',
+  category: 'SETTINGS',
+  handler: async (context: CommandContext) => {
+    const { respond, message, args, botId } = context;
+
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    if (!args || args.length === 0) {
+      await respond(`ℹ️ *Current Prefix:* ${process.env.BOT_PREFIX || '.'}\n\n*Usage:* .setprefix <new_prefix>\n*Example:* .setprefix !`);
+      return;
+    }
+
+    const newPrefix = args[0];
+    if (newPrefix.length > 3) {
+      await respond('❌ Prefix must be 1-3 characters long!');
+      return;
+    }
+
+    try {
+      const bot = await storage.getBotInstance(botId);
+      const settings = (bot.settings as any) || {};
+      settings.prefix = newPrefix;
+      
+      await storage.updateBotInstance(botId, { settings });
+      process.env.BOT_PREFIX = newPrefix;
+      
+      await respond(`✅ *Prefix Updated!*\n\n🔧 New prefix: *${newPrefix}*\n\n💡 Use: ${newPrefix}help to see commands`);
+    } catch (error) {
+      await respond('❌ Failed to update prefix!');
+    }
+  }
+});
+
+// Reset Prefix Command
+commandRegistry.register({
+  name: 'resetprefix',
+  aliases: ['defaultprefix'],
+  description: 'Reset prefix to default (.)',
+  category: 'SETTINGS',
+  handler: async (context: CommandContext) => {
+    const { respond, message, botId } = context;
+
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
+      const bot = await storage.getBotInstance(botId);
+      const settings = (bot.settings as any) || {};
+      settings.prefix = '.';
+      
+      await storage.updateBotInstance(botId, { settings });
+      process.env.BOT_PREFIX = '.';
+      
+      await respond('✅ *Prefix Reset!*\n\n🔧 Default prefix: *.*\n\n💡 Use: .help to see commands');
+    } catch (error) {
+      await respond('❌ Failed to reset prefix!');
+    }
+  }
+});
+
+// Ban Chat Command
+commandRegistry.register({
+  name: 'banchat',
+  aliases: ['blockgroup', 'banchatgroup'],
+  description: 'Ban a chat/group from using bot (Owner only)',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, from, botId } = context;
+
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
+      const bot = await storage.getBotInstance(botId);
+      const settings = (bot.settings as any) || {};
+      const bannedChats = settings.bannedChats || [];
+      
+      if (bannedChats.includes(from)) {
+        await respond('⚠️ This chat is already banned!');
+        return;
+      }
+
+      bannedChats.push(from);
+      settings.bannedChats = bannedChats;
+      await storage.updateBotInstance(botId, { settings });
+
+      await respond(`🚫 *Chat Banned!*\n\n📱 Chat ID: ${from}\n\n⚠️ Bot will no longer respond to messages in this chat.\n\nUse .resetuser to unban.`);
+    } catch (error) {
+      await respond('❌ Failed to ban chat!');
+    }
+  }
+});
+
+// Ban User Command
+commandRegistry.register({
+  name: 'banuser',
+  aliases: ['blockuser', 'ban'],
+  description: 'Ban a user from using bot (Owner only)',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, botId } = context;
+
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
+      const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
+      const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+      let targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
+
+      if (!targetUser) {
+        await respond('❌ Please reply to a message or tag a user to ban!');
+        return;
+      }
+
+      const bot = await storage.getBotInstance(botId);
+      const settings = (bot.settings as any) || {};
+      const bannedUsers = settings.bannedUsers || [];
+
+      if (bannedUsers.includes(targetUser)) {
+        await respond('⚠️ This user is already banned!');
+        return;
+      }
+
+      bannedUsers.push(targetUser);
+      settings.bannedUsers = bannedUsers;
+      await storage.updateBotInstance(botId, { settings });
+
+      await respond(`🚫 *User Banned!*\n\n👤 @${targetUser.split('@')[0]}\n\n⚠️ This user can no longer use bot commands.`);
+    } catch (error) {
+      await respond('❌ Failed to ban user!');
+    }
+  }
+});
+
+// Reset User/Unban Command
+commandRegistry.register({
+  name: 'resetuser',
+  aliases: ['unbanuser', 'unban', 'unbanchat'],
+  description: 'Unban a user or chat (Owner only)',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, from, botId } = context;
+
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
+      const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
+      const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+      let targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
+
+      const bot = await storage.getBotInstance(botId);
+      const settings = (bot.settings as any) || {};
+
+      if (targetUser) {
+        // Unban user
+        const bannedUsers = settings.bannedUsers || [];
+        const index = bannedUsers.indexOf(targetUser);
+        
+        if (index === -1) {
+          await respond('⚠️ This user is not banned!');
+          return;
+        }
+
+        bannedUsers.splice(index, 1);
+        settings.bannedUsers = bannedUsers;
+        await storage.updateBotInstance(botId, { settings });
+
+        await respond(`✅ *User Unbanned!*\n\n👤 @${targetUser.split('@')[0]}\n\n💚 User can now use bot commands.`);
+      } else {
+        // Unban current chat
+        const bannedChats = settings.bannedChats || [];
+        const index = bannedChats.indexOf(from);
+        
+        if (index === -1) {
+          await respond('⚠️ This chat is not banned!');
+          return;
+        }
+
+        bannedChats.splice(index, 1);
+        settings.bannedChats = bannedChats;
+        await storage.updateBotInstance(botId, { settings });
+
+        await respond(`✅ *Chat Unbanned!*\n\n📱 Chat ID: ${from}\n\n💚 Bot will now respond to messages in this chat.`);
+      }
+    } catch (error) {
+      await respond('❌ Failed to unban!');
+    }
+  }
+});
+
+// Emoji Mix Command
+commandRegistry.register({
+  name: 'emojimix',
+  aliases: ['mixemoji', 'emojiblend'],
+  description: 'Mix two emojis together',
+  category: 'FUN',
+  handler: async (context: CommandContext) => {
+    const { respond, args, client, from } = context;
+
+    if (!args || args.length < 2) {
+      await respond('❌ *Usage:* .emojimix <emoji1> <emoji2>\n\n*Example:* .emojimix 😀 😎');
+      return;
+    }
+
+    const emoji1 = args[0];
+    const emoji2 = args[1];
+
+    try {
+      await respond(`🎨 *Mixing Emojis...*\n\n${emoji1} + ${emoji2} = Processing...`);
+
+      const response = await axios.get(`https://tenor.googleapis.com/v2/featured?key=AIzaSyAyimkuYQYF_FXVALexPuGQctUWRURdCYQ&contentfilter=high&media_filter=png_transparent&component=proactive&collection=emoji_kitchen_v5&q=${encodeURIComponent(emoji1)}_${encodeURIComponent(emoji2)}`);
+
+      if (response.data.results && response.data.results.length > 0) {
+        const stickerUrl = response.data.results[0].url;
+        
+        await client.sendMessage(from, {
+          sticker: { url: stickerUrl },
+          caption: `🎨 ${emoji1} + ${emoji2}`
+        });
+      } else {
+        await respond('❌ Could not mix these emojis. Try different emojis!');
+      }
+    } catch (error) {
+      await respond('❌ Failed to mix emojis. API error or invalid emojis.');
+    }
+  }
+});
+
+// Sticker to Image Command
+commandRegistry.register({
+  name: 'toimg',
+  aliases: ['stickertoimage', 'toimage'],
+  description: 'Convert sticker to image',
+  category: 'CONVERT',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from } = context;
+
+    try {
+      const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      const stickerMessage = quotedMessage?.stickerMessage || message.message?.stickerMessage;
+
+      if (!stickerMessage) {
+        await respond('❌ Please reply to a sticker to convert it to image!');
+        return;
+      }
+
+      await respond('🔄 *Converting sticker to image...*\nPlease wait...');
+
+      const buffer = await client.downloadMediaMessage(stickerMessage);
+      
+      await client.sendMessage(from, {
+        image: buffer,
+        caption: '✅ *Sticker converted to image!*\n\n> Powered by TREKKERMD LIFETIME BOT'
+      });
+
+    } catch (error) {
+      console.error('Error converting sticker:', error);
+      await respond('❌ Failed to convert sticker to image!');
+    }
+  }
+});
+
+// Image to Sticker Command
+commandRegistry.register({
+  name: 'sticker',
+  aliases: ['s', 'stick', 'tosticker'],
+  description: 'Convert image/video to sticker',
+  category: 'CONVERT',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from } = context;
+
+    try {
+      const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      const imageMessage = quotedMessage?.imageMessage || message.message?.imageMessage;
+      const videoMessage = quotedMessage?.videoMessage || message.message?.videoMessage;
+
+      if (!imageMessage && !videoMessage) {
+        await respond('❌ Please reply to an image or video (max 10s) to convert to sticker!');
+        return;
+      }
+
+      await respond('🎨 *Creating sticker...*\nPlease wait...');
+
+      const mediaMessage = imageMessage || videoMessage;
+      const buffer = await client.downloadMediaMessage(mediaMessage);
+
+      await client.sendMessage(from, {
+        sticker: buffer,
+        caption: '✅ *Sticker created!*'
+      });
+
+    } catch (error) {
+      console.error('Error creating sticker:', error);
+      await respond('❌ Failed to create sticker! Make sure video is under 10 seconds.');
+    }
+  }
+});
+
+// Anti-Spam Command
+commandRegistry.register({
+  name: 'antispam',
+  aliases: ['nospam', 'spamprotect'],
+  description: 'Enable/disable anti-spam protection (Admin only)',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, args, botId, from } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command only works in group chats!');
+      return;
+    }
+
+    const groupMetadata = await context.client.groupMetadata(from);
+    const senderNumber = message.key.participant || message.key.remoteJid;
+    const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+    if (!senderIsAdmin && !message.key.fromMe) {
+      await respond('❌ Only group admins can use this command!');
+      return;
+    }
+
+    try {
+      const bot = await storage.getBotInstance(botId);
+      const settings = (bot.settings as any) || {};
+      const groupSettings = settings.groupSettings || {};
+      const groupId = from;
+
+      if (!args || args.length === 0) {
+        const status = groupSettings[groupId]?.antiSpam ? 'Enabled ✅' : 'Disabled ❌';
+        await respond(`📊 *Anti-Spam Status:* ${status}\n\n*Usage:*\n.antispam on - Enable\n.antispam off - Disable`);
+        return;
+      }
+
+      const command = args[0].toLowerCase();
+      if (command === 'on') {
+        groupSettings[groupId] = { ...groupSettings[groupId], antiSpam: true };
+        settings.groupSettings = groupSettings;
+        await storage.updateBotInstance(botId, { settings });
+        await respond('✅ *Anti-Spam Enabled!*\n\n🛡️ Spam messages will be detected and warned.');
+      } else if (command === 'off') {
+        groupSettings[groupId] = { ...groupSettings[groupId], antiSpam: false };
+        settings.groupSettings = groupSettings;
+        await storage.updateBotInstance(botId, { settings });
+        await respond('❌ *Anti-Spam Disabled!*');
+      } else {
+        await respond('❌ Invalid option! Use: .antispam on/off');
+      }
+    } catch (error) {
+      await respond('❌ Failed to update anti-spam settings!');
+    }
+  }
+});
+
+// Anti-Badword Command
+commandRegistry.register({
+  name: 'antibadword',
+  aliases: ['antiswear', 'badwordfilter'],
+  description: 'Enable/disable bad word filter (Admin only)',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, args, botId, from } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command only works in group chats!');
+      return;
+    }
+
+    const groupMetadata = await context.client.groupMetadata(from);
+    const senderNumber = message.key.participant || message.key.remoteJid;
+    const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+    if (!senderIsAdmin && !message.key.fromMe) {
+      await respond('❌ Only group admins can use this command!');
+      return;
+    }
+
+    try {
+      const bot = await storage.getBotInstance(botId);
+      const settings = (bot.settings as any) || {};
+      const groupSettings = settings.groupSettings || {};
+      const groupId = from;
+
+      if (!args || args.length === 0) {
+        const status = groupSettings[groupId]?.antiBadword ? 'Enabled ✅' : 'Disabled ❌';
+        await respond(`📊 *Anti-Badword Status:* ${status}\n\n*Usage:*\n.antibadword on - Enable\n.antibadword off - Disable`);
+        return;
+      }
+
+      const command = args[0].toLowerCase();
+      if (command === 'on') {
+        groupSettings[groupId] = { ...groupSettings[groupId], antiBadword: true };
+        settings.groupSettings = groupSettings;
+        await storage.updateBotInstance(botId, { settings });
+        await respond('✅ *Anti-Badword Enabled!*\n\n🛡️ Bad words will be filtered and warned.');
+      } else if (command === 'off') {
+        groupSettings[groupId] = { ...groupSettings[groupId], antiBadword: false };
+        settings.groupSettings = groupSettings;
+        await storage.updateBotInstance(botId, { settings });
+        await respond('❌ *Anti-Badword Disabled!*');
+      } else {
+        await respond('❌ Invalid option! Use: .antibadword on/off');
+      }
+    } catch (error) {
+      await respond('❌ Failed to update anti-badword settings!');
+    }
+  }
+});
+
+// Anti-Call Command
+commandRegistry.register({
+  name: 'anticall',
+  aliases: ['blockcalls', 'nocalls'],
+  description: 'Auto-reject incoming calls (Owner only)',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, args, botId } = context;
+
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
+      const bot = await storage.getBotInstance(botId);
+      const settings = (bot.settings as any) || {};
+
+      if (!args || args.length === 0) {
+        const status = settings.antiCall ? 'Enabled ✅' : 'Disabled ❌';
+        await respond(`📊 *Anti-Call Status:* ${status}\n\n*Usage:*\n.anticall on - Enable\n.anticall off - Disable`);
+        return;
+      }
+
+      const command = args[0].toLowerCase();
+      if (command === 'on') {
+        settings.antiCall = true;
+        await storage.updateBotInstance(botId, { settings });
+        await respond('✅ *Anti-Call Enabled!*\n\n📵 All incoming calls will be auto-rejected.');
+      } else if (command === 'off') {
+        settings.antiCall = false;
+        await storage.updateBotInstance(botId, { settings });
+        await respond('❌ *Anti-Call Disabled!*');
+      } else {
+        await respond('❌ Invalid option! Use: .anticall on/off');
+      }
+    } catch (error) {
+      await respond('❌ Failed to update anti-call settings!');
+    }
+  }
+});
+
+// Anti-Link Command
+commandRegistry.register({
+  name: 'antilink',
+  aliases: ['nolinks', 'linkfilter'],
+  description: 'Delete messages with links (Admin only)',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, args, botId, from } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command only works in group chats!');
+      return;
+    }
+
+    const groupMetadata = await context.client.groupMetadata(from);
+    const senderNumber = message.key.participant || message.key.remoteJid;
+    const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+    if (!senderIsAdmin && !message.key.fromMe) {
+      await respond('❌ Only group admins can use this command!');
+      return;
+    }
+
+    try {
+      const bot = await storage.getBotInstance(botId);
+      const settings = (bot.settings as any) || {};
+      const groupSettings = settings.groupSettings || {};
+      const groupId = from;
+
+      if (!args || args.length === 0) {
+        const status = groupSettings[groupId]?.antiLink ? 'Enabled ✅' : 'Disabled ❌';
+        await respond(`📊 *Anti-Link Status:* ${status}\n\n*Usage:*\n.antilink on - Enable\n.antilink off - Disable`);
+        return;
+      }
+
+      const command = args[0].toLowerCase();
+      if (command === 'on') {
+        groupSettings[groupId] = { ...groupSettings[groupId], antiLink: true };
+        settings.groupSettings = groupSettings;
+        await storage.updateBotInstance(botId, { settings });
+        await respond('✅ *Anti-Link Enabled!*\n\n🔗 Messages with links will be deleted.\n⚠️ Bot needs admin privileges!');
+      } else if (command === 'off') {
+        groupSettings[groupId] = { ...groupSettings[groupId], antiLink: false };
+        settings.groupSettings = groupSettings;
+        await storage.updateBotInstance(botId, { settings });
+        await respond('❌ *Anti-Link Disabled!*');
+      } else {
+        await respond('❌ Invalid option! Use: .antilink on/off');
+      }
+    } catch (error) {
+      await respond('❌ Failed to update anti-link settings!');
+    }
+  }
+});
+
+// Auto-Reply Command
+commandRegistry.register({
+  name: 'autoreply',
+  aliases: ['setautoreply', 'autoresponse'],
+  description: 'Set auto-reply message (Owner only)',
+  category: 'SETTINGS',
+  handler: async (context: CommandContext) => {
+    const { respond, message, args, botId } = context;
+
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    try {
+      const bot = await storage.getBotInstance(botId);
+      const settings = (bot.settings as any) || {};
+
+      if (!args || args.length === 0) {
+        const current = settings.autoReplyMessage || 'Not set';
+        const status = settings.autoReplyEnabled ? 'Enabled ✅' : 'Disabled ❌';
+        await respond(`📊 *Auto-Reply Status:* ${status}\n💬 *Current Message:* ${current}\n\n*Usage:*\n.autoreply on - Enable\n.autoreply off - Disable\n.autoreply <message> - Set message`);
+        return;
+      }
+
+      const command = args[0].toLowerCase();
+      if (command === 'on') {
+        settings.autoReplyEnabled = true;
+        await storage.updateBotInstance(botId, { settings });
+        await respond('✅ *Auto-Reply Enabled!*\n\n💬 Bot will auto-reply to messages.');
+      } else if (command === 'off') {
+        settings.autoReplyEnabled = false;
+        await storage.updateBotInstance(botId, { settings });
+        await respond('❌ *Auto-Reply Disabled!*');
+      } else {
+        settings.autoReplyMessage = args.join(' ');
+        await storage.updateBotInstance(botId, { settings });
+        await respond(`✅ *Auto-Reply Message Set!*\n\n💬 Message: "${settings.autoReplyMessage}"`);
+      }
+    } catch (error) {
+      await respond('❌ Failed to update auto-reply settings!');
+    }
+  }
+});
+
+// Set Welcome Message Command
+commandRegistry.register({
+  name: 'setwelcome',
+  aliases: ['welcomemsg', 'welcome'],
+  description: 'Set welcome message for new members (Admin only)',
+  category: 'GROUP',
+  handler: async (context: CommandContext) => {
+    const { respond, message, args, botId, from } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command only works in group chats!');
+      return;
+    }
+
+    const groupMetadata = await context.client.groupMetadata(from);
+    const senderNumber = message.key.participant || message.key.remoteJid;
+    const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+    if (!senderIsAdmin && !message.key.fromMe) {
+      await respond('❌ Only group admins can use this command!');
+      return;
+    }
+
+    try {
+      const bot = await storage.getBotInstance(botId);
+      const settings = (bot.settings as any) || {};
+      const groupSettings = settings.groupSettings || {};
+      const groupId = from;
+
+      if (!args || args.length === 0) {
+        const current = groupSettings[groupId]?.welcomeMessage || 'Not set';
+        const status = groupSettings[groupId]?.welcomeEnabled ? 'Enabled ✅' : 'Disabled ❌';
+        await respond(`📊 *Welcome Status:* ${status}\n💬 *Current Message:* ${current}\n\n*Usage:*\n.setwelcome on - Enable\n.setwelcome off - Disable\n.setwelcome <message> - Set message\n\n*Variables:*\n@user - Mention user\n{group} - Group name`);
+        return;
+      }
+
+      const command = args[0].toLowerCase();
+      if (command === 'on') {
+        groupSettings[groupId] = { ...groupSettings[groupId], welcomeEnabled: true };
+        settings.groupSettings = groupSettings;
+        await storage.updateBotInstance(botId, { settings });
+        await respond('✅ *Welcome Messages Enabled!*\n\n👋 New members will be welcomed.');
+      } else if (command === 'off') {
+        groupSettings[groupId] = { ...groupSettings[groupId], welcomeEnabled: false };
+        settings.groupSettings = groupSettings;
+        await storage.updateBotInstance(botId, { settings });
+        await respond('❌ *Welcome Messages Disabled!*');
+      } else {
+        const welcomeMsg = args.join(' ');
+        groupSettings[groupId] = { ...groupSettings[groupId], welcomeMessage: welcomeMsg };
+        settings.groupSettings = groupSettings;
+        await storage.updateBotInstance(botId, { settings });
+        await respond(`✅ *Welcome Message Set!*\n\n💬 "${welcomeMsg}"`);
+      }
+    } catch (error) {
+      await respond('❌ Failed to update welcome settings!');
+    }
+  }
+});
+
+// Warning System Command
+commandRegistry.register({
+  name: 'warning',
+  aliases: ['warn', 'warnuser'],
+  description: 'Warn a user (3 warnings = kick)',
+  category: 'ADMIN',
+  handler: async (context: CommandContext) => {
+    const { respond, message, client, from, botId, args } = context;
+
+    if (!from.endsWith('@g.us')) {
+      await respond('❌ This command only works in group chats!');
+      return;
+    }
+
+    const groupMetadata = await client.groupMetadata(from);
+    const senderNumber = message.key.participant || message.key.remoteJid;
+    const senderIsAdmin = groupMetadata.participants.find((p: any) => p.id === senderNumber)?.admin;
+
+    if (!senderIsAdmin && !message.key.fromMe) {
+      await respond('❌ Only group admins can use this command!');
+      return;
+    }
+
+    try {
+      const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
+      const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+      let targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
+
+      if (!targetUser) {
+        await respond('❌ Please reply to a message or tag a user to warn!');
+        return;
+      }
+
+      const bot = await storage.getBotInstance(botId);
+      const settings = (bot.settings as any) || {};
+      const groupSettings = settings.groupSettings || {};
+      const groupId = from;
+      const warnings = groupSettings[groupId]?.warnings || {};
+
+      const userWarnings = (warnings[targetUser] || 0) + 1;
+      warnings[targetUser] = userWarnings;
+
+      groupSettings[groupId] = { ...groupSettings[groupId], warnings };
+      settings.groupSettings = groupSettings;
+      await storage.updateBotInstance(botId, { settings });
+
+      const reason = args.join(' ') || 'No reason specified';
+
+      if (userWarnings >= 3) {
+        // Kick user
+        const botNumber = client.user?.id.split(':')[0] + '@s.whatsapp.net';
+        const botIsAdmin = groupMetadata.participants.find((p: any) => p.id === botNumber)?.admin;
+
+        if (botIsAdmin) {
+          await client.groupParticipantsUpdate(from, [targetUser], 'remove');
+          await respond(`🚫 *User Kicked!*\n\n👤 @${targetUser.split('@')[0]}\n⚠️ Reason: 3 warnings\n📝 Last warning: ${reason}`);
+          
+          // Reset warnings
+          delete warnings[targetUser];
+          groupSettings[groupId] = { ...groupSettings[groupId], warnings };
+          settings.groupSettings = groupSettings;
+          await storage.updateBotInstance(botId, { settings });
+        } else {
+          await respond(`⚠️ *Warning #${userWarnings}/3*\n\n👤 @${targetUser.split('@')[0]}\n📝 Reason: ${reason}\n\n🚫 User has 3 warnings but bot needs admin to kick!`);
+        }
+      } else {
+        await respond(`⚠️ *Warning #${userWarnings}/3*\n\n👤 @${targetUser.split('@')[0]}\n📝 Reason: ${reason}\n\n💡 ${3 - userWarnings} more warning(s) until kick!`);
+      }
+
+    } catch (error) {
+      console.error('Warning command error:', error);
+      await respond('❌ Failed to warn user!');
     }
   }
 });
