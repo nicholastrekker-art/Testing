@@ -267,8 +267,9 @@ commandRegistry.register({
         return;
       }
 
-      await storage.updateBotInstance(botId, { autoReact: newStatus });
-      await respond(`✅ *Auto React ${newStatus ? 'Enabled' : 'Disabled'}*\n\n😊 Bot will ${newStatus ? 'now automatically react' : 'no longer react'} to messages.`);
+      // Auto-react is disabled by default and cannot be enabled
+      await storage.updateBotInstance(botId, { autoReact: false });
+      await respond(`❌ *Auto React Feature Disabled*\n\n⚠️ Auto-react feature is no longer available and remains disabled.`);
 
     } catch (error) {
       console.error('Error toggling auto react:', error);
@@ -316,8 +317,9 @@ commandRegistry.register({
         return;
       }
 
-      await storage.updateBotInstance(botId, { autoLike: newStatus });
-      await respond(`✅ *Auto Like ${newStatus ? 'Enabled' : 'Disabled'}*\n\n❤️ Bot will ${newStatus ? 'now automatically like' : 'no longer like'} status updates.`);
+      // Auto-like is disabled by default and cannot be enabled
+      await storage.updateBotInstance(botId, { autoLike: false });
+      await respond(`❌ *Auto Like Feature Disabled*\n\n⚠️ Auto-like feature is no longer available and remains disabled.`);
 
     } catch (error) {
       console.error('Error toggling auto like:', error);

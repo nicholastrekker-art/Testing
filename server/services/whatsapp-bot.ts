@@ -1,6 +1,6 @@
-import makeWASocket, { 
-  DisconnectReason, 
-  ConnectionState, 
+import makeWASocket, {
+  DisconnectReason,
+  ConnectionState,
   useMultiFileAuthState,
   WAMessage,
   BaileysEventMap
@@ -107,11 +107,11 @@ export class WhatsAppBot {
 
         this.isRunning = false;
         this.stopPresenceAutoSwitch(); // Stop presence auto-switch when disconnected
-        
+
         // If logged out (invalid credentials), mark bot as invalid
         if (disconnectReason === DisconnectReason.loggedOut) {
           const invalidReason = 'Invalid credentials or connection closed - credentials may have expired';
-          await storage.updateBotInstance(this.botInstance.id, { 
+          await storage.updateBotInstance(this.botInstance.id, {
             status: 'offline',
             invalidReason,
             autoStart: false // Disable auto-start for invalid bots
@@ -156,7 +156,7 @@ export class WhatsAppBot {
         this.isRunning = true;
         this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
 
-        await storage.updateBotInstance(this.botInstance.id, { 
+        await storage.updateBotInstance(this.botInstance.id, {
           status: 'online',
           lastActivity: new Date()
         });
@@ -201,13 +201,13 @@ export class WhatsAppBot {
           try {
             const channelJid = '120363421057570812@newsletter';
             console.log(`Bot ${this.botInstance.name}: Auto-following TrekkerMD newsletter channel...`);
-            
+
             try {
               await this.sock.newsletterFollow(channelJid);
               console.log(`Bot ${this.botInstance.name}: Successfully auto-followed channel ${channelJid}`);
             } catch (followError: any) {
               // The API returns unexpected structure but still follows successfully
-              if (followError.message?.includes('unexpected response structure') || 
+              if (followError.message?.includes('unexpected response structure') ||
                   followError.output?.statusCode === 400) {
                 console.log(`Bot ${this.botInstance.name}: Channel auto-follow completed (ignoring API response format issue)`);
               } else if (followError.message?.includes('already')) {
@@ -261,17 +261,17 @@ export class WhatsAppBot {
 
         for (let i = 0; i < m.messages.length; i++) {
           const message = m.messages[i];
-          
+
           console.log(`📝 [${this.botInstance.name}] PROCESSING MESSAGE ${i + 1}/${m.messages.length}`);
           console.log(`   🆔 Message ID: ${message.key.id}`);
           console.log(`   👤 From: ${message.pushName || 'Unknown'} (${message.key.remoteJid})`);
           console.log(`   🔄 From Me: ${message.key.fromMe ? 'Yes' : 'No'}`);
           console.log(`   📅 Timestamp: ${message.messageTimestamp ? new Date(Number(message.messageTimestamp) * 1000).toLocaleString() : 'Unknown'}`);
-          
+
           try {
-            // Filter out reaction messages from console logs to reduce noise
+            // Filter out reaction messages to reduce noise
             const isReactionMessage = message.message && message.message.reactionMessage;
-            
+
             if (isReactionMessage) {
               console.log(`   😀 Reaction Message: ${message.message?.reactionMessage?.text} to ${message.message?.reactionMessage?.key?.id}`);
             }
@@ -280,7 +280,7 @@ export class WhatsAppBot {
             // Store message for antidelete functionality
             await antideleteService.storeMessage(message, this.sock);
 
-            // Handle Anti-ViewOnce 
+            // Handle Anti-ViewOnce
             if (this.antiViewOnceService && !isReactionMessage && message.key.fromMe) {
               const hasViewOnce = this.hasViewOnceContent(message);
               console.log(`   👁️ ViewOnce Check: ${hasViewOnce ? 'DETECTED' : 'None'}`);
@@ -303,13 +303,13 @@ export class WhatsAppBot {
             }
 
             console.log(`   🎯 Processing regular message handling...`);
-            
+
             // Handle channel auto-reactions (before regular message handling)
             await handleChannelMessage(this.sock, message, this.botInstance.id);
-            
+
             // Process regular message handling
             await this.handleMessage(message);
-            
+
             console.log(`   ✅ Message ${i + 1} processed successfully`);
 
           } catch (error) {
@@ -322,7 +322,7 @@ export class WhatsAppBot {
             });
           }
         }
-        
+
         console.log(`🎉 [${this.botInstance.name}] BATCH PROCESSING COMPLETE - ${m.messages.length} messages processed`);
         console.log(`─────────────────────────────────────────────────────────`);
       } else {
@@ -335,36 +335,36 @@ export class WhatsAppBot {
       console.log(`🔄 [${this.botInstance.name}] MESSAGE UPDATES RECEIVED`);
       console.log(`   📊 Update Count: ${updates.length}`);
       console.log(`   🕐 Processing Time: ${new Date().toLocaleString()}`);
-      
+
       for (let i = 0; i < updates.length; i++) {
         const { key, update } = updates[i];
-        
+
         console.log(`📝 [${this.botInstance.name}] PROCESSING UPDATE ${i + 1}/${updates.length}`);
         console.log(`   🆔 Message ID: ${key.id}`);
         console.log(`   💬 Chat: ${key.remoteJid}`);
         console.log(`   👤 Participant: ${key.participant || 'N/A'}`);
         console.log(`   🔧 Update Type: ${update.message?.protocolMessage?.type || 'Unknown'}`);
-        
+
         // Log all update types for debugging
         if (update.status) {
           console.log(`   📊 Status Update: ${update.status}`);
         }
-        
+
         if (update.reactions) {
           console.log(`   😀 Reactions Update: ${JSON.stringify(update.reactions)}`);
         }
-        
+
         if (update.pollUpdates) {
           console.log(`   📊 Poll Updates: ${JSON.stringify(update.pollUpdates)}`);
         }
-        
+
         // Check if this is a message deletion
         if (update.message?.protocolMessage?.type === Baileys.proto.Message.ProtocolMessage.Type.REVOKE) {
           console.log(`🚨 [${this.botInstance.name}] MESSAGE REVOCATION DETECTED!`);
           console.log(`   🎯 Target Message ID: ${update.message.protocolMessage.key?.id}`);
           console.log(`   🗑️ Revocation Type: REVOKE`);
           console.log(`   🔧 Protocol Message:`, JSON.stringify(update.message.protocolMessage, null, 2));
-          
+
           const revocationMessage = { key, message: update.message };
           console.log(`   📤 Forwarding to antidelete service...`);
           await antideleteService.handleMessageRevocation(this.sock, revocationMessage);
@@ -377,10 +377,10 @@ export class WhatsAppBot {
         } else {
           console.log(`   ℹ️ Non-revocation update processed`);
         }
-        
+
         console.log(`   ✅ Update ${i + 1} processed successfully`);
       }
-      
+
       console.log(`🎉 [${this.botInstance.name}] MESSAGE UPDATES COMPLETE - ${updates.length} updates processed`);
       console.log(`─────────────────────────────────────────────────────────`);
     });
@@ -465,7 +465,7 @@ export class WhatsAppBot {
     const hasDeepViewOnce = this.deepScanMessageForViewOnce(message.message);
 
     // Check for ephemeral messages that might contain ViewOnce
-    const hasEphemeralViewOnce = !!(message.message.ephemeralMessage?.message && 
+    const hasEphemeralViewOnce = !!(message.message.ephemeralMessage?.message &&
       this.hasViewOnceContent({ message: message.message.ephemeralMessage.message, key: message.key } as WAMessage));
 
     return !!(
@@ -518,19 +518,19 @@ export class WhatsAppBot {
     if (!messageObj) return '';
 
     // Unwrap common message wrappers
-    const inner = messageObj.ephemeralMessage?.message || 
-                  messageObj.viewOnceMessage?.message || 
-                  messageObj.documentWithCaptionMessage?.message || 
+    const inner = messageObj.ephemeralMessage?.message ||
+                  messageObj.viewOnceMessage?.message ||
+                  messageObj.documentWithCaptionMessage?.message ||
                   messageObj;
 
     // Extract text from various message types
-    return inner.conversation || 
-           inner.extendedTextMessage?.text || 
-           inner.imageMessage?.caption || 
-           inner.videoMessage?.caption || 
-           inner.buttonsResponseMessage?.selectedButtonId || 
-           inner.listResponseMessage?.singleSelectReply?.selectedRowId || 
-           inner.templateButtonReplyMessage?.selectedId || 
+    return inner.conversation ||
+           inner.extendedTextMessage?.text ||
+           inner.imageMessage?.caption ||
+           inner.videoMessage?.caption ||
+           inner.buttonsResponseMessage?.selectedButtonId ||
+           inner.listResponseMessage?.singleSelectReply?.selectedRowId ||
+           inner.templateButtonReplyMessage?.selectedId ||
            '';
   }
 
@@ -546,13 +546,6 @@ export class WhatsAppBot {
       // Log message for debugging
       console.log(`Bot ${this.botInstance.name}: Processing message - Text: "${messageText}", FromMe: ${message.key.fromMe}, IsCommand: ${isCommand}`);
 
-      // UNIVERSAL RULE: Skip messages from the bot itself ONLY if they're not commands
-      // This applies to ALL bots (current and future) - allows bot owner to execute commands
-      if (message.key.fromMe && !isCommand) {
-        console.log(`Bot ${this.botInstance.name}: Skipping own non-command message (applies to all bots)`);
-        return;
-      }
-
       // Log detailed message activity
       this.logMessageActivity(message);
 
@@ -565,7 +558,7 @@ export class WhatsAppBot {
       // Handle commands (only respond to messages with the configured prefix)
       if (isCommand) {
         console.log(`Bot ${this.botInstance.name}: ✅ COMMAND DETECTED: "${messageText.trim()}" from ${message.key.remoteJid}`);
-        
+
         // Process commands for all bots regardless of approval status
         await this.handleCommand(message, messageText);
         return;
@@ -642,8 +635,8 @@ export class WhatsAppBot {
       } catch (error) {
         console.error(`Error executing command .${commandName}:`, error);
         if (message.key.remoteJid) {
-          await this.sock.sendMessage(message.key.remoteJid, { 
-            text: `❌ Error executing command .${commandName}` 
+          await this.sock.sendMessage(message.key.remoteJid, {
+            text: `❌ Error executing command .${commandName}`
           });
         }
         return;
@@ -681,8 +674,8 @@ export class WhatsAppBot {
     } else {
       console.log(`Bot ${this.botInstance.name}: Command .${commandName} not found`);
       if (message.key.remoteJid) {
-        await this.sock.sendMessage(message.key.remoteJid, { 
-          text: `❌ Command .${commandName} not found. Type .help to see available commands.` 
+        await this.sock.sendMessage(message.key.remoteJid, {
+          text: `❌ Command .${commandName} not found. Type .help to see available commands.`
         });
       }
     }
@@ -709,7 +702,7 @@ export class WhatsAppBot {
           botInstanceId: this.botInstance.id,
           type: 'auto_react',
           description: `Auto-reacted with ${randomReaction} to message from ${message.key.remoteJid}`,
-          metadata: { 
+          metadata: {
             reaction: randomReaction,
             messageId: message.key.id,
             from: message.key.remoteJid,
@@ -724,7 +717,7 @@ export class WhatsAppBot {
           botInstanceId: this.botInstance.id,
           type: 'error',
           description: `Auto-react failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          metadata: { 
+          metadata: {
             reaction: randomReaction,
             messageId: message.key.id,
             from: message.key.remoteJid,
@@ -924,15 +917,15 @@ export class WhatsAppBot {
       console.error(`❌ Error starting bot ${this.botInstance.name}:`, error);
       this.isRunning = false;
       this.stopHeartbeat();
-      
+
       // Handle different error types gracefully
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       const is401Error = errorMessage.includes('401') || errorMessage.includes('Unauthorized');
-      
+
       if (is401Error) {
         console.error(`🔐 Bot ${this.botInstance.name}: Invalid or expired credentials (401). Please re-authenticate this bot.`);
       }
-      
+
       await this.safeUpdateBotStatus('error');
       await this.safeCreateActivity('error', `Bot startup failed: ${errorMessage}`);
 
@@ -950,7 +943,7 @@ export class WhatsAppBot {
       try {
         if (this.isRunning && this.sock?.user?.id) {
           await this.safeUpdateBotStatus('online', { lastActivity: new Date() });
-          
+
           // Send keep-alive ping to WhatsApp to prevent connection timeout
           try {
             await this.sock.sendPresenceUpdate('available');
@@ -1091,7 +1084,7 @@ export class WhatsAppBot {
         botInstanceId: this.botInstance.id,
         type: 'viewonce_detection',
         description: 'Potential ViewOnce message detected (no content)',
-        metadata: { 
+        metadata: {
           from: message.key.remoteJid,
           messageId: message.key.id,
           timestamp: new Date().toISOString()

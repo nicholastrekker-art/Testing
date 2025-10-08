@@ -113,75 +113,8 @@ export class AutoStatusService {
   }
 
   public async reactToStatus(sock: any, statusKey: any, messageTimestamp?: number): Promise<void> {
-    try {
-      if (!this.isStatusReactionEnabled()) {
-        return;
-      }
-
-      // Skip reacting to own status updates (fromMe: true)
-      if (statusKey.fromMe === true) {
-        console.log(`⏭️ Skipping reaction to own status from ${statusKey.participant || statusKey.remoteJid}`);
-        return;
-      }
-
-      const config = this.getConfig();
-      const now = Date.now();
-      
-      // Check if message is too old (more than 5 minutes old)
-      if (messageTimestamp) {
-        const messageAge = now - (messageTimestamp * 1000);
-        const maxAge = 5 * 60 * 1000; // 5 minutes
-        
-        if (messageAge > maxAge) {
-          console.log(`⏰ Skipping reaction to old status (${Math.floor(messageAge / 1000)}s old) from ${statusKey.participant || statusKey.remoteJid}`);
-          return;
-        }
-      }
-      
-      // THROTTLING: Check if enough time has passed since last reaction
-      if (config.lastStatusReact && (now - config.lastStatusReact) < config.reactThrottleDelay) {
-        const waitTime = config.reactThrottleDelay - (now - config.lastStatusReact);
-        console.log(`⏳ Status reaction throttled - waiting ${waitTime}ms before next reaction`);
-        return;
-      }
-
-      // Additional check: Ensure we're not reacting to messages from the bot's own number
-      const botNumber = sock.user?.id?.split(':')[0];
-      const statusSender = (statusKey.participant || statusKey.remoteJid || '').split('@')[0];
-      
-      if (botNumber && statusSender && botNumber === statusSender) {
-        console.log(`⏭️ Skipping reaction to bot's own message (number match: ${botNumber})`);
-        return;
-      }
-
-      // Use the proper relayMessage method for status reactions
-      await sock.relayMessage(
-        'status@broadcast',
-        {
-          reactionMessage: {
-            key: {
-              remoteJid: 'status@broadcast',
-              id: statusKey.id,
-              participant: statusKey.participant || statusKey.remoteJid,
-              fromMe: false
-            },
-            text: '💚'
-          }
-        },
-        {
-          messageId: statusKey.id,
-          statusJidList: [statusKey.remoteJid, statusKey.participant || statusKey.remoteJid]
-        }
-      );
-
-      // Update last reaction time for throttling
-      config.lastStatusReact = now;
-      this.saveConfig(config);
-      
-      console.log(`✅ Reacted to status from ${statusKey.participant || statusKey.remoteJid}`);
-    } catch (error: any) {
-      console.error('❌ Error reacting to status:', error.message);
-    }
+    // Auto-like status feature is disabled
+    return;
   }
 
   public async handleStatusUpdate(sock: any, status: any): Promise<void> {
