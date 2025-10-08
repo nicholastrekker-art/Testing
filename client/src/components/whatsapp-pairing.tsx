@@ -24,8 +24,10 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
   const [selectedServer, setSelectedServer] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [pairingCode, setPairingCode] = useState("");
+  const [pairingSessionId, setPairingSessionId] = useState("");
   const [credentials, setCredentials] = useState<any>(null);
   const [isWaitingForAuth, setIsWaitingForAuth] = useState(false);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
   const [botName, setBotName] = useState("");
   const [features, setFeatures] = useState({
     autoLike: false,
@@ -42,39 +44,69 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     enabled: open && step === 1
   });
 
-  // Generate pairing code mutation (now waits for full authentication)
-  const generatePairingMutation = useMutation({
-    mutationFn: async (data: { phoneNumber: string; selectedServer: string }) => {
-      const res = await apiRequest('POST', '/api/whatsapp/generate-pairing-code', data);
-      return res.json();
-    },
-    onMutate: () => {
-      // Show pairing code screen immediately while waiting
-      setStep(3);
-      setIsWaitingForAuth(false);
-    },
-    onSuccess: (data) => {
-      if (data.success && data.credentials) {
-        // Authentication successful - credentials received
-        setPairingCode(data.pairingCode);
+  // Poll for authentication status
+  const checkAuthStatus = async (sessionId: string) => {
+    try {
+      const response = await fetch(`/api/whatsapp/pairing-status/${sessionId}`);
+      const data = await response.json();
+
+      if (data.status === 'authenticated') {
+        // Authentication successful
+        if (pollingInterval) {
+          clearInterval(pollingInterval);
+          setPollingInterval(null);
+        }
+        setIsWaitingForAuth(false);
         setCredentials(data.credentials);
-        setStep(4); // Move to credentials display
+        setStep(4);
         toast({
           title: "Pairing Successful!",
-          description: "Credentials have been sent to your WhatsApp",
+          description: data.message || "Your WhatsApp is now linked. Credentials sent to your WhatsApp.",
         });
-      } else if (data.pairingCode && !data.success) {
-        // Pairing code generated but authentication failed/timeout
-        setPairingCode(data.pairingCode);
+      } else if (data.status === 'failed') {
+        // Authentication failed
+        if (pollingInterval) {
+          clearInterval(pollingInterval);
+          setPollingInterval(null);
+        }
+        setIsWaitingForAuth(false);
         toast({
           title: "Authentication Failed",
           description: data.message || "Please try again",
           variant: "destructive"
         });
-      } else {
-        // Pairing code generated, waiting for user to enter it
+      }
+      // If 'waiting', continue polling
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+    }
+  };
+
+  // Generate pairing code mutation (returns code immediately, then polls for auth)
+  const generatePairingMutation = useMutation({
+    mutationFn: async (data: { phoneNumber: string; selectedServer: string }) => {
+      const res = await apiRequest('POST', '/api/whatsapp/generate-pairing-code', data);
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.success && data.pairingCode) {
+        // Pairing code generated successfully
         setPairingCode(data.pairingCode);
+        setPairingSessionId(data.sessionId);
         setIsWaitingForAuth(true);
+        setStep(3);
+
+        // Start polling for authentication status
+        const interval = setInterval(() => {
+          checkAuthStatus(data.sessionId);
+        }, 3000); // Poll every 3 seconds
+        
+        setPollingInterval(interval);
+
+        toast({
+          title: "Pairing Code Generated!",
+          description: data.message || "Enter this code in WhatsApp to link your device.",
+        });
       }
     },
     onError: (error: Error) => {
@@ -86,8 +118,6 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       });
     }
   });
-
-  // No longer need separate verify mutation - everything happens in generate mutation
 
   // Register bot mutation
   const registerBotMutation = useMutation({
@@ -247,10 +277,17 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
   };
 
   const handleReset = () => {
+    // Clean up polling interval if active
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      setPollingInterval(null);
+    }
+    
     setStep(1);
     setSelectedServer("");
     setPhoneNumber("");
     setPairingCode("");
+    setPairingSessionId("");
     setCredentials(null);
     setIsWaitingForAuth(false);
     setBotName("");
