@@ -1011,10 +1011,34 @@ export class WhatsAppBot {
         description: 'Bot startup initiated - TREKKERMD LIFETIME BOT initializing with Baileys...'
       });
 
+      // STEP 1: Pre-validate and authenticate credentials before connection
+      console.log(`🔐 Bot ${this.botInstance.name}: Authenticating credentials before connection...`);
+      
       // Use isolated auth state for this specific bot
       const { state, saveCreds } = await useMultiFileAuthState(this.authDir);
 
-      // Create isolated socket connection with unique configuration
+      // Extract phone number from credentials for validation
+      let phoneNumber: string | null = null;
+      if (state.creds?.me?.id) {
+        const phoneMatch = state.creds.me.id.match(/^(\d+):/);
+        phoneNumber = phoneMatch ? phoneMatch[1] : null;
+      }
+
+      if (phoneNumber) {
+        console.log(`📱 Bot ${this.botInstance.name}: Detected phone number ${phoneNumber} from credentials`);
+        
+        // Update bot instance with verified credential info
+        await storage.updateBotCredentialStatus(this.botInstance.id, {
+          credentialVerified: true,
+          credentialPhone: phoneNumber,
+          invalidReason: null,
+          autoStart: true
+        });
+      } else {
+        console.log(`⚠️ Bot ${this.botInstance.name}: Could not extract phone number from credentials`);
+      }
+
+      // STEP 2: Create isolated socket connection with unique configuration
       this.sock = Baileys.makeWASocket({
         auth: state,
         printQRInTerminal: false, // Disable QR printing to avoid conflicts
@@ -1031,18 +1055,50 @@ export class WhatsAppBot {
         maxMsgRetryCount: 5
       });
 
-      // Save credentials when they change (isolated per bot) with error handling
+      // STEP 3: Save credentials when they change (with re-authentication support)
       this.sock.ev.on('creds.update', async () => {
         try {
+          console.log(`💾 Bot ${this.botInstance.name}: Saving updated credentials to auth directory...`);
           await saveCreds();
+          
+          // Re-extract phone number from updated credentials
+          const updatedState = this.sock.authState;
+          let updatedPhone: string | null = null;
+          
+          if (updatedState?.creds?.me?.id) {
+            const phoneMatch = updatedState.creds.me.id.match(/^(\d+):/);
+            updatedPhone = phoneMatch ? phoneMatch[1] : null;
+          }
+
+          if (updatedPhone) {
+            console.log(`✅ Bot ${this.botInstance.name}: Credentials updated and re-authenticated with phone ${updatedPhone}`);
+            
+            // Save updated credentials back to database for persistence
+            await storage.updateBotCredentialStatus(this.botInstance.id, {
+              credentialVerified: true,
+              credentialPhone: updatedPhone,
+              invalidReason: null,
+              credentials: updatedState.creds,
+              autoStart: true
+            });
+
+            await storage.createActivity({
+              serverName: this.botInstance.serverName,
+              botInstanceId: this.botInstance.id,
+              type: 'credential_update',
+              description: `Credentials re-authenticated and saved to database for phone ${updatedPhone}`,
+              metadata: { phoneNumber: updatedPhone, timestamp: new Date().toISOString() }
+            });
+          }
         } catch (error) {
-          // Silently handle credential save errors (e.g., directory deleted)
-          console.log(`Bot ${this.botInstance.name}: Credential save skipped (directory may be cleaned up)`);
+          console.log(`⚠️ Bot ${this.botInstance.name}: Credential save error:`, error instanceof Error ? error.message : 'Unknown error');
         }
       });
 
       await this.setupEventHandlers();
       this.startHeartbeat(); // Start heartbeat monitoring
+
+      console.log(`✅ Bot ${this.botInstance.name}: Authentication completed, connection established`);
 
     } catch (error) {
       console.error(`❌ Error starting bot ${this.botInstance.name}:`, error);
@@ -1054,7 +1110,14 @@ export class WhatsAppBot {
       const is401Error = errorMessage.includes('401') || errorMessage.includes('Unauthorized');
 
       if (is401Error) {
-        console.error(`🔐 Bot ${this.botInstance.name}: Invalid or expired credentials (401). Please re-authenticate this bot.`);
+        console.error(`🔐 Bot ${this.botInstance.name}: Invalid or expired credentials (401). Marking for re-authentication.`);
+        
+        // Mark credentials as invalid
+        await storage.updateBotCredentialStatus(this.botInstance.id, {
+          credentialVerified: false,
+          invalidReason: 'Authentication failed - credentials expired or invalid (401)',
+          autoStart: false
+        });
       }
 
       await this.safeUpdateBotStatus('error');
