@@ -4072,6 +4072,8 @@ Thank you for using TREKKER-MD! 🚀
   
   // Verify WhatsApp Pairing and Get Credentials
   app.post("/api/whatsapp/verify-pairing", async (req, res) => {
+    let sock: any = null;
+    
     try {
       const { sessionId, phoneNumber, selectedServer } = req.body;
       
@@ -4087,6 +4089,8 @@ Thank you for using TREKKER-MD! 🚀
       
       const { join } = await import('path');
       const { existsSync, readFileSync, rmSync } = await import('fs');
+      const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore, Browsers } = await import('@whiskeysockets/baileys');
+      const pino = (await import('pino')).default;
       
       // Check if temp auth directory exists
       const tempAuthDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
@@ -4097,28 +4101,67 @@ Thank you for using TREKKER-MD! 🚀
         });
       }
       
-      // Wait for creds.json to be created (with timeout)
+      console.log(`📂 Temp auth directory found: ${tempAuthDir}`);
+      console.log(`⏳ Waiting for WhatsApp connection to complete authentication...`);
+      
+      // Setup multi-file auth state
+      const { state, saveCreds } = await useMultiFileAuthState(tempAuthDir);
+      
+      // Create silent logger
+      const logger = pino({ level: "fatal" }).child({ level: "fatal" });
+      
+      // Create WhatsApp socket to monitor connection
+      sock = makeWASocket({
+        auth: {
+          creds: state.creds,
+          keys: makeCacheableSignalKeyStore(state.keys, logger)
+        },
+        printQRInTerminal: false,
+        browser: Browsers.macOS("Safari"),
+        logger: logger
+      });
+      
+      // Save credentials when they update
+      sock.ev.on('creds.update', saveCreds);
+      
+      // Wait for connection to open (authentication complete)
+      const connectionPromise = new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Connection timeout - pairing code not entered or authentication failed'));
+        }, 60000); // 60 second timeout
+        
+        sock.ev.on('connection.update', (update: any) => {
+          const { connection, lastDisconnect } = update;
+          
+          console.log(`🔄 Connection update: ${connection}`);
+          
+          if (connection === 'open') {
+            console.log(`✅ WhatsApp connection opened successfully`);
+            clearTimeout(timeout);
+            resolve(true);
+          } else if (connection === 'close') {
+            clearTimeout(timeout);
+            const error = lastDisconnect?.error;
+            reject(new Error(`Connection closed: ${error?.message || 'Unknown error'}`));
+          }
+        });
+      });
+      
+      // Wait for connection to complete
+      await connectionPromise;
+      
+      // Wait 5 seconds to ensure credentials are fully saved (like pair.js)
+      console.log(`⏳ Waiting 5 seconds to ensure credentials are fully saved...`);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      // Now read the credentials
       const credsPath = join(tempAuthDir, 'creds.json');
-      const maxWaitTime = 30000; // 30 seconds
-      const checkInterval = 1000; // Check every 1 second
-      let waitedTime = 0;
-      
-      console.log(`⏳ Waiting for authentication to complete...`);
-      
-      while (!existsSync(credsPath) && waitedTime < maxWaitTime) {
-        await new Promise(resolve => setTimeout(resolve, checkInterval));
-        waitedTime += checkInterval;
-        console.log(`⏳ Waiting for credentials... (${waitedTime/1000}s/${maxWaitTime/1000}s)`);
-      }
       
       if (!existsSync(credsPath)) {
-        return res.status(400).json({ 
-          message: "Pairing code was not entered or authentication timed out. Please try again and make sure to enter the code within 30 seconds." 
-        });
+        throw new Error('Credentials file not found after connection');
       }
       
-      // Additional wait to ensure file is fully written
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log(`📄 Reading credentials from: ${credsPath}`);
       
       // Read credentials
       const credentialsData = readFileSync(credsPath, 'utf-8');
@@ -4126,9 +4169,7 @@ Thank you for using TREKKER-MD! 🚀
       
       // Verify credentials are complete
       if (!credentials.creds || !credentials.creds.me || !credentials.creds.me.id) {
-        return res.status(400).json({
-          message: "Authentication incomplete. Please try the pairing process again."
-        });
+        throw new Error('Incomplete credentials structure');
       }
       
       // Convert credentials to base64
@@ -4139,12 +4180,34 @@ Thank you for using TREKKER-MD! 🚀
       
       console.log(`✅ Credentials retrieved for ${cleanedPhone}, JID: ${jid}`);
       
+      // Close connection properly (like pair.js)
+      console.log(`🧹 Closing WhatsApp connection...`);
+      
+      try {
+        // Remove all event listeners
+        if (sock.ev) {
+          sock.ev.removeAllListeners();
+          console.log('✅ Event listeners removed');
+        }
+        
+        // Close WebSocket connection
+        if (sock.ws && sock.ws.readyState === 1) {
+          await sock.ws.close();
+          console.log('✅ WebSocket connection closed');
+        }
+      } catch (closeError) {
+        console.warn('Warning during connection cleanup:', closeError);
+      }
+      
+      // Wait a moment for cleanup
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // Clean up temp directory after reading credentials
       try {
         rmSync(tempAuthDir, { recursive: true, force: true });
         console.log(`🧹 Cleaned up temp auth directory: ${tempAuthDir}`);
       } catch (cleanupError) {
-        console.error('Failed to cleanup temp directory:', cleanupError);
+        console.warn('Warning: Failed to cleanup temp directory:', cleanupError);
       }
       
       res.json({
@@ -4162,6 +4225,21 @@ Thank you for using TREKKER-MD! 🚀
       
     } catch (error) {
       console.error('Pairing verification error:', error);
+      
+      // Clean up socket on error
+      if (sock) {
+        try {
+          if (sock.ev) {
+            sock.ev.removeAllListeners();
+          }
+          if (sock.ws && sock.ws.readyState === 1) {
+            await sock.ws.close();
+          }
+        } catch (err) {
+          console.warn('Error during error cleanup:', err);
+        }
+      }
+      
       res.status(500).json({ 
         message: "Failed to verify pairing",
         error: error instanceof Error ? error.message : 'Unknown error'
