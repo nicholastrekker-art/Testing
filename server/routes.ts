@@ -3962,7 +3962,7 @@ Thank you for using TREKKER-MD! 🚀
       console.log(`📱 Starting pairing for phone: ${cleanedPhone} on server: ${selectedServer}`);
 
       // Import Baileys and file system modules
-      const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, makeCacheableSignalKeyStore } = await import('@whiskeysockets/baileys');
+      const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = await import('@whiskeysockets/baileys');
       const { join } = await import('path');
       const { mkdirSync, existsSync, readFileSync, writeFileSync, rmSync } = await import('fs');
       const pino = (await import('pino')).default;
@@ -3981,54 +3981,19 @@ Thank you for using TREKKER-MD! 🚀
       // Create silent logger
       const logger = pino({ level: "fatal" }).child({ level: "fatal" });
 
-      // Create WhatsApp socket
+      // Create WhatsApp socket - IMPORTANT: printQRInTerminal must be false for pairing code
       sock = makeWASocket({
-        auth: {
-          creds: state.creds,
-          keys: makeCacheableSignalKeyStore(state.keys, logger)
-        },
-        printQRInTerminal: false,
-        generateHighQualityLinkPreview: true,
-        browser: Browsers.macOS("Safari"),
-        logger: logger,
-        syncFullHistory: false,
-        // Add connection settings for better stability
-        connectTimeoutMs: 60000,
-        defaultQueryTimeoutMs: 60000,
-        keepAliveIntervalMs: 30000
+        auth: state,
+        printQRInTerminal: false, // Must be false for pairing code
+        logger: logger
       });
-
-      // Listen for credential updates - with explicit error handling
-      sock.ev.on('creds.update', async () => {
-        try {
-          await saveCreds();
-          console.log(`💾 Credentials saved for session ${sessionId}`);
-        } catch (error) {
-          console.error(`Error saving credentials:`, error);
-        }
-      });
-
-      // Request pairing code if not registered (like pair.js)
-      let pairingCode: string | null = null;
-
-      if (!sock.authState.creds.registered) {
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Increased delay
-        pairingCode = await sock.requestPairingCode(cleanedPhone);
-        console.log(`✅ Pairing code generated: ${pairingCode}`);
-      }
-
-      if (!pairingCode) {
-        return res.status(400).json({
-          message: "Failed to generate pairing code. Number may already be registered."
-        });
-      }
 
       // Store session for background authentication
       const pairingSession = {
         sessionId,
         phoneNumber: cleanedPhone,
         selectedServer,
-        pairingCode,
+        pairingCode: null as string | null,
         tempAuthDir,
         sock,
         status: 'waiting' as 'waiting' | 'authenticated' | 'failed',
@@ -4043,45 +4008,20 @@ Thank you for using TREKKER-MD! 🚀
       }
       (global as any).pairingSessions.set(sessionId, pairingSession);
 
-      // Return pairing code immediately so user can see it
-      res.json({
-        success: true,
-        pairingCode,
-        sessionId,
-        message: "Enter this code in WhatsApp > Linked Devices > Link a Device. The system will detect when you've linked successfully."
-      });
-
-      // Continue authentication in background with extended timeout
-      pairingSession.authTimeout = setTimeout(() => {
-        if (pairingSession.status === 'waiting') {
-          pairingSession.status = 'failed';
-          console.log(`⏰ Authentication timeout for session ${sessionId}`);
-          
-          // Clean up
-          if (sock) {
-            try {
-              sock.ev.removeAllListeners();
-              sock.end();
-            } catch (err) {
-              console.warn('Error closing socket:', err);
-            }
-          }
-        }
-      }, 120000); // Extended to 2 minutes
-
+      // Set up connection.update event handler BEFORE requesting pairing code
       sock.ev.on('connection.update', async (update: any) => {
-        const { connection, lastDisconnect, qr } = update;
+        const { connection, lastDisconnect } = update;
 
         console.log(`🔄 Connection update for session ${sessionId}: ${connection}`);
 
         if (connection === 'open') {
-          console.log(`✅ WhatsApp connection opened for session ${sessionId}! Waiting for credentials...`);
+          console.log(`✅ WhatsApp connection opened for session ${sessionId}! Processing credentials...`);
           
-          // Wait longer for credentials to be fully saved
-          await new Promise(r => setTimeout(r, 5000));
+          // Wait for credentials to be fully saved
+          await new Promise(r => setTimeout(r, 3000));
 
           try {
-            // Read credentials file with retry
+            // Read credentials file
             const credsPath = join(tempAuthDir!, 'creds.json');
             let credentials = null;
             let retries = 0;
@@ -4116,7 +4056,7 @@ Thank you for using TREKKER-MD! 🚀
             console.log(`✅ Credentials extracted for ${extractedPhone}`);
             clearTimeout(pairingSession.authTimeout);
 
-            // Save CLEAN credentials (like pair.js)
+            // Save CLEAN credentials
             const cleanCredentials = {
               creds: credentials.creds,
               keys: credentials.keys || {}
@@ -4173,9 +4113,8 @@ Your bot credentials have been generated.
             pairingSession.credentials = cleanCredentials;
             pairingSession.userJid = userJid;
 
-            // Delayed cleanup - wait to ensure everything is saved
+            // Delayed cleanup
             setTimeout(() => {
-              // Clean up temp directory
               if (tempAuthDir && existsSync(tempAuthDir)) {
                 try {
                   rmSync(tempAuthDir, { recursive: true, force: true });
@@ -4185,7 +4124,6 @@ Your bot credentials have been generated.
                 }
               }
 
-              // Close socket
               if (sock) {
                 try {
                   sock.ev.removeAllListeners();
@@ -4211,26 +4149,70 @@ Your bot credentials have been generated.
             clearTimeout(pairingSession.authTimeout);
             pairingSession.status = 'failed';
           }
-        } else if (connection === 'connecting') {
-          console.log(`🔄 Connecting session ${sessionId}...`);
         }
+      });
+
+      // Listen for credential updates
+      sock.ev.on('creds.update', saveCreds);
+
+      // Request pairing code if not registered (AFTER event handlers are set up)
+      let pairingCode: string | null = null;
+
+      if (!sock.authState.creds.registered) {
+        // Wait a bit for socket to initialize
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        pairingCode = await sock.requestPairingCode(cleanedPhone);
+        console.log(`✅ Pairing code generated: ${pairingCode}`);
+        pairingSession.pairingCode = pairingCode;
+      }
+
+      if (!pairingCode) {
+        return res.status(400).json({
+          message: "Failed to generate pairing code. Number may already be registered."
+        });
+      }
+
+      // Set timeout for authentication
+      pairingSession.authTimeout = setTimeout(() => {
+        if (pairingSession.status === 'waiting') {
+          pairingSession.status = 'failed';
+          console.log(`⏰ Authentication timeout for session ${sessionId}`);
+          
+          if (sock) {
+            try {
+              sock.ev.removeAllListeners();
+              sock.end();
+            } catch (err) {
+              console.warn('Error closing socket:', err);
+            }
+          }
+        }
+      }, 120000); // 2 minutes
+
+      // Return pairing code immediately
+      res.json({
+        success: true,
+        pairingCode,
+        sessionId,
+        message: "Enter this code in WhatsApp > Linked Devices > Link a Device. The system will detect when you've linked successfully."
       });
 
     } catch (error) {
       console.error('Pairing error:', error);
 
-      // Cleanup
       if (sock) {
         try {
           sock.ev.removeAllListeners();
-          await sock.end();
+          sock.end();
         } catch (err) {}
       }
 
-      res.status(500).json({
-        success: false,
-        message: error instanceof Error ? error.message : 'Pairing failed'
-      });
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          message: error instanceof Error ? error.message : 'Pairing failed'
+        });
+      }
     }
   });
 
