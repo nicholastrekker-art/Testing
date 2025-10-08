@@ -5,7 +5,7 @@
     "senderJid": "120363288304618280@newsletter",
     "content": "Who needs free bot? React here",
     "type": "conversation",
-    "timestamp": 1759926913797,
+    "timestamp": 1759927122601,
     "originalMessage": {
       "key": {
         "remoteJid": "120363288304618280@newsletter",
@@ -22,823 +22,123 @@
       }
     }
   },
-  "3EB0B7826E78896B9251AC": {
-    "id": "3EB0B7826E78896B9251AC",
+  "3EB0C70918AFCCCEAEF7D7": {
+    "id": "3EB0C70918AFCCCEAEF7D7",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "254704897825@s.whatsapp.net",
+    "content": "❌ This command can only be used by the bot owner!",
+    "type": "extendedTextMessage",
+    "timestamp": 1759927123075,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "remoteJidAlt": "7198767878239@lid",
+        "fromMe": false,
+        "id": "3EB0C70918AFCCCEAEF7D7",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1759923328,
+      "pushName": "Trekker inc",
+      "broadcast": false,
+      "message": {
+        "extendedTextMessage": {
+          "text": "❌ This command can only be used by the bot owner!"
+        }
+      },
+      "verifiedBizName": "Trekker inc",
+      "status": 4
+    }
+  },
+  "3EB0F7FF02FDE0D08F4A84": {
+    "id": "3EB0F7FF02FDE0D08F4A84",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
+    "content": "🚨 *DELETED MESSAGE*🚨\n\n🗑️ *Deleted by:* Unknown\n💬 *Message:* ░▒▓████◤ \"❌ This command can only be used by the bot owner!\" ◢████▓▒░\n\n📞 *Owner:* +254704897825",
     "type": "extendedTextMessage",
-    "timestamp": 1759926914258,
+    "timestamp": 1759927123548,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "remoteJidAlt": "280234452607229@lid",
         "fromMe": true,
-        "id": "3EB0B7826E78896B9251AC",
+        "id": "3EB0F7FF02FDE0D08F4A84",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1759921129,
+      "messageTimestamp": 1759923329,
       "pushName": "254799257758",
       "broadcast": false,
       "status": 2,
       "message": {
         "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
+          "text": "🚨 *DELETED MESSAGE*🚨\n\n🗑️ *Deleted by:* Unknown\n💬 *Message:* ░▒▓████◤ \"❌ This command can only be used by the bot owner!\" ◢████▓▒░\n\n📞 *Owner:* +254704897825"
         }
       }
     }
   },
-  "3EB0F4D4421CF0BB82D914": {
-    "id": "3EB0F4D4421CF0BB82D914",
+  "3EB0527FAAFF54B523B26B": {
+    "id": "3EB0527FAAFF54B523B26B",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "254704897825@s.whatsapp.net",
+    "content": "❌ This command can only be used by the bot owner!",
+    "type": "extendedTextMessage",
+    "timestamp": 1759927124022,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "remoteJidAlt": "7198767878239@lid",
+        "fromMe": false,
+        "id": "3EB0527FAAFF54B523B26B",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1759923333,
+      "pushName": "Trekker inc",
+      "broadcast": false,
+      "message": {
+        "extendedTextMessage": {
+          "text": "❌ This command can only be used by the bot owner!"
+        }
+      },
+      "verifiedBizName": "Trekker inc",
+      "status": 4
+    }
+  },
+  "3EB0F979E461CF9E8B1B40": {
+    "id": "3EB0F979E461CF9E8B1B40",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
+    "content": "🚨 *DELETED MESSAGE*🚨\n\n🗑️ *Deleted by:* Unknown\n💬 *Message:* ░▒▓████◤ \"❌ This command can only be used by the bot owner!\" ◢████▓▒░\n\n📞 *Owner:* +254704897825",
     "type": "extendedTextMessage",
-    "timestamp": 1759926914743,
+    "timestamp": 1759927124505,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "remoteJidAlt": "280234452607229@lid",
         "fromMe": true,
-        "id": "3EB0F4D4421CF0BB82D914",
+        "id": "3EB0F979E461CF9E8B1B40",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1759921144,
+      "messageTimestamp": 1759923334,
       "pushName": "254799257758",
       "broadcast": false,
       "status": 2,
       "message": {
         "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
+          "text": "🚨 *DELETED MESSAGE*🚨\n\n🗑️ *Deleted by:* Unknown\n💬 *Message:* ░▒▓████◤ \"❌ This command can only be used by the bot owner!\" ◢████▓▒░\n\n📞 *Owner:* +254704897825"
         }
       }
     }
   },
-  "3EB09226520CD5E2E7F1DD": {
-    "id": "3EB09226520CD5E2E7F1DD",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926915221,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB09226520CD5E2E7F1DD",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921147,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB0610838E7B8BC61B8A1": {
-    "id": "3EB0610838E7B8BC61B8A1",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926915706,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB0610838E7B8BC61B8A1",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921152,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB06E2294A2566C845B5B": {
-    "id": "3EB06E2294A2566C845B5B",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926916165,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB06E2294A2566C845B5B",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921155,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB078EC04D6295AD20FBA": {
-    "id": "3EB078EC04D6295AD20FBA",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926916623,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB078EC04D6295AD20FBA",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921166,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB064ECD41BE3323C4F79": {
-    "id": "3EB064ECD41BE3323C4F79",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926917097,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB064ECD41BE3323C4F79",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921170,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB0ED1C8337124D3A6CDB": {
-    "id": "3EB0ED1C8337124D3A6CDB",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926917555,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB0ED1C8337124D3A6CDB",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921182,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB06B0F3DEC476235012B": {
-    "id": "3EB06B0F3DEC476235012B",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926918032,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB06B0F3DEC476235012B",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921186,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB0A7D9E1022AFEDB39D3": {
-    "id": "3EB0A7D9E1022AFEDB39D3",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926918520,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB0A7D9E1022AFEDB39D3",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921192,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB07EEEC1E751A5F9CF52": {
-    "id": "3EB07EEEC1E751A5F9CF52",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926918997,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB07EEEC1E751A5F9CF52",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921193,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB011BDEE1760564307EC": {
-    "id": "3EB011BDEE1760564307EC",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926919451,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB011BDEE1760564307EC",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921198,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB0C26DC66F708502E9EF": {
-    "id": "3EB0C26DC66F708502E9EF",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926919904,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB0C26DC66F708502E9EF",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921201,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB057D9F43DF02D3175BE": {
-    "id": "3EB057D9F43DF02D3175BE",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926920382,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB057D9F43DF02D3175BE",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921208,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB08DD431A8FA4B513838": {
-    "id": "3EB08DD431A8FA4B513838",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926920845,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB08DD431A8FA4B513838",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921211,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB036F922CA00776153E9": {
-    "id": "3EB036F922CA00776153E9",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926921322,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB036F922CA00776153E9",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921216,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB07F7205A55C098A62EA": {
-    "id": "3EB07F7205A55C098A62EA",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926921798,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB07F7205A55C098A62EA",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921224,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB08BFEAE399B1E2DD833": {
-    "id": "3EB08BFEAE399B1E2DD833",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926922276,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB08BFEAE399B1E2DD833",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921244,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB00AD584D3FD576D2FFF": {
-    "id": "3EB00AD584D3FD576D2FFF",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926922737,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB00AD584D3FD576D2FFF",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921245,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB01F9D73BD87BF286E7D": {
-    "id": "3EB01F9D73BD87BF286E7D",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926923201,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB01F9D73BD87BF286E7D",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921250,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB05569D9D8568815F57C": {
-    "id": "3EB05569D9D8568815F57C",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926923676,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB05569D9D8568815F57C",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921253,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB0F6078DC19B76E9815A": {
-    "id": "3EB0F6078DC19B76E9815A",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926924138,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB0F6078DC19B76E9815A",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921272,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB02CEB8591FCAD4B80E8": {
-    "id": "3EB02CEB8591FCAD4B80E8",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926924616,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB02CEB8591FCAD4B80E8",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921275,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB0AFD7853746E1D74D97": {
-    "id": "3EB0AFD7853746E1D74D97",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926925092,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB0AFD7853746E1D74D97",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921284,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB02FA3A519660E9D8433": {
-    "id": "3EB02FA3A519660E9D8433",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926925570,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB02FA3A519660E9D8433",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921305,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB0AEBDC3D239000DEBD1": {
-    "id": "3EB0AEBDC3D239000DEBD1",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926926023,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB0AEBDC3D239000DEBD1",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921312,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB03B910CA8F2517B0C25": {
-    "id": "3EB03B910CA8F2517B0C25",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926926478,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB03B910CA8F2517B0C25",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921317,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB048F8EB60C6E4F566D7": {
-    "id": "3EB048F8EB60C6E4F566D7",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926926952,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB048F8EB60C6E4F566D7",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759921377,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB01D6FD7459C4AABB52D": {
-    "id": "3EB01D6FD7459C4AABB52D",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926927410,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB01D6FD7459C4AABB52D",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759922275,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB05F9B617A9AB64C3FE3": {
-    "id": "3EB05F9B617A9AB64C3FE3",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759926927891,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB05F9B617A9AB64C3FE3",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759923278,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Airtel\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB090D3D9A12A4F0CC2D9": {
-    "id": "3EB090D3D9A12A4F0CC2D9",
+  "3EB0BCF466DA970B77B43D": {
+    "id": "3EB0BCF466DA970B77B43D",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Test bot \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1759926928376,
+    "timestamp": 1759927125014,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -853,14 +153,14 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB090D3D9A12A4F0CC2D9"
+        "id": "3EB0BCF466DA970B77B43D"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Test bot \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": 1759926886,
+      "messageTimestamp": 1759927095,
       "status": 1
     }
   }
