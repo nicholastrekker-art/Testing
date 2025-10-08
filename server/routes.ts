@@ -4097,24 +4097,45 @@ Thank you for using TREKKER-MD! 🚀
         });
       }
       
-      // Check if creds.json exists (means pairing was successful)
+      // Wait for creds.json to be created (with timeout)
       const credsPath = join(tempAuthDir, 'creds.json');
+      const maxWaitTime = 30000; // 30 seconds
+      const checkInterval = 1000; // Check every 1 second
+      let waitedTime = 0;
+      
+      console.log(`⏳ Waiting for authentication to complete...`);
+      
+      while (!existsSync(credsPath) && waitedTime < maxWaitTime) {
+        await new Promise(resolve => setTimeout(resolve, checkInterval));
+        waitedTime += checkInterval;
+        console.log(`⏳ Waiting for credentials... (${waitedTime/1000}s/${maxWaitTime/1000}s)`);
+      }
       
       if (!existsSync(credsPath)) {
         return res.status(400).json({ 
-          message: "Pairing not complete yet. Please enter the pairing code in WhatsApp first." 
+          message: "Pairing code was not entered or authentication timed out. Please try again and make sure to enter the code within 30 seconds." 
         });
       }
+      
+      // Additional wait to ensure file is fully written
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Read credentials
       const credentialsData = readFileSync(credsPath, 'utf-8');
       const credentials = JSON.parse(credentialsData);
       
+      // Verify credentials are complete
+      if (!credentials.creds || !credentials.creds.me || !credentials.creds.me.id) {
+        return res.status(400).json({
+          message: "Authentication incomplete. Please try the pairing process again."
+        });
+      }
+      
       // Convert credentials to base64
       const base64Credentials = Buffer.from(credentialsData).toString('base64');
       
       // Extract JID (WhatsApp ID)
-      const jid = credentials.me?.id || cleanedPhone + '@s.whatsapp.net';
+      const jid = credentials.creds.me.id;
       
       console.log(`✅ Credentials retrieved for ${cleanedPhone}, JID: ${jid}`);
       
