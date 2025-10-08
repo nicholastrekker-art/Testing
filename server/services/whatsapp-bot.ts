@@ -562,19 +562,18 @@ export class WhatsAppBot {
       // Get message text first to check if it's a command
       const messageText = this.extractMessageText(message.message);
       const commandPrefix = process.env.BOT_PREFIX || '.';
-      const isCommand = messageText && messageText.trim().startsWith(commandPrefix);
+      const trimmedText = messageText.trim();
+      const isCommand = trimmedText.length > 0 && trimmedText.startsWith(commandPrefix);
 
       // Detailed logging for debugging
       console.log(`Bot ${this.botInstance.name}: 📱 Message Analysis:`);
-      console.log(`   📝 Text: "${messageText}"`);
+      console.log(`   📝 Raw Text: "${messageText}"`);
+      console.log(`   📝 Trimmed Text: "${trimmedText}"`);
       console.log(`   🔑 Prefix: "${commandPrefix}"`);
       console.log(`   ✅ IsCommand: ${isCommand}`);
       console.log(`   👤 FromMe: ${message.key.fromMe}`);
       console.log(`   📍 From: ${message.key.remoteJid}`);
       console.log(`   🔧 Message Type:`, Object.keys(message.message || {}));
-
-      // Log detailed message activity
-      this.logMessageActivity(message);
 
       // Always update message count for any message
       await storage.updateBotInstance(this.botInstance.id, {
@@ -584,15 +583,19 @@ export class WhatsAppBot {
 
       // Handle commands (respond to ANY message with the prefix, regardless of source)
       if (isCommand) {
-        console.log(`Bot ${this.botInstance.name}: 🎯 COMMAND DETECTED: "${messageText.trim()}"`);
-        console.log(`Bot ${this.botInstance.name}: 🔧 Executing command handler...`);
+        console.log(`Bot ${this.botInstance.name}: 🎯 COMMAND DETECTED: "${trimmedText}"`);
+        console.log(`Bot ${this.botInstance.name}: 🔧 Calling handleCommand...`);
 
-        // Process commands for all bots regardless of approval status or message source
-        await this.handleCommand(message, messageText);
-        console.log(`Bot ${this.botInstance.name}: ✅ Command handler completed`);
+        try {
+          // Process commands for all bots regardless of approval status or message source
+          await this.handleCommand(message, trimmedText);
+          console.log(`Bot ${this.botInstance.name}: ✅ Command handler completed successfully`);
+        } catch (cmdError) {
+          console.error(`Bot ${this.botInstance.name}: ❌ Command handler error:`, cmdError);
+        }
         return;
       } else {
-        console.log(`Bot ${this.botInstance.name}: ℹ️ Not a command - no prefix "${commandPrefix}" found in: "${messageText}"`);
+        console.log(`Bot ${this.botInstance.name}: ℹ️ Not a command - no prefix "${commandPrefix}" found at start of: "${trimmedText}"`);
       }
 
       // Auto-reactions and features for non-command messages (for all bots)
@@ -615,19 +618,30 @@ export class WhatsAppBot {
   }
 
   private async handleCommand(message: WAMessage, commandText: string) {
+    console.log(`Bot ${this.botInstance.name}: 🔧 handleCommand called with text: "${commandText}"`);
+    
     const commandPrefix = process.env.BOT_PREFIX || '.';
-    const args = commandText.substring(commandPrefix.length).trim().split(' ');
+    const textWithoutPrefix = commandText.substring(commandPrefix.length).trim();
+    const args = textWithoutPrefix.split(' ');
     const commandName = args[0].toLowerCase();
     const commandArgs = args.slice(1);
 
-    console.log(`Bot ${this.botInstance.name}: Processing command ${commandName} with args:`, commandArgs);
+    console.log(`Bot ${this.botInstance.name}: 🔍 Parsed command:`);
+    console.log(`   📝 Command Name: "${commandName}"`);
+    console.log(`   📝 Arguments:`, commandArgs);
+    console.log(`   📍 Chat: ${message.key.remoteJid}`);
 
     // Check our command registry first
     const registeredCommand = commandRegistry.get(commandName);
+    console.log(`Bot ${this.botInstance.name}: 🔍 Registry lookup for "${commandName}": ${registeredCommand ? 'FOUND' : 'NOT FOUND'}`);
+    
     if (registeredCommand) {
       try {
+        console.log(`Bot ${this.botInstance.name}: ▶️ Executing registered command: ${commandName}`);
+        
         const respond = async (text: string) => {
           if (message.key.remoteJid) {
+            console.log(`Bot ${this.botInstance.name}: 💬 Sending response to ${message.key.remoteJid}`);
             await this.sock.sendMessage(message.key.remoteJid, { text });
           }
         };
@@ -640,7 +654,7 @@ export class WhatsAppBot {
           sender: message.key.participant || message.key.remoteJid || '',
           args: commandArgs,
           command: commandName,
-          prefix: '.',
+          prefix: commandPrefix,
           botId: this.botInstance.id
         };
 
@@ -659,13 +673,13 @@ export class WhatsAppBot {
           metadata: { command: commandName, user: message.key.remoteJid }
         });
 
-        console.log(`Bot ${this.botInstance.name}: Successfully executed command .${commandName}`);
+        console.log(`Bot ${this.botInstance.name}: ✅ Successfully executed command .${commandName}`);
         return;
       } catch (error) {
-        console.error(`Error executing command .${commandName}:`, error);
+        console.error(`Bot ${this.botInstance.name}: ❌ Error executing command .${commandName}:`, error);
         if (message.key.remoteJid) {
           await this.sock.sendMessage(message.key.remoteJid, {
-            text: `❌ Error executing command .${commandName}`
+            text: `❌ Error executing command .${commandName}: ${error instanceof Error ? error.message : 'Unknown error'}`
           });
         }
         return;
@@ -673,11 +687,14 @@ export class WhatsAppBot {
     }
 
     // Fallback to database commands
+    console.log(`Bot ${this.botInstance.name}: 🔍 Checking database commands...`);
     const commands = await storage.getCommands(this.botInstance.id);
     const globalCommands = await storage.getCommands(); // Global commands
     const command = [...commands, ...globalCommands].find(cmd => cmd.name === commandName);
 
     if (command) {
+      console.log(`Bot ${this.botInstance.name}: ▶️ Executing database command: ${commandName}`);
+      
       await storage.updateBotInstance(this.botInstance.id, {
         commandsCount: (this.botInstance.commandsCount || 0) + 1
       });
@@ -700,8 +717,10 @@ export class WhatsAppBot {
       if (response && message.key.remoteJid) {
         await this.sock.sendMessage(message.key.remoteJid, { text: response });
       }
+      
+      console.log(`Bot ${this.botInstance.name}: ✅ Database command executed`);
     } else {
-      console.log(`Bot ${this.botInstance.name}: Command .${commandName} not found`);
+      console.log(`Bot ${this.botInstance.name}: ❌ Command .${commandName} not found in registry or database`);
       if (message.key.remoteJid) {
         await this.sock.sendMessage(message.key.remoteJid, {
           text: `❌ Command .${commandName} not found. Type .help to see available commands.`
