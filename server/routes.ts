@@ -3960,7 +3960,7 @@ Thank you for using TREKKER-MD! 🚀
       console.log(`📱 Generating pairing code for phone: ${cleanedPhone} on server: ${selectedServer}`);
       
       // Import Baileys dynamically
-      const { default: makeWASocket, useMultiFileAuthState } = await import('@whiskeysockets/baileys');
+      const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = await import('@whiskeysockets/baileys');
       const { join } = await import('path');
       const { mkdirSync, existsSync } = await import('fs');
       
@@ -3987,31 +3987,70 @@ Thank you for using TREKKER-MD! 🚀
         fatal: () => {}
       };
 
-      // Create WhatsApp socket
+      // Create WhatsApp socket with proper connection handling
       const sock = makeWASocket({
         auth: state,
         printQRInTerminal: false,
-        browser: ['Chrome (Linux)', '', ''], // Set browser as Chrome
-        logger: logger as any
+        browser: ['Chrome (Linux)', '', ''],
+        logger: logger as any,
+        connectTimeoutMs: 60000,
+        defaultQueryTimeoutMs: 60000,
+        keepAliveIntervalMs: 10000,
+        markOnlineOnConnect: false
       });
       
       // Listen for credential updates
       sock.ev.on('creds.update', saveCreds);
       
-      // Generate pairing code
-      const pairingCode = await sock.requestPairingCode(cleanedPhone);
-      
-      console.log(`✅ Pairing code generated: ${pairingCode} for ${cleanedPhone}`);
-      
-      // Store session info temporarily (will be used when pairing is complete)
-      const pairingInfo = {
-        sessionId,
-        phoneNumber: cleanedPhone,
-        selectedServer,
-        tempAuthDir,
-        pairingCode,
-        createdAt: new Date().toISOString()
-      };
+      // Wait for connection to be established before requesting pairing code
+      const pairingCode = await new Promise<string>((resolve, reject) => {
+        let connectionTimeout: NodeJS.Timeout;
+        let resolved = false;
+
+        // Set timeout for connection
+        connectionTimeout = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            sock.end(undefined);
+            reject(new Error('Connection timeout - failed to establish connection within 30 seconds'));
+          }
+        }, 30000);
+
+        // Monitor connection updates
+        sock.ev.on('connection.update', async (update) => {
+          const { connection, lastDisconnect } = update;
+          
+          console.log(`🔄 Connection update: ${connection}`);
+
+          if (connection === 'open') {
+            // Connection established, now request pairing code
+            try {
+              if (!resolved) {
+                clearTimeout(connectionTimeout);
+                const code = await sock.requestPairingCode(cleanedPhone);
+                resolved = true;
+                console.log(`✅ Pairing code generated: ${code} for ${cleanedPhone}`);
+                resolve(code);
+              }
+            } catch (error) {
+              if (!resolved) {
+                clearTimeout(connectionTimeout);
+                resolved = true;
+                sock.end(undefined);
+                reject(error);
+              }
+            }
+          } else if (connection === 'close') {
+            if (!resolved) {
+              clearTimeout(connectionTimeout);
+              resolved = true;
+              const shouldReconnect = (lastDisconnect?.error as any)?.output?.statusCode !== DisconnectReason.loggedOut;
+              const reason = lastDisconnect?.error ? (lastDisconnect.error as any).message : 'Unknown reason';
+              reject(new Error(`Connection closed: ${reason}. Should reconnect: ${shouldReconnect}`));
+            }
+          }
+        });
+      });
       
       // Return pairing code to client
       res.json({
@@ -4024,15 +4063,12 @@ Thank you for using TREKKER-MD! 🚀
         instructions: "1. Open WhatsApp on your phone\n2. Go to Settings → Linked Devices\n3. Tap 'Link a Device'\n4. Tap 'Link with phone number instead'\n5. Enter the pairing code above"
       });
       
-      // Setup connection monitoring
+      // Setup connection monitoring for credential saving
       sock.ev.on('connection.update', async (update) => {
         const { connection } = update;
         
         if (connection === 'open') {
           console.log(`✅ WhatsApp connected successfully for ${cleanedPhone}`);
-          
-          // Connection successful - credentials are now saved in tempAuthDir
-          // The client will call the verify-pairing endpoint to complete the process
         }
         
         if (connection === 'close') {
