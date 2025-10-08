@@ -529,7 +529,6 @@ export class WhatsAppBot {
     if (!messageObj) return '';
 
     // Priority order: direct conversation > extendedTextMessage > other types
-    // This ensures we get the actual message text, not metadata or quoted text
     
     // 1. Check for direct conversation (simple text message)
     if (messageObj.conversation) {
@@ -583,9 +582,14 @@ export class WhatsAppBot {
 
       // Get message text - extract directly from the message object
       const messageText = this.extractMessageText(message.message);
+      
+      console.log(`Bot ${this.botInstance.name}: 📝 Extracted text: "${messageText}" from ${message.key.remoteJid}`);
+      
       const commandPrefix = process.env.BOT_PREFIX || '.';
       const trimmedText = messageText.trim();
       const isCommand = trimmedText.length > 0 && trimmedText.startsWith(commandPrefix);
+
+      console.log(`Bot ${this.botInstance.name}: 🔍 Command check: text="${trimmedText}", prefix="${commandPrefix}", isCommand=${isCommand}`);
 
       // Always update message count for any message
       await storage.updateBotInstance(this.botInstance.id, {
@@ -595,16 +599,18 @@ export class WhatsAppBot {
 
       // Handle commands (respond to ANY message with the prefix, regardless of source)
       if (isCommand) {
-        console.log(`Bot ${this.botInstance.name}: 🎯 COMMAND: "${trimmedText}" from ${message.key.remoteJid}`);
+        console.log(`Bot ${this.botInstance.name}: 🎯 COMMAND DETECTED: "${trimmedText}" from ${message.key.remoteJid}`);
 
         try {
           // Process commands for all bots regardless of approval status or message source
           await this.handleCommand(message, trimmedText);
-          console.log(`Bot ${this.botInstance.name}: ✅ Command executed`);
+          console.log(`Bot ${this.botInstance.name}: ✅ Command executed successfully`);
         } catch (cmdError) {
           console.error(`Bot ${this.botInstance.name}: ❌ Command error:`, cmdError);
         }
         return;
+      } else if (trimmedText.length > 0) {
+        console.log(`Bot ${this.botInstance.name}: ℹ️ Not a command - no prefix detected`);
       }
 
       // Auto-reactions and features for non-command messages (for all bots)
