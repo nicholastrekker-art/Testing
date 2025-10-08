@@ -664,7 +664,7 @@ export async function registerRoutes(app: Express): Server {
 
 
   // Update server configuration (name and description) - implements true tenant switching
-  app.post("/api/server/configure", authenticateAdmin, async (req, res) => {
+  app.post("/api/server/configure", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       // Only allow configuration if SERVER_NAME is not set via secrets
       if (process.env.SERVER_NAME) {
@@ -2813,8 +2813,8 @@ export async function registerRoutes(app: Express): Server {
 
         try {
           // Test connection with new credentials on current server
-          const { validateWhatsAppCredentials } = await import('./services/creds-validator');
-          const testResult = await validateWhatsAppCredentials(phoneNumber, credentials);
+          const { validateCredentialsByPhoneNumber } = await import('./services/creds-validator');
+          const testResult = await validateCredentialsByPhoneNumber(phoneNumber, credentials);
 
           if (testResult.isValid) {
             console.log(`✅ Connection test successful - updating credentials in ${botServer} tenancy`);
@@ -2892,6 +2892,7 @@ export async function registerRoutes(app: Express): Server {
 Your TREKKER-MD bot "${bot.name}" has been successfully updated with new credentials!
 
 📱 *Phone:* ${phoneNumber}
+🆔 *JID:* ${bot.userJid}
 🔐 *Update Details:*
 • Bot Server: ${botServer}
 • Status: ✅ Credentials Updated ${botServer === currentServer ? '& Reconnecting' : '& Saved'}
@@ -4032,155 +4033,51 @@ Thank you for using TREKKER-MD! 🚀
 
         if (connection === 'open') {
           console.log(`✅ WhatsApp connection opened for session ${sessionId}!`);
-          
-          // Clear auth timeout since connection succeeded
-          clearTimeout(pairingSession.authTimeout);
-          
-          // Wait longer for credentials to be fully saved
-          await new Promise(r => setTimeout(r, 3000));
+          console.log(`🎉 User successfully entered pairing code in WhatsApp client!`);
 
-          try {
-            // Read credentials file with retry
-            const credsPath = join(tempAuthDir!, 'creds.json');
-            
-            let credentialsData = null;
-            let retries = 0;
-            const maxRetries = 5;
-            
-            while (!credentialsData && retries < maxRetries) {
-              if (existsSync(credsPath)) {
-                try {
-                  credentialsData = readFileSync(credsPath, 'utf-8');
-                  console.log(`✅ Credentials file read successfully on attempt ${retries + 1}`);
-                  break;
-                } catch (readError) {
-                  console.log(`⚠️ Retry ${retries + 1}/${maxRetries}: Error reading credentials file`);
-                  await new Promise(r => setTimeout(r, 1000));
-                  retries++;
-                }
-              } else {
-                console.log(`⚠️ Retry ${retries + 1}/${maxRetries}: Credentials file not found, waiting...`);
-                await new Promise(r => setTimeout(r, 1000));
-                retries++;
-              }
-            }
-            
-            if (!credentialsData) {
-              throw new Error('Credentials file not found or could not be read after authentication');
-            }
+          // Clear timeout on successful authentication
+          if (pairingSession.authTimeout) {
+            clearTimeout(pairingSession.authTimeout);
+            console.log(`⏰ Cleared authentication timeout for session ${sessionId}`);
+          }
 
-            const credentials = JSON.parse(credentialsData);
-              
-            // Extract user JID with multiple fallback methods
-            let userJid = sock.user?.id || credentials.creds?.me?.id || null;
-            
-            // Extract phone number from JID
-            let extractedPhone = cleanedPhone;
-            if (userJid) {
-              const phoneMatch = userJid.match(/^(\d+):/);
-              if (phoneMatch) {
-                extractedPhone = phoneMatch[1];
-              }
-            }
+          pairingSession.status = 'authenticated';
 
-            console.log(`✅ Credentials extracted - Phone: ${extractedPhone}, JID: ${userJid}`);
+          // Wait for credentials to be fully updated (important!)
+          console.log(`⏳ Waiting for credentials to be saved...`);
+          await new Promise(resolve => setTimeout(resolve, 3000));
 
-            // Validate credentials structure
-            if (!credentials.creds?.noiseKey || !credentials.creds?.signedIdentityKey) {
-              throw new Error('Invalid credentials structure - missing essential fields');
-            }
+          // Get credentials
+          const creds = sock.authState.creds;
+          pairingSession.credentials = creds;
 
-            // Save CLEAN credentials (only creds and keys, like Baileys documentation)
-            const cleanCredentials = {
-              creds: credentials.creds,
-              keys: credentials.keys || {}
-            };
+          // Get user JID
+          pairingSession.userJid = sock.user?.id || null;
 
-            // Save to creds folder
-            const credsDir = join(process.cwd(), 'creds');
-            if (!existsSync(credsDir)) {
-              mkdirSync(credsDir, { recursive: true });
-            }
+          console.log(`✅ Authentication successful for session ${sessionId}`);
+          console.log(`👤 User JID: ${pairingSession.userJid}`);
+          console.log(`📦 Credentials captured and ready for download`);
 
-            const credsFilePath = join(credsDir, `${extractedPhone}_${sessionId}.json`);
-            writeFileSync(credsFilePath, JSON.stringify({
-              ...cleanCredentials,
-              _metadata: {
-                userJid,
-                phoneNumber: extractedPhone,
-                sessionId,
-                generatedAt: new Date().toISOString()
-              }
-            }, null, 2));
-            console.log(`💾 Credentials saved to: ${credsFilePath}`);
+          // Wait another moment to ensure everything is settled
+          await new Promise(resolve => setTimeout(resolve, 2000));
 
-            // Send credentials to WhatsApp
-            const credentialsBase64 = Buffer.from(JSON.stringify(cleanCredentials, null, 2)).toString('base64');
-
-            const credentialsMessage = `🎉 *WhatsApp Pairing Successful!*
-
-Your bot credentials have been generated.
-
-📱 *Phone:* +${extractedPhone}
-🆔 *JID:* ${userJid}
-
-🔐 *SESSION ID (Copy this for Step 2):*
-\`\`\`${credentialsBase64}\`\`\`
-
-⚠️ *IMPORTANT - READ CAREFULLY:*
-• The pairing code was ONLY for linking WhatsApp - DON'T use it anymore
-• The SESSION ID above is what you need for Step 2 (Guest Dashboard)
-• Copy the entire SESSION ID from the box above
-• Go to Step 2 in Guest Dashboard and paste this SESSION ID
-• Keep this safe and DO NOT share with anyone
-
-✅ Next Step: Paste the SESSION ID in Step 2 to manage your bot`;
-
+          // Close connection gracefully after getting credentials
+          if (sock) {
             try {
-              await sendGuestValidationMessage(extractedPhone, JSON.stringify(cleanCredentials), credentialsMessage, true);
-              console.log(`✅ Credentials sent to WhatsApp: ${userJid}`);
-            } catch (sendError) {
-              console.warn(`⚠️ Failed to send credentials to WhatsApp:`, sendError);
+              console.log(`🔌 Closing WhatsApp connection for session ${sessionId}...`);
+              sock.ev.removeAllListeners();
+              await sock.end();
+              console.log(`✅ Connection closed successfully for session ${sessionId}`);
+            } catch (err) {
+              console.error(`⚠️ Error closing socket for session ${sessionId}:`, err);
             }
-
-            // Update session status
-            pairingSession.status = 'authenticated';
-            pairingSession.credentials = cleanCredentials;
-            pairingSession.userJid = userJid;
-
-            console.log(`✅ Session ${sessionId} authenticated successfully`);
-            
-            // Delayed cleanup to ensure everything is saved
-            setTimeout(() => {
-              if (tempAuthDir && existsSync(tempAuthDir)) {
-                try {
-                  rmSync(tempAuthDir, { recursive: true, force: true });
-                  console.log(`🧹 Temp directory cleaned for session ${sessionId}`);
-                } catch (cleanError) {
-                  console.warn('Error cleaning temp directory:', cleanError);
-                }
-              }
-
-              if (sock) {
-                try {
-                  sock.ev.removeAllListeners();
-                  sock.end();
-                } catch (err) {
-                  console.warn('Error closing socket:', err);
-                }
-              }
-            }, 5000);
-
-          } catch (error) {
-            pairingSession.status = 'failed';
-            console.error(`❌ Error processing credentials for session ${sessionId}:`, error);
           }
         } else if (connection === 'close') {
           const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
           const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-          
+
           console.log(`❌ Connection closed for session ${sessionId}, status: ${statusCode}`);
-          
+
           if (!shouldReconnect) {
             clearTimeout(pairingSession.authTimeout);
             pairingSession.status = 'failed';
@@ -4190,7 +4087,7 @@ Your bot credentials have been generated.
 
       // Wait for connection to be ready before requesting pairing code
       console.log(`⏳ Waiting for connection to be ready for session ${sessionId}...`);
-      
+
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('Connection timeout - failed to establish connection within 30 seconds'));
@@ -4217,7 +4114,7 @@ Your bot credentials have been generated.
         pairingSession.pairingCode = pairingCode;
       } else {
         console.log(`⚠️ Number ${cleanedPhone} is already registered`);
-        
+
         // Clean up
         if (sock) {
           try {
@@ -4225,7 +4122,7 @@ Your bot credentials have been generated.
             sock.end();
           } catch (err) {}
         }
-        
+
         return res.status(400).json({
           success: false,
           message: "This number is already registered. Please use a different number."
@@ -4240,35 +4137,43 @@ Your bot credentials have been generated.
             sock.end();
           } catch (err) {}
         }
-        
+
         return res.status(400).json({
           message: "Failed to generate pairing code. Number may already be registered."
         });
       }
 
-      // Set timeout for authentication
-      pairingSession.authTimeout = setTimeout(() => {
+      // Set authentication timeout (5 minutes - increased for reliability)
+      pairingSession.authTimeout = setTimeout(async () => {
+        console.log(`⏰ Authentication timeout for session ${sessionId}`);
+
+        // Only mark as failed if still waiting (not already authenticated)
         if (pairingSession.status === 'waiting') {
           pairingSession.status = 'failed';
-          console.log(`⏰ Authentication timeout for session ${sessionId}`);
-          
+
+          console.log(`❌ Session ${sessionId} timed out - user did not enter pairing code`);
+
+          // Clean up
           if (sock) {
             try {
               sock.ev.removeAllListeners();
               sock.end();
-            } catch (err) {
-              console.warn('Error closing socket:', err);
-            }
+            } catch (err) {}
           }
         }
-      }, 120000); // 2 minutes
+      }, 5 * 60 * 1000); // 5 minutes
 
-      // Return pairing code immediately
-      res.json({
+      console.log(`✅ Pairing setup complete for session ${sessionId}`);
+      console.log(`📋 Pairing code: ${pairingCode}`);
+      console.log(`⏳ Waiting for user to enter code in WhatsApp (timeout: 5 minutes)...`);
+
+      return res.json({
         success: true,
-        pairingCode,
         sessionId,
-        message: "Enter this code in WhatsApp > Linked Devices > Link a Device. The system will detect when you've linked successfully."
+        pairingCode,
+        phoneNumber: cleanedPhone,
+        message: "Enter the pairing code in your WhatsApp app (Linked Devices > Link a Device > Link with phone number instead)",
+        expiresIn: 300 // 5 minutes
       });
 
     } catch (error) {
@@ -4540,7 +4445,7 @@ Your bot credentials have been generated.
       const credsFileName = `${extractedPhoneNumber}_${sessionId}.json`;
       const credsFilePath = join(credsDir, credsFileName);
 
-      // Save CLEAN credentials (without extra wrapper fields) - like pair.js
+      // Save CLEAN credentials (only creds and keys, like Baileys documentation)
       // Only save the core credentials structure from Baileys
       const cleanCredentials = {
         creds: credentials.creds,
