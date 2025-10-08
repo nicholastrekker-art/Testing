@@ -103,6 +103,11 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       formData.append('sessionId', data.sessionId);
       formData.append('features', JSON.stringify(data.features));
       formData.append('selectedServer', data.selectedServer);
+      
+      // Include pairing session ID for temp file cleanup
+      if (data.pairingSessionId) {
+        formData.append('pairingSessionId', data.pairingSessionId);
+      }
 
       const response = await fetch('/api/guest/register-bot', {
         method: 'POST',
@@ -150,7 +155,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     setStep(2);
   };
 
-  const handlePhoneSubmit = () => {
+  const handlePhoneSubmit = async () => {
     if (!phoneNumber) {
       toast({
         title: "Phone Number Required",
@@ -170,6 +175,45 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
         variant: "destructive"
       });
       return;
+    }
+
+    // Check if phone number is already registered
+    try {
+      const response = await fetch('/api/guest/check-registration', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber: cleaned }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.registered || data.serverMismatch) {
+          const serverName = data.registeredTo || 'another server';
+          toast({
+            title: "Phone Number Already Registered",
+            description: `This phone number is already registered on ${serverName}. Please use a different number or go to Step 2 to manage your existing bot.`,
+            variant: "destructive"
+          });
+          return;
+        }
+      } else {
+        // Check if this is a server mismatch error
+        const error = await response.json();
+        if (error.registeredTo) {
+          toast({
+            title: "Phone Number Already Registered",
+            description: `This phone number is already registered on ${error.registeredTo}. Please use a different number or go to Step 2 to manage your existing bot.`,
+            variant: "destructive"
+          });
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Registration check error:', error);
+      // Continue if check fails - don't block the user
     }
 
     // Update phone number state with cleaned version

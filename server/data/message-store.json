@@ -1,0 +1,34 @@
+{
+  "3EB02C3F23A7B3191B818E": {
+    "id": "3EB02C3F23A7B3191B818E",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Test bot \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
+    "type": "extendedTextMessage",
+    "timestamp": 1759938031103,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB02C3F23A7B3191B818E"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Test bot \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
+        }
+      },
+      "messageTimestamp": 1759938002,
+      "status": 1
+    }
+  }
+}
