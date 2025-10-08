@@ -4215,12 +4215,12 @@ Thank you for using TREKKER-MD! 🚀
 
       // Extract user JID from credentials
       let userJid = null;
-      let phoneNumber = null;
+      let extractedPhoneNumber = null;
 
       if (credentials.creds?.me?.id) {
         userJid = credentials.creds.me.id;
         const phoneMatch = userJid.match(/^(\d+):/);
-        phoneNumber = phoneMatch ? phoneMatch[1] : null;
+        extractedPhoneNumber = phoneMatch ? phoneMatch[1] : null;
       }
 
       // Verify credentials are complete
@@ -4232,7 +4232,7 @@ Thank you for using TREKKER-MD! 🚀
         throw new Error('Incomplete credentials structure - missing user ID');
       }
 
-      console.log(`✅ Credentials verified and complete for ${phoneNumber}`);
+      console.log(`✅ Credentials verified and complete for ${extractedPhoneNumber}`);
       console.log(`📱 User JID: ${userJid}`);
 
       // Send credentials to user's WhatsApp
@@ -4244,14 +4244,14 @@ Thank you for using TREKKER-MD! 🚀
         mkdirSync(credsDir, { recursive: true });
       }
 
-      const credsFileName = `${phoneNumber}_${sessionId}.json`;
+      const credsFileName = `${extractedPhoneNumber}_${sessionId}.json`;
       const credsFilePath = join(credsDir, credsFileName);
 
       // Create a complete credentials object with JID
       const completeCredentials = {
         ...credentials,
         userJid,
-        phoneNumber,
+        phoneNumber: extractedPhoneNumber,
         sessionId,
         generatedAt: new Date().toISOString()
       };
@@ -4268,7 +4268,7 @@ Thank you for using TREKKER-MD! 🚀
 
 Your bot credentials have been generated and saved.
 
-📱 *Phone Number:* ${phoneNumber}
+📱 *Phone Number:* ${extractedPhoneNumber}
 🆔 *JID:* ${userJid}
 
 🔐 *Credentials (Base64):*
@@ -4283,7 +4283,7 @@ ${credentialsBase64}
 
 ✅ You can now proceed to register your bot using these credentials.`;
 
-        await sendGuestValidationMessage(phoneNumber, JSON.stringify(completeCredentials), credentialsMessage, true);
+        await sendGuestValidationMessage(extractedPhoneNumber, JSON.stringify(completeCredentials), credentialsMessage, true);
         console.log(`✅ Credentials sent to WhatsApp: ${userJid}`);
       } catch (sendError) {
         console.error(`⚠️ Failed to send credentials message:`, sendError);
@@ -4295,7 +4295,7 @@ ${credentialsBase64}
         message: "Pairing verified successfully - credentials sent to your WhatsApp",
         credentials: {
           jid: userJid,
-          phoneNumber: phoneNumber,
+          phoneNumber: extractedPhoneNumber,
           base64: Buffer.from(JSON.stringify(completeCredentials, null, 2)).toString('base64'),
           savedTo: credsFilePath
         }
