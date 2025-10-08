@@ -20,12 +20,12 @@ interface WhatsAppPairingProps {
 export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps) {
   const { toast } = useToast();
 
-  const [step, setStep] = useState(1); // 1: server selection, 2: phone input, 3: pairing code, 4: credentials, 5: bot setup
+  const [step, setStep] = useState(1); // 1: server selection, 2: phone input, 3: pairing code + waiting, 4: credentials, 5: bot setup
   const [selectedServer, setSelectedServer] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [pairingCode, setPairingCode] = useState("");
-  const [sessionId, setSessionId] = useState("");
   const [credentials, setCredentials] = useState<any>(null);
+  const [isWaitingForAuth, setIsWaitingForAuth] = useState(false);
   const [botName, setBotName] = useState("");
   const [features, setFeatures] = useState({
     autoLike: false,
@@ -42,56 +42,52 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     enabled: open && step === 1
   });
 
-  // Generate pairing code mutation
+  // Generate pairing code mutation (now waits for full authentication)
   const generatePairingMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; selectedServer: string }) => {
       const res = await apiRequest('POST', '/api/whatsapp/generate-pairing-code', data);
       return res.json();
     },
+    onMutate: () => {
+      // Show pairing code screen immediately while waiting
+      setStep(3);
+      setIsWaitingForAuth(false);
+    },
     onSuccess: (data) => {
-      setPairingCode(data.pairingCode);
-      setSessionId(data.sessionId);
-      setStep(3); // Move to pairing code display
-      toast({
-        title: "Pairing Code Generated",
-        description: `Your pairing code is: ${data.pairingCode}`,
-      });
+      if (data.success && data.credentials) {
+        // Authentication successful - credentials received
+        setPairingCode(data.pairingCode);
+        setCredentials(data.credentials);
+        setStep(4); // Move to credentials display
+        toast({
+          title: "Pairing Successful!",
+          description: "Credentials have been sent to your WhatsApp",
+        });
+      } else if (data.pairingCode && !data.success) {
+        // Pairing code generated but authentication failed/timeout
+        setPairingCode(data.pairingCode);
+        toast({
+          title: "Authentication Failed",
+          description: data.message || "Please try again",
+          variant: "destructive"
+        });
+      } else {
+        // Pairing code generated, waiting for user to enter it
+        setPairingCode(data.pairingCode);
+        setIsWaitingForAuth(true);
+      }
     },
     onError: (error: Error) => {
+      setIsWaitingForAuth(false);
       toast({
-        title: "Failed to Generate Pairing Code",
+        title: "Pairing Failed",
         description: error.message,
         variant: "destructive"
       });
     }
   });
 
-  // Verify pairing mutation
-  const verifyPairingMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest('POST', '/api/whatsapp/verify-pairing', {
-        sessionId,
-        phoneNumber,
-        selectedServer
-      });
-      return res.json();
-    },
-    onSuccess: (data) => {
-      setCredentials(data.credentials);
-      setStep(4); // Move to credentials display
-      toast({
-        title: "Pairing Successful!",
-        description: "Credentials have been sent to your WhatsApp and saved for registration.",
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Pairing Not Complete",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
+  // No longer need separate verify mutation - everything happens in generate mutation
 
   // Register bot mutation
   const registerBotMutation = useMutation({
@@ -221,9 +217,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     generatePairingMutation.mutate({ phoneNumber: cleaned, selectedServer });
   };
 
-  const handleVerifyPairing = async () => {
-    verifyPairingMutation.mutate();
-  };
+  // No longer need handleVerifyPairing - authentication happens automatically
 
   const handleCopyCredentials = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -247,7 +241,6 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       botName,
       phoneNumber,
       sessionId: credentials.base64, // Send base64 credentials
-      pairingSessionId: sessionId, // Send the original pairing session ID for file cleanup
       features,
       selectedServer
     });
@@ -258,8 +251,8 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     setSelectedServer("");
     setPhoneNumber("");
     setPairingCode("");
-    setSessionId("");
     setCredentials(null);
+    setIsWaitingForAuth(false);
     setBotName("");
     setFeatures({
       autoLike: false,
@@ -380,7 +373,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
           </Card>
         )}
 
-        {/* Step 3: Pairing Code Display */}
+        {/* Step 3: Pairing Code Display + Waiting for Authentication */}
         {step === 3 && (
           <Card className="border-blue-200">
             <CardHeader>
@@ -389,47 +382,74 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
                 Step 3: Enter Pairing Code in WhatsApp
               </CardTitle>
               <CardDescription>
-                Open WhatsApp on your phone and enter the code below
+                {generatePairingMutation.isPending 
+                  ? "Waiting for WhatsApp authentication..." 
+                  : "Use this code ONLY to link your WhatsApp (one-time use)"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg text-center">
-                <p className="text-sm text-muted-foreground mb-2">Your Pairing Code:</p>
-                <p className="text-4xl font-bold text-blue-600 dark:text-blue-400 tracking-wider">
-                  {pairingCode}
-                </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleCopyCredentials(pairingCode)}
-                  className="mt-2"
-                  data-testid="button-copy-code"
-                >
-                  <Copy className="h-4 w-4 mr-1" />
-                  Copy Code
-                </Button>
-              </div>
+              {generatePairingMutation.isPending ? (
+                // Loading state while waiting for authentication
+                <div className="text-center py-8">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                  <p className="text-lg font-medium">Waiting for you to enter the pairing code in WhatsApp...</p>
+                  <p className="text-sm text-muted-foreground mt-2">This may take up to 60 seconds</p>
+                  <p className="text-xs text-muted-foreground mt-4">The pairing code is: <strong>{pairingCode || "Generating..."}</strong></p>
+                </div>
+              ) : (
+                // Show pairing code (only shown if there's an error or timeout)
+                <>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg text-center">
+                    <p className="text-sm text-muted-foreground mb-2">Your Pairing Code (One-Time Use):</p>
+                    <p className="text-4xl font-bold text-blue-600 dark:text-blue-400 tracking-wider">
+                      {pairingCode}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCopyCredentials(pairingCode)}
+                      className="mt-2"
+                      data-testid="button-copy-code"
+                    >
+                      <Copy className="h-4 w-4 mr-1" />
+                      Copy Code
+                    </Button>
+                    <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
+                      ⚠️ This pairing code is ONLY for linking WhatsApp. Don't use it anywhere else!
+                    </p>
+                  </div>
 
-              <Alert>
-                <AlertDescription>
-                  <ol className="space-y-1 text-sm">
-                    <li>1. Open WhatsApp on your phone</li>
-                    <li>2. Go to <strong>Settings → Linked Devices</strong></li>
-                    <li>3. Tap <strong>Link a Device</strong></li>
-                    <li>4. Tap <strong>Link with phone number instead</strong></li>
-                    <li>5. Enter the pairing code above</li>
-                  </ol>
-                </AlertDescription>
-              </Alert>
+                  <Alert>
+                    <AlertDescription>
+                      <ol className="space-y-1 text-sm">
+                        <li>1. Open WhatsApp on your phone</li>
+                        <li>2. Go to <strong>Settings → Linked Devices</strong></li>
+                        <li>3. Tap <strong>Link a Device</strong></li>
+                        <li>4. Tap <strong>Link with phone number instead</strong></li>
+                        <li>5. Enter the pairing code above</li>
+                      </ol>
+                    </AlertDescription>
+                  </Alert>
 
-              <Button 
-                onClick={handleVerifyPairing}
-                disabled={verifyPairingMutation.isPending}
-                className="w-full"
-                data-testid="button-verify-pairing"
-              >
-                {verifyPairingMutation.isPending ? "Verifying..." : "I've Entered the Code - Verify Connection"}
-              </Button>
+                  <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>
+                      Authentication timed out or failed. Please click "Try Again" to generate a new pairing code.
+                    </AlertDescription>
+                  </Alert>
+
+                  <Button 
+                    onClick={() => {
+                      setStep(2);
+                      setPairingCode("");
+                    }}
+                    className="w-full"
+                    data-testid="button-retry-pairing"
+                  >
+                    Try Again
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         )}
@@ -440,24 +460,36 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600" />
-                Step 4: Backup Your Credentials
+                Step 4: Your Session ID (Backup Copy)
               </CardTitle>
               <CardDescription>
-                Save these credentials safely - you'll need them to manage your bot
+                Your Session ID has been sent to WhatsApp - use it in Step 2 to manage your bot
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Alert className="border-green-500">
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription className="font-semibold">
-                  ✅ Credentials have been sent to your WhatsApp! Check your messages.
+                  ✅ Session ID sent to your WhatsApp! Check your messages for the full credentials.
+                </AlertDescription>
+              </Alert>
+              
+              <Alert className="border-blue-500">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  <p className="font-semibold mb-1">📱 What's Next:</p>
+                  <ul className="text-sm space-y-1 ml-4 list-disc">
+                    <li>The pairing code was ONLY for linking - don't save it</li>
+                    <li>Your SESSION ID was sent to WhatsApp - copy it from there</li>
+                    <li>Use the SESSION ID in "Step 2: Guest Dashboard" to manage your bot</li>
+                  </ul>
                 </AlertDescription>
               </Alert>
               
               <Alert className="border-orange-500">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription className="font-semibold">
-                  ⚠️ IMPORTANT: Backup your credentials and DO NOT share with anyone!
+                  ⚠️ SECURITY: Never share your Session ID with anyone!
                 </AlertDescription>
               </Alert>
 
@@ -483,7 +515,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
                 </div>
 
                 <div>
-                  <Label className="text-xs text-muted-foreground">Session ID (Base64)</Label>
+                  <Label className="text-xs text-muted-foreground">Session ID (Backup - also in WhatsApp)</Label>
                   <div className="flex items-center gap-2 mt-1">
                     <textarea 
                       value={credentials.base64} 
@@ -500,6 +532,9 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    💡 This same Session ID is in your WhatsApp - use either copy for Step 2
+                  </p>
                 </div>
               </div>
 

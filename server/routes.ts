@@ -3933,9 +3933,10 @@ Thank you for using TREKKER-MD! 🚀
 
   // ======= WHATSAPP PAIRING CODE ENDPOINTS =======
 
-  // Generate WhatsApp Pairing Code
+  // Generate WhatsApp Pairing Code and Wait for Authentication (Complete Flow like pair.js)
   app.post("/api/whatsapp/generate-pairing-code", async (req, res) => {
     let sock: any = null;
+    let tempAuthDir: string | null = null;
 
     try {
       const { phoneNumber, selectedServer } = req.body;
@@ -3958,17 +3959,17 @@ Thank you for using TREKKER-MD! 🚀
         });
       }
 
-      console.log(`📱 Generating pairing code for phone: ${cleanedPhone} on server: ${selectedServer}`);
+      console.log(`📱 Starting pairing for phone: ${cleanedPhone} on server: ${selectedServer}`);
 
-      // Import Baileys dynamically
+      // Import Baileys and file system modules
       const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, makeCacheableSignalKeyStore } = await import('@whiskeysockets/baileys');
       const { join } = await import('path');
-      const { mkdirSync, existsSync } = await import('fs');
+      const { mkdirSync, existsSync, readFileSync, writeFileSync, rmSync } = await import('fs');
       const pino = (await import('pino')).default;
 
       // Create temporary auth directory for this pairing session
       const sessionId = crypto.randomBytes(16).toString('hex');
-      const tempAuthDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
+      tempAuthDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
 
       if (!existsSync(tempAuthDir)) {
         mkdirSync(tempAuthDir, { recursive: true });
@@ -3977,31 +3978,32 @@ Thank you for using TREKKER-MD! 🚀
       // Setup multi-file auth state
       const { state, saveCreds } = await useMultiFileAuthState(tempAuthDir);
 
-      // Create silent logger for pairing
+      // Create silent logger
       const logger = pino({ level: "fatal" }).child({ level: "fatal" });
 
-      // Create WhatsApp socket - matching pair.js implementation
+      // Create WhatsApp socket
       sock = makeWASocket({
         auth: {
           creds: state.creds,
           keys: makeCacheableSignalKeyStore(state.keys, logger)
         },
         printQRInTerminal: false,
+        generateHighQualityLinkPreview: true,
         browser: Browsers.macOS("Safari"),
-        logger: logger
+        logger: logger,
+        syncFullHistory: false
       });
 
       // Listen for credential updates
       sock.ev.on('creds.update', saveCreds);
 
-      // Request pairing code immediately if not registered (like pair.js)
+      // Request pairing code if not registered (like pair.js)
       let pairingCode: string | null = null;
 
       if (!sock.authState.creds.registered) {
-        console.log(`📱 Requesting pairing code for unregistered number: ${cleanedPhone}`);
-        await new Promise(resolve => setTimeout(resolve, 1500)); // Small delay like pair.js
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Delay like pair.js
         pairingCode = await sock.requestPairingCode(cleanedPhone);
-        console.log(`✅ Pairing code generated: ${pairingCode} for ${cleanedPhone}`);
+        console.log(`✅ Pairing code generated: ${pairingCode}`);
       }
 
       if (!pairingCode) {
@@ -4010,65 +4012,167 @@ Thank you for using TREKKER-MD! 🚀
         });
       }
 
-      // Return pairing code to client immediately
-      console.log(`📱 Pairing code generated successfully: ${pairingCode}`);
-      console.log(`🔑 Session ID: ${sessionId}`);
-      console.log(`⚠️ This is a TEMPORARY connection for credential generation only`);
+      // Wait for connection to open (like pair.js)
+      const authComplete = await new Promise<{success: boolean, credentials?: any, userJid?: string, error?: string}>((resolve) => {
+        const timeout = setTimeout(() => {
+          resolve({ success: false, error: 'Authentication timeout - pairing code not entered within 60 seconds' });
+        }, 60000); // 60 second timeout
 
-      res.json({
-        success: true,
-        pairingCode,
-        sessionId,
-        connectionType: 'temporary',
-        expiresIn: 600, // 10 minutes
-        message: 'Enter this code in WhatsApp: Settings → Linked Devices → Link a Device → Link with phone number instead',
-        warning: 'This is a temporary connection for credential generation. It will be automatically removed after credentials are extracted.'
+        sock.ev.on('connection.update', async (update: any) => {
+          const { connection, lastDisconnect } = update;
+
+          if (connection === 'open') {
+            console.log(`✅ WhatsApp connection opened! Reading credentials...`);
+            
+            // Wait for credentials to be saved
+            await new Promise(r => setTimeout(r, 2000));
+
+            try {
+              // Read credentials file (like pair.js)
+              const credsPath = join(tempAuthDir!, 'creds.json');
+              if (existsSync(credsPath)) {
+                const credentialsData = readFileSync(credsPath, 'utf-8');
+                const credentials = JSON.parse(credentialsData);
+                
+                // Extract user JID
+                let userJid = sock.user?.id || credentials.creds?.me?.id || null;
+                let extractedPhone = userJid?.match(/^(\d+):/)?.[1] || null;
+
+                console.log(`✅ Credentials extracted for ${extractedPhone}`);
+                
+                clearTimeout(timeout);
+                resolve({ success: true, credentials, userJid });
+              } else {
+                resolve({ success: false, error: 'Credentials file not found after authentication' });
+              }
+            } catch (error) {
+              resolve({ success: false, error: `Error reading credentials: ${error}` });
+            }
+          } else if (connection === 'close') {
+            const shouldReconnect = (lastDisconnect?.error as any)?.output?.statusCode !== DisconnectReason.loggedOut;
+            if (!shouldReconnect) {
+              clearTimeout(timeout);
+              resolve({ success: false, error: 'Connection closed - authentication failed' });
+            }
+          }
+        });
       });
 
-      // Monitor connection in background
-      sock.ev.on('connection.update', async (update: any) => {
-        const { connection, lastDisconnect } = update;
-
-        console.log(`🔄 Connection update: ${connection}`);
-
-        if (connection === 'open') {
-          console.log(`✅ WhatsApp connected successfully for ${cleanedPhone}`);
-        } else if (connection === 'close') {
-          console.log(`❌ WhatsApp connection closed for ${cleanedPhone}`);
-          const shouldReconnect = (lastDisconnect?.error as any)?.output?.statusCode !== DisconnectReason.loggedOut;
-          if (shouldReconnect) {
-            console.log(`🔄 Attempting to reconnect...`);
-          }
-        }
-      });
-
-      // Keep socket alive for 5 minutes to allow pairing
-      setTimeout(() => {
-        if (sock) {
-          try {
-            sock.end(undefined);
-            console.log(`🧹 Cleaned up pairing session: ${sessionId}`);
-          } catch (err) {
-            console.warn(`Warning cleaning up socket:`, err);
-          }
-        }
-      }, 5 * 60 * 1000);
-
-    } catch (error) {
-      console.error('Pairing code generation error:', error);
-
-      // Clean up socket on error
+      // Close socket
       if (sock) {
         try {
-          sock.end(undefined);
+          await sock.end();
         } catch (err) {
-          console.warn(`Error ending socket:`, err);
+          console.warn('Error closing socket:', err);
         }
       }
 
+      if (!authComplete.success) {
+        // Clean up on failure
+        if (tempAuthDir && existsSync(tempAuthDir)) {
+          rmSync(tempAuthDir, { recursive: true, force: true });
+        }
+        
+        return res.status(400).json({
+          success: false,
+          pairingCode, // Still return the code for reference
+          message: authComplete.error || "Authentication failed"
+        });
+      }
+
+      // Authentication successful - prepare credentials
+      const credentials = authComplete.credentials;
+      const userJid = authComplete.userJid;
+      const extractedPhone = userJid?.match(/^(\d+):/)?.[1] || cleanedPhone;
+
+      // Save CLEAN credentials (like pair.js)
+      const cleanCredentials = {
+        creds: credentials.creds,
+        keys: credentials.keys || {}
+      };
+
+      // Save to creds folder
+      const credsDir = join(process.cwd(), 'creds');
+      if (!existsSync(credsDir)) {
+        mkdirSync(credsDir, { recursive: true });
+      }
+
+      const credsFilePath = join(credsDir, `${extractedPhone}_${sessionId}.json`);
+      writeFileSync(credsFilePath, JSON.stringify({
+        ...cleanCredentials,
+        _metadata: {
+          userJid,
+          phoneNumber: extractedPhone,
+          sessionId,
+          generatedAt: new Date().toISOString()
+        }
+      }, null, 2));
+
+      // Send credentials to WhatsApp
+      const credentialsBase64 = Buffer.from(JSON.stringify(cleanCredentials, null, 2)).toString('base64');
+
+      const credentialsMessage = `🎉 *WhatsApp Pairing Successful!*
+
+Your bot credentials have been generated.
+
+📱 *Phone:* +${extractedPhone}
+🆔 *JID:* ${userJid}
+
+🔐 *SESSION ID (Copy this for Step 2):*
+\`\`\`${credentialsBase64}\`\`\`
+
+⚠️ *IMPORTANT - READ CAREFULLY:*
+• The pairing code was ONLY for linking WhatsApp - DON'T use it anymore
+• The SESSION ID above is what you need for Step 2 (Guest Dashboard)
+• Copy the entire SESSION ID from the box above
+• Go to Step 2 in Guest Dashboard and paste this SESSION ID
+• Keep this safe and DO NOT share with anyone
+
+✅ Next Step: Paste the SESSION ID in Step 2 to manage your bot`;
+
+      try {
+        await sendGuestValidationMessage(extractedPhone, JSON.stringify(cleanCredentials), credentialsMessage, true);
+        console.log(`✅ Credentials sent to WhatsApp`);
+      } catch (sendError) {
+        console.warn(`⚠️ Failed to send credentials to WhatsApp:`, sendError);
+      }
+
+      // Clean up temp directory
+      if (tempAuthDir && existsSync(tempAuthDir)) {
+        rmSync(tempAuthDir, { recursive: true, force: true });
+      }
+
+      // Return success with credentials
+      res.json({
+        success: true,
+        pairingCode,
+        credentials: {
+          jid: userJid,
+          phoneNumber: extractedPhone,
+          base64: credentialsBase64,
+          savedTo: credsFilePath
+        },
+        message: "Authentication successful! Credentials sent to your WhatsApp."
+      });
+
+    } catch (error) {
+      console.error('Pairing error:', error);
+
+      // Cleanup
+      if (sock) {
+        try {
+          await sock.end();
+        } catch (err) {}
+      }
+
+      if (tempAuthDir && existsSync(tempAuthDir)) {
+        const { rmSync } = await import('fs');
+        rmSync(tempAuthDir, { recursive: true, force: true });
+      }
+
       res.status(500).json({
-        message: "Failed to generate pairing code",
-        error: error instanceof Error ? error.message : 'Unknown error'
+        success: false,
+        message: error instanceof Error ? error.message : 'Pairing failed'
       });
     }
   });
@@ -4092,7 +4196,7 @@ Thank you for using TREKKER-MD! 🚀
       console.log(`🔍 Verifying pairing for session: ${sessionId}, phone: ${cleanedPhone}`);
 
       const { join } = await import('path');
-      const { existsSync, readFileSync, rmSync, writeFileSync } = await import('fs');
+      const { existsSync, readFileSync, rmSync, writeFileSync, mkdirSync } = await import('fs');
       const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore, Browsers } = await import('@whiskeysockets/baileys');
       const pino = (await import('pino')).default;
 
@@ -4221,6 +4325,14 @@ Thank you for using TREKKER-MD! 🚀
 
       const credentials = JSON.parse(credentialsData);
 
+      console.log(`📋 Credentials structure check:`, {
+        hasMe: !!credentials.me,
+        hasCreds: !!credentials.creds,
+        hasCredsMe: !!credentials.creds?.me,
+        hasNoiseKey: !!credentials.creds?.noiseKey,
+        topLevelKeys: Object.keys(credentials).slice(0, 10)
+      });
+
       // Extract user JID from credentials
       let userJid = null;
       let extractedPhoneNumber = null;
@@ -4231,9 +4343,14 @@ Thank you for using TREKKER-MD! 🚀
         extractedPhoneNumber = phoneMatch ? phoneMatch[1] : null;
       }
 
-      // Verify credentials are complete
+      // Verify credentials are complete - check nested structure
       if (!credentials.creds || !credentials.creds.noiseKey) {
-        throw new Error('Incomplete credentials structure - missing essential fields');
+        console.error(`❌ Incomplete credentials:`, {
+          hasMe: !!credentials.me,
+          hasCreds: !!credentials.creds,
+          hasCredsKeys: credentials.creds ? Object.keys(credentials.creds).slice(0, 10) : []
+        });
+        throw new Error('Incomplete credentials structure - missing essential fields (noiseKey)');
       }
 
       if (!userJid) {
@@ -4255,13 +4372,22 @@ Thank you for using TREKKER-MD! 🚀
       const credsFileName = `${extractedPhoneNumber}_${sessionId}.json`;
       const credsFilePath = join(credsDir, credsFileName);
 
-      // Create a complete credentials object with JID
+      // Save CLEAN credentials (without extra wrapper fields) - like pair.js
+      // Only save the core credentials structure from Baileys
+      const cleanCredentials = {
+        creds: credentials.creds,
+        keys: credentials.keys || {}
+      };
+
+      // Save to file with metadata for internal use
       const completeCredentials = {
-        ...credentials,
-        userJid,
-        phoneNumber: extractedPhoneNumber,
-        sessionId,
-        generatedAt: new Date().toISOString()
+        ...cleanCredentials,
+        _metadata: {
+          userJid,
+          phoneNumber: extractedPhoneNumber,
+          sessionId,
+          generatedAt: new Date().toISOString()
+        }
       };
 
       writeFileSync(credsFilePath, JSON.stringify(completeCredentials, null, 2));
@@ -4269,29 +4395,29 @@ Thank you for using TREKKER-MD! 🚀
 
       // Send credentials message
       try {
-        // Format credentials as base64 for easy storage
-        const credentialsBase64 = Buffer.from(JSON.stringify(completeCredentials, null, 2)).toString('base64');
+        // Send ONLY clean credentials (like pair.js) - no wrapper fields
+        const credentialsBase64 = Buffer.from(JSON.stringify(cleanCredentials, null, 2)).toString('base64');
 
         const credentialsMessage = `🎉 *WhatsApp Pairing Successful!*
 
-Your bot credentials have been generated and saved.
+Your bot credentials have been generated.
 
-📱 *Phone Number:* ${extractedPhoneNumber}
+📱 *Phone:* +${extractedPhoneNumber}
 🆔 *JID:* ${userJid}
 
-🔐 *Credentials (Base64):*
-\`\`\`
-${credentialsBase64}
-\`\`\`
+🔐 *SESSION ID (Copy this for Step 2):*
+\`\`\`${credentialsBase64}\`\`\`
 
-⚠️ *IMPORTANT:*
-• Keep these credentials safe and secure
-• Do NOT share with anyone
-• You'll need these to register your bot
+⚠️ *IMPORTANT - READ CAREFULLY:*
+• The pairing code was ONLY for linking WhatsApp - DON'T use it anymore
+• The SESSION ID above is what you need for Step 2 (Guest Dashboard)
+• Copy the entire SESSION ID from the box above
+• Go to Step 2 in Guest Dashboard and paste this SESSION ID
+• Keep this safe and DO NOT share with anyone
 
-✅ You can now proceed to register your bot using these credentials.`;
+✅ Next Step: Paste the SESSION ID in Step 2 to manage your bot`;
 
-        await sendGuestValidationMessage(extractedPhoneNumber, JSON.stringify(completeCredentials), credentialsMessage, true);
+        await sendGuestValidationMessage(extractedPhoneNumber, JSON.stringify(cleanCredentials), credentialsMessage, true);
         console.log(`✅ Credentials sent to WhatsApp: ${userJid}`);
       } catch (sendError) {
         console.error(`⚠️ Failed to send credentials message:`, sendError);
@@ -4300,11 +4426,11 @@ ${credentialsBase64}
 
       res.json({
         success: true,
-        message: "Pairing verified successfully - credentials sent to your WhatsApp",
+        message: "Pairing verified successfully - Session ID sent to your WhatsApp",
         credentials: {
           jid: userJid,
           phoneNumber: extractedPhoneNumber,
-          base64: Buffer.from(JSON.stringify(completeCredentials, null, 2)).toString('base64'),
+          base64: Buffer.from(JSON.stringify(cleanCredentials, null, 2)).toString('base64'),
           savedTo: credsFilePath
         }
       });

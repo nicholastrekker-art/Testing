@@ -207,25 +207,36 @@ export default function GuestPhoneVerification() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Enter Session Credentials
+                Enter Session ID from WhatsApp
               </CardTitle>
               <CardDescription>
-                Paste your bot's Base64 session credentials to verify ownership and check connection status
+                Paste the SESSION ID you received in WhatsApp (NOT the pairing code)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md mb-3">
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  ⚠️ Important: Don't confuse the pairing code with the Session ID
+                </p>
+                <ul className="text-xs text-blue-800 dark:text-blue-200 mt-2 space-y-1 ml-4 list-disc">
+                  <li>Pairing Code: Used ONLY for linking WhatsApp (e.g., "ABC-123")</li>
+                  <li>Session ID: Long base64 string sent to WhatsApp after pairing succeeds</li>
+                  <li>You need the SESSION ID here, not the pairing code</li>
+                </ul>
+              </div>
+              
               <div>
-                <Label htmlFor="session">Session ID / Base64 Credentials</Label>
+                <Label htmlFor="session">Session ID (Base64 - from WhatsApp message)</Label>
                 <textarea
                   id="session"
-                  placeholder="Paste your base64 session credentials here..."
+                  placeholder="Paste the long SESSION ID from your WhatsApp message here (starts with 'eyJ...' or similar base64)"
                   value={sessionId}
                   onChange={(e) => setSessionId(e.target.value)}
                   className="w-full h-32 p-3 border rounded-md resize-none font-mono text-sm"
                   data-testid="input-session-id"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  We'll extract the phone number and check if your bot is currently active
+                  This will verify ownership and check if your bot is currently active
                 </p>
               </div>
               
