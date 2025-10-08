@@ -4008,7 +4008,7 @@ Thank you for using TREKKER-MD! 🚀
       }
       (global as any).pairingSessions.set(sessionId, pairingSession);
 
-      // Listen for credential updates FIRST
+      // Set up creds.update listener FIRST (before any other events)
       sock.ev.on('creds.update', saveCreds);
 
       // Set up connection.update event handler
@@ -4018,48 +4018,30 @@ Thank you for using TREKKER-MD! 🚀
         console.log(`🔄 Connection update for session ${sessionId}: ${connection}`);
 
         if (connection === 'open') {
-          console.log(`✅ WhatsApp connection opened for session ${sessionId}! Processing credentials...`);
+          console.log(`✅ WhatsApp connection opened for session ${sessionId}!`);
           
-          // Wait for credentials to be fully saved
-          await new Promise(r => setTimeout(r, 3000));
+          // Wait a bit for credentials to be saved
+          await new Promise(r => setTimeout(r, 2000));
 
           try {
             // Read credentials file
             const credsPath = join(tempAuthDir!, 'creds.json');
-            let credentials = null;
-            let retries = 0;
-            const maxRetries = 10;
-
-            while (!credentials && retries < maxRetries) {
-              if (existsSync(credsPath)) {
-                try {
-                  const credentialsData = readFileSync(credsPath, 'utf-8');
-                  credentials = JSON.parse(credentialsData);
-                  console.log(`📄 Credentials read successfully (attempt ${retries + 1})`);
-                } catch (readError) {
-                  console.log(`⚠️ Retry ${retries + 1}/${maxRetries}: Error reading credentials`);
-                  await new Promise(resolve => setTimeout(resolve, 1000));
-                  retries++;
-                }
-              } else {
-                console.log(`⚠️ Retry ${retries + 1}/${maxRetries}: Waiting for credentials file...`);
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                retries++;
-              }
+            
+            if (!existsSync(credsPath)) {
+              throw new Error('Credentials file not found after connection opened');
             }
 
-            if (!credentials) {
-              throw new Error('Failed to read credentials after retries');
-            }
+            const credentialsData = readFileSync(credsPath, 'utf-8');
+            const credentials = JSON.parse(credentialsData);
               
             // Extract user JID
-            let userJid = sock.user?.id || credentials.creds?.me?.id || null;
-            let extractedPhone = userJid?.match(/^(\d+):/)?.[1] || cleanedPhone;
+            const userJid = sock.user?.id || credentials.creds?.me?.id || null;
+            const extractedPhone = userJid?.match(/^(\d+):/)?.[1] || cleanedPhone;
 
             console.log(`✅ Credentials extracted for ${extractedPhone}`);
             clearTimeout(pairingSession.authTimeout);
 
-            // Save CLEAN credentials
+            // Save CLEAN credentials (only creds and keys, like Baileys documentation)
             const cleanCredentials = {
               creds: credentials.creds,
               keys: credentials.keys || {}
@@ -4146,7 +4128,7 @@ Your bot credentials have been generated.
           const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
           const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
           
-          console.log(`❌ Connection closed for session ${sessionId}, status: ${statusCode}, shouldReconnect: ${shouldReconnect}`);
+          console.log(`❌ Connection closed for session ${sessionId}, status: ${statusCode}`);
           
           if (!shouldReconnect) {
             clearTimeout(pairingSession.authTimeout);
@@ -4155,11 +4137,10 @@ Your bot credentials have been generated.
         }
       });
 
-      // Request pairing code - check if already registered first
+      // Request pairing code AFTER event handlers are set up
       let pairingCode: string | null = null;
 
       if (!sock.authState.creds.registered) {
-        console.log(`📱 Requesting pairing code for ${cleanedPhone}...`);
         pairingCode = await sock.requestPairingCode(cleanedPhone);
         console.log(`✅ Pairing code generated: ${pairingCode}`);
         pairingSession.pairingCode = pairingCode;
