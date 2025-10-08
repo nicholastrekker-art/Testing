@@ -4076,6 +4076,7 @@ Thank you for using TREKKER-MD! 🚀
   // Verify WhatsApp Pairing and Get Credentials
   app.post("/api/whatsapp/verify-pairing", async (req, res) => {
     let sock: any = null;
+    let tempAuthDir: string | null = null; // Declare at function scope
 
     try {
       const { sessionId, phoneNumber, selectedServer } = req.body;
@@ -4096,7 +4097,7 @@ Thank you for using TREKKER-MD! 🚀
       const pino = (await import('pino')).default;
 
       // Check if temp auth directory exists
-      const tempAuthDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
+      tempAuthDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
 
       if (!existsSync(tempAuthDir)) {
         return res.status(404).json({
@@ -4144,7 +4145,7 @@ Thank you for using TREKKER-MD! 🚀
           }
         };
 
-        sock.ev.on('connection.update', (update: any) => {
+        const connectionHandler = (update: any) => {
           const { connection, lastDisconnect } = update;
 
           console.log(`🔄 Connection update: ${connection}`);
@@ -4165,15 +4166,22 @@ Thank you for using TREKKER-MD! 🚀
             const error = lastDisconnect?.error;
             reject(new Error(`Connection closed: ${error?.message || 'Unknown error'}`));
           }
-        });
+        };
 
-        sock.ev.on('creds.update', async () => {
+        const credsHandler = async () => {
           console.log(`🔐 Credentials updated - saving to disk...`);
-          await saveCreds();
-          credentialsSaved = true;
-          console.log(`✅ Credentials saved successfully`);
-          checkComplete();
-        });
+          try {
+            await saveCreds();
+            credentialsSaved = true;
+            console.log(`✅ Credentials saved successfully`);
+            checkComplete();
+          } catch (saveError) {
+            console.error('Error saving credentials:', saveError);
+          }
+        };
+
+        sock.ev.on('connection.update', connectionHandler);
+        sock.ev.on('creds.update', credsHandler);
       });
 
       // Wait for authentication to complete
@@ -4329,8 +4337,11 @@ ${credentialsBase64}
         }
       }
       // Remove temporary auth directory if it exists
+      const { existsSync, rmSync } = await import('fs');
       if (tempAuthDir && existsSync(tempAuthDir)) {
         try {
+          // Wait a bit before cleanup to ensure all operations complete
+          await new Promise(resolve => setTimeout(resolve, 2000));
           rmSync(tempAuthDir, { recursive: true, force: true });
           console.log(`🧹 Cleaned up temporary auth directory: ${tempAuthDir}`);
         } catch (cleanupError) {
