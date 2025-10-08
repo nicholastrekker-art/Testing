@@ -528,28 +528,50 @@ export class WhatsAppBot {
   private extractMessageText(messageObj: any): string {
     if (!messageObj) return '';
 
-    // Unwrap common message wrappers
+    // Priority order: direct conversation > extendedTextMessage > other types
+    // This ensures we get the actual message text, not metadata or quoted text
+    
+    // 1. Check for direct conversation (simple text message)
+    if (messageObj.conversation) {
+      return String(messageObj.conversation).trim();
+    }
+
+    // 2. Check for extended text message (most common for commands)
+    if (messageObj.extendedTextMessage?.text) {
+      return String(messageObj.extendedTextMessage.text).trim();
+    }
+
+    // 3. Unwrap ephemeral/viewonce wrappers and retry
     const inner = messageObj.ephemeralMessage?.message ||
                   messageObj.viewOnceMessage?.message ||
                   messageObj.viewOnceMessageV2?.message ||
                   messageObj.documentWithCaptionMessage?.message ||
-                  messageObj.editedMessage?.message ||
-                  messageObj;
+                  messageObj.editedMessage?.message;
+    
+    if (inner && inner !== messageObj) {
+      return this.extractMessageText(inner); // Recursive call for wrapped messages
+    }
 
-    // Extract text from various message types (prioritize direct text fields)
-    const text = inner.conversation ||
-                 inner.extendedTextMessage?.text ||
-                 inner.imageMessage?.caption ||
-                 inner.videoMessage?.caption ||
-                 inner.documentMessage?.caption ||
-                 inner.audioMessage?.caption ||
-                 inner.buttonsResponseMessage?.selectedButtonId ||
-                 inner.listResponseMessage?.singleSelectReply?.selectedRowId ||
-                 inner.templateButtonReplyMessage?.selectedId ||
-                 '';
+    // 4. Check for media captions
+    const caption = messageObj.imageMessage?.caption ||
+                   messageObj.videoMessage?.caption ||
+                   messageObj.documentMessage?.caption ||
+                   messageObj.audioMessage?.caption;
+    
+    if (caption) {
+      return String(caption).trim();
+    }
 
-    // Return trimmed text to remove extra whitespace
-    return typeof text === 'string' ? text.trim() : '';
+    // 5. Check for interactive message responses
+    const interactive = messageObj.buttonsResponseMessage?.selectedButtonId ||
+                       messageObj.listResponseMessage?.singleSelectReply?.selectedRowId ||
+                       messageObj.templateButtonReplyMessage?.selectedId;
+    
+    if (interactive) {
+      return String(interactive).trim();
+    }
+
+    return '';
   }
 
   private async handleMessage(message: WAMessage) {
@@ -559,21 +581,11 @@ export class WhatsAppBot {
         return;
       }
 
-      // Get message text first to check if it's a command
+      // Get message text - extract directly from the message object
       const messageText = this.extractMessageText(message.message);
       const commandPrefix = process.env.BOT_PREFIX || '.';
       const trimmedText = messageText.trim();
       const isCommand = trimmedText.length > 0 && trimmedText.startsWith(commandPrefix);
-
-      // Detailed logging for debugging
-      console.log(`Bot ${this.botInstance.name}: 📱 Message Analysis:`);
-      console.log(`   📝 Raw Text: "${messageText}"`);
-      console.log(`   📝 Trimmed Text: "${trimmedText}"`);
-      console.log(`   🔑 Prefix: "${commandPrefix}"`);
-      console.log(`   ✅ IsCommand: ${isCommand}`);
-      console.log(`   👤 FromMe: ${message.key.fromMe}`);
-      console.log(`   📍 From: ${message.key.remoteJid}`);
-      console.log(`   🔧 Message Type:`, Object.keys(message.message || {}));
 
       // Always update message count for any message
       await storage.updateBotInstance(this.botInstance.id, {
@@ -583,28 +595,22 @@ export class WhatsAppBot {
 
       // Handle commands (respond to ANY message with the prefix, regardless of source)
       if (isCommand) {
-        console.log(`Bot ${this.botInstance.name}: 🎯 COMMAND DETECTED: "${trimmedText}"`);
-        console.log(`Bot ${this.botInstance.name}: 🔧 Calling handleCommand...`);
+        console.log(`Bot ${this.botInstance.name}: 🎯 COMMAND: "${trimmedText}" from ${message.key.remoteJid}`);
 
         try {
           // Process commands for all bots regardless of approval status or message source
           await this.handleCommand(message, trimmedText);
-          console.log(`Bot ${this.botInstance.name}: ✅ Command handler completed successfully`);
+          console.log(`Bot ${this.botInstance.name}: ✅ Command executed`);
         } catch (cmdError) {
-          console.error(`Bot ${this.botInstance.name}: ❌ Command handler error:`, cmdError);
+          console.error(`Bot ${this.botInstance.name}: ❌ Command error:`, cmdError);
         }
         return;
-      } else {
-        console.log(`Bot ${this.botInstance.name}: ℹ️ Not a command - no prefix "${commandPrefix}" found at start of: "${trimmedText}"`);
       }
 
       // Auto-reactions and features for non-command messages (for all bots)
       if (!message.key.fromMe) {
         await this.handleAutoFeatures(message);
       }
-
-      // No automatic ChatGPT responses - only respond to prefix commands
-      // This prevents the bot from responding to every message
 
     } catch (error) {
       console.error(`Error handling message for bot ${this.botInstance.name}:`, error);
