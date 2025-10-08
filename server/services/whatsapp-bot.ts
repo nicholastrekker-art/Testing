@@ -51,13 +51,16 @@ export class WhatsAppBot {
 
     // If credentials are provided, save them to the auth directory
     if (botInstance.credentials) {
+      console.log(`Bot ${this.botInstance.name}: Found credentials in database, saving to auth directory...`);
       this.saveCredentialsToAuthDir(botInstance.credentials);
+    } else {
+      console.log(`Bot ${this.botInstance.name}: No credentials found in database - bot will need to authenticate`);
     }
   }
 
   private saveCredentialsToAuthDir(credentials: any) {
     try {
-      console.log(`Bot ${this.botInstance.name}: Saving Baileys session credentials`);
+      console.log(`Bot ${this.botInstance.name}: Saving Baileys session credentials to ${this.authDir}`);
 
       // Ensure credentials are properly formatted
       let formattedCreds = credentials;
@@ -78,26 +81,35 @@ export class WhatsAppBot {
         return;
       }
 
-      // Ensure noiseKey and other buffers are properly formatted
-      if (formattedCreds.noiseKey && formattedCreds.noiseKey.type === 'Buffer' && Array.isArray(formattedCreds.noiseKey.data)) {
-        // Convert Buffer arrays to proper format
-        formattedCreds.noiseKey = Buffer.from(formattedCreds.noiseKey.data);
-      }
+      // Deep conversion of all Buffer-like objects to actual Buffers
+      const convertBuffers = (obj: any): any => {
+        if (!obj || typeof obj !== 'object') return obj;
+        
+        // Check if this is a serialized Buffer
+        if (obj.type === 'Buffer' && Array.isArray(obj.data)) {
+          return Buffer.from(obj.data);
+        }
+        
+        // Recursively process all properties
+        if (Array.isArray(obj)) {
+          return obj.map(item => convertBuffers(item));
+        }
+        
+        const result: any = {};
+        for (const [key, value] of Object.entries(obj)) {
+          result[key] = convertBuffers(value);
+        }
+        return result;
+      };
 
-      if (formattedCreds.signedIdentityKey && formattedCreds.signedIdentityKey.type === 'Buffer' && Array.isArray(formattedCreds.signedIdentityKey.data)) {
-        formattedCreds.signedIdentityKey = Buffer.from(formattedCreds.signedIdentityKey.data);
-      }
-
-      if (formattedCreds.signedPreKey && formattedCreds.signedPreKey.type === 'Buffer' && Array.isArray(formattedCreds.signedPreKey.data)) {
-        formattedCreds.signedPreKey = Buffer.from(formattedCreds.signedPreKey.data);
-      }
+      formattedCreds = convertBuffers(formattedCreds);
 
       // Save the main creds.json file with proper formatting
       writeFileSync(join(this.authDir, 'creds.json'), JSON.stringify(formattedCreds, null, 2));
 
-      console.log(`Bot ${this.botInstance.name}: Baileys credentials saved successfully`);
+      console.log(`Bot ${this.botInstance.name}: ✅ Baileys credentials saved successfully to auth directory`);
     } catch (error) {
-      console.error(`Bot ${this.botInstance.name}: Error saving credentials:`, error);
+      console.error(`Bot ${this.botInstance.name}: ❌ Error saving credentials:`, error);
     }
   }
 
@@ -1036,6 +1048,12 @@ export class WhatsAppBot {
     }
 
     try {
+      console.log(`\n🚀 ========================================`);
+      console.log(`🚀 STARTING BOT: ${this.botInstance.name}`);
+      console.log(`🚀 Phone: ${this.botInstance.phoneNumber || 'N/A'}`);
+      console.log(`🚀 Server: ${this.botInstance.serverName}`);
+      console.log(`🚀 ========================================\n`);
+
       await storage.updateBotInstance(this.botInstance.id, { status: 'loading' });
       await storage.createActivity({
         serverName: this.botInstance.serverName,
@@ -1045,7 +1063,7 @@ export class WhatsAppBot {
       });
 
       // STEP 1: Pre-validate and authenticate credentials before connection
-      console.log(`🔐 Bot ${this.botInstance.name}: Authenticating credentials before connection...`);
+      console.log(`🔐 Bot ${this.botInstance.name}: Loading and validating credentials from database...`);
       
       // Use isolated auth state for this specific bot
       const { state, saveCreds } = await useMultiFileAuthState(this.authDir);
