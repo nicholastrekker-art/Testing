@@ -3936,6 +3936,8 @@ Thank you for using TREKKER-MD! 🚀
   
   // Generate WhatsApp Pairing Code
   app.post("/api/whatsapp/generate-pairing-code", async (req, res) => {
+    let sock: any = null;
+    
     try {
       const { phoneNumber, selectedServer } = req.body;
       
@@ -3960,9 +3962,10 @@ Thank you for using TREKKER-MD! 🚀
       console.log(`📱 Generating pairing code for phone: ${cleanedPhone} on server: ${selectedServer}`);
       
       // Import Baileys dynamically
-      const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = await import('@whiskeysockets/baileys');
+      const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, makeCacheableSignalKeyStore } = await import('@whiskeysockets/baileys');
       const { join } = await import('path');
       const { mkdirSync, existsSync } = await import('fs');
+      const pino = (await import('pino')).default;
       
       // Create temporary auth directory for this pairing session
       const sessionId = crypto.randomBytes(16).toString('hex');
@@ -3976,83 +3979,39 @@ Thank you for using TREKKER-MD! 🚀
       const { state, saveCreds } = await useMultiFileAuthState(tempAuthDir);
       
       // Create silent logger for pairing
-      const logger = {
-        level: 'silent',
-        child: () => logger,
-        trace: () => {},
-        debug: () => {},
-        info: () => {},
-        warn: () => {},
-        error: () => {},
-        fatal: () => {}
-      };
+      const logger = pino({ level: "fatal" }).child({ level: "fatal" });
 
-      // Create WhatsApp socket with proper connection handling
-      const sock = makeWASocket({
-        auth: state,
+      // Create WhatsApp socket - matching working pair.js implementation
+      sock = makeWASocket({
+        auth: {
+          creds: state.creds,
+          keys: makeCacheableSignalKeyStore(state.keys, logger)
+        },
         printQRInTerminal: false,
-        browser: ['Chrome (Linux)', '', ''],
-        logger: logger as any,
-        connectTimeoutMs: 60000,
-        defaultQueryTimeoutMs: 60000,
-        keepAliveIntervalMs: 10000,
-        markOnlineOnConnect: false
+        browser: Browsers.macOS("Safari"),
+        logger: logger
       });
       
       // Listen for credential updates
       sock.ev.on('creds.update', saveCreds);
       
-      // Wait for connection to be established before requesting pairing code
-      const pairingCode = await new Promise<string>((resolve, reject) => {
-        let connectionTimeout: NodeJS.Timeout;
-        let resolved = false;
-
-        // Set timeout for connection
-        connectionTimeout = setTimeout(() => {
-          if (!resolved) {
-            resolved = true;
-            sock.end(undefined);
-            reject(new Error('Connection timeout - failed to establish connection within 30 seconds'));
-          }
-        }, 30000);
-
-        // Monitor connection updates
-        sock.ev.on('connection.update', async (update) => {
-          const { connection, lastDisconnect } = update;
-          
-          console.log(`🔄 Connection update: ${connection}`);
-
-          if (connection === 'open') {
-            // Connection established, now request pairing code
-            try {
-              if (!resolved) {
-                clearTimeout(connectionTimeout);
-                const code = await sock.requestPairingCode(cleanedPhone);
-                resolved = true;
-                console.log(`✅ Pairing code generated: ${code} for ${cleanedPhone}`);
-                resolve(code);
-              }
-            } catch (error) {
-              if (!resolved) {
-                clearTimeout(connectionTimeout);
-                resolved = true;
-                sock.end(undefined);
-                reject(error);
-              }
-            }
-          } else if (connection === 'close') {
-            if (!resolved) {
-              clearTimeout(connectionTimeout);
-              resolved = true;
-              const shouldReconnect = (lastDisconnect?.error as any)?.output?.statusCode !== DisconnectReason.loggedOut;
-              const reason = lastDisconnect?.error ? (lastDisconnect.error as any).message : 'Unknown reason';
-              reject(new Error(`Connection closed: ${reason}. Should reconnect: ${shouldReconnect}`));
-            }
-          }
-        });
-      });
+      // Request pairing code immediately if not registered (like pair.js)
+      let pairingCode: string | null = null;
       
-      // Return pairing code to client
+      if (!sock.authState.creds.registered) {
+        console.log(`📱 Requesting pairing code for unregistered number: ${cleanedPhone}`);
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Small delay like pair.js
+        pairingCode = await sock.requestPairingCode(cleanedPhone);
+        console.log(`✅ Pairing code generated: ${pairingCode} for ${cleanedPhone}`);
+      }
+      
+      if (!pairingCode) {
+        return res.status(400).json({
+          message: "Failed to generate pairing code. Number may already be registered."
+        });
+      }
+      
+      // Return pairing code to client immediately
       res.json({
         success: true,
         pairingCode,
@@ -4063,26 +4022,47 @@ Thank you for using TREKKER-MD! 🚀
         instructions: "1. Open WhatsApp on your phone\n2. Go to Settings → Linked Devices\n3. Tap 'Link a Device'\n4. Tap 'Link with phone number instead'\n5. Enter the pairing code above"
       });
       
-      // Setup connection monitoring for credential saving
-      sock.ev.on('connection.update', async (update) => {
-        const { connection } = update;
+      // Monitor connection in background
+      sock.ev.on('connection.update', async (update: any) => {
+        const { connection, lastDisconnect } = update;
         
+        console.log(`🔄 Connection update: ${connection}`);
+
         if (connection === 'open') {
           console.log(`✅ WhatsApp connected successfully for ${cleanedPhone}`);
-        }
-        
-        if (connection === 'close') {
+        } else if (connection === 'close') {
           console.log(`❌ WhatsApp connection closed for ${cleanedPhone}`);
+          const shouldReconnect = (lastDisconnect?.error as any)?.output?.statusCode !== DisconnectReason.loggedOut;
+          if (shouldReconnect) {
+            console.log(`🔄 Attempting to reconnect...`);
+          }
         }
       });
       
       // Keep socket alive for 5 minutes to allow pairing
       setTimeout(() => {
-        sock.end(undefined);
+        if (sock) {
+          try {
+            sock.end(undefined);
+            console.log(`🧹 Cleaned up pairing session: ${sessionId}`);
+          } catch (err) {
+            console.warn(`Warning cleaning up socket:`, err);
+          }
+        }
       }, 5 * 60 * 1000);
       
     } catch (error) {
       console.error('Pairing code generation error:', error);
+      
+      // Clean up socket on error
+      if (sock) {
+        try {
+          sock.end(undefined);
+        } catch (err) {
+          console.warn(`Error ending socket:`, err);
+        }
+      }
+      
       res.status(500).json({ 
         message: "Failed to generate pairing code",
         error: error instanceof Error ? error.message : 'Unknown error'
