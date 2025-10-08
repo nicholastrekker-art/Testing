@@ -660,6 +660,8 @@ export class WhatsAppBot {
     console.log(`   📝 Command Name: "${commandName}"`);
     console.log(`   📝 Arguments:`, commandArgs);
     console.log(`   📍 Chat: ${message.key.remoteJid}`);
+    console.log(`   🤖 Bot running: ${this.isRunning}`);
+    console.log(`   📡 Socket available: ${!!this.sock}`);
 
     // Check our command registry first
     const registeredCommand = commandRegistry.get(commandName);
@@ -671,8 +673,16 @@ export class WhatsAppBot {
         
         const respond = async (text: string) => {
           if (message.key.remoteJid) {
-            console.log(`Bot ${this.botInstance.name}: 💬 Sending response to ${message.key.remoteJid}`);
-            await this.sock.sendMessage(message.key.remoteJid, { text });
+            console.log(`Bot ${this.botInstance.name}: 💬 Attempting to send response to ${message.key.remoteJid}`);
+            try {
+              await this.sock.sendMessage(message.key.remoteJid, { text });
+              console.log(`Bot ${this.botInstance.name}: ✅ Response sent successfully`);
+            } catch (sendError) {
+              console.error(`Bot ${this.botInstance.name}: ❌ Failed to send message:`, sendError);
+              throw sendError;
+            }
+          } else {
+            console.error(`Bot ${this.botInstance.name}: ❌ No remoteJid available for response`);
           }
         };
 
@@ -688,7 +698,9 @@ export class WhatsAppBot {
           botId: this.botInstance.id
         };
 
+        console.log(`Bot ${this.botInstance.name}: 🎬 Starting command handler execution...`);
         await registeredCommand.handler(context);
+        console.log(`Bot ${this.botInstance.name}: 🎬 Command handler completed successfully`);
 
         // Update bot stats
         await storage.updateBotInstance(this.botInstance.id, {
@@ -745,16 +757,27 @@ export class WhatsAppBot {
       }
 
       if (response && message.key.remoteJid) {
-        await this.sock.sendMessage(message.key.remoteJid, { text: response });
+        console.log(`Bot ${this.botInstance.name}: 💬 Sending database command response...`);
+        try {
+          await this.sock.sendMessage(message.key.remoteJid, { text: response });
+          console.log(`Bot ${this.botInstance.name}: ✅ Database command response sent`);
+        } catch (sendError) {
+          console.error(`Bot ${this.botInstance.name}: ❌ Failed to send database command response:`, sendError);
+        }
       }
       
       console.log(`Bot ${this.botInstance.name}: ✅ Database command executed`);
     } else {
       console.log(`Bot ${this.botInstance.name}: ❌ Command .${commandName} not found in registry or database`);
       if (message.key.remoteJid) {
-        await this.sock.sendMessage(message.key.remoteJid, {
-          text: `❌ Command .${commandName} not found. Type .help to see available commands.`
-        });
+        try {
+          await this.sock.sendMessage(message.key.remoteJid, {
+            text: `❌ Command .${commandName} not found. Type .help to see available commands.`
+          });
+          console.log(`Bot ${this.botInstance.name}: ✅ "Command not found" message sent`);
+        } catch (sendError) {
+          console.error(`Bot ${this.botInstance.name}: ❌ Failed to send "command not found" message:`, sendError);
+        }
       }
     }
   }
