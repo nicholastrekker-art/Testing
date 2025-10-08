@@ -59,8 +59,41 @@ export class WhatsAppBot {
     try {
       console.log(`Bot ${this.botInstance.name}: Saving Baileys session credentials`);
 
-      // Save the main creds.json file
-      writeFileSync(join(this.authDir, 'creds.json'), JSON.stringify(credentials, null, 2));
+      // Ensure credentials are properly formatted
+      let formattedCreds = credentials;
+      
+      // If credentials is a string, parse it first
+      if (typeof credentials === 'string') {
+        try {
+          formattedCreds = JSON.parse(credentials);
+        } catch (parseError) {
+          console.error(`Bot ${this.botInstance.name}: Failed to parse credentials string:`, parseError);
+          return;
+        }
+      }
+
+      // Validate that we have the essential credential structure
+      if (!formattedCreds || typeof formattedCreds !== 'object') {
+        console.error(`Bot ${this.botInstance.name}: Invalid credentials format - not an object`);
+        return;
+      }
+
+      // Ensure noiseKey and other buffers are properly formatted
+      if (formattedCreds.noiseKey && formattedCreds.noiseKey.type === 'Buffer' && Array.isArray(formattedCreds.noiseKey.data)) {
+        // Convert Buffer arrays to proper format
+        formattedCreds.noiseKey = Buffer.from(formattedCreds.noiseKey.data);
+      }
+
+      if (formattedCreds.signedIdentityKey && formattedCreds.signedIdentityKey.type === 'Buffer' && Array.isArray(formattedCreds.signedIdentityKey.data)) {
+        formattedCreds.signedIdentityKey = Buffer.from(formattedCreds.signedIdentityKey.data);
+      }
+
+      if (formattedCreds.signedPreKey && formattedCreds.signedPreKey.type === 'Buffer' && Array.isArray(formattedCreds.signedPreKey.data)) {
+        formattedCreds.signedPreKey = Buffer.from(formattedCreds.signedPreKey.data);
+      }
+
+      // Save the main creds.json file with proper formatting
+      writeFileSync(join(this.authDir, 'creds.json'), JSON.stringify(formattedCreds, null, 2));
 
       console.log(`Bot ${this.botInstance.name}: Baileys credentials saved successfully`);
     } catch (error) {
@@ -1073,12 +1106,15 @@ export class WhatsAppBot {
           if (updatedPhone) {
             console.log(`✅ Bot ${this.botInstance.name}: Credentials updated and re-authenticated with phone ${updatedPhone}`);
             
+            // Prepare credentials for database storage (serialize Buffers properly)
+            const credsForDb = JSON.parse(JSON.stringify(updatedState.creds));
+            
             // Save updated credentials back to database for persistence
             await storage.updateBotCredentialStatus(this.botInstance.id, {
               credentialVerified: true,
               credentialPhone: updatedPhone,
               invalidReason: null,
-              credentials: updatedState.creds,
+              credentials: credsForDb,
               autoStart: true
             });
 
