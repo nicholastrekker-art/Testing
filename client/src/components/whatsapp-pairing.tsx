@@ -81,7 +81,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       setStep(4); // Move to credentials display
       toast({
         title: "Pairing Successful!",
-        description: "Your WhatsApp credentials have been generated.",
+        description: "Credentials have been sent to your WhatsApp and saved for registration.",
       });
     },
     onError: (error: Error) => {
@@ -221,7 +221,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     generatePairingMutation.mutate({ phoneNumber: cleaned, selectedServer });
   };
 
-  const handleVerifyPairing = () => {
+  const handleVerifyPairing = async () => {
     verifyPairingMutation.mutate();
   };
 
@@ -447,6 +447,13 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <Alert className="border-green-500">
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription className="font-semibold">
+                  ✅ Credentials have been sent to your WhatsApp! Check your messages.
+                </AlertDescription>
+              </Alert>
+              
               <Alert className="border-orange-500">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription className="font-semibold">
