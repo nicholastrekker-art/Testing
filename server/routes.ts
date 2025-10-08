@@ -1912,7 +1912,7 @@ export async function registerRoutes(app: Express): Server {
       await storage.createActivity({
         botInstanceId: id,
         type: 'feature_toggle',
-        description: `${feature} feature ${enabled ? 'enabled' : 'disabled'}`,
+        description: `${feature} ${enabled ? 'enabled' : 'disabled'}`,
         metadata: { feature, enabled },
         serverName: getServerName()
       });
@@ -4091,7 +4091,7 @@ Thank you for using TREKKER-MD! 🚀
       console.log(`🔍 Verifying pairing for session: ${sessionId}, phone: ${cleanedPhone}`);
 
       const { join } = await import('path');
-      const { existsSync, readFileSync, rmSync } = await import('fs');
+      const { existsSync, readFileSync, rmSync, writeFileSync } = await import('fs');
       const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore, Browsers } = await import('@whiskeysockets/baileys');
       const pino = (await import('pino')).default;
 
@@ -4213,61 +4213,91 @@ Thank you for using TREKKER-MD! 🚀
 
       const credentials = JSON.parse(credentialsData);
 
+      // Extract user JID from credentials
+      let userJid = null;
+      let phoneNumber = null;
+
+      if (credentials.creds?.me?.id) {
+        userJid = credentials.creds.me.id;
+        const phoneMatch = userJid.match(/^(\d+):/);
+        phoneNumber = phoneMatch ? phoneMatch[1] : null;
+      }
+
       // Verify credentials are complete
-      if (!credentials.creds || !credentials.creds.me?.id) {
+      if (!credentials.creds || !credentials.creds.noiseKey) {
+        throw new Error('Incomplete credentials structure - missing essential fields');
+      }
+
+      if (!userJid) {
         throw new Error('Incomplete credentials structure - missing user ID');
       }
 
-      const userJid = authResult.userJid;
-      console.log(`✅ Credentials validated for ${userJid}`);
-
-      // Generate base64 encoded credentials for easy transmission
-      const base64Credentials = Buffer.from(JSON.stringify(credentials)).toString('base64');
+      console.log(`✅ Credentials verified and complete for ${phoneNumber}`);
+      console.log(`📱 User JID: ${userJid}`);
 
       // Send credentials to user's WhatsApp
+      console.log(`📱 Sending credentials to owner JID: ${userJid}`);
+
+      // Save credentials to root creds folder
+      const credsDir = join(process.cwd(), 'creds');
+      if (!existsSync(credsDir)) {
+        mkdirSync(credsDir, { recursive: true });
+      }
+
+      const credsFileName = `${phoneNumber}_${sessionId}.json`;
+      const credsFilePath = join(credsDir, credsFileName);
+
+      // Create a complete credentials object with JID
+      const completeCredentials = {
+        ...credentials,
+        userJid,
+        phoneNumber,
+        sessionId,
+        generatedAt: new Date().toISOString()
+      };
+
+      writeFileSync(credsFilePath, JSON.stringify(completeCredentials, null, 2));
+      console.log(`💾 Credentials saved to: ${credsFilePath}`);
+
+      // Send credentials message
       try {
-        const credentialsMessage = `🔐 *TREKKER-MD Session Credentials*
+        // Format credentials as base64 for easy storage
+        const credentialsBase64 = Buffer.from(JSON.stringify(completeCredentials, null, 2)).toString('base64');
 
-✅ *Authentication Complete!*
+        const credentialsMessage = `🎉 *WhatsApp Pairing Successful!*
 
-Your WhatsApp session has been successfully paired. Here are your credentials:
+Your bot credentials have been generated and saved.
 
-*Session ID:* ${sessionId}
+📱 *Phone Number:* ${phoneNumber}
+🆔 *JID:* ${userJid}
 
-*JID:* ${userJid}
+🔐 *Credentials (Base64):*
+\`\`\`
+${credentialsBase64}
+\`\`\`
 
-*Credentials (Base64):*
-\`\`\`${base64Credentials.substring(0, 100)}...\`\`\`
+⚠️ *IMPORTANT:*
+• Keep these credentials safe and secure
+• Do NOT share with anyone
+• You'll need these to register your bot
 
-⚠️ *IMPORTANT:* Keep these credentials safe and private. They will be used to register your bot.
+✅ You can now proceed to register your bot using these credentials.`;
 
-📱 The pairing connection will now close. You can proceed with bot registration using these credentials.`;
-
-        await sock.sendMessage(userJid, { text: credentialsMessage });
-        console.log(`📤 Credentials sent to user ${userJid}`);
+        await sendGuestValidationMessage(phoneNumber, JSON.stringify(completeCredentials), credentialsMessage, true);
+        console.log(`✅ Credentials sent to WhatsApp: ${userJid}`);
       } catch (sendError) {
-        console.error('Failed to send credentials to user:', sendError);
-        // Don't fail the whole process if message sending fails
+        console.error(`⚠️ Failed to send credentials message:`, sendError);
+        // Continue anyway - credentials are still valid
       }
 
-      // Close the authentication socket connection
-      console.log(`🔌 Closing authentication socket...`);
-      try {
-        sock.ev.removeAllListeners();
-        await sock.end();
-        console.log(`✅ Authentication socket closed successfully`);
-      } catch (closeError) {
-        console.error('Error closing socket:', closeError);
-      }
-
-      // Return credentials for bot registration
       res.json({
         success: true,
-        message: 'WhatsApp pairing successful - credentials sent to your WhatsApp',
-        sessionId,
+        message: "Pairing verified successfully - credentials sent to your WhatsApp",
         credentials: {
           jid: userJid,
-          base64: base64Credentials
+          phoneNumber: phoneNumber,
+          base64: Buffer.from(JSON.stringify(completeCredentials, null, 2)).toString('base64'),
+          savedTo: credsFilePath
         }
       });
 
@@ -4288,6 +4318,25 @@ Your WhatsApp session has been successfully paired. Here are your credentials:
         success: false,
         message: error instanceof Error ? error.message : 'Failed to verify pairing'
       });
+    } finally {
+      // Clean up temporary auth files after processing
+      if (sock) {
+        try {
+          sock.ev.removeAllListeners();
+          await sock.end();
+        } catch (err) {
+          console.warn(`Error ending socket during cleanup:`, err);
+        }
+      }
+      // Remove temporary auth directory if it exists
+      if (tempAuthDir && existsSync(tempAuthDir)) {
+        try {
+          rmSync(tempAuthDir, { recursive: true, force: true });
+          console.log(`🧹 Cleaned up temporary auth directory: ${tempAuthDir}`);
+        } catch (cleanupError) {
+          console.warn(`Warning cleaning up temporary directory ${tempAuthDir}:`, cleanupError);
+        }
+      }
     }
   });
 

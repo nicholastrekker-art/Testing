@@ -36,6 +36,7 @@ Thumbs.db
 # All WhatsApp credential patterns - NEVER commit these files
 auth/
 temp_auth/
+creds/
 *.creds.json
 **/creds.json
 creds.json
