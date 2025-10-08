@@ -1,144 +1,11 @@
 {
-  "A54CA5711E7B28A001547E4D7D39ADD7": {
-    "id": "A54CA5711E7B28A001547E4D7D39ADD7",
-    "fromJid": "120363288304618280@newsletter",
-    "senderJid": "120363288304618280@newsletter",
-    "content": "Who needs free bot? React here",
-    "type": "conversation",
-    "timestamp": 1759927122601,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "120363288304618280@newsletter",
-        "fromMe": false,
-        "id": "A54CA5711E7B28A001547E4D7D39ADD7",
-        "participant": "",
-        "addressingMode": "pn",
-        "server_id": "4932"
-      },
-      "messageTimestamp": 1759908647,
-      "broadcast": false,
-      "message": {
-        "conversation": "Who needs free bot? React here"
-      }
-    }
-  },
-  "3EB0C70918AFCCCEAEF7D7": {
-    "id": "3EB0C70918AFCCCEAEF7D7",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "254704897825@s.whatsapp.net",
-    "content": "❌ This command can only be used by the bot owner!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759927123075,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "remoteJidAlt": "7198767878239@lid",
-        "fromMe": false,
-        "id": "3EB0C70918AFCCCEAEF7D7",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759923328,
-      "pushName": "Trekker inc",
-      "broadcast": false,
-      "message": {
-        "extendedTextMessage": {
-          "text": "❌ This command can only be used by the bot owner!"
-        }
-      },
-      "verifiedBizName": "Trekker inc",
-      "status": 4
-    }
-  },
-  "3EB0F7FF02FDE0D08F4A84": {
-    "id": "3EB0F7FF02FDE0D08F4A84",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "🚨 *DELETED MESSAGE*🚨\n\n🗑️ *Deleted by:* Unknown\n💬 *Message:* ░▒▓████◤ \"❌ This command can only be used by the bot owner!\" ◢████▓▒░\n\n📞 *Owner:* +254704897825",
-    "type": "extendedTextMessage",
-    "timestamp": 1759927123548,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB0F7FF02FDE0D08F4A84",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759923329,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "🚨 *DELETED MESSAGE*🚨\n\n🗑️ *Deleted by:* Unknown\n💬 *Message:* ░▒▓████◤ \"❌ This command can only be used by the bot owner!\" ◢████▓▒░\n\n📞 *Owner:* +254704897825"
-        }
-      }
-    }
-  },
-  "3EB0527FAAFF54B523B26B": {
-    "id": "3EB0527FAAFF54B523B26B",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "254704897825@s.whatsapp.net",
-    "content": "❌ This command can only be used by the bot owner!",
-    "type": "extendedTextMessage",
-    "timestamp": 1759927124022,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "remoteJidAlt": "7198767878239@lid",
-        "fromMe": false,
-        "id": "3EB0527FAAFF54B523B26B",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759923333,
-      "pushName": "Trekker inc",
-      "broadcast": false,
-      "message": {
-        "extendedTextMessage": {
-          "text": "❌ This command can only be used by the bot owner!"
-        }
-      },
-      "verifiedBizName": "Trekker inc",
-      "status": 4
-    }
-  },
-  "3EB0F979E461CF9E8B1B40": {
-    "id": "3EB0F979E461CF9E8B1B40",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "🚨 *DELETED MESSAGE*🚨\n\n🗑️ *Deleted by:* Unknown\n💬 *Message:* ░▒▓████◤ \"❌ This command can only be used by the bot owner!\" ◢████▓▒░\n\n📞 *Owner:* +254704897825",
-    "type": "extendedTextMessage",
-    "timestamp": 1759927124505,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB0F979E461CF9E8B1B40",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1759923334,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "🚨 *DELETED MESSAGE*🚨\n\n🗑️ *Deleted by:* Unknown\n💬 *Message:* ░▒▓████◤ \"❌ This command can only be used by the bot owner!\" ◢████▓▒░\n\n📞 *Owner:* +254704897825"
-        }
-      }
-    }
-  },
-  "3EB0BCF466DA970B77B43D": {
-    "id": "3EB0BCF466DA970B77B43D",
+  "3EB067C4DA5AB0596D9EA8": {
+    "id": "3EB067C4DA5AB0596D9EA8",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Test bot \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1759927125014,
+    "timestamp": 1759927389383,
     "originalMessage": {
       "messageStubParameters": [],
       "labels": [],
@@ -153,14 +20,14 @@
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0BCF466DA970B77B43D"
+        "id": "3EB067C4DA5AB0596D9EA8"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Test bot \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": 1759927095,
+      "messageTimestamp": 1759927361,
       "status": 1
     }
   }
