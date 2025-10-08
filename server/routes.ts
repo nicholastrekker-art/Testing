@@ -1381,7 +1381,7 @@ export async function registerRoutes(app: Express): Server {
   app.post("/api/bot-instances/:id/approve", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const { id } = req.params;
-      const { expirationMonths = 3 } = req.body;
+      const { expirationMonths = 3, targetServer } = req.body; // targetServer for cross-registration
 
       // Get bot details first
       const bot = await storage.getBotInstance(id);
@@ -1389,7 +1389,67 @@ export async function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "Bot not found" });
       }
 
-      // Update bot to approved status  
+      const currentServer = getServerName();
+
+      // If targetServer is specified and different from current, do cross-server approval
+      if (targetServer && targetServer !== currentServer) {
+        // Verify target server has capacity
+        const targetCapacityCheck = await storage.strictCheckBotCountLimit(targetServer);
+        if (!targetCapacityCheck.canAdd) {
+          return res.status(400).json({
+            message: `Selected server "${targetServer}" is at capacity (${targetCapacityCheck.currentCount}/${targetCapacityCheck.maxCount}).`,
+            serverFull: true,
+            currentCount: targetCapacityCheck.currentCount,
+            maxCount: targetCapacityCheck.maxCount
+          });
+        }
+
+        // Move bot to target server using cross-server registration
+        const result = await storage.approveBotCrossServer(id, targetServer, expirationMonths);
+        
+        broadcast({ type: 'BOT_APPROVED', data: result });
+        return res.json({
+          message: `Bot approved and registered on ${targetServer} successfully`,
+          crossServer: true,
+          targetServer,
+          bot: result
+        });
+      }
+
+      // Check current server capacity before approving on current server
+      const capacityCheck = await storage.strictCheckBotCountLimit();
+      if (!capacityCheck.canAdd) {
+        // Get available servers for suggestion
+        const availableServers = await storage.getServersWithAvailableSlots();
+        
+        if (availableServers.length === 0) {
+          return res.status(400).json({
+            message: "Current server is at capacity and no other servers available. Please increase server capacity or wait for slots.",
+            serverFull: true,
+            allServersFull: true,
+            currentCount: capacityCheck.currentCount,
+            maxCount: capacityCheck.maxCount
+          });
+        }
+
+        // Suggest available servers
+        return res.status(400).json({
+          message: `Current server ${currentServer} is at capacity (${capacityCheck.currentCount}/${capacityCheck.maxCount}). Please select a different server for this bot.`,
+          serverFull: true,
+          currentServer,
+          currentCount: capacityCheck.currentCount,
+          maxCount: capacityCheck.maxCount,
+          availableServers: availableServers.map(s => ({
+            serverName: s.serverName,
+            currentCount: s.currentBotCount || 0,
+            maxCount: s.maxBotCount,
+            availableSlots: s.maxBotCount - (s.currentBotCount || 0)
+          })),
+          suggestedAction: "Re-submit approval request with 'targetServer' parameter"
+        });
+      }
+
+      // Update bot to approved status on current server
       const updatedBot = await storage.updateBotInstance(id, {
         approvalStatus: 'approved',
         approvalDate: new Date().toISOString(),
@@ -2767,6 +2827,7 @@ export async function registerRoutes(app: Express): Server {
                 credentials: credentials,
                 credentialVerified: true,
                 invalidReason: null,
+                autoStart: true, // Re-enable auto-start when credentials are fixed
                 status: 'loading',
                 updatedAt: sql`CURRENT_TIMESTAMP`
               })
