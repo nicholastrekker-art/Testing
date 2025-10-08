@@ -10,12 +10,12 @@ import { insertBotInstanceSchema, insertCommandSchema, insertActivitySchema, bot
 import { botManager } from "./services/bot-manager";
 import { getServerName, db } from "./db";
 import { and, eq, desc, asc, isNotNull, sql } from "drizzle-orm";
-import { 
-  authenticateAdmin, 
-  authenticateUser, 
+import {
+  authenticateAdmin,
+  authenticateUser,
   authenticateGuest,
   authenticateGuestWithBot,
-  validateAdminCredentials, 
+  validateAdminCredentials,
   generateToken,
   generateGuestOTP,
   createGuestSession,
@@ -151,12 +151,12 @@ function validateGuestAction(action: string, bot: any): { allowed: boolean; reas
 
   switch (action) {
     case 'start':
-    case 'stop': 
+    case 'stop':
     case 'restart':
       if (!isApproved) {
-        return { 
-          allowed: false, 
-          reason: "Only approved bots can be started, stopped, or restarted. Pending bots must be approved by admin first." 
+        return {
+          allowed: false,
+          reason: "Only approved bots can be started, stopped, or restarted. Pending bots must be approved by admin first."
         };
       }
       return { allowed: true };
@@ -258,7 +258,7 @@ function maskBotDataForGuest(botData: any, includeFeatures: boolean = false): an
   return Object.fromEntries(Object.entries(masked).filter(([_, v]) => v !== undefined));
 }
 
-const upload = multer({ 
+const upload = multer({
   storage:multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     if (file.originalname.endsWith('.json')) {
@@ -358,13 +358,13 @@ export async function registerRoutes(app: Express): Server {
             });
 
             // Broadcast bot status update
-            broadcast({ 
-              type: 'BOT_RESUMED', 
-              data: { 
-                botId: bot.id, 
+            broadcast({
+              type: 'BOT_RESUMED',
+              data: {
+                botId: bot.id,
                 name: bot.name,
-                status: 'loading' 
-              } 
+                status: 'loading'
+              }
             });
 
           } catch (error) {
@@ -379,14 +379,14 @@ export async function registerRoutes(app: Express): Server {
             });
 
             // Broadcast bot error
-            broadcast({ 
-              type: 'BOT_ERROR', 
-              data: { 
-                botId: bot.id, 
+            broadcast({
+              type: 'BOT_ERROR',
+              data: {
+                botId: bot.id,
                 name: bot.name,
                 status: 'error',
                 error: error instanceof Error ? error.message : 'Unknown error'
-              } 
+              }
             });
           }
         }, i * 2000); // 2 second delay between each bot
@@ -415,10 +415,10 @@ export async function registerRoutes(app: Express): Server {
 
       if (isValidAdmin) {
         const token = generateToken(username, true);
-        res.json({ 
-          token, 
+        res.json({
+          token,
           user: { username, isAdmin: true },
-          message: "Admin login successful" 
+          message: "Admin login successful"
         });
       } else {
         res.status(401).json({ message: "Invalid credentials" });
@@ -453,8 +453,8 @@ export async function registerRoutes(app: Express): Server {
           const maxSizeBytes = 5 * 1024 * 1024; // 5MB
 
           if (estimatedSize > maxSizeBytes) {
-            return res.status(400).json({ 
-              message: `❌ Base64 session data too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
+            return res.status(400).json({
+              message: `❌ Base64 session data too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.`
             });
           }
 
@@ -462,15 +462,15 @@ export async function registerRoutes(app: Express): Server {
 
           // Check actual decoded size
           if (decoded.length > maxSizeBytes) {
-            return res.status(400).json({ 
-              message: `❌ Decoded session data too large (${(decoded.length / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
+            return res.status(400).json({
+              message: `❌ Decoded session data too large (${(decoded.length / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.`
             });
           }
 
           credentials = JSON.parse(decoded);
         } catch (error) {
-          return res.status(400).json({ 
-            message: "❌ Invalid Base64 session data. Please ensure it's properly encoded WhatsApp session data." 
+          return res.status(400).json({
+            message: "❌ Invalid Base64 session data. Please ensure it's properly encoded WhatsApp session data."
           });
         }
       }
@@ -479,20 +479,20 @@ export async function registerRoutes(app: Express): Server {
         try {
           credentials = JSON.parse(req.file.buffer.toString());
         } catch (error) {
-          return res.status(400).json({ 
-            message: "❌ Invalid JSON file. Please ensure you're uploading a valid credentials.json file." 
+          return res.status(400).json({
+            message: "❌ Invalid JSON file. Please ensure you're uploading a valid credentials.json file."
           });
         }
       } else {
-        return res.status(400).json({ 
-          message: "Please provide credentials either as a file upload or Base64 session data" 
+        return res.status(400).json({
+          message: "Please provide credentials either as a file upload or Base64 session data"
         });
       }
 
       // Basic validation of credentials structure
       if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
-        return res.status(400).json({ 
-          message: "❌ Invalid credentials format. Please upload a valid WhatsApp session file." 
+        return res.status(400).json({
+          message: "❌ Invalid credentials format. Please upload a valid WhatsApp session file."
         });
       }
 
@@ -513,8 +513,8 @@ export async function registerRoutes(app: Express): Server {
       }
 
       if (missingFields.length > 0) {
-        return res.status(400).json({ 
-          message: `❌ Missing required fields in credentials: ${missingFields.join(', ')}. Please ensure you're using a complete WhatsApp session file with proper nested structure.` 
+        return res.status(400).json({
+          message: `❌ Missing required fields in credentials: ${missingFields.join(', ')}. Please ensure you're using a complete WhatsApp session file with proper nested structure.`
         });
       }
 
@@ -526,8 +526,8 @@ export async function registerRoutes(app: Express): Server {
 
         if (credentialsPhone && providedPhoneNormalized) {
           if (credentialsPhone !== providedPhoneNormalized) {
-            return res.status(400).json({ 
-              message: `❌ Phone number mismatch. The credentials belong to +${credentialsPhone} but you provided +${providedPhoneNormalized}. Please use the correct credentials for your phone number.` 
+            return res.status(400).json({
+              message: `❌ Phone number mismatch. The credentials belong to +${credentialsPhone} but you provided +${providedPhoneNormalized}. Please use the correct credentials for your phone number.`
             });
           }
         }
@@ -537,8 +537,8 @@ export async function registerRoutes(app: Express): Server {
       if (credentialType === 'file' && req.file) {
         const fileSizeKB = req.file.buffer.length / 1024;
         if (fileSizeKB < 0.01 || fileSizeKB > 5120) { // 10 bytes to 5MB
-          return res.status(400).json({ 
-            message: `❌ Invalid file size (${fileSizeKB.toFixed(2)} KB). Credentials file should be between 10 bytes and 5MB.` 
+          return res.status(400).json({
+            message: `❌ Invalid file size (${fileSizeKB.toFixed(2)} KB). Credentials file should be between 10 bytes and 5MB.`
           });
         }
       }
@@ -548,7 +548,7 @@ export async function registerRoutes(app: Express): Server {
       const phoneValidation = await validateCredentialsByPhoneNumber(credentials);
 
       if (!phoneValidation.isValid) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           valid: false,
           message: phoneValidation.message,
           phoneNumber: phoneValidation.phoneNumber,
@@ -558,7 +558,7 @@ export async function registerRoutes(app: Express): Server {
       }
 
       // All validations passed
-      res.json({ 
+      res.json({
         valid: true,
         message: phoneValidation.message || "✅ Your credentials are valid and ready for registration!",
         credentialType,
@@ -568,7 +568,7 @@ export async function registerRoutes(app: Express): Server {
 
     } catch (error) {
       console.error('Credentials validation error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         valid: false,
         message: "Failed to validate credentials. Please try again.",
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -668,8 +668,8 @@ export async function registerRoutes(app: Express): Server {
     try {
       // Only allow configuration if SERVER_NAME is not set via secrets
       if (process.env.SERVER_NAME) {
-        return res.status(400).json({ 
-          message: "Server name is configured via secrets and cannot be changed through UI" 
+        return res.status(400).json({
+          message: "Server name is configured via secrets and cannot be changed through UI"
         });
       }
 
@@ -727,7 +727,7 @@ export async function registerRoutes(app: Express): Server {
         botInstanceId: 'server-config',
         type: 'server_configuration',
         description: `Server ${newServerName} configuration updated from ${currentServerName}`,
-        metadata: { 
+        metadata: {
           targetServer: newServerName,
           sourceServer: currentServerName,
           description: description?.trim(),
@@ -737,7 +737,7 @@ export async function registerRoutes(app: Express): Server {
         serverName: currentServerName
       });
 
-      res.json({ 
+      res.json({
         message: "Server information updated successfully without changing tenancy context.",
         serverName: newServerName,
         description: description?.trim(),
@@ -1075,14 +1075,14 @@ export async function registerRoutes(app: Express): Server {
         serverName: getServerName()
       });
 
-      res.json({ 
-        success: true, 
-        message: `Feature ${feature} ${enabled ? 'enabled' : 'disabled'} successfully` 
+      res.json({
+        success: true,
+        message: `Feature ${feature} ${enabled ? 'enabled' : 'disabled'} successfully`
       });
     } catch (error) {
       console.error("Feature management error:", error);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : "Failed to toggle feature" 
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to toggle feature"
       });
     }
   });
@@ -1136,16 +1136,16 @@ export async function registerRoutes(app: Express): Server {
         }
       }
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         syncedCount,
         totalAttempts: targetServers.length * commandIds.length,
         errors: errors.length > 0 ? errors : undefined
       });
     } catch (error) {
       console.error("Command sync error:", error);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : "Failed to sync commands" 
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to sync commands"
       });
     }
   });
@@ -1205,14 +1205,14 @@ export async function registerRoutes(app: Express): Server {
         serverName: getServerName()
       });
 
-      res.json({ 
-        success: true, 
-        message: `Bot successfully migrated from ${sourceServer} to ${targetServer}` 
+      res.json({
+        success: true,
+        message: `Bot successfully migrated from ${sourceServer} to ${targetServer}`
       });
     } catch (error) {
       console.error("Bot migration error:", error);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : "Failed to migrate bot" 
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to migrate bot"
       });
     }
   });
@@ -1312,8 +1312,8 @@ export async function registerRoutes(app: Express): Server {
       });
     } catch (error) {
       console.error("Batch operation error:", error);
-      res.status(500).json({ 
-        message: error instanceof Error ? error.message : "Failed to perform batch operation" 
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "Failed to perform batch operation"
       });
     }
   });
@@ -1406,7 +1406,7 @@ export async function registerRoutes(app: Express): Server {
 
         // Move bot to target server using cross-server registration
         const result = await storage.approveBotCrossServer(id, targetServer, expirationMonths);
-        
+
         broadcast({ type: 'BOT_APPROVED', data: result });
         return res.json({
           message: `Bot approved and registered on ${targetServer} successfully`,
@@ -1421,7 +1421,7 @@ export async function registerRoutes(app: Express): Server {
       if (!capacityCheck.canAdd) {
         // Get available servers for suggestion
         const availableServers = await storage.getServersWithAvailableSlots();
-        
+
         if (availableServers.length === 0) {
           return res.status(400).json({
             message: "Current server is at capacity and no other servers available. Please increase server capacity or wait for slots.",
@@ -1596,16 +1596,16 @@ export async function registerRoutes(app: Express): Server {
         try {
           const base64Data = req.body.credentialsBase64.trim();
           if (!base64Data) {
-            return res.status(400).json({ 
-              message: "Base64 credentials string is empty. Please provide valid base64-encoded credentials." 
+            return res.status(400).json({
+              message: "Base64 credentials string is empty. Please provide valid base64-encoded credentials."
             });
           }
 
           // Decode base64
           const decodedContent = Buffer.from(base64Data, 'base64').toString('utf8');
           if (!decodedContent.trim()) {
-            return res.status(400).json({ 
-              message: "Decoded credentials are empty. Please check your base64 string." 
+            return res.status(400).json({
+              message: "Decoded credentials are empty. Please check your base64 string."
             });
           }
 
@@ -1614,41 +1614,41 @@ export async function registerRoutes(app: Express): Server {
 
           // Validate that it's a proper WhatsApp credentials file
           if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
-            return res.status(400).json({ 
-              message: "Invalid credentials format. Please ensure your base64 string contains valid WhatsApp session data." 
+            return res.status(400).json({
+              message: "Invalid credentials format. Please ensure your base64 string contains valid WhatsApp session data."
             });
           }
 
           // Check for empty object
           if (Object.keys(credentials).length === 0) {
-            return res.status(400).json({ 
-              message: "Credentials are empty. Please provide valid base64-encoded credentials with session data." 
+            return res.status(400).json({
+              message: "Credentials are empty. Please provide valid base64-encoded credentials with session data."
             });
           }
         } catch (error) {
-          return res.status(400).json({ 
-            message: "Invalid base64 or JSON format. Please ensure you're providing a valid base64-encoded credentials.json file." 
+          return res.status(400).json({
+            message: "Invalid base64 or JSON format. Please ensure you're providing a valid base64-encoded credentials.json file."
           });
         }
       } else if (req.file) {
         // Check file size (minimum 10 bytes, maximum 5MB)
         if (req.file.size < 10) {
-          return res.status(400).json({ 
-            message: "Credentials file is too small or empty. Please upload a valid credentials file." 
+          return res.status(400).json({
+            message: "Credentials file is too small or empty. Please upload a valid credentials file."
           });
         }
 
         if (req.file.size > 5 * 1024 * 1024) {
-          return res.status(400).json({ 
-            message: "Credentials file is too large. Maximum size is 5MB." 
+          return res.status(400).json({
+            message: "Credentials file is too large. Maximum size is 5MB."
           });
         }
 
         try {
           const fileContent = req.file.buffer.toString();
           if (!fileContent.trim()) {
-            return res.status(400).json({ 
-              message: "Credentials file is empty. Please upload a valid credentials file." 
+            return res.status(400).json({
+              message: "Credentials file is empty. Please upload a valid credentials file."
             });
           }
 
@@ -1656,27 +1656,27 @@ export async function registerRoutes(app: Express): Server {
 
           // Validate that it's a proper WhatsApp credentials file
           if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
-            return res.status(400).json({ 
-              message: "Invalid credentials file format. Please upload a valid WhatsApp session file." 
+            return res.status(400).json({
+              message: "Invalid credentials file format. Please upload a valid WhatsApp session file."
             });
           }
 
           // Check for empty object
           if (Object.keys(credentials).length === 0) {
-            return res.status(400).json({ 
-              message: "Credentials file is empty. Please upload a valid credentials file with session data." 
+            return res.status(400).json({
+              message: "Credentials file is empty. Please upload a valid credentials file with session data."
             });
           }
         } catch (error) {
-          return res.status(400).json({ 
-            message: "Invalid JSON file. Please ensure you're uploading a valid credentials.json file from WhatsApp Web." 
+          return res.status(400).json({
+            message: "Invalid JSON file. Please ensure you're uploading a valid credentials.json file from WhatsApp Web."
           });
         }
       }
 
       if (!req.body.name || req.body.name.trim() === '') {
-        return res.status(400).json({ 
-          message: "Bot name is required. Please provide a name for your bot instance." 
+        return res.status(400).json({
+          message: "Bot name is required. Please provide a name for your bot instance."
         });
       }
 
@@ -1691,7 +1691,7 @@ export async function registerRoutes(app: Express): Server {
 
         if (availableServers.length > 0) {
           // Server is full but there are other available servers
-          return res.status(400).json({ 
+          return res.status(400).json({
             message: `🚫 ${getServerName()} is full! (${botCountCheck.currentCount}/${botCountCheck.maxCount} bots)`,
             serverFull: true,
             currentServer: getServerName(),
@@ -1707,7 +1707,7 @@ export async function registerRoutes(app: Express): Server {
           });
         } else {
           // All servers are full
-          return res.status(400).json({ 
+          return res.status(400).json({
             message: `😞 All servers are full! Current server: ${getServerName()} (${botCountCheck.currentCount}/${botCountCheck.maxCount}). Please contact administrator for more capacity.`,
             serverFull: true,
             allServersFull: true
@@ -1715,13 +1715,13 @@ export async function registerRoutes(app: Express): Server {
         }
       }
 
-      const duplicateName = existingBots.find(bot => 
+      const duplicateName = existingBots.find(bot =>
         bot.name.toLowerCase().trim() === req.body.name.toLowerCase().trim()
       );
 
       if (duplicateName) {
-        return res.status(400).json({ 
-          message: `Bot name "${req.body.name.trim()}" is already in use. Please choose a different name.` 
+        return res.status(400).json({
+          message: `Bot name "${req.body.name.trim()}" is already in use. Please choose a different name.`
         });
       }
 
@@ -1734,8 +1734,8 @@ export async function registerRoutes(app: Express): Server {
         });
 
         if (duplicateCredentials) {
-          return res.status(400).json({ 
-            message: `These credentials are already in use by bot "${duplicateCredentials.name}". Each bot must have unique credentials.` 
+          return res.status(400).json({
+            message: `These credentials are already in use by bot "${duplicateCredentials.name}". Each bot must have unique credentials.`
           });
         }
       }
@@ -1872,12 +1872,11 @@ export async function registerRoutes(app: Express): Server {
       // Map feature names to database columns
       const featureMap: Record<string, string> = {
         'autoLike': 'autoLike',
-        'autoView': 'autoViewStatus', 
+        'autoView': 'autoViewStatus',
         'autoReact': 'autoReact',
-        'typingIndicator': 'typingMode',
         'chatGPT': 'chatgptEnabled',
         'alwaysOnline': 'alwaysOnline',
-        'autoRecording': 'presenceMode',
+        'typingIndicator': 'typingMode',
         'presenceAutoSwitch': 'presenceAutoSwitch'
       };
 
@@ -2069,9 +2068,9 @@ export async function registerRoutes(app: Express): Server {
       const updatedBot = await storage.updateBotInstance(req.params.id, { status: 'loading' });
       broadcast({ type: 'BOT_STATUS_CHANGED', data: updatedBot });
 
-      res.json({ 
-        success: true, 
-        message: `Bot ${bot.name} startup initiated - TREKKERMD LIFETIME BOT initializing...` 
+      res.json({
+        success: true,
+        message: `Bot ${bot.name} startup initiated - TREKKERMD LIFETIME BOT initializing...`
       });
     } catch (error) {
       console.error('Bot start error:', error);
@@ -2218,10 +2217,10 @@ export async function registerRoutes(app: Express): Server {
       }
 
       console.log(`✅ Command sync completed: ${addedCount} new commands added`);
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: `Sync completed: ${addedCount} new commands added`,
-        addedCount 
+        addedCount
       });
     } catch (error) {
       console.error("Command sync error:", error);
@@ -2405,7 +2404,7 @@ export async function registerRoutes(app: Express): Server {
           phoneNumber: cleanedPhone,
           hasBot: !!bot,
           bot: bot ? maskBotDataForGuest(bot, true) : null,
-          message: bot 
+          message: bot
             ? "Phone number found with existing bot on this server"
             : "Phone number registered to this server but no bot found"
         });
@@ -2448,14 +2447,14 @@ export async function registerRoutes(app: Express): Server {
       // Send message
       await bot.sendDirectMessage(jid, message);
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: "Message sent successfully",
         recipient: jid
       });
     } catch (error) {
       console.error("Error sending admin test message:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: "Failed to send message",
         error: error instanceof Error ? error.message : "Unknown error"
       });
@@ -2489,9 +2488,9 @@ export async function registerRoutes(app: Express): Server {
 
       if (bot.length === 0) {
         console.log(`❌ No bot found for phone ${cleanedPhone} on server ${currentServerName}`);
-        return res.status(404).json({ 
-          message: "Bot not found", 
-          exists: false 
+        return res.status(404).json({
+          message: "Bot not found",
+          exists: false
         });
       }
 
@@ -2548,9 +2547,9 @@ export async function registerRoutes(app: Express): Server {
 
       if (bot.length === 0) {
         console.log(`❌ Bot not found for phone ${cleanedPhone}`);
-        return res.status(404).json({ 
+        return res.status(404).json({
           message: "Bot not found. Please register your bot first.",
-          exists: false 
+          exists: false
         });
       }
 
@@ -2575,7 +2574,7 @@ export async function registerRoutes(app: Express): Server {
       }
 
       // Check if bot has expired (for approved bots)
-      const isExpired = botData.approvalDate && botData.expirationMonths 
+      const isExpired = botData.approvalDate && botData.expirationMonths
         ? new Date() > new Date(new Date(botData.approvalDate).getTime() + (botData.expirationMonths * 30 * 24 * 60 * 60 * 1000))
         : false;
 
@@ -2627,7 +2626,7 @@ export async function registerRoutes(app: Express): Server {
         console.error(`❌ No stored credentials found for verified bot ${cleanedPhone}`);
         return res.status(500).json({
           message: "No credentials found for verified bot. Please update your credentials.",
-          botStatus: "needs_credentials", 
+          botStatus: "needs_credentials",
           nextStep: "update_credentials",
           credentialUploadEndpoint: "/api/guest/verify-credentials"
         });
@@ -2700,16 +2699,16 @@ export async function registerRoutes(app: Express): Server {
         const maxSizeBytes = 5 * 1024 * 1024; // 5MB
 
         if (estimatedSize > maxSizeBytes) {
-          return res.status(400).json({ 
-            message: `Session ID too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
+          return res.status(400).json({
+            message: `Session ID too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.`
           });
         }
 
         const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
 
         if (decoded.length > maxSizeBytes) {
-          return res.status(400).json({ 
-            message: `Decoded session data too large (${(decoded.length / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.` 
+          return res.status(400).json({
+            message: `Decoded session data too large (${(decoded.length / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.`
           });
         }
 
@@ -2769,8 +2768,8 @@ export async function registerRoutes(app: Express): Server {
           credsKeys: credentials?.creds ? Object.keys(credentials.creds) : [],
           topLevelKeys: credentials ? Object.keys(credentials) : []
         });
-        return res.status(400).json({ 
-          message: "Cannot extract phone number from session credentials. Please ensure you're using valid WhatsApp session data." 
+        return res.status(400).json({
+          message: "Cannot extract phone number from session credentials. Please ensure you're using valid WhatsApp session data."
         });
       }
 
@@ -2814,7 +2813,7 @@ export async function registerRoutes(app: Express): Server {
 
         try {
           // Test connection with new credentials on current server
-          const { validateWhatsAppCredentials } = await import('./services/validation-bot');
+          const { validateWhatsAppCredentials } = await import('./services/creds-validator');
           const testResult = await validateWhatsAppCredentials(phoneNumber, credentials);
 
           if (testResult.isValid) {
@@ -2872,7 +2871,7 @@ export async function registerRoutes(app: Express): Server {
               await storage.createCrossTenancyActivity({
                 type: 'cross_server_credential_update',
                 description: `Credentials tested on ${currentServer} and updated for bot on ${botServer}`,
-                metadata: { 
+                metadata: {
                   testServer: currentServer,
                   botServer: botServer,
                   botId: bot.id,
@@ -2892,8 +2891,8 @@ export async function registerRoutes(app: Express): Server {
 
 Your TREKKER-MD bot "${bot.name}" has been successfully updated with new credentials!
 
-📱 *Update Details:*
-• Phone: ${phoneNumber}
+📱 *Phone:* ${phoneNumber}
+🔐 *Update Details:*
 • Bot Server: ${botServer}
 • Status: ✅ Credentials Updated ${botServer === currentServer ? '& Reconnecting' : '& Saved'}
 • Time: ${new Date().toLocaleString()}
@@ -2988,9 +2987,9 @@ Thank you for using TREKKER-MD! 🚀
         botServer,
         crossServer: botServer !== currentServer,
         token,
-        message: credentialTestFailed 
+        message: credentialTestFailed
           ? `Credential validation failed: ${updatedBot.invalidReason}`
-          : botActive 
+          : botActive
             ? "Bot is active and connected"
             : "Credentials updated successfully and success message sent to WhatsApp",
         botId: bot.id,
@@ -3024,8 +3023,8 @@ Thank you for using TREKKER-MD! 🚀
       // Verify OTP
       const isValid = verifyGuestOTP(cleanedPhone, otp);
       if (!isValid) {
-        return res.status(400).json({ 
-          message: "Invalid or expired verification code. Please request a new one." 
+        return res.status(400).json({
+          message: "Invalid or expired verification code. Please request a new one."
         });
       }
 
@@ -3084,9 +3083,9 @@ Thank you for using TREKKER-MD! 🚀
 
       const validActions = ['start', 'stop', 'restart', 'reactivate', 'delete'];
       if (!validActions.includes(action)) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: "Invalid action",
-          validActions 
+          validActions
         });
       }
 
@@ -3100,8 +3099,8 @@ Thank you for using TREKKER-MD! 🚀
         // Validate guest permissions
         const actionValidation = validateGuestAction(action, bot);
         if (!actionValidation.allowed) {
-          return res.status(403).json({ 
-            message: actionValidation.reason 
+          return res.status(403).json({
+            message: actionValidation.reason
           });
         }
 
@@ -3228,7 +3227,7 @@ Thank you for using TREKKER-MD! 🚀
     }
   });
 
-  // Guest Bot Features - Update bot features (approved users only)  
+  // Guest Bot Features - Update bot features (approved users only)
   app.post("/api/guest/bot/features", authenticateGuestWithBot, async (req: any, res) => {
     try {
       const { feature, enabled } = req.body;
@@ -3237,9 +3236,9 @@ Thank you for using TREKKER-MD! 🚀
 
       const validFeatures = ['autoLike', 'autoViewStatus', 'autoReact', 'chatgptEnabled', 'alwaysOnline', 'presenceAutoSwitch'];
       if (!feature || !validFeatures.includes(feature)) {
-        return res.status(400).json({ 
-          message: "Invalid feature", 
-          validFeatures 
+        return res.status(400).json({
+          message: "Invalid feature",
+          validFeatures
         });
       }
 
@@ -3256,7 +3255,7 @@ Thank you for using TREKKER-MD! 🚀
       }
 
       if (bot.approvalStatus !== 'approved') {
-        return res.status(403).json({ 
+        return res.status(403).json({
           message: "Feature management is only available for approved bots",
           approvalStatus: bot.approvalStatus
         });
@@ -3271,10 +3270,10 @@ Thank you for using TREKKER-MD! 🚀
         botInstanceId: botId,
         type: 'feature_update',
         description: `${feature} ${enabled ? 'enabled' : 'disabled'} by guest user ${guestPhone}`,
-        metadata: { 
-          feature, 
-          enabled, 
-          guestUser: guestPhone 
+        metadata: {
+          feature,
+          enabled,
+          guestUser: guestPhone
         },
         serverName: getServerName()
       });
@@ -3415,7 +3414,7 @@ Thank you for using TREKKER-MD! 🚀
       // Map feature names to database columns
       const featureMap: Record<string, string> = {
         'autoLike': 'autoLike',
-        'autoView': 'autoViewStatus', 
+        'autoView': 'autoViewStatus',
         'autoReact': 'autoReact',
         'chatGPT': 'chatgptEnabled',
         'alwaysOnline': 'alwaysOnline',
@@ -3447,11 +3446,11 @@ Thank you for using TREKKER-MD! 🚀
         serverName: bot.serverName // Log to original tenancy
       });
 
-      res.json({ 
-        message: "Feature updated successfully", 
-        feature, 
+      res.json({
+        message: "Feature updated successfully",
+        feature,
         enabled,
-        crossTenancy: true 
+        crossTenancy: true
       });
 
     } catch (error) {
@@ -3561,7 +3560,7 @@ Thank you for using TREKKER-MD! 🚀
         }
 
         if (botInstance.approvalStatus !== 'approved') {
-          return res.status(403).json({ 
+          return res.status(403).json({
             message: "Only approved bots can have features updated",
             approvalStatus: botInstance.approvalStatus
           });
@@ -3570,7 +3569,7 @@ Thank you for using TREKKER-MD! 🚀
         // Map feature names to database columns
         const featureMap: Record<string, string> = {
           'autoLike': 'autoLike',
-          'autoView': 'autoViewStatus', 
+          'autoView': 'autoViewStatus',
           'autoReact': 'autoReact',
           'chatGPT': 'chatgptEnabled',
           'alwaysOnline': 'alwaysOnline',
@@ -3596,16 +3595,16 @@ Thank you for using TREKKER-MD! 🚀
           botInstanceId: botId,
           type: 'guest_feature_update',
           description: `${feature} ${enabled ? 'enabled' : 'disabled'} by guest user ${cleanedPhone}`,
-          metadata: { 
-            feature, 
-            enabled, 
-            guestPhone: cleanedPhone 
+          metadata: {
+            feature,
+            enabled,
+            guestPhone: cleanedPhone
           },
           serverName: getServerName()
         });
 
-        res.json({ 
-          success: true, 
+        res.json({
+          success: true,
           message: `${feature} ${enabled ? 'enabled' : 'disabled'} successfully`,
           feature,
           enabled
@@ -3651,7 +3650,7 @@ Thank you for using TREKKER-MD! 🚀
           // Map feature names to database columns
           const featureMap: Record<string, string> = {
             'autoLike': 'autoLike',
-            'autoView': 'autoViewStatus', 
+            'autoView': 'autoViewStatus',
             'autoReact': 'autoReact',
             'chatGPT': 'chatgptEnabled',
             'alwaysOnline': 'alwaysOnline',
@@ -3700,9 +3699,9 @@ Thank you for using TREKKER-MD! 🚀
           await storage.createCrossTenancyActivity({
             type: 'cross_tenancy_feature_update_direct',
             description: `Cross-server ${feature} ${enabled ? 'enabled' : 'disabled'} for bot ${bot.id} on ${hostingServer} via shared database`,
-            metadata: { 
-              feature, 
-              enabled, 
+            metadata: {
+              feature,
+              enabled,
               guestPhone: cleanedPhone,
               sourceServer: currentServer,
               targetServer: hostingServer,
@@ -3716,8 +3715,8 @@ Thank you for using TREKKER-MD! 🚀
 
           console.log(`✅ Cross-tenancy feature ${feature} updated to ${enabled} for bot ${bot.id} on ${hostingServer}`);
 
-          res.json({ 
-            success: true, 
+          res.json({
+            success: true,
             message: `${feature} ${enabled ? 'enabled' : 'disabled'} successfully on ${hostingServer}`,
             feature,
             enabled,
@@ -3728,7 +3727,7 @@ Thank you for using TREKKER-MD! 🚀
 
         } catch (crossServerError) {
           console.error(`❌ Cross-tenancy feature update failed for ${cleanedPhone}:`, crossServerError);
-          res.status(500).json({ 
+          res.status(500).json({
             message: `Failed to update feature on ${hostingServer}: ${crossServerError instanceof Error ? crossServerError.message : 'Unknown error'}`,
             crossServer: true,
             hostingServer
@@ -3809,8 +3808,8 @@ Thank you for using TREKKER-MD! 🚀
         serverName: getServerName()
       });
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: "Bot started successfully",
         botId,
         status: 'starting'
@@ -3822,7 +3821,7 @@ Thank you for using TREKKER-MD! 🚀
     }
   });
 
-  // Guest bot stop - requires authentication and ownership verification  
+  // Guest bot stop - requires authentication and ownership verification
   app.post("/api/guest/bot/stop", authenticateGuestWithBot, async (req: any, res) => {
     try {
       const { phoneNumber, botId } = req.guest;
@@ -3849,8 +3848,8 @@ Thank you for using TREKKER-MD! 🚀
         serverName: getServerName()
       });
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: "Bot stopped successfully",
         botId,
         status: 'stopping'
@@ -3907,8 +3906,8 @@ Thank you for using TREKKER-MD! 🚀
       await storage.createCrossTenancyActivity({
         type: 'deletion',
         description: `Bot deleted by guest user via phone verification (${phoneNumber})`,
-        metadata: { 
-          guestAuth: true, 
+        metadata: {
+          guestAuth: true,
           phoneNumber,
           botName: botInstance.name,
           deletedBotId: botId
@@ -3920,8 +3919,8 @@ Thank you for using TREKKER-MD! 🚀
 
       console.log(`🗑️ Guest user ${phoneNumber} deleted bot ${botInstance.name} (${botId})`);
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         message: "Bot deleted successfully",
         botId
       });
@@ -3933,55 +3932,55 @@ Thank you for using TREKKER-MD! 🚀
   });
 
   // ======= WHATSAPP PAIRING CODE ENDPOINTS =======
-  
+
   // Generate WhatsApp Pairing Code
   app.post("/api/whatsapp/generate-pairing-code", async (req, res) => {
     let sock: any = null;
-    
+
     try {
       const { phoneNumber, selectedServer } = req.body;
-      
+
       if (!phoneNumber) {
         return res.status(400).json({ message: "Phone number is required" });
       }
-      
+
       if (!selectedServer) {
         return res.status(400).json({ message: "Server selection is required" });
       }
-      
+
       // Clean phone number - remove +, spaces, dashes
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
+
       // Validate phone number format (10-15 digits)
       if (!/^\d{10,15}$/.test(cleanedPhone)) {
-        return res.status(400).json({ 
-          message: "Invalid phone number format. Please enter a valid phone number with country code." 
+        return res.status(400).json({
+          message: "Invalid phone number format. Please enter a valid phone number with country code."
         });
       }
-      
+
       console.log(`📱 Generating pairing code for phone: ${cleanedPhone} on server: ${selectedServer}`);
-      
+
       // Import Baileys dynamically
       const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, makeCacheableSignalKeyStore } = await import('@whiskeysockets/baileys');
       const { join } = await import('path');
       const { mkdirSync, existsSync } = await import('fs');
       const pino = (await import('pino')).default;
-      
+
       // Create temporary auth directory for this pairing session
       const sessionId = crypto.randomBytes(16).toString('hex');
       const tempAuthDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
-      
+
       if (!existsSync(tempAuthDir)) {
         mkdirSync(tempAuthDir, { recursive: true });
       }
-      
+
       // Setup multi-file auth state
       const { state, saveCreds } = await useMultiFileAuthState(tempAuthDir);
-      
+
       // Create silent logger for pairing
       const logger = pino({ level: "fatal" }).child({ level: "fatal" });
 
-      // Create WhatsApp socket - matching working pair.js implementation
+      // Create WhatsApp socket - matching pair.js implementation
       sock = makeWASocket({
         auth: {
           creds: state.creds,
@@ -3991,41 +3990,45 @@ Thank you for using TREKKER-MD! 🚀
         browser: Browsers.macOS("Safari"),
         logger: logger
       });
-      
+
       // Listen for credential updates
       sock.ev.on('creds.update', saveCreds);
-      
+
       // Request pairing code immediately if not registered (like pair.js)
       let pairingCode: string | null = null;
-      
+
       if (!sock.authState.creds.registered) {
         console.log(`📱 Requesting pairing code for unregistered number: ${cleanedPhone}`);
         await new Promise(resolve => setTimeout(resolve, 1500)); // Small delay like pair.js
         pairingCode = await sock.requestPairingCode(cleanedPhone);
         console.log(`✅ Pairing code generated: ${pairingCode} for ${cleanedPhone}`);
       }
-      
+
       if (!pairingCode) {
         return res.status(400).json({
           message: "Failed to generate pairing code. Number may already be registered."
         });
       }
-      
+
       // Return pairing code to client immediately
+      console.log(`📱 Pairing code generated successfully: ${pairingCode}`);
+      console.log(`🔑 Session ID: ${sessionId}`);
+      console.log(`⚠️ This is a TEMPORARY connection for credential generation only`);
+
       res.json({
         success: true,
         pairingCode,
         sessionId,
-        phoneNumber: cleanedPhone,
-        selectedServer,
-        message: "Pairing code generated successfully. Please enter this code in WhatsApp.",
-        instructions: "1. Open WhatsApp on your phone\n2. Go to Settings → Linked Devices\n3. Tap 'Link a Device'\n4. Tap 'Link with phone number instead'\n5. Enter the pairing code above"
+        connectionType: 'temporary',
+        expiresIn: 600, // 10 minutes
+        message: 'Enter this code in WhatsApp: Settings → Linked Devices → Link a Device → Link with phone number instead',
+        warning: 'This is a temporary connection for credential generation. It will be automatically removed after credentials are extracted.'
       });
-      
+
       // Monitor connection in background
       sock.ev.on('connection.update', async (update: any) => {
         const { connection, lastDisconnect } = update;
-        
+
         console.log(`🔄 Connection update: ${connection}`);
 
         if (connection === 'open') {
@@ -4038,7 +4041,7 @@ Thank you for using TREKKER-MD! 🚀
           }
         }
       });
-      
+
       // Keep socket alive for 5 minutes to allow pairing
       setTimeout(() => {
         if (sock) {
@@ -4050,10 +4053,10 @@ Thank you for using TREKKER-MD! 🚀
           }
         }
       }, 5 * 60 * 1000);
-      
+
     } catch (error) {
       console.error('Pairing code generation error:', error);
-      
+
       // Clean up socket on error
       if (sock) {
         try {
@@ -4062,54 +4065,54 @@ Thank you for using TREKKER-MD! 🚀
           console.warn(`Error ending socket:`, err);
         }
       }
-      
-      res.status(500).json({ 
+
+      res.status(500).json({
         message: "Failed to generate pairing code",
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
-  
+
   // Verify WhatsApp Pairing and Get Credentials
   app.post("/api/whatsapp/verify-pairing", async (req, res) => {
     let sock: any = null;
-    
+
     try {
       const { sessionId, phoneNumber, selectedServer } = req.body;
-      
+
       if (!sessionId || !phoneNumber || !selectedServer) {
-        return res.status(400).json({ 
-          message: "Session ID, phone number, and server selection are required" 
+        return res.status(400).json({
+          message: "Session ID, phone number, and server selection are required"
         });
       }
-      
+
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
+
       console.log(`🔍 Verifying pairing for session: ${sessionId}, phone: ${cleanedPhone}`);
-      
+
       const { join } = await import('path');
       const { existsSync, readFileSync, rmSync } = await import('fs');
       const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore, Browsers } = await import('@whiskeysockets/baileys');
       const pino = (await import('pino')).default;
-      
+
       // Check if temp auth directory exists
       const tempAuthDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
-      
+
       if (!existsSync(tempAuthDir)) {
-        return res.status(404).json({ 
-          message: "Session not found or expired. Please generate a new pairing code." 
+        return res.status(404).json({
+          message: "Session not found or expired. Please generate a new pairing code."
         });
       }
-      
+
       console.log(`📂 Temp auth directory found: ${tempAuthDir}`);
       console.log(`⏳ Waiting for WhatsApp connection to complete authentication...`);
-      
+
       // Setup multi-file auth state
       const { state, saveCreds } = await useMultiFileAuthState(tempAuthDir);
-      
+
       // Create silent logger
       const logger = pino({ level: "fatal" }).child({ level: "fatal" });
-      
+
       // Create WhatsApp socket to monitor connection
       sock = makeWASocket({
         auth: {
@@ -4120,31 +4123,31 @@ Thank you for using TREKKER-MD! 🚀
         browser: Browsers.macOS("Safari"),
         logger: logger
       });
-      
+
       // Save credentials when they update
       sock.ev.on('creds.update', saveCreds);
-      
+
       // Wait for both connection AND credentials to be ready
       const authPromise = new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('Authentication timeout - pairing code not entered within 60 seconds'));
         }, 60000); // 60 second timeout
-        
+
         let connectionOpen = false;
         let credsSaved = false;
-        
+
         const checkComplete = () => {
           if (connectionOpen && credsSaved) {
             clearTimeout(timeout);
             resolve(true);
           }
         };
-        
+
         sock.ev.on('connection.update', (update: any) => {
           const { connection, lastDisconnect } = update;
-          
+
           console.log(`🔄 Connection update: ${connection}`);
-          
+
           if (connection === 'open') {
             console.log(`✅ WhatsApp connection opened - waiting for credentials to save...`);
             connectionOpen = true;
@@ -4155,7 +4158,7 @@ Thank you for using TREKKER-MD! 🚀
             reject(new Error(`Connection closed: ${error?.message || 'Unknown error'}`));
           }
         });
-        
+
         sock.ev.on('creds.update', async () => {
           console.log(`🔐 Credentials updated - saving to disk...`);
           await saveCreds();
@@ -4163,21 +4166,21 @@ Thank you for using TREKKER-MD! 🚀
           checkComplete();
         });
       });
-      
+
       // Wait for authentication to complete
       await authPromise;
-      
+
       // Additional wait to ensure file system sync
       console.log(`⏳ Waiting for file system to sync credentials...`);
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // Read credentials with retry logic
       const credsPath = join(tempAuthDir, 'creds.json');
-      
+
       let credentialsData: string | null = null;
       let retries = 0;
       const maxRetries = 5;
-      
+
       while (!credentialsData && retries < maxRetries) {
         if (existsSync(credsPath)) {
           try {
@@ -4194,72 +4197,102 @@ Thank you for using TREKKER-MD! 🚀
           retries++;
         }
       }
-      
+
       if (!credentialsData) {
         throw new Error('Failed to read credentials file after authentication');
       }
-      
+
       const credentials = JSON.parse(credentialsData);
-      
-      // Verify credentials are complete
-      if (!credentials.creds || !credentials.creds.me || !credentials.creds.me.id) {
-        throw new Error('Incomplete credentials structure');
+
+      // Verify credentials have minimum required structure
+      if (!credentials || typeof credentials !== 'object') {
+        throw new Error('Invalid credentials format');
       }
-      
-      // Convert credentials to base64
-      const base64Credentials = Buffer.from(credentialsData).toString('base64');
-      
-      // Extract JID (WhatsApp ID)
-      const jid = credentials.creds.me.id;
-      
-      console.log(`✅ Credentials retrieved for ${cleanedPhone}, JID: ${jid}`);
-      
-      // Close connection properly (like pair.js)
-      console.log(`🧹 Closing WhatsApp connection...`);
-      
-      try {
-        // Remove all event listeners
-        if (sock.ev) {
-          sock.ev.removeAllListeners();
-          console.log('✅ Event listeners removed');
-        }
-        
-        // Close WebSocket connection
-        if (sock.ws && sock.ws.readyState === 1) {
-          await sock.ws.close();
-          console.log('✅ WebSocket connection closed');
-        }
-      } catch (closeError) {
-        console.warn('Warning during connection cleanup:', closeError);
+
+      // Check for essential Baileys credentials structure
+      // The creds object might be at different levels depending on how Baileys saved it
+      const hasCreds = credentials.creds || credentials;
+      const hasNoiseKey = hasCreds?.noiseKey || hasCreds?.creds?.noiseKey;
+      const hasIdentityKey = hasCreds?.signedIdentityKey || hasCreds?.creds?.signedIdentityKey;
+
+      if (!hasNoiseKey || !hasIdentityKey) {
+        console.error('Missing essential credential fields:', {
+          hasNoiseKey: !!hasNoiseKey,
+          hasIdentityKey: !!hasIdentityKey,
+          topLevelKeys: Object.keys(credentials),
+          credsKeys: credentials.creds ? Object.keys(credentials.creds) : []
+        });
+        throw new Error('Incomplete credentials structure - missing noiseKey or signedIdentityKey');
       }
-      
-      // Wait a moment for cleanup
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Clean up temp directory after reading credentials
+
+      console.log(`✅ Credentials verified for ${phoneNumber}`);
+
+      // Extract phone number from credentials for verification
+      let credPhone = null;
+      if (credentials.creds?.me?.id) {
+        credPhone = credentials.creds.me.id.split(':')[0];
+      } else if (credentials.me?.id) {
+        credPhone = credentials.me.id.split(':')[0];
+      }
+
+      if (credPhone && credPhone !== phoneNumber) {
+        console.warn(`⚠️ Phone number mismatch. Expected ${phoneNumber} but got ${credPhone}`);
+        // Don't throw error, just warn - the user entered the code so it should work
+      }
+
+      // Extract owner JID for notification
+      const ownerJid = credentials.creds?.me?.id || credentials.me?.id || `${phoneNumber}@s.whatsapp.net`;
+      console.log(`📱 Owner JID extracted: ${ownerJid}`);
+
+      // Convert credentials to base64 for storage
+      const base64Credentials = Buffer.from(JSON.stringify(credentials)).toString('base64');
+
+      // Send success notification to owner WhatsApp
       try {
-        rmSync(tempAuthDir, { recursive: true, force: true });
+        const { sendGuestValidationMessage } = await import('./services/validation-bot');
+        const successMessage = `✅ *WhatsApp Authentication Successful!*
+
+Your TrekkerMD bot session has been successfully authenticated!
+
+📱 *Phone:* ${phoneNumber}
+🔐 *Session:* Active & Ready
+⏰ *Time:* ${new Date().toLocaleString()}
+
+Your credentials have been securely generated. You can now use them to register your bot.
+
+🎉 Welcome to TrekkerMD Lifetime Bot Platform!
+
+---
+*This is a temporary connection for credential generation. It will be automatically cleaned up.*`;
+
+        await sendGuestValidationMessage(phoneNumber, JSON.stringify(credentials), successMessage, true);
+        console.log(`✅ Success notification sent to ${ownerJid}`);
+      } catch (notificationError) {
+        console.warn(`⚠️ Failed to send success notification:`, notificationError);
+        // Don't fail the whole process if notification fails
+      }
+
+      // Clean up temp directory after successful verification
+      try {
+        const fs = await import('fs/promises');
+        await fs.rm(tempAuthDir, { recursive: true, force: true });
         console.log(`🧹 Cleaned up temp auth directory: ${tempAuthDir}`);
       } catch (cleanupError) {
-        console.warn('Warning: Failed to cleanup temp directory:', cleanupError);
+        console.warn(`⚠️ Failed to cleanup temp directory:`, cleanupError);
       }
-      
+
       res.json({
         success: true,
+        message: 'Pairing verified successfully! Success notification sent to your WhatsApp.',
         credentials: {
-          jid,
-          base64: base64Credentials,
-          raw: credentials
-        },
-        phoneNumber: cleanedPhone,
-        selectedServer,
-        message: "WhatsApp pairing successful! Your credentials have been generated.",
-        warning: "⚠️ BACKUP YOUR CREDENTIALS - Save the Base64 string below in a safe place. Do not share it with anyone!"
+          jid: ownerJid,
+          base64: base64Credentials
+        }
       });
-      
+
     } catch (error) {
       console.error('Pairing verification error:', error);
-      
+
       // Clean up socket on error
       if (sock) {
         try {
@@ -4273,8 +4306,8 @@ Thank you for using TREKKER-MD! 🚀
           console.warn('Error during error cleanup:', err);
         }
       }
-      
-      res.status(500).json({ 
+
+      res.status(500).json({
         message: "Failed to verify pairing",
         error: error instanceof Error ? error.message : 'Unknown error'
       });
@@ -4511,7 +4544,7 @@ Thank you for using TREKKER-MD! 🚀
         // Send success message to the user via WhatsApp
         try {
           if (credentials) {
-            const validationMessage = offerActive 
+            const validationMessage = offerActive
               ? `🎉 TREKKER-MD BOT REGISTRATION 🎉
 
 ✅ Bot "${botName}" registered successfully!
@@ -4554,7 +4587,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           botDetails: maskBotDataForGuest(crossServerResult.botInstance!, true),
           originalServer: currentServer,
           assignedServer: selectedServer,
-          availableSlots: targetCapacityCheck.maxCount - targetCapacityCheck.currentCount - 1,
+          availableSlots: targetServerInfo.maxBotCount - targetServerInfo.currentBotCount - 1,
           serverUrl: targetServerInfo.serverUrl,
           nextSteps: [
             `Your bot "${botName}" is now registered on ${selectedServer}`,
@@ -4718,7 +4751,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
       res.json({
         success: true,
-        message: offerActive 
+        message: offerActive
           ? "🎁 Your TREKKER-MD bot has been auto-approved and is now LIVE! Enjoy the promotional offer!"
           : "Your TREKKER-MD bot has been registered successfully and is awaiting admin approval!",
         botDetails: maskBotDataForGuest(newBot, true),
@@ -4785,41 +4818,41 @@ Thank you for choosing TREKKER-MD! 🚀`;
       const targetServer = req.headers['x-target-server'];
 
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ 
-          success: false, 
-          error: 'Missing or invalid authorization header' 
+        return res.status(401).json({
+          success: false,
+          error: 'Missing or invalid authorization header'
         });
       }
 
       if (!sourceServer || !targetServer) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Missing X-Source-Server or X-Target-Server headers' 
+        return res.status(400).json({
+          success: false,
+          error: 'Missing X-Source-Server or X-Target-Server headers'
         });
       }
 
       // Validate that target server is current server
       const currentServer = getServerName();
       if (targetServer !== currentServer) {
-        return res.status(403).json({ 
-          success: false, 
-          error: `Request target ${targetServer} does not match current server ${currentServer}` 
+        return res.status(403).json({
+          success: false,
+          error: `Request target ${targetServer} does not match current server ${currentServer}`
         });
       }
 
       // Validate that source server exists and has a shared secret configured
       const sourceServerInfo = await storage.getServerByName(sourceServer);
       if (!sourceServerInfo) {
-        return res.status(404).json({ 
-          success: false, 
-          error: `Source server ${sourceServer} not found in registry` 
+        return res.status(404).json({
+          success: false,
+          error: `Source server ${sourceServer} not found in registry`
         });
       }
 
       if (!sourceServerInfo.sharedSecret) {
-        return res.status(403).json({ 
-          success: false, 
-          error: `Source server ${sourceServer} has no shared secret configured` 
+        return res.status(403).json({
+          success: false,
+          error: `Source server ${sourceServer} has no shared secret configured`
         });
       }
 
@@ -4828,9 +4861,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
       const payload = CrossTenancyClient.validateToken(token, sourceServer, sourceServerInfo.sharedSecret);
 
       if (!payload) {
-        return res.status(401).json({ 
-          success: false, 
-          error: 'Invalid or expired token' 
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid or expired token'
         });
       }
 
@@ -4842,9 +4875,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
       next();
     } catch (error) {
       console.error('Cross-tenancy authentication error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Authentication failed' 
+      res.status(500).json({
+        success: false,
+        error: 'Authentication failed'
       });
     }
   };
@@ -4930,10 +4963,10 @@ Thank you for choosing TREKKER-MD! 🚀`;
       await storage.createCrossTenancyActivity({
         type: 'cross_tenancy_bot_create',
         description: `Bot created via cross-tenancy request from ${req.sourceServer}`,
-        metadata: { 
+        metadata: {
           sourceServer: req.sourceServer,
           botId: botInstance.id,
-          phoneNumber 
+          phoneNumber
         },
         serverName: getServerName(),
         botInstanceId: botInstance.id,
@@ -4978,10 +5011,10 @@ Thank you for choosing TREKKER-MD! 🚀`;
       await storage.createCrossTenancyActivity({
         type: 'cross_tenancy_bot_update',
         description: `Bot updated via cross-tenancy request from ${req.sourceServer}`,
-        metadata: { 
+        metadata: {
           sourceServer: req.sourceServer,
           botId,
-          updates 
+          updates
         },
         serverName: getServerName(),
         botInstanceId: botId,
@@ -5025,10 +5058,10 @@ Thank you for choosing TREKKER-MD! 🚀`;
       await storage.createCrossTenancyActivity({
         type: 'cross_tenancy_credential_update',
         description: `Bot credentials updated via cross-tenancy request from ${req.sourceServer}`,
-        metadata: { 
+        metadata: {
           sourceServer: req.sourceServer,
           botId,
-          credentialVerified: credentialData.credentialVerified 
+          credentialVerified: credentialData.credentialVerified
         },
         serverName: getServerName(),
         botInstanceId: botId,
@@ -5096,10 +5129,10 @@ Thank you for choosing TREKKER-MD! 🚀`;
       await storage.createCrossTenancyActivity({
         type: 'cross_tenancy_bot_lifecycle',
         description: `Bot ${action} action via cross-tenancy request from ${req.sourceServer}`,
-        metadata: { 
+        metadata: {
           sourceServer: req.sourceServer,
           botId,
-          action 
+          action
         },
         serverName: getServerName(),
         botInstanceId: botId,
