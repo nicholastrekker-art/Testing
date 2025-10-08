@@ -4033,26 +4033,62 @@ Thank you for using TREKKER-MD! 🚀
         if (connection === 'open') {
           console.log(`✅ WhatsApp connection opened for session ${sessionId}!`);
           
-          // Wait a bit for credentials to be saved
-          await new Promise(r => setTimeout(r, 2000));
+          // Clear auth timeout since connection succeeded
+          clearTimeout(pairingSession.authTimeout);
+          
+          // Wait longer for credentials to be fully saved
+          await new Promise(r => setTimeout(r, 3000));
 
           try {
-            // Read credentials file
+            // Read credentials file with retry
             const credsPath = join(tempAuthDir!, 'creds.json');
             
-            if (!existsSync(credsPath)) {
-              throw new Error('Credentials file not found after connection opened');
+            let credentialsData = null;
+            let retries = 0;
+            const maxRetries = 5;
+            
+            while (!credentialsData && retries < maxRetries) {
+              if (existsSync(credsPath)) {
+                try {
+                  credentialsData = readFileSync(credsPath, 'utf-8');
+                  console.log(`✅ Credentials file read successfully on attempt ${retries + 1}`);
+                  break;
+                } catch (readError) {
+                  console.log(`⚠️ Retry ${retries + 1}/${maxRetries}: Error reading credentials file`);
+                  await new Promise(r => setTimeout(r, 1000));
+                  retries++;
+                }
+              } else {
+                console.log(`⚠️ Retry ${retries + 1}/${maxRetries}: Credentials file not found, waiting...`);
+                await new Promise(r => setTimeout(r, 1000));
+                retries++;
+              }
+            }
+            
+            if (!credentialsData) {
+              throw new Error('Credentials file not found or could not be read after authentication');
             }
 
-            const credentialsData = readFileSync(credsPath, 'utf-8');
             const credentials = JSON.parse(credentialsData);
               
-            // Extract user JID
-            const userJid = sock.user?.id || credentials.creds?.me?.id || null;
-            const extractedPhone = userJid?.match(/^(\d+):/)?.[1] || cleanedPhone;
+            // Extract user JID with multiple fallback methods
+            let userJid = sock.user?.id || credentials.creds?.me?.id || null;
+            
+            // Extract phone number from JID
+            let extractedPhone = cleanedPhone;
+            if (userJid) {
+              const phoneMatch = userJid.match(/^(\d+):/);
+              if (phoneMatch) {
+                extractedPhone = phoneMatch[1];
+              }
+            }
 
-            console.log(`✅ Credentials extracted for ${extractedPhone}`);
-            clearTimeout(pairingSession.authTimeout);
+            console.log(`✅ Credentials extracted - Phone: ${extractedPhone}, JID: ${userJid}`);
+
+            // Validate credentials structure
+            if (!credentials.creds?.noiseKey || !credentials.creds?.signedIdentityKey) {
+              throw new Error('Invalid credentials structure - missing essential fields');
+            }
 
             // Save CLEAN credentials (only creds and keys, like Baileys documentation)
             const cleanCredentials = {
@@ -4076,6 +4112,7 @@ Thank you for using TREKKER-MD! 🚀
                 generatedAt: new Date().toISOString()
               }
             }, null, 2));
+            console.log(`💾 Credentials saved to: ${credsFilePath}`);
 
             // Send credentials to WhatsApp
             const credentialsBase64 = Buffer.from(JSON.stringify(cleanCredentials, null, 2)).toString('base64');
@@ -4101,7 +4138,7 @@ Your bot credentials have been generated.
 
             try {
               await sendGuestValidationMessage(extractedPhone, JSON.stringify(cleanCredentials), credentialsMessage, true);
-              console.log(`✅ Credentials sent to WhatsApp`);
+              console.log(`✅ Credentials sent to WhatsApp: ${userJid}`);
             } catch (sendError) {
               console.warn(`⚠️ Failed to send credentials to WhatsApp:`, sendError);
             }
@@ -4111,7 +4148,9 @@ Your bot credentials have been generated.
             pairingSession.credentials = cleanCredentials;
             pairingSession.userJid = userJid;
 
-            // Delayed cleanup
+            console.log(`✅ Session ${sessionId} authenticated successfully`);
+            
+            // Delayed cleanup to ensure everything is saved
             setTimeout(() => {
               if (tempAuthDir && existsSync(tempAuthDir)) {
                 try {
@@ -4130,9 +4169,8 @@ Your bot credentials have been generated.
                   console.warn('Error closing socket:', err);
                 }
               }
-            }, 3000);
+            }, 5000);
 
-            console.log(`✅ Session ${sessionId} authenticated successfully`);
           } catch (error) {
             pairingSession.status = 'failed';
             console.error(`❌ Error processing credentials for session ${sessionId}:`, error);
