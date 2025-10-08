@@ -173,7 +173,18 @@ export class WhatsAppBot {
 
         // Send welcome message to the bot owner
         try {
-          const welcomeMessage = `╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  "${this.botInstance.name}" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!`;
+          const welcomeMessage = `╔══════════════════════════════════╗
+║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║
+╠══════════════════════════════════╣
+║ 🤖  "${this.botInstance.name}" is ONLINE & READY 🚀 ║
+╚══════════════════════════════════╝
+
+💡 *Try these commands:*
+• .menu - Show all commands
+• .help - Get help
+• .ping - Test bot
+
+✅ Bot is ready to receive commands!`;
 
           // Get the bot's own number and send welcome message to yourself
           const me = this.sock.user?.id;
@@ -520,31 +531,47 @@ export class WhatsAppBot {
     // Unwrap common message wrappers
     const inner = messageObj.ephemeralMessage?.message ||
                   messageObj.viewOnceMessage?.message ||
+                  messageObj.viewOnceMessageV2?.message ||
                   messageObj.documentWithCaptionMessage?.message ||
+                  messageObj.editedMessage?.message ||
                   messageObj;
 
-    // Extract text from various message types
-    return inner.conversation ||
-           inner.extendedTextMessage?.text ||
-           inner.imageMessage?.caption ||
-           inner.videoMessage?.caption ||
-           inner.buttonsResponseMessage?.selectedButtonId ||
-           inner.listResponseMessage?.singleSelectReply?.selectedRowId ||
-           inner.templateButtonReplyMessage?.selectedId ||
-           '';
+    // Extract text from various message types (prioritize direct text fields)
+    const text = inner.conversation ||
+                 inner.extendedTextMessage?.text ||
+                 inner.imageMessage?.caption ||
+                 inner.videoMessage?.caption ||
+                 inner.documentMessage?.caption ||
+                 inner.audioMessage?.caption ||
+                 inner.buttonsResponseMessage?.selectedButtonId ||
+                 inner.listResponseMessage?.singleSelectReply?.selectedRowId ||
+                 inner.templateButtonReplyMessage?.selectedId ||
+                 '';
+
+    // Return trimmed text to remove extra whitespace
+    return typeof text === 'string' ? text.trim() : '';
   }
 
   private async handleMessage(message: WAMessage) {
     try {
-      if (!message.message) return;
+      if (!message.message) {
+        console.log(`Bot ${this.botInstance.name}: Skipping - no message content`);
+        return;
+      }
 
       // Get message text first to check if it's a command
       const messageText = this.extractMessageText(message.message);
       const commandPrefix = process.env.BOT_PREFIX || '.';
       const isCommand = messageText && messageText.trim().startsWith(commandPrefix);
 
-      // Log message for debugging
-      console.log(`Bot ${this.botInstance.name}: Processing message - Text: "${messageText}", FromMe: ${message.key.fromMe}, IsCommand: ${isCommand}`);
+      // Detailed logging for debugging
+      console.log(`Bot ${this.botInstance.name}: 📱 Message Analysis:`);
+      console.log(`   📝 Text: "${messageText}"`);
+      console.log(`   🔑 Prefix: "${commandPrefix}"`);
+      console.log(`   ✅ IsCommand: ${isCommand}`);
+      console.log(`   👤 FromMe: ${message.key.fromMe}`);
+      console.log(`   📍 From: ${message.key.remoteJid}`);
+      console.log(`   🔧 Message Type:`, Object.keys(message.message || {}));
 
       // Log detailed message activity
       this.logMessageActivity(message);
@@ -555,15 +582,17 @@ export class WhatsAppBot {
         lastActivity: new Date()
       });
 
-      // Handle commands (only respond to messages with the configured prefix)
+      // Handle commands (respond to ANY message with the prefix, regardless of source)
       if (isCommand) {
-        console.log(`Bot ${this.botInstance.name}: ✅ COMMAND DETECTED: "${messageText.trim()}" from ${message.key.remoteJid}`);
+        console.log(`Bot ${this.botInstance.name}: 🎯 COMMAND DETECTED: "${messageText.trim()}"`);
+        console.log(`Bot ${this.botInstance.name}: 🔧 Executing command handler...`);
 
-        // Process commands for all bots regardless of approval status
+        // Process commands for all bots regardless of approval status or message source
         await this.handleCommand(message, messageText);
+        console.log(`Bot ${this.botInstance.name}: ✅ Command handler completed`);
         return;
       } else {
-        console.log(`Bot ${this.botInstance.name}: Not a command (no prefix or empty text)`);
+        console.log(`Bot ${this.botInstance.name}: ℹ️ Not a command - no prefix "${commandPrefix}" found in: "${messageText}"`);
       }
 
       // Auto-reactions and features for non-command messages (for all bots)
@@ -1073,7 +1102,18 @@ export class WhatsAppBot {
         return;
       }
 
-      const alertMessage = `🚨 *ViewOnce Detection Alert* 🚨\n\n⚠️ **POTENTIAL VIEWONCE MESSAGE DETECTED**\n\n📱 From: ${message.key.remoteJid}\n📞 Message ID: ${message.key.id}\n⏰ Time: ${new Date().toLocaleString()}\n🔍 Status: Message received without content (likely ViewOnce)\n\n💡 **Note:** WhatsApp may have processed/encrypted the ViewOnce message before the bot could intercept it. This is common with ViewOnce messages as they are designed to be ephemeral.\n\n🛡️ Anti-ViewOnce is actively monitoring all messages.`;
+      const alertMessage = `🚨 *ViewOnce Detection Alert* 🚨
+
+⚠️ **POTENTIAL VIEWONCE MESSAGE DETECTED**
+
+📱 From: ${message.key.remoteJid}
+📞 Message ID: ${message.key.id}
+⏰ Time: ${new Date().toLocaleString()}
+🔍 Status: Message received without content (likely ViewOnce)
+
+💡 **Note:** WhatsApp may have processed/encrypted the ViewOnce message before the bot could intercept it. This is common with ViewOnce messages as they are designed to be ephemeral.
+
+🛡️ Anti-ViewOnce is actively monitoring all messages.`;
 
       await this.sock.sendMessage(botOwnerJid, { text: alertMessage });
       console.log(`🚨 [${this.botInstance.name}] ViewOnce detection alert sent to bot owner`);
