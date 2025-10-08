@@ -4,7 +4,16 @@
 
 This is a WhatsApp Bot Management application built as a full-stack web application for creating, managing, and monitoring WhatsApp bot instances. The system provides a comprehensive dashboard for controlling multiple bot instances, managing commands, and tracking activities in real-time. Each bot can be configured with automation features like auto-like, auto-react, and ChatGPT integration for intelligent responses.
 
-## Recent Changes (September 15, 2025)
+## Recent Changes (October 8, 2025)
+
+- **Server Health Tracking**: Added `lastActive` timestamp to serverRegistry that updates every 30 minutes via heartbeat system
+- **Invalid Bot Handling**: Bots with invalid credentials are automatically marked with `invalidReason` and skipped during auto-start
+- **Smart Bot Counting**: Bot capacity limits now only count active/valid bots, excluding those with invalid credentials
+- **Credential Validation Flow**: When credentials fail, bots are marked invalid with reason; updating credentials clears invalidReason and re-enables autoStart
+- **Cross-Server Registration**: Guest credential updates automatically select alternative servers when current server reaches capacity
+- **Admin Approval Intelligence**: Admin approval suggests alternative servers when current server is full, with automatic server selection
+
+## Previous Changes (September 15, 2025)
 
 - **PRODUCTION MODE ONLY**: GitHub imports to Replit now EXCLUSIVELY use production mode - no development mode option
 - **AUTOMATIC FRONTEND BUILD**: Build process automatically creates optimized static files for production deployment
