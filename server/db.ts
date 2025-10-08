@@ -316,6 +316,7 @@ export async function initializeDatabase() {
             base_url TEXT,
             shared_secret TEXT,
             description TEXT,
+            last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
@@ -341,6 +342,7 @@ export async function initializeDatabase() {
           // Update server_registry table with missing columns
           await client`ALTER TABLE server_registry ADD COLUMN IF NOT EXISTS base_url TEXT`;
           await client`ALTER TABLE server_registry ADD COLUMN IF NOT EXISTS shared_secret TEXT`;
+          await client`ALTER TABLE server_registry ADD COLUMN IF NOT EXISTS last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP`;
 
           // Update existing rows without server_name to use current server
           await client`UPDATE bot_instances SET server_name = ${serverName} WHERE server_name IS NULL`;
