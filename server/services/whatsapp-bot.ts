@@ -668,21 +668,51 @@ export class WhatsAppBot {
     console.log(`Bot ${this.botInstance.name}: 🔍 Registry lookup for "${commandName}": ${registeredCommand ? 'FOUND' : 'NOT FOUND'}`);
     
     if (registeredCommand) {
+      // Verify bot is ready to send messages
+      if (!this.sock) {
+        console.error(`Bot ${this.botInstance.name}: ❌ Cannot execute command - socket not available`);
+        return;
+      }
+      
+      if (!this.isRunning) {
+        console.error(`Bot ${this.botInstance.name}: ❌ Cannot execute command - bot not running`);
+        return;
+      }
+
       try {
         console.log(`Bot ${this.botInstance.name}: ▶️ Executing registered command: ${commandName}`);
+        console.log(`Bot ${this.botInstance.name}: 🔌 Socket state: connected=${!!this.sock.user?.id}`);
         
         const respond = async (text: string) => {
-          if (message.key.remoteJid) {
-            console.log(`Bot ${this.botInstance.name}: 💬 Attempting to send response to ${message.key.remoteJid}`);
-            try {
-              await this.sock.sendMessage(message.key.remoteJid, { text });
-              console.log(`Bot ${this.botInstance.name}: ✅ Response sent successfully`);
-            } catch (sendError) {
-              console.error(`Bot ${this.botInstance.name}: ❌ Failed to send message:`, sendError);
-              throw sendError;
-            }
-          } else {
+          if (!message.key.remoteJid) {
             console.error(`Bot ${this.botInstance.name}: ❌ No remoteJid available for response`);
+            return;
+          }
+          
+          if (!this.sock) {
+            console.error(`Bot ${this.botInstance.name}: ❌ Socket not available`);
+            return;
+          }
+          
+          if (!this.isRunning) {
+            console.error(`Bot ${this.botInstance.name}: ❌ Bot not running`);
+            return;
+          }
+
+          console.log(`Bot ${this.botInstance.name}: 💬 Attempting to send response to ${message.key.remoteJid}`);
+          console.log(`Bot ${this.botInstance.name}: 📝 Message text: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
+          
+          try {
+            const sendResult = await this.sock.sendMessage(message.key.remoteJid, { text });
+            console.log(`Bot ${this.botInstance.name}: ✅ Response sent successfully, result:`, sendResult?.status || 'unknown');
+          } catch (sendError: any) {
+            console.error(`Bot ${this.botInstance.name}: ❌ Failed to send message:`, {
+              error: sendError.message || sendError,
+              stack: sendError.stack,
+              code: sendError.code,
+              statusCode: sendError.statusCode
+            });
+            throw sendError;
           }
         };
 
@@ -1043,18 +1073,23 @@ export class WhatsAppBot {
     this.heartbeatInterval = setInterval(async () => {
       try {
         if (this.isRunning && this.sock?.user?.id) {
+          console.log(`Bot ${this.botInstance.name}: 💓 Heartbeat - connection alive, user: ${this.sock.user.id}`);
           await this.safeUpdateBotStatus('online', { lastActivity: new Date() });
 
           // Send keep-alive ping to WhatsApp to prevent connection timeout
           try {
             await this.sock.sendPresenceUpdate('available');
+            console.log(`Bot ${this.botInstance.name}: ✅ Keep-alive ping sent successfully`);
           } catch (pingError) {
-            console.log(`Bot ${this.botInstance.name}: Keep-alive ping failed, attempting reconnect...`);
+            console.error(`Bot ${this.botInstance.name}: ❌ Keep-alive ping failed:`, pingError);
+            console.log(`Bot ${this.botInstance.name}: 🔄 Attempting reconnect...`);
             // If ping fails, attempt to reconnect
             if (this.isRunning) {
               await this.restart();
             }
           }
+        } else {
+          console.warn(`Bot ${this.botInstance.name}: ⚠️ Heartbeat - bot not fully connected (running: ${this.isRunning}, user: ${!!this.sock?.user?.id})`);
         }
       } catch (error) {
         console.error(`Bot ${this.botInstance.name}: Heartbeat error:`, error);
