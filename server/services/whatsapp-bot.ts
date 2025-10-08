@@ -528,19 +528,46 @@ export class WhatsAppBot {
   private extractMessageText(messageObj: any): string {
     if (!messageObj) return '';
 
-    // Priority order: direct conversation > extendedTextMessage > other types
+    // Priority order for text extraction - most specific first
     
-    // 1. Check for direct conversation (simple text message)
+    // 1. Direct conversation (simple text message) - MOST COMMON FOR COMMANDS
     if (messageObj.conversation) {
-      return String(messageObj.conversation).trim();
+      const text = String(messageObj.conversation).trim();
+      console.log(`📝 Extracted from conversation: "${text}"`);
+      return text;
     }
 
-    // 2. Check for extended text message (most common for commands)
+    // 2. Extended text message (replies, quoted messages)
     if (messageObj.extendedTextMessage?.text) {
-      return String(messageObj.extendedTextMessage.text).trim();
+      const text = String(messageObj.extendedTextMessage.text).trim();
+      console.log(`📝 Extracted from extendedTextMessage: "${text}"`);
+      return text;
     }
 
-    // 3. Unwrap ephemeral/viewonce wrappers and retry
+    // 3. Media captions (images, videos, etc. with text)
+    const caption = messageObj.imageMessage?.caption ||
+                   messageObj.videoMessage?.caption ||
+                   messageObj.documentMessage?.caption ||
+                   messageObj.audioMessage?.caption;
+    
+    if (caption) {
+      const text = String(caption).trim();
+      console.log(`📝 Extracted from media caption: "${text}"`);
+      return text;
+    }
+
+    // 4. Interactive message responses (buttons, lists)
+    const interactive = messageObj.buttonsResponseMessage?.selectedButtonId ||
+                       messageObj.listResponseMessage?.singleSelectReply?.selectedRowId ||
+                       messageObj.templateButtonReplyMessage?.selectedId;
+    
+    if (interactive) {
+      const text = String(interactive).trim();
+      console.log(`📝 Extracted from interactive: "${text}"`);
+      return text;
+    }
+
+    // 5. Unwrap ephemeral/viewonce wrappers and retry (recursive)
     const inner = messageObj.ephemeralMessage?.message ||
                   messageObj.viewOnceMessage?.message ||
                   messageObj.viewOnceMessageV2?.message ||
@@ -548,28 +575,11 @@ export class WhatsAppBot {
                   messageObj.editedMessage?.message;
     
     if (inner && inner !== messageObj) {
-      return this.extractMessageText(inner); // Recursive call for wrapped messages
+      console.log(`🔄 Unwrapping nested message...`);
+      return this.extractMessageText(inner);
     }
 
-    // 4. Check for media captions
-    const caption = messageObj.imageMessage?.caption ||
-                   messageObj.videoMessage?.caption ||
-                   messageObj.documentMessage?.caption ||
-                   messageObj.audioMessage?.caption;
-    
-    if (caption) {
-      return String(caption).trim();
-    }
-
-    // 5. Check for interactive message responses
-    const interactive = messageObj.buttonsResponseMessage?.selectedButtonId ||
-                       messageObj.listResponseMessage?.singleSelectReply?.selectedRowId ||
-                       messageObj.templateButtonReplyMessage?.selectedId;
-    
-    if (interactive) {
-      return String(interactive).trim();
-    }
-
+    console.log(`⚠️ No text found in message structure`);
     return '';
   }
 
@@ -583,13 +593,21 @@ export class WhatsAppBot {
       // Get message text - extract directly from the message object
       const messageText = this.extractMessageText(message.message);
       
-      console.log(`Bot ${this.botInstance.name}: 📝 Extracted text: "${messageText}" from ${message.key.remoteJid}`);
+      if (!messageText || messageText.length === 0) {
+        console.log(`Bot ${this.botInstance.name}: ⚠️ No text content in message from ${message.key.remoteJid}`);
+      } else {
+        console.log(`Bot ${this.botInstance.name}: 📝 Message text: "${messageText.substring(0, 50)}${messageText.length > 50 ? '...' : ''}"`);
+      }
       
       const commandPrefix = process.env.BOT_PREFIX || '.';
       const trimmedText = messageText.trim();
-      const isCommand = trimmedText.length > 0 && trimmedText.startsWith(commandPrefix);
+      const startsWithPrefix = trimmedText.startsWith(commandPrefix);
+      const isCommand = trimmedText.length > 0 && startsWithPrefix;
 
-      console.log(`Bot ${this.botInstance.name}: 🔍 Command check: text="${trimmedText}", prefix="${commandPrefix}", isCommand=${isCommand}`);
+      if (trimmedText.length > 0) {
+        console.log(`Bot ${this.botInstance.name}: 🔍 Prefix check: "${trimmedText.charAt(0)}" === "${commandPrefix}" ? ${startsWithPrefix}`);
+        console.log(`Bot ${this.botInstance.name}: 🎯 IS COMMAND: ${isCommand ? 'YES ✅' : 'NO ❌'}`);
+      }
 
       // Always update message count for any message
       await storage.updateBotInstance(this.botInstance.id, {
