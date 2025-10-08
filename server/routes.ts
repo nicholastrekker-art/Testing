@@ -4124,11 +4124,21 @@ Thank you for using TREKKER-MD! 🚀
       // Save credentials when they update
       sock.ev.on('creds.update', saveCreds);
       
-      // Wait for connection to open (authentication complete)
-      const connectionPromise = new Promise((resolve, reject) => {
+      // Wait for both connection AND credentials to be ready
+      const authPromise = new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
-          reject(new Error('Connection timeout - pairing code not entered or authentication failed'));
+          reject(new Error('Authentication timeout - pairing code not entered within 60 seconds'));
         }, 60000); // 60 second timeout
+        
+        let connectionOpen = false;
+        let credsSaved = false;
+        
+        const checkComplete = () => {
+          if (connectionOpen && credsSaved) {
+            clearTimeout(timeout);
+            resolve(true);
+          }
+        };
         
         sock.ev.on('connection.update', (update: any) => {
           const { connection, lastDisconnect } = update;
@@ -4136,35 +4146,59 @@ Thank you for using TREKKER-MD! 🚀
           console.log(`🔄 Connection update: ${connection}`);
           
           if (connection === 'open') {
-            console.log(`✅ WhatsApp connection opened successfully`);
-            clearTimeout(timeout);
-            resolve(true);
+            console.log(`✅ WhatsApp connection opened - waiting for credentials to save...`);
+            connectionOpen = true;
+            checkComplete();
           } else if (connection === 'close') {
             clearTimeout(timeout);
             const error = lastDisconnect?.error;
             reject(new Error(`Connection closed: ${error?.message || 'Unknown error'}`));
           }
         });
+        
+        sock.ev.on('creds.update', async () => {
+          console.log(`🔐 Credentials updated - saving to disk...`);
+          await saveCreds();
+          credsSaved = true;
+          checkComplete();
+        });
       });
       
-      // Wait for connection to complete
-      await connectionPromise;
+      // Wait for authentication to complete
+      await authPromise;
       
-      // Wait 5 seconds to ensure credentials are fully saved (like pair.js)
-      console.log(`⏳ Waiting 5 seconds to ensure credentials are fully saved...`);
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      // Additional wait to ensure file system sync
+      console.log(`⏳ Waiting for file system to sync credentials...`);
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Now read the credentials
+      // Read credentials with retry logic
       const credsPath = join(tempAuthDir, 'creds.json');
       
-      if (!existsSync(credsPath)) {
-        throw new Error('Credentials file not found after connection');
+      let credentialsData: string | null = null;
+      let retries = 0;
+      const maxRetries = 5;
+      
+      while (!credentialsData && retries < maxRetries) {
+        if (existsSync(credsPath)) {
+          try {
+            credentialsData = readFileSync(credsPath, 'utf-8');
+            console.log(`📄 Successfully read credentials from: ${credsPath}`);
+          } catch (readError) {
+            console.log(`⚠️ Retry ${retries + 1}/${maxRetries}: Error reading credentials file`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            retries++;
+          }
+        } else {
+          console.log(`⚠️ Retry ${retries + 1}/${maxRetries}: Credentials file not found, waiting...`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          retries++;
+        }
       }
       
-      console.log(`📄 Reading credentials from: ${credsPath}`);
+      if (!credentialsData) {
+        throw new Error('Failed to read credentials file after authentication');
+      }
       
-      // Read credentials
-      const credentialsData = readFileSync(credsPath, 'utf-8');
       const credentials = JSON.parse(credentialsData);
       
       // Verify credentials are complete
