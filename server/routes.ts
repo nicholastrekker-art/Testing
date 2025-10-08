@@ -4008,7 +4008,10 @@ Thank you for using TREKKER-MD! 🚀
       }
       (global as any).pairingSessions.set(sessionId, pairingSession);
 
-      // Set up connection.update event handler BEFORE requesting pairing code
+      // Listen for credential updates FIRST
+      sock.ev.on('creds.update', saveCreds);
+
+      // Set up connection.update event handler
       sock.ev.on('connection.update', async (update: any) => {
         const { connection, lastDisconnect } = update;
 
@@ -4152,18 +4155,20 @@ Your bot credentials have been generated.
         }
       });
 
-      // Listen for credential updates
-      sock.ev.on('creds.update', saveCreds);
-
-      // Request pairing code if not registered (AFTER event handlers are set up)
+      // Request pairing code - check if already registered first
       let pairingCode: string | null = null;
 
       if (!sock.authState.creds.registered) {
-        // Wait a bit for socket to initialize
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log(`📱 Requesting pairing code for ${cleanedPhone}...`);
         pairingCode = await sock.requestPairingCode(cleanedPhone);
         console.log(`✅ Pairing code generated: ${pairingCode}`);
         pairingSession.pairingCode = pairingCode;
+      } else {
+        console.log(`⚠️ Number ${cleanedPhone} is already registered`);
+        return res.status(400).json({
+          success: false,
+          message: "This number is already registered. Please use a different number."
+        });
       }
 
       if (!pairingCode) {
