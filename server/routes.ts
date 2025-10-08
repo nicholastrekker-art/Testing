@@ -3985,7 +3985,14 @@ Thank you for using TREKKER-MD! 🚀
       sock = makeWASocket({
         auth: state,
         printQRInTerminal: false, // Must be false for pairing code
-        logger: logger
+        logger: logger,
+        browser: ['Chrome (Linux)', '', ''],
+        connectTimeoutMs: 60000,
+        defaultQueryTimeoutMs: undefined,
+        keepAliveIntervalMs: 30000,
+        generateHighQualityLinkPreview: true,
+        syncFullHistory: false,
+        markOnlineOnConnect: false
       });
 
       // Store session for background authentication
@@ -3999,7 +4006,8 @@ Thank you for using TREKKER-MD! 🚀
         status: 'waiting' as 'waiting' | 'authenticated' | 'failed',
         credentials: null as any,
         userJid: null as string | null,
-        authTimeout: null as any
+        authTimeout: null as any,
+        connectionReady: false
       };
 
       // Store in memory (in production, use Redis or similar)
@@ -4016,6 +4024,11 @@ Thank you for using TREKKER-MD! 🚀
         const { connection, lastDisconnect } = update;
 
         console.log(`🔄 Connection update for session ${sessionId}: ${connection}`);
+
+        if (connection === 'connecting') {
+          console.log(`🔗 Session ${sessionId} is connecting to WhatsApp...`);
+          pairingSession.connectionReady = true;
+        }
 
         if (connection === 'open') {
           console.log(`✅ WhatsApp connection opened for session ${sessionId}!`);
@@ -4137,15 +4150,44 @@ Your bot credentials have been generated.
         }
       });
 
-      // Request pairing code AFTER event handlers are set up
+      // Wait for connection to be ready before requesting pairing code
+      console.log(`⏳ Waiting for connection to be ready for session ${sessionId}...`);
+      
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Connection timeout - failed to establish connection within 30 seconds'));
+        }, 30000);
+
+        const checkConnection = setInterval(() => {
+          if (pairingSession.connectionReady || sock.authState?.creds?.registered !== undefined) {
+            clearTimeout(timeout);
+            clearInterval(checkConnection);
+            resolve();
+          }
+        }, 500);
+      });
+
+      console.log(`✅ Connection ready for session ${sessionId}`);
+
+      // Request pairing code AFTER connection is established
       let pairingCode: string | null = null;
 
       if (!sock.authState.creds.registered) {
+        console.log(`📱 Requesting pairing code for ${cleanedPhone}...`);
         pairingCode = await sock.requestPairingCode(cleanedPhone);
         console.log(`✅ Pairing code generated: ${pairingCode}`);
         pairingSession.pairingCode = pairingCode;
       } else {
         console.log(`⚠️ Number ${cleanedPhone} is already registered`);
+        
+        // Clean up
+        if (sock) {
+          try {
+            sock.ev.removeAllListeners();
+            sock.end();
+          } catch (err) {}
+        }
+        
         return res.status(400).json({
           success: false,
           message: "This number is already registered. Please use a different number."
@@ -4153,6 +4195,14 @@ Your bot credentials have been generated.
       }
 
       if (!pairingCode) {
+        // Clean up
+        if (sock) {
+          try {
+            sock.ev.removeAllListeners();
+            sock.end();
+          } catch (err) {}
+        }
+        
         return res.status(400).json({
           message: "Failed to generate pairing code. Number may already be registered."
         });
