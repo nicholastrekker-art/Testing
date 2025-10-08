@@ -102,17 +102,36 @@ export class WhatsAppBot {
 
       if (connection === 'close') {
         const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
+        const disconnectReason = (lastDisconnect?.error as Boom)?.output?.statusCode;
         console.log(`Bot ${this.botInstance.name}: Connection closed due to`, lastDisconnect?.error, ', reconnecting:', shouldReconnect);
 
         this.isRunning = false;
         this.stopPresenceAutoSwitch(); // Stop presence auto-switch when disconnected
-        await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
-        await storage.createActivity({
-          serverName: this.botInstance.serverName,
-          botInstanceId: this.botInstance.id,
-          type: 'status_change',
-          description: 'Bot disconnected'
-        });
+        
+        // If logged out (invalid credentials), mark bot as invalid
+        if (disconnectReason === DisconnectReason.loggedOut) {
+          const invalidReason = 'Invalid credentials or connection closed - credentials may have expired';
+          await storage.updateBotInstance(this.botInstance.id, { 
+            status: 'offline',
+            invalidReason,
+            autoStart: false // Disable auto-start for invalid bots
+          });
+          await storage.createActivity({
+            serverName: this.botInstance.serverName,
+            botInstanceId: this.botInstance.id,
+            type: 'error',
+            description: `Bot credentials invalid: ${invalidReason}`
+          });
+          console.log(`❌ Bot ${this.botInstance.name} marked as invalid due to logged out status`);
+        } else {
+          await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
+          await storage.createActivity({
+            serverName: this.botInstance.serverName,
+            botInstanceId: this.botInstance.id,
+            type: 'status_change',
+            description: 'Bot disconnected'
+          });
+        }
 
         if (shouldReconnect) {
           // Auto-reconnect with exponential backoff to prevent crash loops

@@ -22,6 +22,7 @@ export const serverRegistry = pgTable("server_registry", {
   baseUrl: text("base_url"), // Base URL for API communication between servers
   sharedSecret: text("shared_secret"), // Secret for JWT authentication between servers
   description: text("description"), // Optional description of this server
+  lastActive: timestamp("last_active").default(sql`CURRENT_TIMESTAMP`), // Server heartbeat timestamp
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });

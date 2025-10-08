@@ -73,6 +73,22 @@ async function startScheduledBotMonitoring() {
   // Schedule checks every 30 seconds (reduced from 3 minutes for faster recovery)
   setInterval(checkApprovedBots, 30000);
 
+    // Server heartbeat - update lastActive every 30 minutes
+    const updateServerHeartbeat = async () => {
+      try {
+        await storage.updateServerHeartbeat();
+        console.log('💓 Server heartbeat updated');
+      } catch (error) {
+        console.error('❌ Failed to update server heartbeat:', error);
+      }
+    };
+
+    // Initial heartbeat update after 1 minute
+    setTimeout(updateServerHeartbeat, 60000);
+
+    // Schedule heartbeat updates every 30 minutes (1800000ms)
+    setInterval(updateServerHeartbeat, 1800000);
+
   } catch (error) {
     console.error('❌ Failed to start scheduled bot monitoring:', error);
   }

@@ -136,6 +136,8 @@ export interface IStorage {
   getAvailableServers(): Promise<ServerRegistry[]>;
   initializeCurrentServer(): Promise<void>;
   strictCheckBotCountLimit(serverName?: string): Promise<{ canAdd: boolean; currentCount: number; maxCount: number; }>;
+  updateServerHeartbeat(serverName?: string): Promise<void>;
+  getServersWithAvailableSlots(): Promise<ServerRegistry[]>;
 
   // Enhanced credential management methods
   getBotInstancesForAutoStart(): Promise<BotInstance[]>;
@@ -917,16 +919,17 @@ export class DatabaseStorage implements IStorage {
   async strictCheckBotCountLimit(serverName?: string): Promise<{ canAdd: boolean; currentCount: number; maxCount: number; }> {
     const targetServer = serverName || getServerName();
 
-    // Get actual bot count from database
-    const actualBots = await this.getBotInstancesForServer(targetServer);
-    const currentCount = actualBots.length;
+    // Get actual bot count from database - only count bots without invalidReason (active bots)
+    const allBots = await this.getBotInstancesForServer(targetServer);
+    const activeBots = allBots.filter(bot => !bot.invalidReason || bot.invalidReason === null || bot.invalidReason === '');
+    const currentCount = activeBots.length;
 
     // Get max count from server registry or fallback to environment variable
     let maxCount = getMaxBotCount(); // Default fallback
     const serverInfo = await this.getServerByName(targetServer);
     if (serverInfo) {
       maxCount = serverInfo.maxBotCount;
-      // Update the current count in registry to keep it in sync
+      // Update the current count in registry to keep it in sync (use active bot count only)
       await this.updateServerBotCount(targetServer, currentCount);
     }
 
@@ -939,17 +942,53 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  // Update server heartbeat (last active timestamp)
+  async updateServerHeartbeat(serverName?: string): Promise<void> {
+    const targetServer = serverName || getServerName();
+    await db
+      .update(serverRegistry)
+      .set({
+        lastActive: sql`CURRENT_TIMESTAMP`
+      })
+      .where(eq(serverRegistry.serverName, targetServer));
+  }
+
+  // Get servers with available slots for bot registration
+  async getServersWithAvailableSlots(): Promise<ServerRegistry[]> {
+    // Get all servers, then filter by counting only active bots
+    const allServers = await db
+      .select()
+      .from(serverRegistry)
+      .where(eq(serverRegistry.serverStatus, 'active'))
+      .orderBy(serverRegistry.serverName);
+
+    const serversWithSlots: ServerRegistry[] = [];
+    
+    for (const server of allServers) {
+      const allBots = await this.getBotInstancesForServer(server.serverName);
+      const activeBots = allBots.filter(bot => !bot.invalidReason || bot.invalidReason === null || bot.invalidReason === '');
+      
+      if (activeBots.length < server.maxBotCount) {
+        serversWithSlots.push(server);
+      }
+    }
+
+    return serversWithSlots;
+  }
+
   // Enhanced credential management methods
   async getBotInstancesForAutoStart(): Promise<BotInstance[]> {
     const serverName = getServerName();
-    return await db.select().from(botInstances).where(
+    const bots = await db.select().from(botInstances).where(
       and(
         eq(botInstances.serverName, serverName),
         eq(botInstances.approvalStatus, 'approved'),
-        eq(botInstances.autoStart, true),
-        eq(botInstances.credentialVerified, true)
+        eq(botInstances.autoStart, true)
       )
     ).orderBy(desc(botInstances.createdAt));
+    
+    // Filter out bots with invalidReason (these should not auto-start)
+    return bots.filter(bot => !bot.invalidReason || bot.invalidReason === null || bot.invalidReason === '');
   }
 
   async analyzeInactiveBots(): Promise<void> {
