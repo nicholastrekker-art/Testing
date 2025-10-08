@@ -1,0 +1,176 @@
+{
+  "A51DDBF813C10DC9A9B0820033852050": {
+    "id": "A51DDBF813C10DC9A9B0820033852050",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "254704897825@s.whatsapp.net",
+    "content": ". ping",
+    "type": "unknown",
+    "timestamp": 1759936740575,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "remoteJidAlt": "7198767878239@lid",
+        "fromMe": false,
+        "id": "A51DDBF813C10DC9A9B0820033852050",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1759933158,
+      "pushName": "Trekker inc",
+      "broadcast": false,
+      "message": {
+        "conversation": ". ping",
+        "messageContextInfo": {
+          "deviceListMetadata": {
+            "senderKeyIndexes": [],
+            "recipientKeyIndexes": [],
+            "senderKeyHash": {
+              "type": "Buffer",
+              "data": [
+                192,
+                168,
+                106,
+                74,
+                201,
+                101,
+                86,
+                251,
+                242,
+                202
+              ]
+            },
+            "senderTimestamp": {
+              "low": 1759851419,
+              "high": 0,
+              "unsigned": true
+            },
+            "recipientKeyHash": {
+              "type": "Buffer",
+              "data": [
+                76,
+                102,
+                126,
+                37,
+                22,
+                223,
+                225,
+                223,
+                150,
+                131
+              ]
+            },
+            "recipientTimestamp": {
+              "low": 1759928475,
+              "high": 0,
+              "unsigned": true
+            }
+          },
+          "deviceListMetadataVersion": 2,
+          "messageSecret": {
+            "type": "Buffer",
+            "data": [
+              127,
+              245,
+              172,
+              57,
+              164,
+              103,
+              200,
+              209,
+              144,
+              1,
+              95,
+              97,
+              232,
+              145,
+              228,
+              34,
+              41,
+              66,
+              105,
+              104,
+              48,
+              169,
+              196,
+              208,
+              63,
+              22,
+              14,
+              133,
+              183,
+              204,
+              148,
+              195
+            ]
+          }
+        }
+      },
+      "verifiedBizName": "Trekker inc",
+      "status": 4
+    }
+  },
+  "3EB07420435D138DE4C27B": {
+    "id": "3EB07420435D138DE4C27B",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🏃‍♂️ *TREKKER-MD LIFETIME BOT*\n\n⚡ *Speed:* 0ms\n🤖 *Status:* Online\n💚 *Health:* Perfect\n\n> Ultra fast response from TREKKER-MD",
+    "type": "extendedTextMessage",
+    "timestamp": 1759936741837,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB07420435D138DE4C27B"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "🏃‍♂️ *TREKKER-MD LIFETIME BOT*\n\n⚡ *Speed:* 0ms\n🤖 *Status:* Online\n💚 *Health:* Perfect\n\n> Ultra fast response from TREKKER-MD"
+        }
+      },
+      "messageTimestamp": 1759936741,
+      "status": 1
+    }
+  },
+  "3EB0B03AAD06A2CF569214": {
+    "id": "3EB0B03AAD06A2CF569214",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Test bot \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
+    "type": "extendedTextMessage",
+    "timestamp": 1759936742082,
+    "originalMessage": {
+      "messageStubParameters": [],
+      "labels": [],
+      "userReceipt": [],
+      "reactions": [],
+      "pollUpdates": [],
+      "eventResponses": [],
+      "statusMentions": [],
+      "messageAddOns": [],
+      "statusMentionSources": [],
+      "supportAiCitations": [],
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0B03AAD06A2CF569214"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Test bot \" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
+        }
+      },
+      "messageTimestamp": 1759936712,
+      "status": 1
+    }
+  }
+}
