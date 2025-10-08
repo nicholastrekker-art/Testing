@@ -15,27 +15,30 @@ commandRegistry.register({
     const { respond } = context;
 
     const ownerMessage = `
-*✅sᴇssɪᴏɴ ɪᴅ ɢᴇɴᴇʀᴀᴛᴇᴅ✅*
-______________________________
-╔════◇
-║『 𝐘𝐎𝐔'𝐕𝐄 𝐂𝐇𝐎𝐒𝐄𝐍 TREKKER-MD LIFETIME BOT  』
-╚══════════════╝
-╔═════◇
-║ 『••• 𝗩𝗶𝘀𝗶𝘁 𝗙𝗼𝗿 𝗛𝗲𝗹𝗽 •••』
-║❒ TELEGRAM: https://t.me/trekkermd_
-║❒ INSTAGRAM: https://www.instagram.com/nicholaso_tesla?igsh=eG5oNWVuNXF6eGU0
-║📞 WhatsApp: +254704897825
-║❒ PairSite: https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/
-║❒ 𝐖a𝐂𝐡𝐚𝐧𝐧𝐞𝐥: https://whatsapp.com/channel/0029Vb6vpSv6WaKiG6ZIy73H
-║ 💜💜💜
-╚══════════════╝ 
- DM the owner only for lifetime TREKKER-MD bot __No expiry__
-______________________________
+╔════════════════════════════╗
+║  📱 TREKKER-MD LIFETIME BOT  ║
+╚════════════════════════════╝
 
-Use the Quoted Session ID to Deploy your Bot.
-❤️Support us donations keeps this services running❤️
+╔═════ 📞 Contact Info ═════╗
+║
+║ 📱 TELEGRAM:
+║    https://t.me/trekkermd_
+║
+║ 📸 INSTAGRAM:
+║    https://www.instagram.com/nicholaso_tesla
+║
+║ 💬 WhatsApp:
+║    +254704897825
+║
+║ 📢 CHANNEL:
+║    https://whatsapp.com/channel/0029Vb6vpSv6WaKiG6ZIy73H
+║
+╚═══════════════════════════╝
 
-Powered by TREKKER-MD....ultra fast bot.`;
+💜 DM for lifetime TREKKER-MD bot (No expiry)
+
+> Powered by TREKKER-MD
+`;
 
     await respond(ownerMessage);
   }
@@ -193,7 +196,7 @@ commandRegistry.register({
     try {
       // Get the bot ID from the context
       const currentBotId = botId || 'default';
-      
+
       // Import antiviewonce service
       const { getAntiViewOnceService } = await import('./antiviewonce.js');
       const antiViewOnceService = getAntiViewOnceService(currentBotId);
