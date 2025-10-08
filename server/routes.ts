@@ -3297,6 +3297,7 @@ Thank you for using TREKKER-MD! 🚀
           chatgptEnabled: updatedBot?.chatgptEnabled || false,
           alwaysOnline: updatedBot?.alwaysOnline || false,
           typingIndicator: updatedBot?.typingMode !== 'none',
+          autoRecording: updatedBot?.presenceMode === 'recording',
           presenceAutoSwitch: updatedBot?.presenceAutoSwitch || false
         }
       });
@@ -3934,320 +3935,443 @@ Thank you for using TREKKER-MD! 🚀
 
   // ======= WHATSAPP PAIRING CODE ENDPOINTS =======
 
-  // Generate WhatsApp Pairing Code and Wait for Authentication (Complete Flow like pair.js)
-  app.post("/api/whatsapp/generate-pairing-code", async (req, res) => {
-    let sock: any = null;
-    let tempAuthDir: string | null = null;
+  // Local session storage instead of MongoDB
+  const sessionStorage = new Map();
+
+  // Helper function to generate unique ID
+  function giftedId() {
+    return crypto.randomBytes(16).toString('hex');
+  }
+
+  // Helper function to remove directory
+  async function removeFile(dirPath: string) {
+    if (fs.existsSync(dirPath)) {
+      fs.rmSync(dirPath, { recursive: true, force: true });
+    }
+  }
+
+  // Save session locally
+  async function saveSessionLocally(id: string, Gifted: any) {
+    const authPath = path.join(__dirname, 'temp', id, 'creds.json');
+    let credsId = null;
 
     try {
-      const { phoneNumber, selectedServer } = req.body;
+      console.log(`=== LOCAL SESSION SAVE FUNCTION START ===`);
+      console.log(`Temp ID: ${id}`);
+      console.log(`Auth path: ${authPath}`);
 
-      if (!phoneNumber) {
-        return res.status(400).json({ message: "Phone number is required" });
-      }
-
-      if (!selectedServer) {
-        return res.status(400).json({ message: "Server selection is required" });
-      }
-
-      // Clean phone number - remove +, spaces, dashes
-      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-
-      // Validate phone number format (10-15 digits)
-      if (!/^\d{10,15}$/.test(cleanedPhone)) {
-        return res.status(400).json({
-          message: "Invalid phone number format. Please enter a valid phone number with country code."
-        });
-      }
-
-      console.log(`📱 Starting pairing for phone: ${cleanedPhone} on server: ${selectedServer}`);
-
-      // Import Baileys and file system modules
-      const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = await import('@whiskeysockets/baileys');
-      const { join } = await import('path');
-      const { mkdirSync, existsSync, readFileSync, writeFileSync, rmSync } = await import('fs');
-      const pino = (await import('pino')).default;
-
-      // Create temporary auth directory for this pairing session
-      const sessionId = crypto.randomBytes(16).toString('hex');
-      tempAuthDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
-
-      if (!existsSync(tempAuthDir)) {
-        mkdirSync(tempAuthDir, { recursive: true });
-      }
-
-      // Setup multi-file auth state
-      const { state, saveCreds } = await useMultiFileAuthState(tempAuthDir);
-
-      // Create silent logger
-      const logger = pino({ level: "fatal" }).child({ level: "fatal" });
-
-      // Create WhatsApp socket - IMPORTANT: printQRInTerminal must be false for pairing code
-      sock = makeWASocket({
-        auth: state,
-        printQRInTerminal: false, // Must be false for pairing code
-        logger: logger,
-        browser: ['Chrome (Linux)', '', ''],
-        connectTimeoutMs: 60000,
-        defaultQueryTimeoutMs: undefined,
-        keepAliveIntervalMs: 30000,
-        generateHighQualityLinkPreview: true,
-        syncFullHistory: false,
-        markOnlineOnConnect: false
+      // Send status update to user
+      await Gifted.sendMessage(Gifted.user.id, { 
+        text: '🔄 Processing session credentials...' 
       });
 
-      // Store session for background authentication
-      const pairingSession = {
-        sessionId,
-        phoneNumber: cleanedPhone,
-        selectedServer,
-        pairingCode: null as string | null,
-        tempAuthDir,
-        sock,
-        status: 'waiting' as 'waiting' | 'authenticated' | 'failed',
-        credentials: null as any,
-        userJid: null as string | null,
-        authTimeout: null as any,
-        connectionReady: false
-      };
-
-      // Store in memory (in production, use Redis or similar)
-      if (!(global as any).pairingSessions) {
-        (global as any).pairingSessions = new Map();
+      // Verify creds file exists
+      if (!fs.existsSync(authPath)) {
+        console.error(`❌ File does not exist at: ${authPath}`);
+        await Gifted.sendMessage(Gifted.user.id, { 
+          text: '❌ Credentials file not found. Please try pairing again.' 
+        });
+        throw new Error(`Credentials file not found at: ${authPath}`);
       }
-      (global as any).pairingSessions.set(sessionId, pairingSession);
 
-      // Set up creds.update listener FIRST (before any other events)
-      sock.ev.on('creds.update', saveCreds);
+      console.log(`✅ File exists at: ${authPath}`);
+      await Gifted.sendMessage(Gifted.user.id, { 
+        text: '✅ Credentials file found. Validating...' 
+      });
 
-      // Set up connection.update event handler
-      sock.ev.on('connection.update', async (update: any) => {
-        const { connection, lastDisconnect } = update;
+      // Parse credentials data
+      let credsData;
+      try {
+        const rawData = fs.readFileSync(authPath, 'utf8');
+        console.log(`Raw file content length: ${rawData.length}`);
+        credsData = JSON.parse(rawData);
+        console.log(`✅ JSON parsed successfully`);
+      } catch (parseError) {
+        console.error(`❌ Parse error: ${parseError.message}`);
+        await Gifted.sendMessage(Gifted.user.id, { 
+          text: '❌ Invalid credentials format. Please try pairing again.' 
+        });
+        throw new Error(`Failed to parse credentials file: ${parseError.message}`);
+      }
 
-        console.log(`🔄 Connection update for session ${sessionId}: ${connection}`);
+      // Validate credentials data
+      if (!credsData || typeof credsData !== 'object') {
+        console.error(`❌ Invalid creds data type: ${typeof credsData}`);
+        await Gifted.sendMessage(Gifted.user.id, { 
+          text: '❌ Invalid credentials data. Please try again.' 
+        });
+        throw new Error('Invalid credentials data format');
+      }
 
-        if (connection === 'connecting') {
-          console.log(`🔗 Session ${sessionId} is connecting to WhatsApp...`);
-          pairingSession.connectionReady = true;
+      console.log(`✅ Credentials data validated`);
+      await Gifted.sendMessage(Gifted.user.id, { 
+        text: '✅ Credentials validated. Generating session ID...' 
+      });
+
+      // Convert entire creds.json to Base64
+      const credsBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
+      credsId = credsBase64; // Use the Base64 encoded creds as session ID
+      console.log(`✅ Generated Base64 session ID: ${credsId.substring(0, 50)}...`);
+
+      // Save to local storage instead of MongoDB
+      const now = new Date();
+      sessionStorage.set(credsId, {
+        sessionId: credsId,
+        credsData: credsBase64,
+        createdAt: now,
+        updatedAt: now
+      });
+
+      console.log(`✅ Session saved locally: ${credsId.substring(0, 50)}...`);
+      await Gifted.sendMessage(Gifted.user.id, { 
+        text: '✅ Session ID generated successfully!' 
+      });
+
+      return credsId;
+
+    } catch (error) {
+      console.error('Error in saveSessionLocally:', {
+        sessionId: credsId,
+        tempId: id,
+        error: error.message,
+        stack: error.stack
+      });
+
+      // Send error notification to user
+      try {
+        await Gifted.sendMessage(Gifted.user.id, { 
+          text: '❌ Credential encoding failed. Please try again.' 
+        });
+      } catch (msgError) {
+        console.error('Failed to send error message:', msgError.message);
+      }
+
+      return null;
+    } finally {
+      // Clean up temp directory regardless of success/failure
+      try {
+        const tempDir = path.join(__dirname, 'temp', id);
+        if (fs.existsSync(tempDir)) {
+          await removeFile(tempDir);
+          console.log(`Cleaned up temp directory: ${tempDir}`);
         }
+      } catch (cleanupError) {
+        console.warn('Error cleaning up temp directory:', cleanupError.message);
+      }
+    }
+  }
 
-        if (connection === 'open') {
-          console.log(`✅ WhatsApp connection opened for session ${sessionId}!`);
-          console.log(`🎉 User successfully entered pairing code in WhatsApp client!`);
+  // Generate WhatsApp Pairing Code endpoint
+  app.get('/api/whatsapp/pairing-code', async (req, res) => {
+    const id = giftedId(); 
+    let num = req.query.number as string;
 
-          // Clear timeout on successful authentication
-          if (pairingSession.authTimeout) {
-            clearTimeout(pairingSession.authTimeout);
-            console.log(`⏰ Cleared authentication timeout for session ${sessionId}`);
-          }
+    if (!num) {
+      return res.status(400).send({ error: "Phone number is required" });
+    }
 
-          pairingSession.status = 'authenticated';
+    async function GIFTED_PAIR_CODE() {
+      const authDir = path.join(__dirname, 'temp', id);
+      let Gifted: any = null;
 
-          // Wait for credentials to be fully updated (important!)
-          console.log(`⏳ Waiting for credentials to be saved...`);
-          await new Promise(resolve => setTimeout(resolve, 3000));
+      // Set up 4-minute forced cleanup timer
+      const forceCleanupTimer = setTimeout(async () => {
+        console.log(`⏰ 4-minute timeout reached for session: ${id} - Forcing complete cleanup`);
 
-          // Get credentials
-          const creds = sock.authState.creds;
-          pairingSession.credentials = creds;
-
-          // Get user JID
-          pairingSession.userJid = sock.user?.id || null;
-
-          console.log(`✅ Authentication successful for session ${sessionId}`);
-          console.log(`👤 User JID: ${pairingSession.userJid}`);
-          console.log(`📦 Credentials captured and ready for download`);
-
-          // Wait another moment to ensure everything is settled
-          await new Promise(resolve => setTimeout(resolve, 2000));
-
-          // Close connection gracefully after getting credentials
-          if (sock) {
+        try {
+          // Close WhatsApp connection properly
+          if (Gifted) {
             try {
-              console.log(`🔌 Closing WhatsApp connection for session ${sessionId}...`);
-              sock.ev.removeAllListeners();
-              await sock.end();
-              console.log(`✅ Connection closed successfully for session ${sessionId}`);
-            } catch (err) {
-              console.error(`⚠️ Error closing socket for session ${sessionId}:`, err);
+              // Remove all event listeners first
+              if (Gifted.ev) {
+                Gifted.ev.removeAllListeners();
+                console.log('🧹 Forced cleanup: Event listeners removed');
+              }
+
+              // Close WebSocket connection
+              if (Gifted.ws && Gifted.ws.readyState === 1) {
+                await Gifted.ws.close();
+                console.log('🧹 Forced cleanup: WhatsApp connection closed');
+              }
+
+              // Clear authentication state
+              if (Gifted.authState) {
+                Gifted.authState = null;
+                console.log('🧹 Forced cleanup: Auth state cleared');
+              }
+            } catch (connectionError) {
+              console.warn('Warning during connection cleanup:', connectionError.message);
             }
           }
-        } else if (connection === 'close') {
-          const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
-          const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
-          console.log(`❌ Connection closed for session ${sessionId}, status: ${statusCode}`);
+          // Clear session storage
+          sessionStorage.clear();
+          console.log('🧹 Forced cleanup: SessionStorage cleared');
 
-          if (!shouldReconnect) {
-            clearTimeout(pairingSession.authTimeout);
-            pairingSession.status = 'failed';
+          // Remove temp directory
+          if (fs.existsSync(authDir)) {
+            await removeFile(authDir);
+            console.log('🧹 Forced cleanup: Temp directory removed');
           }
+
+          console.log(`🎯 4-minute forced cleanup completed for session: ${id} - System reset to default state`);
+
+        } catch (cleanupError) {
+          console.error('❌ Error during 4-minute forced cleanup:', cleanupError.message);
         }
-      });
+      }, 4 * 60 * 1000); // 4 minutes
 
-      // Wait for connection to be ready before requesting pairing code
-      console.log(`⏳ Waiting for connection to be ready for session ${sessionId}...`);
+      try {
+        const {
+          default: Gifted_Tech,
+          useMultiFileAuthState,
+          delay,
+          makeCacheableSignalKeyStore,
+          Browsers
+        } = await import("@whiskeysockets/baileys");
+        const pino = (await import("pino")).default;
 
-      await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          reject(new Error('Connection timeout - failed to establish connection within 30 seconds'));
-        }, 30000);
-
-        const checkConnection = setInterval(() => {
-          if (pairingSession.connectionReady || sock.authState?.creds?.registered !== undefined) {
-            clearTimeout(timeout);
-            clearInterval(checkConnection);
-            resolve();
-          }
-        }, 500);
-      });
-
-      console.log(`✅ Connection ready for session ${sessionId}`);
-
-      // Request pairing code AFTER connection is established
-      let pairingCode: string | null = null;
-
-      if (!sock.authState.creds.registered) {
-        console.log(`📱 Requesting pairing code for ${cleanedPhone}...`);
-        pairingCode = await sock.requestPairingCode(cleanedPhone);
-        console.log(`✅ Pairing code generated: ${pairingCode}`);
-        pairingSession.pairingCode = pairingCode;
-      } else {
-        console.log(`⚠️ Number ${cleanedPhone} is already registered`);
-
-        // Clean up
-        if (sock) {
-          try {
-            sock.ev.removeAllListeners();
-            sock.end();
-          } catch (err) {}
+        if (!fs.existsSync(authDir)) {
+          fs.mkdirSync(authDir, { recursive: true });
         }
 
-        return res.status(400).json({
-          success: false,
-          message: "This number is already registered. Please use a different number."
-        });
-      }
+        const { state, saveCreds } = await useMultiFileAuthState(authDir);
 
-      if (!pairingCode) {
-        // Clean up
-        if (sock) {
-          try {
-            sock.ev.removeAllListeners();
-            sock.end();
-          } catch (err) {}
-        }
-
-        return res.status(400).json({
-          message: "Failed to generate pairing code. Number may already be registered."
-        });
-      }
-
-      // Set authentication timeout (5 minutes - increased for reliability)
-      pairingSession.authTimeout = setTimeout(async () => {
-        console.log(`⏰ Authentication timeout for session ${sessionId}`);
-
-        // Only mark as failed if still waiting (not already authenticated)
-        if (pairingSession.status === 'waiting') {
-          pairingSession.status = 'failed';
-
-          console.log(`❌ Session ${sessionId} timed out - user did not enter pairing code`);
-
-          // Clean up
-          if (sock) {
-            try {
-              sock.ev.removeAllListeners();
-              sock.end();
-            } catch (err) {}
-          }
-        }
-      }, 5 * 60 * 1000); // 5 minutes
-
-      console.log(`✅ Pairing setup complete for session ${sessionId}`);
-      console.log(`📋 Pairing code: ${pairingCode}`);
-      console.log(`⏳ Waiting for user to enter code in WhatsApp (timeout: 5 minutes)...`);
-
-      return res.json({
-        success: true,
-        sessionId,
-        pairingCode,
-        phoneNumber: cleanedPhone,
-        message: "Enter the pairing code in your WhatsApp app (Linked Devices > Link a Device > Link with phone number instead)",
-        expiresIn: 300 // 5 minutes
-      });
-
-    } catch (error) {
-      console.error('Pairing error:', error);
-
-      if (sock) {
-        try {
-          sock.ev.removeAllListeners();
-          sock.end();
-        } catch (err) {}
-      }
-
-      if (!res.headersSent) {
-        res.status(500).json({
-          success: false,
-          message: error instanceof Error ? error.message : 'Pairing failed'
-        });
-      }
-    }
-  });
-
-  // Check Pairing Authentication Status (Polling Endpoint)
-  app.get("/api/whatsapp/pairing-status/:sessionId", async (req, res) => {
-    try {
-      const { sessionId } = req.params;
-
-      if (!(global as any).pairingSessions || !(global as any).pairingSessions.has(sessionId)) {
-        return res.json({
-          status: 'not_found',
-          message: 'Session not found or expired'
-        });
-      }
-
-      const session = (global as any).pairingSessions.get(sessionId);
-
-      if (session.status === 'authenticated') {
-        // Prepare response with credentials
-        const credentialsBase64 = Buffer.from(JSON.stringify(session.credentials, null, 2)).toString('base64');
-        const extractedPhone = session.userJid?.match(/^(\d+):/)?.[1] || session.phoneNumber;
-
-        // Clean up session after successful retrieval
-        (global as any).pairingSessions.delete(sessionId);
-
-        return res.json({
-          status: 'authenticated',
-          credentials: {
-            jid: session.userJid,
-            phoneNumber: extractedPhone,
-            base64: credentialsBase64
+        Gifted = Gifted_Tech({
+          auth: {
+            creds: state.creds,
+            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
           },
-          message: 'Authentication successful! Credentials are ready.'
+          printQRInTerminal: false,
+          logger: pino({ level: "fatal" }).child({ level: "fatal" }),
+          browser: Browsers.macOS("Safari")
         });
-      } else if (session.status === 'failed') {
-        // Clean up failed session
-        (global as any).pairingSessions.delete(sessionId);
 
-        return res.json({
-          status: 'failed',
-          message: 'Authentication failed or timed out. Please try again.'
+        if (!Gifted.authState.creds.registered) {
+          await delay(1500);
+          num = num.replace(/[^0-9]/g, '');
+          const code = await Gifted.requestPairingCode(num);
+          console.log(`Your Code: ${code}`);
+
+          if (!res.headersSent) {
+            res.send({ code });
+          }
+        }
+
+        Gifted.ev.on('creds.update', async (creds: any) => {
+          console.log(`Credentials updated for session: ${id}`);
+          try {
+            // Check if temp directory still exists before saving
+            if (fs.existsSync(authDir)) {
+              await saveCreds();
+              console.log(`Credentials saved to file system`);
+            } else {
+              console.log(`Skipping credential save - temp directory removed for session: ${id}`);
+            }
+          } catch (saveError) {
+            console.warn(`Warning: Could not save credentials for session ${id}:`, saveError.message);
+          }
         });
-      } else {
-        // Still waiting
-        return res.json({
-          status: 'waiting',
-          message: 'Waiting for you to enter the pairing code in WhatsApp...'
+
+        Gifted.ev.on("connection.update", async (s: any) => {
+          const { connection, lastDisconnect } = s;
+
+          if (connection === "open") {
+            console.log(`Connection opened for pairing session: ${id}`);
+
+            try {
+              // Send initial confirmation to user
+              await Gifted.sendMessage(Gifted.user.id, { 
+                text: '🎉 WhatsApp connected successfully! Starting session generation...' 
+              });
+
+              console.log(`Waiting 5 seconds to ensure credentials are fully saved...`);
+              await delay(5000);
+
+              console.log('=== STARTING SESSION GENERATION ===');
+              console.log(`Session ID: ${id}`);
+
+              // Save session locally with notifications
+              const sessionId = await saveSessionLocally(id, Gifted);
+
+              if (!sessionId) {
+                console.error('❌ saveSessionLocally returned null - session generation failed');
+                await Gifted.sendMessage(Gifted.user.id, { 
+                  text: '❌ Credential encoding failed. Please try again.' 
+                });
+                throw new Error('Failed to save session locally');
+              }
+
+              console.log(`✅ Session generation successful: ${sessionId.substring(0, 50)}...`);
+
+              // Send the session ID
+              console.log(`Sending session ID to user: ${sessionId.substring(0, 50)}...`);
+              const session = await Gifted.sendMessage(Gifted.user.id, { text: sessionId });
+
+              const GIFTED_TEXT = `
+*✅sᴇssɪᴏɴ ɪᴅ ɢᴇɴᴇʀᴀᴛᴇᴅ✅*
+______________________________
+╔════◇
+║『 𝐘𝐎𝐔'𝐕𝐄 𝐂𝐇𝐎𝐒𝐄𝐍 TREKKER-MD LIFETIME BOT  』
+╚══════════════╝
+╔═════◇
+║ 『••• 𝗩𝗶𝘀𝗶𝘁 𝗙𝗼𝗿 𝗛𝗲𝗹𝗽 •••』
+║❒ TELEGRAM: https://t.me/trekkermd_
+║❒ INSTAGRAM: https://www.instagram.com/nicholaso_tesla?igsh=eG5oNWVuNXF6eGU0_
+║📞 WhatsApp: +254704897825
+║❒ PairSite: https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/
+║❒ 𝐖𝐚𝐂𝐡𝐚𝐧𝐧𝐞𝐥: https://whatsapp.com/channel/0029Vb6vpSv6WaKiG6ZIy73H
+║ 💜💜💜
+╚══════════════╝ 
+ DM the owner only for lifetime TREKKER-MD bot __No expiry__
+______________________________
+
+Use the Quoted Session ID to Deploy your Bot.
+❤️Support us donations keeps this services running❤️
+
+Powered by TREKKER-MD....ultra fast bot.`;
+
+              await Gifted.sendMessage(Gifted.user.id, { text: GIFTED_TEXT }, { quoted: session });
+              console.log('Session ID sent successfully to user');
+
+              // Wait for messages to be fully delivered before cleanup
+              console.log('⏳ Waiting 8 seconds to ensure all messages are fully delivered...');
+              await delay(8000);
+
+              console.log('✅ Message delivery wait completed');
+
+              // Clear all stored data and reset connections after successful session generation
+              console.log('🧹 Clearing all stored data and resetting connections...');
+
+              // Clear the sessionStorage Map
+              sessionStorage.clear();
+              console.log('✅ SessionStorage cleared');
+
+              // Close the WhatsApp connection properly before cleanup
+              try {
+                // Remove all event listeners first to prevent further credential saves
+                if (Gifted.ev) {
+                  Gifted.ev.removeAllListeners();
+                  console.log('✅ Event listeners removed');
+                }
+
+                // Close WebSocket connection
+                if (Gifted.ws && Gifted.ws.readyState === 1) {
+                  await Gifted.ws.close();
+                  console.log('✅ WhatsApp WebSocket connection closed');
+                }
+
+                // Clear authentication state
+                if (Gifted.authState) {
+                  Gifted.authState = null;
+                  console.log('✅ Authentication state cleared');
+                }
+              } catch (closeError) {
+                console.warn('Warning: Error during connection cleanup:', closeError.message);
+              }
+
+              // Force cleanup of temp directory immediately
+              try {
+                if (fs.existsSync(authDir)) {
+                  await removeFile(authDir);
+                  console.log('✅ Temporary directory cleaned up');
+                }
+              } catch (cleanupError) {
+                console.warn('Warning cleaning up temp directory:', cleanupError.message);
+              }
+
+              console.log('🎯 All data cleared and system reset to default state, ready for new requests');
+
+              // Clear the 4-minute timeout since we completed successfully
+              clearTimeout(forceCleanupTimer);
+              console.log('⏰ 4-minute cleanup timer cancelled - normal cleanup completed');
+
+            } catch (err) {
+              console.error('Error in connection update:', {
+                sessionId: id,
+                error: err.message,
+                stack: err.stack
+              });
+
+              // Try to send error message to user if possible
+              try {
+                if (Gifted.user?.id) {
+                  await Gifted.sendMessage(Gifted.user.id, { 
+                    text: '❌ Credential encoding failed. Please try again.' 
+                  });
+                }
+              } catch (msgError) {
+                console.error('Failed to send error message to user:', msgError.message);
+              }
+            } finally {
+              console.log(`Cleaning up connection for session: ${id}`);
+              await delay(100);
+
+              try {
+                if (Gifted.ws && Gifted.ws.readyState === 1) {
+                  await Gifted.ws.close();
+                }
+              } catch (closeError) {
+                console.warn('Error closing WebSocket:', closeError.message);
+              }
+
+              // Final cleanup of auth directory (backup cleanup)
+              try {
+                if (fs.existsSync(authDir)) {
+                  await removeFile(authDir);
+                  console.log(`Final cleanup completed for: ${authDir}`);
+                }
+              } catch (cleanupError) {
+                console.error('Error in final cleanup:', cleanupError.message);
+              }
+            }
+          } else if (connection === "close" && lastDisconnect?.error?.output?.statusCode !== 401) {
+            await delay(10000);
+            GIFTED_PAIR_CODE().catch(err => console.error('Error restarting pairing:', err));
+          }
         });
+      } catch (err) {
+        console.error("Service Error:", err);
+
+        // Clear the 4-minute timeout on error
+        clearTimeout(forceCleanupTimer);
+        console.log('⏰ 4-minute cleanup timer cancelled due to error');
+
+        // Manual cleanup on error
+        try {
+          sessionStorage.clear();
+
+          if (Gifted) {
+            // Remove event listeners first
+            if (Gifted.ev) {
+              Gifted.ev.removeAllListeners();
+            }
+
+            // Close connection
+            if (Gifted.ws && Gifted.ws.readyState === 1) {
+              await Gifted.ws.close();
+            }
+
+            // Clear auth state
+            if (Gifted.authState) {
+              Gifted.authState = null;
+            }
+          }
+
+          console.log('🧹 Error cleanup: All data cleared and connections closed');
+        } catch (cleanupErr) {
+          console.error('Error during error cleanup:', cleanupErr.message);
+        }
+
+        removeFile(authDir).catch(err => console.error('Error cleaning up:', err));
+
+        if (!res.headersSent) {
+          res.status(500).send({ error: "Service is Currently Unavailable" });
+        }
       }
-    } catch (error) {
-      console.error('Pairing status check error:', error);
-      res.status(500).json({
-        status: 'error',
-        message: error instanceof Error ? error.message : 'Status check failed'
-      });
     }
+
+    await GIFTED_PAIR_CODE();
   });
 
   // Verify WhatsApp Pairing and Get Credentials
@@ -4301,9 +4425,6 @@ Thank you for using TREKKER-MD! 🚀
         browser: Browsers.macOS("Safari"),
         logger: logger
       });
-
-      // Save credentials when they update
-      sock.ev.on('creds.update', saveCreds);
 
       // Wait for authentication to complete and credentials to be saved
       const authPromise = new Promise((resolve, reject) => {
@@ -4403,7 +4524,7 @@ Thank you for using TREKKER-MD! 🚀
         hasCreds: !!credentials.creds,
         hasCredsMe: !!credentials.creds?.me,
         hasNoiseKey: !!credentials.creds?.noiseKey,
-        topLevelKeys: Object.keys(credentials).slice(0, 10)
+        topLevelKeys: credentials.creds ? Object.keys(credentials.creds).slice(0, 10) : []
       });
 
       // Extract user JID from credentials
@@ -4536,7 +4657,6 @@ Your bot credentials have been generated.
         }
       }
       // Remove temporary auth directory if it exists
-      const { existsSync, rmSync } = await import('fs');
       if (tempAuthDir && existsSync(tempAuthDir)) {
         try {
           // Wait a bit before cleanup to ensure all operations complete
@@ -4800,7 +4920,6 @@ Thank you for choosing TREKKER-MD! 🚀`
 ✅ Bot "${botName}" registered successfully!
 📱 Phone: ${cleanedPhone}
 📅 ${new Date().toLocaleString()}
-🏢 Server: ${selectedServer}
 
 ⏳ Status: Awaiting admin approval
 📞 Contact: +254704897825 for activation
@@ -4901,7 +5020,6 @@ Thank you for choosing TREKKER-MD! 🚀`
 ✅ Bot "${botName}" registered successfully!
 📱 Phone: ${cleanedPhone}
 📅 ${new Date().toLocaleString()}
-🏢 Server: ${targetServer.serverName} (Auto-assigned)
 
 ⏳ Status: Awaiting admin approval
 📞 Contact: +254704897825 for activation
