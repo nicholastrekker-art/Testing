@@ -16,6 +16,7 @@ import AddBotModal from "@/components/add-bot-modal";
 import CommandManagement from "@/components/command-management";
 import GuestBotRegistration from "@/components/guest-bot-registration";
 import AdminBotManagement from "@/components/admin-bot-management";
+import WhatsAppPairing from "@/components/whatsapp-pairing";
 
 // Type definitions
 interface ServerInfo {
@@ -61,6 +62,7 @@ export default function Dashboard() {
   const [showGuestRegistration, setShowGuestRegistration] = useState(false);
   const [showAdminBotManagement, setShowAdminBotManagement] = useState(false);
   const [showGodRegistry, setShowGodRegistry] = useState(false);
+  const [showWhatsAppPairing, setShowWhatsAppPairing] = useState(false);
   const [selectedBotForFeatures, setSelectedBotForFeatures] = useState<BotInstance | null>(null);
   const [editingRegistration, setEditingRegistration] = useState<GodRegistryEntry | null>(null);
 
@@ -302,17 +304,16 @@ export default function Dashboard() {
                     <h3 className="font-semibold text-lg">Generate Session ID</h3>
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Get your unique WhatsApp session credentials from our pairing site
+                    Generate your WhatsApp session credentials securely using our internal pairing system
                   </p>
-                  <a
-                    href="https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors w-full"
+                  <Button
+                    onClick={() => setShowWhatsAppPairing(true)}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    data-testid="button-open-pairing"
                   >
-                    <i className="fas fa-qrcode"></i>
-                    <span>Open Pairing Site</span>
-                  </a>
+                    <i className="fas fa-qrcode mr-2"></i>
+                    <span>Start WhatsApp Pairing</span>
+                  </Button>
                 </div>
 
                 {/* Step 2: Register Your Bot */}
@@ -607,6 +608,12 @@ export default function Dashboard() {
       <GuestBotRegistration
         open={showGuestRegistration}
         onClose={() => setShowGuestRegistration(false)}
+      />
+
+      {/* WhatsApp Pairing Dialog */}
+      <WhatsAppPairing
+        open={showWhatsAppPairing}
+        onClose={() => setShowWhatsAppPairing(false)}
       />
 
       {/* Admin Bot Management Modal */}

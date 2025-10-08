@@ -3932,6 +3932,206 @@ Thank you for using TREKKER-MD! 🚀
     }
   });
 
+  // ======= WHATSAPP PAIRING CODE ENDPOINTS =======
+  
+  // Generate WhatsApp Pairing Code
+  app.post("/api/whatsapp/generate-pairing-code", async (req, res) => {
+    try {
+      const { phoneNumber, selectedServer } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+      
+      if (!selectedServer) {
+        return res.status(400).json({ message: "Server selection is required" });
+      }
+      
+      // Clean phone number - remove +, spaces, dashes
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      // Validate phone number format (10-15 digits)
+      if (!/^\d{10,15}$/.test(cleanedPhone)) {
+        return res.status(400).json({ 
+          message: "Invalid phone number format. Please enter a valid phone number with country code." 
+        });
+      }
+      
+      console.log(`📱 Generating pairing code for phone: ${cleanedPhone} on server: ${selectedServer}`);
+      
+      // Import Baileys dynamically
+      const { default: makeWASocket, useMultiFileAuthState } = await import('@whiskeysockets/baileys');
+      const { join } = await import('path');
+      const { mkdirSync, existsSync } = await import('fs');
+      
+      // Create temporary auth directory for this pairing session
+      const sessionId = crypto.randomBytes(16).toString('hex');
+      const tempAuthDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
+      
+      if (!existsSync(tempAuthDir)) {
+        mkdirSync(tempAuthDir, { recursive: true });
+      }
+      
+      // Setup multi-file auth state
+      const { state, saveCreds } = await useMultiFileAuthState(tempAuthDir);
+      
+      // Create silent logger for pairing
+      const logger = {
+        level: 'silent',
+        child: () => logger,
+        trace: () => {},
+        debug: () => {},
+        info: () => {},
+        warn: () => {},
+        error: () => {},
+        fatal: () => {}
+      };
+
+      // Create WhatsApp socket
+      const sock = makeWASocket({
+        auth: state,
+        printQRInTerminal: false,
+        browser: ['Chrome (Linux)', '', ''], // Set browser as Chrome
+        logger: logger as any
+      });
+      
+      // Listen for credential updates
+      sock.ev.on('creds.update', saveCreds);
+      
+      // Generate pairing code
+      const pairingCode = await sock.requestPairingCode(cleanedPhone);
+      
+      console.log(`✅ Pairing code generated: ${pairingCode} for ${cleanedPhone}`);
+      
+      // Store session info temporarily (will be used when pairing is complete)
+      const pairingInfo = {
+        sessionId,
+        phoneNumber: cleanedPhone,
+        selectedServer,
+        tempAuthDir,
+        pairingCode,
+        createdAt: new Date().toISOString()
+      };
+      
+      // Return pairing code to client
+      res.json({
+        success: true,
+        pairingCode,
+        sessionId,
+        phoneNumber: cleanedPhone,
+        selectedServer,
+        message: "Pairing code generated successfully. Please enter this code in WhatsApp.",
+        instructions: "1. Open WhatsApp on your phone\n2. Go to Settings → Linked Devices\n3. Tap 'Link a Device'\n4. Tap 'Link with phone number instead'\n5. Enter the pairing code above"
+      });
+      
+      // Setup connection monitoring
+      sock.ev.on('connection.update', async (update) => {
+        const { connection } = update;
+        
+        if (connection === 'open') {
+          console.log(`✅ WhatsApp connected successfully for ${cleanedPhone}`);
+          
+          // Connection successful - credentials are now saved in tempAuthDir
+          // The client will call the verify-pairing endpoint to complete the process
+        }
+        
+        if (connection === 'close') {
+          console.log(`❌ WhatsApp connection closed for ${cleanedPhone}`);
+        }
+      });
+      
+      // Keep socket alive for 5 minutes to allow pairing
+      setTimeout(() => {
+        sock.end(undefined);
+      }, 5 * 60 * 1000);
+      
+    } catch (error) {
+      console.error('Pairing code generation error:', error);
+      res.status(500).json({ 
+        message: "Failed to generate pairing code",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+  
+  // Verify WhatsApp Pairing and Get Credentials
+  app.post("/api/whatsapp/verify-pairing", async (req, res) => {
+    try {
+      const { sessionId, phoneNumber, selectedServer } = req.body;
+      
+      if (!sessionId || !phoneNumber || !selectedServer) {
+        return res.status(400).json({ 
+          message: "Session ID, phone number, and server selection are required" 
+        });
+      }
+      
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      console.log(`🔍 Verifying pairing for session: ${sessionId}, phone: ${cleanedPhone}`);
+      
+      const { join } = await import('path');
+      const { existsSync, readFileSync, rmSync } = await import('fs');
+      
+      // Check if temp auth directory exists
+      const tempAuthDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
+      
+      if (!existsSync(tempAuthDir)) {
+        return res.status(404).json({ 
+          message: "Session not found or expired. Please generate a new pairing code." 
+        });
+      }
+      
+      // Check if creds.json exists (means pairing was successful)
+      const credsPath = join(tempAuthDir, 'creds.json');
+      
+      if (!existsSync(credsPath)) {
+        return res.status(400).json({ 
+          message: "Pairing not complete yet. Please enter the pairing code in WhatsApp first." 
+        });
+      }
+      
+      // Read credentials
+      const credentialsData = readFileSync(credsPath, 'utf-8');
+      const credentials = JSON.parse(credentialsData);
+      
+      // Convert credentials to base64
+      const base64Credentials = Buffer.from(credentialsData).toString('base64');
+      
+      // Extract JID (WhatsApp ID)
+      const jid = credentials.me?.id || cleanedPhone + '@s.whatsapp.net';
+      
+      console.log(`✅ Credentials retrieved for ${cleanedPhone}, JID: ${jid}`);
+      
+      // Clean up temp directory after reading credentials
+      try {
+        rmSync(tempAuthDir, { recursive: true, force: true });
+        console.log(`🧹 Cleaned up temp auth directory: ${tempAuthDir}`);
+      } catch (cleanupError) {
+        console.error('Failed to cleanup temp directory:', cleanupError);
+      }
+      
+      res.json({
+        success: true,
+        credentials: {
+          jid,
+          base64: base64Credentials,
+          raw: credentials
+        },
+        phoneNumber: cleanedPhone,
+        selectedServer,
+        message: "WhatsApp pairing successful! Your credentials have been generated.",
+        warning: "⚠️ BACKUP YOUR CREDENTIALS - Save the Base64 string below in a safe place. Do not share it with anyone!"
+      });
+      
+    } catch (error) {
+      console.error('Pairing verification error:', error);
+      res.status(500).json({ 
+        message: "Failed to verify pairing",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Guest Bot Registration
   app.post("/api/guest/register-bot", upload.single('credsFile') as any, async (req, res) => {
     try {
