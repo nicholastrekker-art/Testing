@@ -4662,8 +4662,8 @@ Thank you for using TREKKER-MD! 🚀
               const recipient = getRecipientId();
               console.log('✅ Connection opened, waiting to save credentials...');
 
-              // Wait longer to ensure credentials are fully saved
-              await delay(15000);
+              // Wait to ensure credentials are fully saved (matching /pair implementation)
+              await delay(10000);
 
               try {
                 await saveCreds();
@@ -4692,19 +4692,15 @@ Thank you for using TREKKER-MD! 🚀
               const messageKey = sent?.key || null;
               let acked = false;
               if (messageKey) {
-                acked = await waitForMessageAck(Gifted, messageKey, 10000);
+                acked = await waitForMessageAck(Gifted, messageKey, 5000);
                 if (acked) {
                   console.log('✅ Message acknowledged by WhatsApp');
                 } else {
-                  console.log('⚠️ No ACK received within timeout, but message was sent');
+                  console.log('⚠️ No ACK; closing immediately');
                 }
               }
 
-              // Wait additional time before cleanup to ensure message delivery
-              console.log('⏳ Waiting additional 5 seconds before cleanup...');
-              await delay(5000);
-
-              // 🚨 Now close connection and cleanup
+              // 🚨 Immediately close connection and cleanup (matching /pair implementation)
               console.log('🧹 Starting cleanup...');
               if (Gifted.ev) Gifted.ev.removeAllListeners();
               if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
@@ -4722,10 +4718,17 @@ Thank you for using TREKKER-MD! 🚀
                 if (fs.existsSync(authDir)) await removeFile(authDir);
               } catch {}
             }
-          } else if (connection === "close" && lastDisconnect?.error?.output?.statusCode !== 401) {
-            console.log('⚠️ Connection closed, will retry...');
-            await delay(10000);
-            GIFTED_PAIR_CODE().catch(err => console.error('Restart error:', err));
+          } else if (connection === "close") {
+            const statusCode = lastDisconnect?.error?.output?.statusCode;
+            console.log(`⚠️ Connection closed with status ${statusCode}`);
+            
+            // Don't retry - let the session timeout naturally
+            // Retrying creates new pairing codes which invalidate the one user entered
+            if (statusCode === 401) {
+              console.log('❌ Logged out error - cleaning up');
+            } else {
+              console.log('ℹ️ Connection closed - waiting for cleanup timer');
+            }
           }
         });
       } catch (err) {
