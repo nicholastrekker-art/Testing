@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Smartphone, Key, CheckCircle, AlertTriangle, Copy, Server } from "lucide-react";
+import { Smartphone, Key, CheckCircle, AlertTriangle, Copy, Server, Gift } from "lucide-react";
 
 interface WhatsAppPairingProps {
   open: boolean;
@@ -42,6 +42,12 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
   const { data: serversData, isLoading: serversLoading } = useQuery({
     queryKey: ['/api/servers/available'],
     enabled: open && step === 1
+  });
+
+  // Fetch offer status
+  const { data: offerStatus } = useQuery({
+    queryKey: ['/api/offer/status'],
+    enabled: open
   });
 
   // Poll for authentication status
@@ -82,10 +88,10 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     }
   };
 
-  // Generate pairing code mutation (returns code immediately, then polls for auth)
+  // Improved pairing mutation - uses new endpoint that auto-sends session ID
   const generatePairingMutation = useMutation({
-    mutationFn: async (data: { phoneNumber: string; selectedServer: string }) => {
-      const res = await apiRequest('POST', '/api/whatsapp/generate-pairing-code', data);
+    mutationFn: async (data: { phoneNumber: string; selectedServer: string; botName?: string; features?: any }) => {
+      const res = await apiRequest('POST', '/api/whatsapp/pair-and-register', data);
       return res.json();
     },
     onSuccess: (data) => {
@@ -105,7 +111,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
 
         toast({
           title: "Pairing Code Generated!",
-          description: data.message || "Enter this code in WhatsApp to link your device.",
+          description: "Enter this code in WhatsApp. Your session ID will be sent to WhatsApp automatically!",
         });
       }
     },
@@ -119,7 +125,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     }
   });
 
-  // Register bot mutation
+  // Register bot mutation - includes offer discount check
   const registerBotMutation = useMutation({
     mutationFn: async (data: any) => {
       const formData = new FormData();
@@ -148,15 +154,20 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       return response.json();
     },
     onSuccess: (data) => {
+      const isAutoApproved = (offerStatus as any)?.isActive;
+      
       toast({
-        title: "Bot Registered Successfully!",
-        description: data.message || "Your bot has been submitted for approval.",
+        title: isAutoApproved ? "🎉 Bot Auto-Approved!" : "Bot Registered Successfully!",
+        description: isAutoApproved 
+          ? "Your bot was auto-approved due to active promotional offer!" 
+          : data.message || "Your bot has been submitted for approval.",
       });
       
       // Close dialog and refresh
       setTimeout(() => {
         onClose();
         queryClient.invalidateQueries({ queryKey: ['/api/bots'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/bots/approved'] });
         window.location.reload();
       }, 2000);
     },
@@ -318,6 +329,17 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
             Generate your WhatsApp session credentials securely
           </DialogDescription>
         </DialogHeader>
+
+        {/* Offer Discount Banner */}
+        {(offerStatus as any)?.isActive && (
+          <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20">
+            <Gift className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800 dark:text-green-200">
+              🎉 <strong>Limited Time Offer!</strong> All new bots registered now will be auto-approved! 
+              {(offerStatus as any)?.timeRemaining && ` Expires in ${(offerStatus as any).timeRemaining}`}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Step 1: Server Selection */}
         {step === 1 && (
@@ -497,28 +519,37 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600" />
-                Step 4: Your Session ID (Backup Copy)
+                Step 4: Pairing Successful! 🎉
               </CardTitle>
               <CardDescription>
-                Your Session ID has been sent to WhatsApp - use it in Step 2 to manage your bot
+                Your Session ID has been sent to your WhatsApp. Continue to register your bot now.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Alert className="border-green-500">
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription className="font-semibold">
-                  ✅ Session ID sent to your WhatsApp! Check your messages for the full credentials.
+                  ✅ Session ID sent to your WhatsApp! Check your messages for a backup copy.
                 </AlertDescription>
               </Alert>
+
+              {(offerStatus as any)?.isActive && (
+                <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20">
+                  <Gift className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800 dark:text-green-200">
+                    🎉 <strong>Great news!</strong> Your bot will be auto-approved due to our active promotional offer!
+                  </AlertDescription>
+                </Alert>
+              )}
               
               <Alert className="border-blue-500">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  <p className="font-semibold mb-1">📱 What's Next:</p>
+                  <p className="font-semibold mb-1">📱 What Happened:</p>
                   <ul className="text-sm space-y-1 ml-4 list-disc">
-                    <li>The pairing code was ONLY for linking - don't save it</li>
-                    <li>Your SESSION ID was sent to WhatsApp - copy it from there</li>
-                    <li>Use the SESSION ID in "Step 2: Guest Dashboard" to manage your bot</li>
+                    <li>✅ Pairing code was used to link your WhatsApp</li>
+                    <li>✅ Session ID was automatically generated and sent to your WhatsApp</li>
+                    <li>✅ You can now configure and register your bot below</li>
                   </ul>
                 </AlertDescription>
               </Alert>

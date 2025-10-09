@@ -1997,6 +1997,261 @@ export async function registerRoutes(app: Express): Server {
     }
   });
 
+  // Improved WhatsApp Pairing with Auto-Session-ID Delivery (Integrated from /pair project)
+  app.post('/api/whatsapp/pair-and-register', async (req, res) => {
+    try {
+      const { phoneNumber, selectedServer, botName, features } = req.body;
+
+      if (!phoneNumber || !selectedServer) {
+        return res.status(400).json({
+          success: false,
+          message: "Phone number and server selection are required"
+        });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+
+      // Validate phone number format
+      if (!/^\d{10,15}$/.test(cleanedPhone)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid phone number format"
+        });
+      }
+
+      console.log(`🚀 Starting auto-pairing for: ${cleanedPhone} on server: ${selectedServer}`);
+
+      const {
+        default: makeWASocket,
+        useMultiFileAuthState,
+        DisconnectReason,
+        makeCacheableSignalKeyStore,
+        Browsers,
+        delay
+      } = await import('@whiskeysockets/baileys');
+      const pino = (await import('pino')).default;
+      const { join } = await import('path');
+      const { existsSync, mkdirSync, readFileSync, rmSync } = await import('fs');
+
+      // Create unique session directory
+      const sessionId = `auto_pair_${cleanedPhone}_${Date.now()}`;
+      const authDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
+
+      // Cleanup function
+      const cleanup = async () => {
+        try {
+          if (existsSync(authDir)) {
+            rmSync(authDir, { recursive: true, force: true });
+            console.log(`🧹 Cleaned up temp auth directory: ${authDir}`);
+          }
+        } catch (err) {
+          console.error('Cleanup error:', err);
+        }
+      };
+
+      // Force cleanup after 4 minutes
+      const forceCleanupTimer = setTimeout(async () => {
+        console.log('⏰ Force cleanup triggered after 4 minutes');
+        await cleanup();
+      }, 4 * 60 * 1000);
+
+      try {
+        // Create auth directory
+        if (!existsSync(authDir)) {
+          mkdirSync(authDir, { recursive: true });
+        }
+
+        const { state, saveCreds } = await useMultiFileAuthState(authDir);
+
+        const logger = pino({ level: "fatal" }).child({ level: "fatal" });
+
+        const sock = makeWASocket({
+          auth: {
+            creds: state.creds,
+            keys: makeCacheableSignalKeyStore(state.keys, logger)
+          },
+          printQRInTerminal: false,
+          logger: logger,
+          browser: Browsers.macOS("Safari")
+        });
+
+        // Helper to get recipient ID
+        const getRecipientId = () => {
+          if (sock?.user?.id) return sock.user.id;
+          if (state?.creds?.me?.id) return state.creds.me.id;
+          return null;
+        };
+
+        let pairingCode: string | null = null;
+        let sessionData: any = null;
+        let authCompleted = false;
+
+        // Set up event handlers
+        sock.ev.on('creds.update', async () => {
+          try {
+            if (existsSync(authDir)) await saveCreds();
+          } catch (err) {
+            console.warn('saveCreds failed:', err);
+          }
+        });
+
+        sock.ev.on('connection.update', async (update) => {
+          const { connection, lastDisconnect } = update;
+
+          if (connection === 'open' && !authCompleted) {
+            authCompleted = true;
+            console.log('✅ WhatsApp connection opened!');
+
+            try {
+              const recipient = getRecipientId();
+              
+              // Wait to ensure credentials are saved
+              await delay(10000);
+              
+              try {
+                await saveCreds();
+              } catch (err) {
+                console.warn('Final saveCreds failed:', err);
+              }
+
+              // Read and encode credentials
+              const credsPath = join(authDir, 'creds.json');
+              if (!existsSync(credsPath)) {
+                throw new Error('Credentials file not found');
+              }
+
+              const rawData = readFileSync(credsPath, 'utf8');
+              const credsData = JSON.parse(rawData);
+              const sessionBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
+
+              sessionData = {
+                base64: sessionBase64,
+                jid: recipient || cleanedPhone + '@s.whatsapp.net',
+                phoneNumber: cleanedPhone
+              };
+
+              // Send session ID to WhatsApp
+              if (recipient) {
+                const sent = await sock.sendMessage(recipient, { 
+                  text: `🔑 *Your Session ID*\n\n${sessionBase64}\n\n⚠️ Keep this safe - it's your bot credentials!` 
+                });
+                console.log('✅ Session ID sent to WhatsApp');
+
+                // Wait for message acknowledgment
+                await delay(3000);
+              }
+
+              // Cleanup connection immediately
+              sock.ev.removeAllListeners();
+              if (sock.ws && sock.ws.readyState === 1) await sock.ws.close();
+              clearTimeout(forceCleanupTimer);
+              await cleanup();
+
+              console.log('🎉 Pairing completed successfully');
+
+            } catch (err) {
+              console.error('Post-auth error:', err);
+              clearTimeout(forceCleanupTimer);
+              await cleanup();
+            }
+          } else if (connection === 'close' && lastDisconnect?.error?.output?.statusCode !== 401) {
+            console.log('⚠️ Connection closed, attempting retry...');
+            await delay(10000);
+          }
+        });
+
+        // Request pairing code
+        if (!sock.authState.creds.registered) {
+          await delay(1500);
+          pairingCode = await sock.requestPairingCode(cleanedPhone);
+          console.log(`✅ Pairing code generated: ${pairingCode}`);
+
+          // Send response with pairing code
+          res.json({
+            success: true,
+            pairingCode,
+            sessionId,
+            message: "Enter this pairing code in WhatsApp. Session ID will be sent to your WhatsApp automatically."
+          });
+
+          // Wait for authentication (max 60 seconds)
+          await new Promise((resolve) => {
+            const checkInterval = setInterval(() => {
+              if (authCompleted || sessionData) {
+                clearInterval(checkInterval);
+                resolve(true);
+              }
+            }, 1000);
+
+            setTimeout(() => {
+              clearInterval(checkInterval);
+              resolve(false);
+            }, 60000);
+          });
+
+        } else {
+          clearTimeout(forceCleanupTimer);
+          await cleanup();
+          
+          return res.status(400).json({
+            success: false,
+            message: "This number is already registered"
+          });
+        }
+
+      } catch (innerError) {
+        console.error('Pairing inner error:', innerError);
+        clearTimeout(forceCleanupTimer);
+        await cleanup();
+        
+        throw innerError;
+      }
+
+    } catch (error) {
+      console.error('Auto-pairing error:', error);
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : "Auto-pairing failed"
+      });
+    }
+  });
+
+  // Check pairing and registration status (for polling)
+  app.get('/api/whatsapp/pairing-status/:sessionId', async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      
+      // Check if session directory exists and has credentials
+      const { join } = await import('path');
+      const { existsSync, readFileSync } = await import('fs');
+      
+      // Extract server from sessionId (format: auto_pair_{phone}_{timestamp} or use default)
+      const authDir = join(process.cwd(), 'temp_auth', sessionId);
+      
+      if (existsSync(join(authDir, 'creds.json'))) {
+        const rawData = readFileSync(join(authDir, 'creds.json'), 'utf8');
+        const credsData = JSON.parse(rawData);
+        const sessionBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
+        
+        res.json({
+          status: 'authenticated',
+          sessionData: sessionBase64,
+          message: 'Authentication successful!'
+        });
+      } else {
+        res.json({
+          status: 'waiting',
+          message: 'Waiting for authentication...'
+        });
+      }
+    } catch (error) {
+      res.json({
+        status: 'waiting',
+        message: 'Checking status...'
+      });
+    }
+  });
+
   app.patch("/api/bot-instances/:id", async (req, res) => {
     try {
       const bot = await storage.updateBotInstance(req.params.id, req.body);
