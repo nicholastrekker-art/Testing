@@ -5,7 +5,12 @@ import jwt from 'jsonwebtoken';
 import multer from "multer";
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { storage } from "./storage";
+
+// ES Module __dirname and __filename equivalents
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import { insertBotInstanceSchema, insertCommandSchema, insertActivitySchema, botInstances } from "@shared/schema";
 import { botManager } from "./services/bot-manager";
 import { getServerName, db } from "./db";
