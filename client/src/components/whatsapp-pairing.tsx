@@ -100,30 +100,34 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     }
   };
 
-  // Improved pairing mutation - uses new endpoint that auto-sends session ID
+  // Use the working /pair endpoint to generate pairing code
   const generatePairingMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; selectedServer: string; botName?: string; features?: any }) => {
-      const res = await apiRequest('POST', '/api/whatsapp/pair-and-register', data);
-      return res.json();
+      // Use the /code endpoint from /pair project
+      const response = await fetch(`/code?number=${data.phoneNumber}`);
+      if (!response.ok) {
+        throw new Error('Failed to generate pairing code');
+      }
+      return response.json();
     },
     onSuccess: (data) => {
-      if (data.success && data.pairingCode) {
+      if (data.code) {
         // Pairing code generated successfully
-        setPairingCode(data.pairingCode);
-        setPairingSessionId(data.sessionId);
+        setPairingCode(data.code);
+        setPairingSessionId(`pair_${phoneNumber}_${Date.now()}`);
         setIsWaitingForAuth(true);
         setStep(3);
 
         // Start polling for authentication status
         const interval = setInterval(() => {
-          checkAuthStatus(data.sessionId);
+          checkAuthStatus(`pair_${phoneNumber}_${Date.now()}`);
         }, 3000); // Poll every 3 seconds
         
         setPollingInterval(interval);
 
         toast({
           title: "Pairing Code Generated!",
-          description: "Enter this code in WhatsApp. Your session ID will be sent to WhatsApp automatically!",
+          description: "Enter this code in WhatsApp to link your device. Session ID will be sent to WhatsApp.",
         });
       }
     },
@@ -131,7 +135,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       setIsWaitingForAuth(false);
       toast({
         title: "Pairing Failed",
-        description: error.message,
+        description: error.message || "Failed to generate pairing code. Please try again.",
         variant: "destructive"
       });
     }
@@ -220,7 +224,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     if (!/^\d{10,15}$/.test(cleaned)) {
       toast({
         title: "Invalid Phone Number",
-        description: "Please enter a valid phone number with country code (e.g., 1234567890)",
+        description: "Please enter a valid phone number with country code (e.g., 254712345678)",
         variant: "destructive"
       });
       return;
@@ -267,6 +271,8 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
 
     // Update phone number state with cleaned version
     setPhoneNumber(cleaned);
+    
+    // Use the working /pair endpoint
     generatePairingMutation.mutate({ phoneNumber: cleaned, selectedServer });
   };
 

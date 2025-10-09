@@ -304,15 +304,15 @@ export default function Dashboard() {
                     <h3 className="font-semibold text-lg">Generate Session ID</h3>
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Generate your WhatsApp session credentials securely using our internal pairing system
+                    Get a pairing code to link your WhatsApp. Enter the code in WhatsApp Settings → Linked Devices to receive your session ID
                   </p>
                   <Button
                     onClick={() => setShowWhatsAppPairing(true)}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                     data-testid="button-open-pairing"
                   >
-                    <i className="fas fa-qrcode mr-2"></i>
-                    <span>Start WhatsApp Pairing</span>
+                    <i className="fas fa-link mr-2"></i>
+                    <span>Get Pairing Code</span>
                   </Button>
                 </div>
 
