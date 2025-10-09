@@ -103,19 +103,12 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
   // Generate pairing code using new auto-pairing endpoint
   const generatePairingMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; selectedServer: string; botName?: string; features?: any }) => {
-      const response = await fetch('/api/whatsapp/pairing-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          phoneNumber: data.phoneNumber,
-          selectedServer: data.selectedServer
-        }),
+      const response = await fetch(`/api/whatsapp/pairing-code?number=${data.phoneNumber}`, {
+        method: 'GET',
       });
       
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({ message: 'Failed to generate pairing code' }));
         throw new Error(error.message || 'Failed to generate pairing code');
       }
       
@@ -123,10 +116,11 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       return result;
     },
     onSuccess: (data) => {
-      if (data.code) {
+      if (data.code || data.pairingCode) {
         // Pairing code generated successfully
-        setPairingCode(data.code);
-        const sessionId = `pair_${phoneNumber}_${Date.now()}`;
+        const code = data.code || data.pairingCode;
+        setPairingCode(code);
+        const sessionId = data.sessionId || `pair_${phoneNumber}_${Date.now()}`;
         setPairingSessionId(sessionId);
         setIsWaitingForAuth(false);
         setStep(3);
