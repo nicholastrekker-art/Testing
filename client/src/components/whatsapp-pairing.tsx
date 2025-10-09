@@ -100,14 +100,25 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     }
   };
 
-  // Generate pairing code using direct endpoint (like /pair project)
+  // Generate pairing code using new auto-pairing endpoint
   const generatePairingMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; selectedServer: string; botName?: string; features?: any }) => {
-      const response = await fetch(`/api/whatsapp/pairing-code?number=${data.phoneNumber}`);
+      const response = await fetch('/api/whatsapp/pairing-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: data.phoneNumber,
+          selectedServer: data.selectedServer
+        }),
+      });
+      
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to generate pairing code');
+        throw new Error(error.message || 'Failed to generate pairing code');
       }
+      
       const result = await response.json();
       return result;
     },
