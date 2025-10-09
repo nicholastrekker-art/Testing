@@ -4425,114 +4425,61 @@ Thank you for using TREKKER-MD! 🚀
     }
   }
 
-  // Save session locally
+  // Save session locally - simplified to match /pair folder implementation
   async function saveSessionLocally(id: string, Gifted: any) {
     const authPath = path.join(__dirname, 'temp', id, 'creds.json');
-    let credsId = null;
-
+    
     try {
       console.log(`=== LOCAL SESSION SAVE FUNCTION START ===`);
       console.log(`Temp ID: ${id}`);
       console.log(`Auth path: ${authPath}`);
 
-      // Send status update to user
-      await Gifted.sendMessage(Gifted.user.id, {
-        text: '🔄 Processing session credentials...'
-      });
-
       // Verify creds file exists
       if (!fs.existsSync(authPath)) {
         console.error(`❌ File does not exist at: ${authPath}`);
-        await Gifted.sendMessage(Gifted.user.id, {
-          text: '❌ Credentials file not found. Please try pairing again.'
-        });
         throw new Error(`Credentials file not found at: ${authPath}`);
       }
 
       console.log(`✅ File exists at: ${authPath}`);
-      await Gifted.sendMessage(Gifted.user.id, {
-        text: '✅ Credentials file found. Validating...'
-      });
 
       // Parse credentials data
-      let credsData;
-      try {
-        const rawData = fs.readFileSync(authPath, 'utf8');
-        console.log(`Raw file content length: ${rawData.length}`);
-        credsData = JSON.parse(rawData);
-        console.log(`✅ JSON parsed successfully`);
-      } catch (parseError) {
-        console.error(`❌ Parse error: ${parseError.message}`);
-        await Gifted.sendMessage(Gifted.user.id, {
-          text: '❌ Invalid credentials format. Please try pairing again.'
-        });
-        throw new Error(`Failed to parse credentials file: ${parseError.message}`);
-      }
+      const rawData = fs.readFileSync(authPath, 'utf8');
+      console.log(`Raw file content length: ${rawData.length}`);
+      const credsData = JSON.parse(rawData);
+      console.log(`✅ JSON parsed successfully`);
 
       // Validate credentials data
       if (!credsData || typeof credsData !== 'object') {
         console.error(`❌ Invalid creds data type: ${typeof credsData}`);
-        await Gifted.sendMessage(Gifted.user.id, {
-          text: '❌ Invalid credentials data. Please try again.'
-        });
         throw new Error('Invalid credentials data format');
       }
 
       console.log(`✅ Credentials data validated`);
-      await Gifted.sendMessage(Gifted.user.id, {
-        text: '✅ Credentials validated. Generating session ID...'
-      });
 
       // Convert entire creds.json to Base64
       const credsBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
-      credsId = credsBase64; // Use the Base64 encoded creds as session ID
-      console.log(`✅ Generated Base64 session ID: ${credsId.substring(0, 50)}...`);
+      console.log(`✅ Generated Base64 session ID: ${credsBase64.substring(0, 50)}...`);
 
       // Save to local storage instead of MongoDB
       const now = new Date();
-      sessionStorage.set(credsId, {
-        sessionId: credsId,
+      sessionStorage.set(credsBase64, {
+        sessionId: credsBase64,
         credsData: credsBase64,
         createdAt: now,
         updatedAt: now
       });
 
-      console.log(`✅ Session saved locally: ${credsId.substring(0, 50)}...`);
-      await Gifted.sendMessage(Gifted.user.id, {
-        text: '✅ Session ID generated successfully!'
-      });
+      console.log(`✅ Session saved locally: ${credsBase64.substring(0, 50)}...`);
 
-      return credsId;
+      return credsBase64;
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in saveSessionLocally:', {
-        sessionId: credsId,
         tempId: id,
         error: error.message,
         stack: error.stack
       });
-
-      // Send error notification to user
-      try {
-        await Gifted.sendMessage(Gifted.user.id, {
-          text: '❌ Credential encoding failed. Please try again.'
-        });
-      } catch (msgError) {
-        console.error('Failed to send error message:', msgError.message);
-      }
-
       return null;
-    } finally {
-      // Clean up temp directory regardless of success/failure
-      try {
-        const tempDir = path.join(__dirname, 'temp', id);
-        if (fs.existsSync(tempDir)) {
-          await removeFile(tempDir);
-          console.log(`Cleaned up temp directory: ${tempDir}`);
-        }
-      } catch (cleanupError) {
-        console.warn('Error cleaning up temp directory:', cleanupError.message);
-      }
     }
   }
 
