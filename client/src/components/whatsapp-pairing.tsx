@@ -103,32 +103,30 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
   // Use the working /pair endpoint to generate pairing code
   const generatePairingMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; selectedServer: string; botName?: string; features?: any }) => {
-      // Use the /code endpoint from /pair project
+      // Use relative URL to call the proxy endpoint
       const response = await fetch(`/code?number=${data.phoneNumber}`);
       if (!response.ok) {
-        throw new Error('Failed to generate pairing code');
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to generate pairing code');
       }
-      return response.json();
+      const result = await response.json();
+      return result;
     },
     onSuccess: (data) => {
       if (data.code) {
         // Pairing code generated successfully
         setPairingCode(data.code);
-        setPairingSessionId(`pair_${phoneNumber}_${Date.now()}`);
-        setIsWaitingForAuth(true);
+        const sessionId = `pair_${phoneNumber}_${Date.now()}`;
+        setPairingSessionId(sessionId);
+        setIsWaitingForAuth(false);
         setStep(3);
-
-        // Start polling for authentication status
-        const interval = setInterval(() => {
-          checkAuthStatus(`pair_${phoneNumber}_${Date.now()}`);
-        }, 3000); // Poll every 3 seconds
-        
-        setPollingInterval(interval);
 
         toast({
           title: "Pairing Code Generated!",
-          description: "Enter this code in WhatsApp to link your device. Session ID will be sent to WhatsApp.",
+          description: "Enter this code in WhatsApp Settings → Linked Devices. After pairing, your session ID will be sent to your WhatsApp.",
         });
+      } else {
+        throw new Error('No pairing code returned');
       }
     },
     onError: (error: Error) => {

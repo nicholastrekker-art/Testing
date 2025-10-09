@@ -4502,6 +4502,30 @@ Thank you for using TREKKER-MD! 🚀
     }
   }
 
+  // Proxy route to pair server for pairing code generation
+  app.get('/code', async (req, res) => {
+    try {
+      const phoneNumber = req.query.number;
+      if (!phoneNumber) {
+        return res.status(400).json({ error: "Phone number is required" });
+      }
+
+      // Forward request to pair server running on port 5000
+      const pairServerUrl = `http://localhost:5000/code?number=${phoneNumber}`;
+      const response = await fetch(pairServerUrl);
+      
+      if (!response.ok) {
+        return res.status(response.status).json({ error: "Failed to generate pairing code" });
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Proxy error:', error);
+      res.status(500).json({ error: "Service unavailable" });
+    }
+  });
+
   // Generate WhatsApp Pairing Code endpoint
   app.get('/api/whatsapp/pairing-code', async (req, res) => {
     const id = giftedId(); 
