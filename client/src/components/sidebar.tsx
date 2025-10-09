@@ -87,18 +87,18 @@ export default function Sidebar() {
             const Icon = item.icon;
             const isActive = location === item.path;
             return (
-              <Link key={item.path} href={item.path}>
-                <a
-                  onClick={() => setIsOpen(false)}
-                  className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg transition-colors ${
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
-                  <span className="font-medium text-sm lg:text-base">{item.label}</span>
-                </a>
+              <Link 
+                key={item.path} 
+                href={item.path}
+                onClick={() => setIsOpen(false)}
+                className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-lg transition-colors ${
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <Icon className="w-4 h-4 lg:w-5 lg:h-5 flex-shrink-0" />
+                <span className="font-medium text-sm lg:text-base">{item.label}</span>
               </Link>
             );
           })}

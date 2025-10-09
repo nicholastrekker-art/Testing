@@ -54,6 +54,17 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
   const checkAuthStatus = async (sessionId: string) => {
     try {
       const response = await fetch(`/api/whatsapp/pairing-status/${sessionId}`);
+      
+      // Check if response is OK and is JSON
+      if (!response.ok) {
+        return; // Silently return for 404s during polling
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        return; // Not JSON, skip this poll
+      }
+
       const data = await response.json();
 
       if (data.status === 'authenticated') {
@@ -63,7 +74,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
           setPollingInterval(null);
         }
         setIsWaitingForAuth(false);
-        setCredentials(data.credentials);
+        setCredentials(data.sessionData || data.credentials);
         setStep(4);
         toast({
           title: "Pairing Successful!",
@@ -84,7 +95,8 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       }
       // If 'waiting', continue polling
     } catch (error) {
-      console.error('Error checking auth status:', error);
+      // Silently handle polling errors
+      return;
     }
   };
 
