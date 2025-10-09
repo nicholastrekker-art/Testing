@@ -4601,7 +4601,7 @@ Thank you for using TREKKER-MD! 🚀
     }
 
     // Helper function to wait for message acknowledgment
-    function waitForMessageAck(Gifted: any, messageKey: any, timeoutMs = 8000) {
+    function waitForMessageAck(Gifted: any, messageKey: any, timeoutMs = 10000) {
       return new Promise((resolve) => {
         let resolved = false;
         const timer = setTimeout(() => {
@@ -4647,7 +4647,7 @@ Thank you for using TREKKER-MD! 🚀
         } catch (err) {
           console.error('Error during forced cleanup:', err.message);
         }
-      }, 4 * 60 * 1000);
+      }, 5 * 60 * 1000); // Extended to 5 minutes
 
       try {
         const {
@@ -4702,10 +4702,14 @@ Thank you for using TREKKER-MD! 🚀
           if (connection === "open") {
             try {
               const recipient = getRecipientId();
-              console.log('Waiting 10 seconds to ensure credentials are saved...');
-              await delay(10000);
+              console.log('✅ Connection opened, waiting to save credentials...');
+              
+              // Wait longer to ensure credentials are fully saved
+              await delay(15000);
+              
               try {
                 await saveCreds();
+                console.log('✅ Credentials saved successfully');
               } catch (err) {
                 console.warn('saveCreds() failed:', err.message);
               }
@@ -4717,26 +4721,43 @@ Thank you for using TREKKER-MD! 🚀
                 throw new Error('Session generation failed');
               }
 
+              console.log('✅ Session ID generated, preparing to send...');
+
               // ⚡ Send only the session ID (like /pair project)
               const recipientId = getRecipientId();
               if (!recipientId) throw new Error('Recipient id not found to send session ID');
 
+              console.log(`📤 Sending session ID to ${recipientId}...`);
               const sent = await Gifted.sendMessage(recipientId, { text: sessionId });
+              console.log('✅ Session ID message sent, waiting for acknowledgment...');
+              
               const messageKey = sent?.key || null;
               let acked = false;
-              if (messageKey) acked = await waitForMessageAck(Gifted, messageKey, 5000);
-              if (!acked) console.log('No ACK; closing immediately.');
+              if (messageKey) {
+                acked = await waitForMessageAck(Gifted, messageKey, 10000);
+                if (acked) {
+                  console.log('✅ Message acknowledged by WhatsApp');
+                } else {
+                  console.log('⚠️ No ACK received within timeout, but message was sent');
+                }
+              }
 
-              // 🚨 Immediately close connection and cleanup
+              // Wait additional time before cleanup to ensure message delivery
+              console.log('⏳ Waiting additional 5 seconds before cleanup...');
+              await delay(5000);
+
+              // 🚨 Now close connection and cleanup
+              console.log('🧹 Starting cleanup...');
               if (Gifted.ev) Gifted.ev.removeAllListeners();
               if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
               Gifted.authState = null;
               sessionStorage.clear();
               if (fs.existsSync(authDir)) await removeFile(authDir);
               clearTimeout(forceCleanupTimer);
-              console.log('Connection closed immediately after sending session ID.');
+              console.log('✅ Connection closed and cleanup completed after sending session ID.');
             } catch (err) {
-              console.error('connection.open error:', err.message);
+              console.error('❌ connection.open error:', err.message);
+              console.error('Stack:', err.stack);
               try {
                 if (Gifted.ev) Gifted.ev.removeAllListeners();
                 if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
@@ -4744,12 +4765,13 @@ Thank you for using TREKKER-MD! 🚀
               } catch {}
             }
           } else if (connection === "close" && lastDisconnect?.error?.output?.statusCode !== 401) {
+            console.log('⚠️ Connection closed, will retry...');
             await delay(10000);
             GIFTED_PAIR_CODE().catch(err => console.error('Restart error:', err));
           }
         });
       } catch (err) {
-        console.error('Outer error:', err.message);
+        console.error('❌ Outer error:', err.message);
         clearTimeout(forceCleanupTimer);
         sessionStorage.clear();
         try {
