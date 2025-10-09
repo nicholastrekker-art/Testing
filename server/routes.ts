@@ -4722,12 +4722,12 @@ Thank you for using TREKKER-MD! 🚀
             const statusCode = lastDisconnect?.error?.output?.statusCode;
             console.log(`⚠️ Connection closed with status ${statusCode}`);
             
-            // Don't retry - let the session timeout naturally
-            // Retrying creates new pairing codes which invalidate the one user entered
+            // No auto-retry to avoid generating new pairing codes that invalidate user's entered code
+            // User should manually retry if needed
             if (statusCode === 401) {
-              console.log('❌ Logged out error - cleaning up');
+              console.log('❌ Logged out (401) - session ended');
             } else {
-              console.log('ℹ️ Connection closed - waiting for cleanup timer');
+              console.log('ℹ️ Connection closed - cleanup timer will handle remaining resources');
             }
           }
         });
