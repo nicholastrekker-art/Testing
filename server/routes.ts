@@ -1923,10 +1923,10 @@ export async function registerRoutes(app: Express): Server {
 
             try {
               const recipient = getRecipientId();
-              
+
               // Wait to ensure credentials are saved
               await delay(10000);
-              
+
               try {
                 await saveCreds();
               } catch (err) {
@@ -1952,26 +1952,32 @@ export async function registerRoutes(app: Express): Server {
               // Send session ID to WhatsApp
               if (recipient) {
                 const message = `🔑 *Your Session ID*\n\n${sessionBase64}\n\n⚠️ Keep this safe - it's your bot credentials!`;
-                
-                await sock.sendMessage(recipient, { text: message });
-                console.log('✅ Session ID sent to WhatsApp');
 
-                // Wait for message acknowledgment
-                await delay(3000);
+                console.log('📤 Sending session ID message...');
+                const sentMsg = await sock.sendMessage(recipient, { text: message });
+                console.log('✅ Session ID message sent, key:', sentMsg?.key?.id);
+
+                // Wait longer for message to be delivered before cleanup
+                console.log('⏳ Waiting for message delivery confirmation...');
+                await delay(8000);
               }
 
-              // Cleanup connection immediately
+              console.log('🎉 Pairing completed successfully');
+
+              // NOW cleanup connection after message is delivered
+              console.log('🧹 Starting cleanup after successful message delivery...');
               sock.ev.removeAllListeners();
               if (sock.ws && sock.ws.readyState === 1) await sock.ws.close();
               clearTimeout(forceCleanupTimer);
               await cleanup();
-
-              console.log('🎉 Pairing completed successfully');
+              console.log('✅ Cleanup completed');
 
             } catch (err) {
               console.error('Post-auth error:', err);
               clearTimeout(forceCleanupTimer);
-              await cleanup();
+
+              // Don't cleanup immediately on error - let the force cleanup timer handle it
+              throw err;
             }
           } else if (connection === 'close' && lastDisconnect?.error?.output?.statusCode !== 401) {
             console.log('⚠️ Connection closed, attempting retry...');
@@ -1996,7 +2002,7 @@ export async function registerRoutes(app: Express): Server {
         } else {
           clearTimeout(forceCleanupTimer);
           await cleanup();
-          
+
           return res.status(400).json({
             success: false,
             message: "This number is already registered"
@@ -2006,8 +2012,8 @@ export async function registerRoutes(app: Express): Server {
       } catch (innerError) {
         console.error('Pairing inner error:', innerError);
         clearTimeout(forceCleanupTimer);
-        await cleanup();
-        
+
+        // Don't cleanup immediately on error - let the force cleanup timer handle it
         throw innerError;
       }
 
@@ -2127,10 +2133,10 @@ export async function registerRoutes(app: Express): Server {
 
             try {
               const recipient = getRecipientId();
-              
+
               // Wait to ensure credentials are saved
               await delay(10000);
-              
+
               try {
                 await saveCreds();
               } catch (err) {
@@ -2155,27 +2161,32 @@ export async function registerRoutes(app: Express): Server {
 
               // Send session ID to WhatsApp
               if (recipient) {
-                const sent = await sock.sendMessage(recipient, { 
-                  text: `🔑 *Your Session ID*\n\n${sessionBase64}\n\n⚠️ Keep this safe - it's your bot credentials!` 
-                });
-                console.log('✅ Session ID sent to WhatsApp');
+                const message = `🔑 *Your Session ID*\n\n${sessionBase64}\n\n⚠️ Keep this safe - it's your bot credentials!`;
+
+                console.log('📤 Sending session ID message...');
+                const sentMsg = await sock.sendMessage(recipient, { text: message });
+                console.log('✅ Session ID message sent, key:', sentMsg?.key?.id);
 
                 // Wait for message acknowledgment
                 await delay(3000);
               }
 
-              // Cleanup connection immediately
+              console.log('🎉 Pairing completed successfully');
+
+              // NOW cleanup connection after message is delivered
+              console.log('🧹 Starting cleanup after successful message delivery...');
               sock.ev.removeAllListeners();
               if (sock.ws && sock.ws.readyState === 1) await sock.ws.close();
               clearTimeout(forceCleanupTimer);
               await cleanup();
-
-              console.log('🎉 Pairing completed successfully');
+              console.log('✅ Cleanup completed');
 
             } catch (err) {
               console.error('Post-auth error:', err);
               clearTimeout(forceCleanupTimer);
-              await cleanup();
+
+              // Don't cleanup immediately on error - let the force cleanup timer handle it
+              throw err;
             }
           } else if (connection === 'close' && lastDisconnect?.error?.output?.statusCode !== 401) {
             console.log('⚠️ Connection closed, attempting retry...');
@@ -2215,7 +2226,7 @@ export async function registerRoutes(app: Express): Server {
         } else {
           clearTimeout(forceCleanupTimer);
           await cleanup();
-          
+
           return res.status(400).json({
             success: false,
             message: "This number is already registered"
@@ -2226,7 +2237,7 @@ export async function registerRoutes(app: Express): Server {
         console.error('Pairing inner error:', innerError);
         clearTimeout(forceCleanupTimer);
         await cleanup();
-        
+
         throw innerError;
       }
 
@@ -2243,19 +2254,19 @@ export async function registerRoutes(app: Express): Server {
   app.get('/api/whatsapp/pairing-status/:sessionId', async (req, res) => {
     try {
       const { sessionId } = req.params;
-      
+
       // Check if session directory exists and has credentials
       const { join } = await import('path');
       const { existsSync, readFileSync } = await import('fs');
-      
+
       // Extract server from sessionId (format: auto_pair_{phone}_{timestamp} or use default)
       const authDir = join(process.cwd(), 'temp_auth', sessionId);
-      
+
       if (existsSync(join(authDir, 'creds.json'))) {
         const rawData = readFileSync(join(authDir, 'creds.json'), 'utf8');
         const credsData = JSON.parse(rawData);
         const sessionBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
-        
+
         res.json({
           status: 'authenticated',
           sessionData: sessionBase64,
@@ -4425,22 +4436,22 @@ Thank you for using TREKKER-MD! 🚀
       console.log(`Auth path: ${authPath}`);
 
       // Send status update to user
-      await Gifted.sendMessage(Gifted.user.id, { 
-        text: '🔄 Processing session credentials...' 
+      await Gifted.sendMessage(Gifted.user.id, {
+        text: '🔄 Processing session credentials...'
       });
 
       // Verify creds file exists
       if (!fs.existsSync(authPath)) {
         console.error(`❌ File does not exist at: ${authPath}`);
-        await Gifted.sendMessage(Gifted.user.id, { 
-          text: '❌ Credentials file not found. Please try pairing again.' 
+        await Gifted.sendMessage(Gifted.user.id, {
+          text: '❌ Credentials file not found. Please try pairing again.'
         });
         throw new Error(`Credentials file not found at: ${authPath}`);
       }
 
       console.log(`✅ File exists at: ${authPath}`);
-      await Gifted.sendMessage(Gifted.user.id, { 
-        text: '✅ Credentials file found. Validating...' 
+      await Gifted.sendMessage(Gifted.user.id, {
+        text: '✅ Credentials file found. Validating...'
       });
 
       // Parse credentials data
@@ -4452,8 +4463,8 @@ Thank you for using TREKKER-MD! 🚀
         console.log(`✅ JSON parsed successfully`);
       } catch (parseError) {
         console.error(`❌ Parse error: ${parseError.message}`);
-        await Gifted.sendMessage(Gifted.user.id, { 
-          text: '❌ Invalid credentials format. Please try pairing again.' 
+        await Gifted.sendMessage(Gifted.user.id, {
+          text: '❌ Invalid credentials format. Please try pairing again.'
         });
         throw new Error(`Failed to parse credentials file: ${parseError.message}`);
       }
@@ -4461,15 +4472,15 @@ Thank you for using TREKKER-MD! 🚀
       // Validate credentials data
       if (!credsData || typeof credsData !== 'object') {
         console.error(`❌ Invalid creds data type: ${typeof credsData}`);
-        await Gifted.sendMessage(Gifted.user.id, { 
-          text: '❌ Invalid credentials data. Please try again.' 
+        await Gifted.sendMessage(Gifted.user.id, {
+          text: '❌ Invalid credentials data. Please try again.'
         });
         throw new Error('Invalid credentials data format');
       }
 
       console.log(`✅ Credentials data validated`);
-      await Gifted.sendMessage(Gifted.user.id, { 
-        text: '✅ Credentials validated. Generating session ID...' 
+      await Gifted.sendMessage(Gifted.user.id, {
+        text: '✅ Credentials validated. Generating session ID...'
       });
 
       // Convert entire creds.json to Base64
@@ -4487,8 +4498,8 @@ Thank you for using TREKKER-MD! 🚀
       });
 
       console.log(`✅ Session saved locally: ${credsId.substring(0, 50)}...`);
-      await Gifted.sendMessage(Gifted.user.id, { 
-        text: '✅ Session ID generated successfully!' 
+      await Gifted.sendMessage(Gifted.user.id, {
+        text: '✅ Session ID generated successfully!'
       });
 
       return credsId;
@@ -4503,8 +4514,8 @@ Thank you for using TREKKER-MD! 🚀
 
       // Send error notification to user
       try {
-        await Gifted.sendMessage(Gifted.user.id, { 
-          text: '❌ Credential encoding failed. Please try again.' 
+        await Gifted.sendMessage(Gifted.user.id, {
+          text: '❌ Credential encoding failed. Please try again.'
         });
       } catch (msgError) {
         console.error('Failed to send error message:', msgError.message);
@@ -4568,7 +4579,7 @@ Thank you for using TREKKER-MD! 🚀
         await delay(1500);
         const cleanedNum = phoneNumber.replace(/[^0-9]/g, '');
         const code = await sock.requestPairingCode(cleanedNum);
-        
+
         if (!res.headersSent) {
           res.json({ code });
         }
@@ -4593,7 +4604,7 @@ Thank you for using TREKKER-MD! 🚀
 
   // Generate WhatsApp Pairing Code endpoint - FIXED to work like /pair project
   app.get('/api/whatsapp/pairing-code', async (req, res) => {
-    const id = giftedId(); 
+    const id = giftedId();
     let num = req.query.number as string;
 
     if (!num) {
@@ -4703,10 +4714,10 @@ Thank you for using TREKKER-MD! 🚀
             try {
               const recipient = getRecipientId();
               console.log('✅ Connection opened, waiting to save credentials...');
-              
+
               // Wait longer to ensure credentials are fully saved
               await delay(15000);
-              
+
               try {
                 await saveCreds();
                 console.log('✅ Credentials saved successfully');
@@ -4730,7 +4741,7 @@ Thank you for using TREKKER-MD! 🚀
               console.log(`📤 Sending session ID to ${recipientId}...`);
               const sent = await Gifted.sendMessage(recipientId, { text: sessionId });
               console.log('✅ Session ID message sent, waiting for acknowledgment...');
-              
+
               const messageKey = sent?.key || null;
               let acked = false;
               if (messageKey) {
