@@ -4502,26 +4502,68 @@ Thank you for using TREKKER-MD! 🚀
     }
   }
 
-  // Proxy route to pair server for pairing code generation
+  // Direct pairing code generation (no proxy needed)
   app.get('/code', async (req, res) => {
     try {
-      const phoneNumber = req.query.number;
+      const phoneNumber = req.query.number as string;
       if (!phoneNumber) {
         return res.status(400).json({ error: "Phone number is required" });
       }
 
-      // Forward request to pair server running on port 5000
-      const pairServerUrl = `http://localhost:5000/code?number=${phoneNumber}`;
-      const response = await fetch(pairServerUrl);
-      
-      if (!response.ok) {
-        return res.status(response.status).json({ error: "Failed to generate pairing code" });
+      const {
+        default: makeWASocket,
+        useMultiFileAuthState,
+        delay,
+        makeCacheableSignalKeyStore,
+        Browsers
+      } = await import('@whiskeysockets/baileys');
+      const pino = (await import('pino')).default;
+      const { join } = await import('path');
+      const { existsSync, mkdirSync } = await import('fs');
+
+      // Generate unique session ID
+      const sessionId = `pair_${phoneNumber.replace(/\D/g, '')}_${Date.now()}`;
+      const authDir = join(process.cwd(), 'temp_auth', sessionId);
+
+      if (!existsSync(authDir)) {
+        mkdirSync(authDir, { recursive: true });
       }
 
-      const data = await response.json();
-      res.json(data);
+      const { state, saveCreds } = await useMultiFileAuthState(authDir);
+
+      const sock = makeWASocket({
+        auth: {
+          creds: state.creds,
+          keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
+        },
+        printQRInTerminal: false,
+        logger: pino({ level: "fatal" }).child({ level: "fatal" }),
+        browser: Browsers.macOS("Safari")
+      });
+
+      if (!sock.authState.creds.registered) {
+        await delay(1500);
+        const cleanedNum = phoneNumber.replace(/[^0-9]/g, '');
+        const code = await sock.requestPairingCode(cleanedNum);
+        
+        if (!res.headersSent) {
+          res.json({ code });
+        }
+
+        // Clean up the socket after sending response
+        setTimeout(() => {
+          try {
+            if (sock.ev) sock.ev.removeAllListeners();
+            if (sock.ws && sock.ws.readyState === 1) sock.ws.close();
+          } catch (err) {
+            console.warn('Socket cleanup warning:', err);
+          }
+        }, 1000);
+      } else {
+        res.status(400).json({ error: "Number already registered" });
+      }
     } catch (error) {
-      console.error('Proxy error:', error);
+      console.error('Pairing code generation error:', error);
       res.status(500).json({ error: "Service unavailable" });
     }
   });

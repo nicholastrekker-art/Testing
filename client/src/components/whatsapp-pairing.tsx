@@ -100,14 +100,13 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     }
   };
 
-  // Use the working /pair endpoint to generate pairing code
+  // Generate pairing code using direct endpoint
   const generatePairingMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; selectedServer: string; botName?: string; features?: any }) => {
-      // Use relative URL to call the proxy endpoint
       const response = await fetch(`/code?number=${data.phoneNumber}`);
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Failed to generate pairing code');
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate pairing code');
       }
       const result = await response.json();
       return result;
