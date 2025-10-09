@@ -1740,6 +1740,76 @@ export async function registerRoutes(app: Express): Server {
         }
       }
 
+      const botData = {
+        ...req.body,
+        credentials,
+        name: req.body.name.trim(),
+        autoLike: req.body.autoLike === 'true',
+        autoViewStatus: req.body.autoViewStatus === 'true',
+        autoReact: req.body.autoReact === 'true',
+        chatgptEnabled: req.body.chatgptEnabled === 'true',
+      };
+
+      const validatedData = insertBotInstanceSchema.parse(botData);
+      const bot = await storage.createBotInstance(validatedData);
+
+      // Initialize bot instance
+      try {
+        await botManager.createBot(bot.id, bot);
+
+        // Set a timeout to delete the bot if it doesn't connect within 5 minutes
+        setTimeout(async () => {
+          try {
+            const currentBot = await storage.getBotInstance(bot.id);
+            if (currentBot && (currentBot.status === 'loading' || currentBot.status === 'error')) {
+              console.log(`Auto-deleting bot ${bot.id} due to connection timeout`);
+              await botManager.destroyBot(bot.id);
+              await storage.deleteBotInstance(bot.id);
+              await storage.createActivity({
+                botInstanceId: bot.id,
+                type: 'auto_cleanup',
+                description: `Bot "${bot.name}" was automatically deleted due to connection failure`,
+                serverName: getServerName()
+              });
+              broadcast({ type: 'BOT_DELETED', data: { botId: bot.id } });
+            }
+          } catch (cleanupError) {
+            console.error(`Failed to auto-cleanup bot ${bot.id}:`, cleanupError);
+          }
+        }, 5 * 60 * 1000); // 5 minutes
+      } catch (botError) {
+        // If bot creation fails, clean up the database entry
+        await storage.deleteBotInstance(bot.id);
+        throw new Error(`Failed to initialize bot: ${botError instanceof Error ? botError.message : 'Unknown error'}`);
+      }
+
+      // Create welcome activity
+      await storage.createActivity({
+        botInstanceId: bot.id,
+        type: 'bot_created',
+        description: `🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot "${bot.name}" created successfully!`,
+        serverName: getServerName()
+      });
+
+      broadcast({ type: 'BOT_CREATED', data: bot });
+      res.json(bot);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to create bot instance";
+      console.error('Bot creation error:', error);
+
+      // Provide more specific error messages
+      let userMessage = errorMessage;
+      if (errorMessage.includes('name')) {
+        userMessage = "Bot name is invalid or already exists. Please choose a different name.";
+      } else if (errorMessage.includes('credentials')) {
+        userMessage = "Invalid credentials file. Please upload a valid WhatsApp session file.";
+      } else if (errorMessage.includes('Expected object')) {
+        userMessage = "Missing required bot configuration. Please fill in all required fields.";
+      }
+
+      res.status(400).json({ message: userMessage });
+    }
+  });
 
   // Generate WhatsApp Pairing Code endpoint (POST method for frontend compatibility)
   app.post('/api/whatsapp/generate-pairing-code', async (req, res) => {
@@ -1905,6 +1975,7 @@ export async function registerRoutes(app: Express): Server {
         }
         
         return res.status(400).json({
+          success: false,
           message: "Failed to generate pairing code. Number may already be registered."
         });
       }
@@ -1923,78 +1994,6 @@ export async function registerRoutes(app: Express): Server {
         success: false,
         message: error instanceof Error ? error.message : "Failed to generate pairing code"
       });
-    }
-  });
-
-
-      const botData = {
-        ...req.body,
-        credentials,
-        name: req.body.name.trim(),
-        autoLike: req.body.autoLike === 'true',
-        autoViewStatus: req.body.autoViewStatus === 'true',
-        autoReact: req.body.autoReact === 'true',
-        chatgptEnabled: req.body.chatgptEnabled === 'true',
-      };
-
-      const validatedData = insertBotInstanceSchema.parse(botData);
-      const bot = await storage.createBotInstance(validatedData);
-
-      // Initialize bot instance
-      try {
-        await botManager.createBot(bot.id, bot);
-
-        // Set a timeout to delete the bot if it doesn't connect within 5 minutes
-        setTimeout(async () => {
-          try {
-            const currentBot = await storage.getBotInstance(bot.id);
-            if (currentBot && (currentBot.status === 'loading' || currentBot.status === 'error')) {
-              console.log(`Auto-deleting bot ${bot.id} due to connection timeout`);
-              await botManager.destroyBot(bot.id);
-              await storage.deleteBotInstance(bot.id);
-              await storage.createActivity({
-                botInstanceId: bot.id,
-                type: 'auto_cleanup',
-                description: `Bot "${bot.name}" was automatically deleted due to connection failure`,
-                serverName: getServerName()
-              });
-              broadcast({ type: 'BOT_DELETED', data: { botId: bot.id } });
-            }
-          } catch (cleanupError) {
-            console.error(`Failed to auto-cleanup bot ${bot.id}:`, cleanupError);
-          }
-        }, 5 * 60 * 1000); // 5 minutes
-      } catch (botError) {
-        // If bot creation fails, clean up the database entry
-        await storage.deleteBotInstance(bot.id);
-        throw new Error(`Failed to initialize bot: ${botError instanceof Error ? botError.message : 'Unknown error'}`);
-      }
-
-      // Create welcome activity
-      await storage.createActivity({
-        botInstanceId: bot.id,
-        type: 'bot_created',
-        description: `🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot "${bot.name}" created successfully!`,
-        serverName: getServerName()
-      });
-
-      broadcast({ type: 'BOT_CREATED', data: bot });
-      res.json(bot);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to create bot instance";
-      console.error('Bot creation error:', error);
-
-      // Provide more specific error messages
-      let userMessage = errorMessage;
-      if (errorMessage.includes('name')) {
-        userMessage = "Bot name is invalid or already exists. Please choose a different name.";
-      } else if (errorMessage.includes('credentials')) {
-        userMessage = "Invalid credentials file. Please upload a valid WhatsApp session file.";
-      } else if (errorMessage.includes('Expected object')) {
-        userMessage = "Missing required bot configuration. Please fill in all required fields.";
-      }
-
-      res.status(400).json({ message: userMessage });
     }
   });
 
