@@ -1833,37 +1833,52 @@ export async function registerRoutes(app: Express): Server {
     }
   }
 
-  // Helper function to save session from auth directory
+  // Helper function to save session from auth directory (with verification)
   async function saveSessionFromAuthDir(authDir: string, phoneNumber: string): Promise<string | null> {
     const credsPath = path.join(authDir, 'creds.json');
     try {
       if (!fs.existsSync(credsPath)) {
-        console.error('Credentials file not found at:', credsPath);
+        console.error('❌ Credentials file not found at:', credsPath);
         return null;
       }
-      
+
       const rawData = fs.readFileSync(credsPath, 'utf8');
       const credsData = JSON.parse(rawData);
-      
-      // Create clean credentials object
-      const cleanCredentials = {
-        creds: credsData.creds,
-        keys: credsData.keys || {}
-      };
-      
-      const credsBase64 = Buffer.from(JSON.stringify(cleanCredentials)).toString('base64');
-      
-      // Save to database
+
+      // Verify credentials structure before generating session ID
+      if (!credsData.creds || !credsData.creds.noiseKey || !credsData.creds.signedIdentityKey) {
+        console.error('❌ Invalid credentials structure - missing required fields');
+        return null;
+      }
+
+      // CRITICAL: Generate session ID exactly like /pair folder does
+      // Just base64-encode the entire creds.json content
+      const credsBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
+
+      // Verify the base64 can be decoded back
+      try {
+        const decoded = Buffer.from(credsBase64, 'base64').toString('utf8');
+        const decodedCreds = JSON.parse(decoded);
+        if (!decodedCreds.creds || !decodedCreds.creds.noiseKey) {
+          console.error('❌ Session ID validation failed - cannot decode back to valid credentials');
+          return null;
+        }
+      } catch (decodeErr) {
+        console.error('❌ Session ID encoding verification failed:', decodeErr);
+        return null;
+      }
+
+      // Save to database with the phone number
       await storage.saveGuestSession({
         phoneNumber: phoneNumber.replace(/[\s\-\(\)\+]/g, ''),
         sessionId: credsBase64,
         createdAt: new Date()
       });
-      
-      console.log(`✅ Session saved to database for phone: ${phoneNumber}`);
+
+      console.log(`✅ Session ID generated and saved to database for phone: ${phoneNumber}`);
       return credsBase64;
     } catch (e) {
-      console.error('saveSessionFromAuthDir error:', e);
+      console.error('❌ saveSessionFromAuthDir error:', e);
       return null;
     }
   }
@@ -1962,7 +1977,7 @@ export async function registerRoutes(app: Express): Server {
               // Wait 10 seconds to ensure credentials are saved (same as /pair folder)
               console.log('Waiting 10 seconds to ensure credentials are saved...');
               await delay(10000);
-              
+
               // Force save credentials
               try {
                 await saveCreds();
@@ -1989,7 +2004,7 @@ export async function registerRoutes(app: Express): Server {
 
               const sent = await Gifted.sendMessage(recipientId, { text: sessionId });
               const messageKey = sent?.key || null;
-              
+
               // Wait for message acknowledgment (same as /pair folder)
               let acked = false;
               if (messageKey) {
@@ -2002,7 +2017,7 @@ export async function registerRoutes(app: Express): Server {
               if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
               Gifted.authState = null;
               sessionStorage.clear();
-              
+
               if (fs.existsSync(authDir)) await removeFile(authDir);
               clearTimeout(forceCleanupTimer);
               console.log('✅ Connection closed immediately after sending session ID.');
@@ -2273,8 +2288,6 @@ export async function registerRoutes(app: Express): Server {
       console.log(`💾 Credentials saved with browser registration to: ${credsFilePath}`);
 
       try {
-        const credentialsBase64 = Buffer.from(JSON.stringify(cleanCredentials, null, 2)).toString('base64');
-
         const credentialsMessage = `🎉 *WhatsApp Pairing Successful!*
 
 Your bot credentials have been generated and browser session registered.
@@ -2284,7 +2297,7 @@ Your bot credentials have been generated and browser session registered.
 ✅ *Browser:* Registered to Safari/Chrome
 
 🔐 *SESSION ID (Copy this for Step 2):*
-\`\`\`${credentialsBase64}\`\`\`
+\`\`\`${Buffer.from(JSON.stringify(cleanCredentials, null, 2)).toString('base64')}\`\`\`
 
 ⚠️ *IMPORTANT - READ CAREFULLY:*
 • Keep this Session ID safe and private
@@ -2826,9 +2839,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
     try {
       const { phoneNumber } = req.params;
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
+
       const session = await storage.getGuestSession(cleanedPhone);
-      
+
       if (session) {
         res.json({
           found: true,
