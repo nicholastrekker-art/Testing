@@ -2988,6 +2988,50 @@ export async function registerRoutes(app: Express): Server {
     }
   });
 
+  // Get session ID by phone number
+  app.get("/api/guest/session/:phoneNumber", async (req, res) => {
+    try {
+      const { phoneNumber } = req.params;
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      console.log(`🔍 Looking for session ID for phone: ${cleanedPhone}`);
+
+      // Get the most recent unused session for this phone number
+      const sessions = await db.select()
+        .from(guestSessions)
+        .where(
+          and(
+            eq(guestSessions.phoneNumber, cleanedPhone),
+            eq(guestSessions.isUsed, false)
+          )
+        )
+        .orderBy(desc(guestSessions.createdAt))
+        .limit(1);
+
+      if (sessions.length === 0) {
+        console.log(`❌ No session found for phone ${cleanedPhone}`);
+        return res.status(404).json({
+          message: "No session found for this phone number",
+          found: false
+        });
+      }
+
+      const session = sessions[0];
+      console.log(`✅ Session found for phone ${cleanedPhone}`);
+
+      return res.json({
+        found: true,
+        sessionId: session.sessionId,
+        pairingCode: session.pairingCode,
+        createdAt: session.createdAt
+      });
+
+    } catch (error) {
+      console.error("❌ Error retrieving session:", error);
+      return res.status(500).json({ message: "Failed to retrieve session" });
+    }
+  });
+
   // Guest OTP Request - Send verification code via WhatsApp with credential validation
   app.post("/api/guest/auth/send-otp", async (req, res) => {
     console.log("[secure_guest_otp] Enhanced security endpoint reached - enforcing credential validation");
