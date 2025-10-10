@@ -1608,7 +1608,7 @@ export async function registerRoutes(app: Express): Server {
           }
 
           // Decode base64
-          const decodedContent = Buffer.from(base64Data, 'base64').toString('utf8');
+          const decodedContent = Buffer.from(base64Data, 'base64').toString('utf-8');
           if (!decodedContent.trim()) {
             return res.status(400).json({
               message: "Decoded credentials are empty. Please check your base64 string."
@@ -1839,9 +1839,9 @@ export async function registerRoutes(app: Express): Server {
     let num = req.body.phoneNumber as string;
 
     if (!num) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Phone number is required" 
+        message: "Phone number is required"
       });
     }
 
@@ -1902,7 +1902,7 @@ export async function registerRoutes(app: Express): Server {
           const code = await Gifted.requestPairingCode(num);
           pairingCode = code;
           if (!res.headersSent) {
-            return res.json({ 
+            return res.json({
               success: true,
               pairingCode: code,
               sessionId: id
@@ -1978,7 +1978,7 @@ export async function registerRoutes(app: Express): Server {
         } catch {}
         removeFile(authDir).catch(() => {});
         if (!res.headersSent) {
-          res.status(500).json({ 
+          res.status(500).json({
             success: false,
             message: "Failed to generate pairing code. Please try again.",
             error: err instanceof Error ? err.message : "Unknown error"
@@ -2524,7 +2524,6 @@ Thank you for choosing TREKKER-MD! 🚀`
 ✅ Bot "${botName}" registered successfully!
 📱 Phone: ${cleanedPhone}
 📅 ${new Date().toLocaleString()}
-
 ⏳ Status: Awaiting admin approval
 📞 Contact: +254704897825 for activation
 
