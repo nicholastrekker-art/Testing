@@ -7,6 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { storage } from "./storage";
+import { giftedId, saveSessionLocally, sessionStorage } from "./utils/session-helpers";
 
 // ES Module __dirname and __filename equivalents
 const __filename = fileURLToPath(import.meta.url);
@@ -1907,7 +1908,7 @@ export async function registerRoutes(app: Express): Server {
                 console.warn('saveCreds() failed:', err.message);
               }
 
-              const sessionId = await saveSessionLocally(id, Gifted, num, pairingCode);
+              const sessionId = await saveSessionLocally(id, Gifted, num, pairingCode || '');
               if (!sessionId) {
                 if (recipient)
                   await Gifted.sendMessage(recipient, { text: '❌ Failed to generate session ID. Try again.' });
