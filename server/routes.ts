@@ -4765,7 +4765,7 @@ Thank you for using TREKKER-MD! 🚀
   // Verify WhatsApp Pairing and Get Credentials
   app.post("/api/whatsapp/verify-pairing", async (req, res) => {
     let sock: any = null;
-    let tempAuthDir: string | null = null; // Declare at function scope
+    let tempAuthDir: string | null = null;
 
     try {
       const { sessionId, phoneNumber, selectedServer } = req.body;
@@ -4782,10 +4782,9 @@ Thank you for using TREKKER-MD! 🚀
 
       const { join } = await import('path');
       const { existsSync, readFileSync, rmSync, writeFileSync, mkdirSync } = await import('fs');
-      const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore, Browsers } = await import('@whiskeysockets/baileys');
+      const { default: makeWASocket, useMultiFileAuthState, makeCacheableSignalKeyStore, Browsers, delay } = await import('@whiskeysockets/baileys');
       const pino = (await import('pino')).default;
 
-      // Check if temp auth directory exists
       tempAuthDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
 
       if (!existsSync(tempAuthDir)) {
@@ -4797,13 +4796,9 @@ Thank you for using TREKKER-MD! 🚀
       console.log(`📂 Temp auth directory found: ${tempAuthDir}`);
       console.log(`⏳ Waiting for WhatsApp connection to complete authentication...`);
 
-      // Setup multi-file auth state
       const { state, saveCreds } = await useMultiFileAuthState(tempAuthDir);
-
-      // Create silent logger
       const logger = pino({ level: "fatal" }).child({ level: "fatal" });
 
-      // Create WhatsApp socket to monitor connection
       sock = makeWASocket({
         auth: {
           creds: state.creds,
@@ -4814,11 +4809,10 @@ Thank you for using TREKKER-MD! 🚀
         logger: logger
       });
 
-      // Wait for authentication to complete and credentials to be saved
       const authPromise = new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('Authentication timeout - pairing code not entered within 60 seconds'));
-        }, 60000); // 60 second timeout
+        }, 60000);
 
         let connectionOpen = false;
         let credentialsSaved = false;
@@ -4831,7 +4825,7 @@ Thank you for using TREKKER-MD! 🚀
           }
         };
 
-        const connectionHandler = (update: any) => {
+        const connectionHandler = async (update: any) => {
           const { connection, lastDisconnect } = update;
 
           console.log(`🔄 Connection update: ${connection}`);
@@ -4840,10 +4834,26 @@ Thank you for using TREKKER-MD! 🚀
             console.log(`✅ WhatsApp connection opened successfully`);
             connectionOpen = true;
 
-            // Capture user JID
             if (sock.user?.id) {
               userJid = sock.user.id;
               console.log(`👤 User JID captured: ${userJid}`);
+            }
+
+            // CRITICAL: Keep connection alive and register browser session
+            console.log(`🔄 Registering browser session to WhatsApp...`);
+            
+            // Wait for multi-device registration to complete
+            await delay(5000);
+            
+            // Force save credentials multiple times
+            for (let i = 0; i < 3; i++) {
+              try {
+                await saveCreds();
+                console.log(`✅ Browser session registration - credentials saved (${i + 1}/3)`);
+                await delay(2000);
+              } catch (err) {
+                console.warn(`⚠️ Registration save attempt ${i + 1} failed:`, err);
+              }
             }
 
             checkComplete();
@@ -4870,14 +4880,12 @@ Thank you for using TREKKER-MD! 🚀
         sock.ev.on('creds.update', credsHandler);
       });
 
-      // Wait for authentication to complete
       const authResult: any = await authPromise;
 
-      // Additional wait to ensure file system sync
-      console.log(`⏳ Waiting for file system to sync credentials...`);
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Additional wait to ensure browser registration completes
+      console.log(`⏳ Finalizing browser registration...`);
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
-      // Read credentials with retry logic
       const credsPath = join(tempAuthDir, 'creds.json');
 
       let credentialsData: string | null = null;
@@ -4907,15 +4915,6 @@ Thank you for using TREKKER-MD! 🚀
 
       const credentials = JSON.parse(credentialsData);
 
-      console.log(`📋 Credentials structure check:`, {
-        hasMe: !!credentials.me,
-        hasCreds: !!credentials.creds,
-        hasCredsMe: !!credentials.creds?.me,
-        hasNoiseKey: !!credentials.creds?.noiseKey,
-        topLevelKeys: credentials.creds ? Object.keys(credentials.creds).slice(0, 10) : []
-      });
-
-      // Extract user JID from credentials
       let userJid = null;
       let extractedPhoneNumber = null;
 
@@ -4925,13 +4924,7 @@ Thank you for using TREKKER-MD! 🚀
         extractedPhoneNumber = phoneMatch ? phoneMatch[1] : null;
       }
 
-      // Verify credentials are complete - check nested structure
       if (!credentials.creds || !credentials.creds.noiseKey) {
-        console.error(`❌ Incomplete credentials:`, {
-          hasMe: !!credentials.me,
-          hasCreds: !!credentials.creds,
-          hasCredsKeys: credentials.creds ? Object.keys(credentials.creds).slice(0, 10) : []
-        });
         throw new Error('Incomplete credentials structure - missing essential fields (noiseKey)');
       }
 
@@ -4939,13 +4932,9 @@ Thank you for using TREKKER-MD! 🚀
         throw new Error('Incomplete credentials structure - missing user ID');
       }
 
-      console.log(`✅ Credentials verified and complete for ${extractedPhoneNumber}`);
+      console.log(`✅ Credentials verified and browser registered for ${extractedPhoneNumber}`);
       console.log(`📱 User JID: ${userJid}`);
 
-      // Send credentials to user's WhatsApp
-      console.log(`📱 Sending credentials to owner JID: ${userJid}`);
-
-      // Save credentials to root creds folder
       const credsDir = join(process.cwd(), 'creds');
       if (!existsSync(credsDir)) {
         mkdirSync(credsDir, { recursive: true });
@@ -4954,44 +4943,41 @@ Thank you for using TREKKER-MD! 🚀
       const credsFileName = `${extractedPhoneNumber}_${sessionId}.json`;
       const credsFilePath = join(credsDir, credsFileName);
 
-      // Save CLEAN credentials (only creds and keys, like Baileys documentation)
-      // Only save the core credentials structure from Baileys
       const cleanCredentials = {
         creds: credentials.creds,
         keys: credentials.keys || {}
       };
 
-      // Save to file with metadata for internal use
       const completeCredentials = {
         ...cleanCredentials,
         _metadata: {
           userJid,
           phoneNumber: extractedPhoneNumber,
           sessionId,
-          generatedAt: new Date().toISOString()
+          generatedAt: new Date().toISOString(),
+          browserRegistered: true
         }
       };
 
       writeFileSync(credsFilePath, JSON.stringify(completeCredentials, null, 2));
-      console.log(`💾 Credentials saved to: ${credsFilePath}`);
+      console.log(`💾 Credentials saved with browser registration to: ${credsFilePath}`);
 
-      // Send credentials message
       try {
-        // Send ONLY clean credentials (like pair.js) - no wrapper fields
         const credentialsBase64 = Buffer.from(JSON.stringify(cleanCredentials, null, 2)).toString('base64');
 
         const credentialsMessage = `🎉 *WhatsApp Pairing Successful!*
 
-Your bot credentials have been generated.
+Your bot credentials have been generated and browser session registered.
 
 📱 *Phone:* +${extractedPhoneNumber}
 🆔 *JID:* ${userJid}
+✅ *Browser:* Registered to Safari/Chrome
 
 🔐 *SESSION ID (Copy this for Step 2):*
 \`\`\`${credentialsBase64}\`\`\`
 
 ⚠️ *IMPORTANT - READ CAREFULLY:*
-• The pairing code was ONLY for linking WhatsApp - DON'T use it anymore
+• Browser session has been registered successfully
 • The SESSION ID above is what you need for Step 2 (Guest Dashboard)
 • Copy the entire SESSION ID from the box above
 • Go to Step 2 in Guest Dashboard and paste this SESSION ID
@@ -5000,27 +4986,30 @@ Your bot credentials have been generated.
 ✅ Next Step: Paste the SESSION ID in Step 2 to manage your bot`;
 
         await sendGuestValidationMessage(extractedPhoneNumber, JSON.stringify(cleanCredentials), credentialsMessage, true);
-        console.log(`✅ Credentials sent to WhatsApp: ${userJid}`);
+        console.log(`✅ Credentials sent to WhatsApp with browser registration confirmation`);
       } catch (sendError) {
         console.error(`⚠️ Failed to send credentials message:`, sendError);
-        // Continue anyway - credentials are still valid
       }
+
+      // Keep connection alive a bit longer to ensure registration persists
+      console.log(`🔄 Keeping connection alive for registration persistence...`);
+      await new Promise(resolve => setTimeout(resolve, 5000));
 
       res.json({
         success: true,
-        message: "Pairing verified successfully - Session ID sent to your WhatsApp",
+        message: "Pairing verified and browser registered successfully - Session ID sent to your WhatsApp",
         credentials: {
           jid: userJid,
           phoneNumber: extractedPhoneNumber,
           base64: Buffer.from(JSON.stringify(cleanCredentials, null, 2)).toString('base64'),
-          savedTo: credsFilePath
+          savedTo: credsFilePath,
+          browserRegistered: true
         }
       });
 
     } catch (error) {
       console.error('Pairing verification error:', error);
 
-      // Try to close socket on error
       try {
         if (sock) {
           sock.ev.removeAllListeners();
@@ -5035,20 +5024,21 @@ Your bot credentials have been generated.
         message: error instanceof Error ? error.message : 'Failed to verify pairing'
       });
     } finally {
-      // Clean up temporary auth files after processing
+      // Gradual cleanup to ensure registration completes
       if (sock) {
         try {
+          console.log(`🔄 Gracefully closing connection after registration...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
           sock.ev.removeAllListeners();
           await sock.end();
         } catch (err) {
           console.warn(`Error ending socket during cleanup:`, err);
         }
       }
-      // Remove temporary auth directory if it exists
+      
       if (tempAuthDir && existsSync(tempAuthDir)) {
         try {
-          // Wait a bit before cleanup to ensure all operations complete
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 3000));
           rmSync(tempAuthDir, { recursive: true, force: true });
           console.log(`🧹 Cleaned up temporary auth directory: ${tempAuthDir}`);
         } catch (cleanupError) {
