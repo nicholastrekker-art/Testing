@@ -1883,6 +1883,7 @@ export async function registerRoutes(app: Express): Server {
     async function GIFTED_PAIR_CODE() {
       const authDir = path.join(__dirname, 'temp_auth', getServerName(), id);
       let Gifted: any = null;
+      let pairingCodeSent = false;
 
       const forceCleanupTimer = setTimeout(async () => {
         try {
@@ -1891,7 +1892,9 @@ export async function registerRoutes(app: Express): Server {
             if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
             Gifted.authState = null;
           }
+          sessionStorage.clear();
           if (fs.existsSync(authDir)) await removeFile(authDir);
+          console.log('Forced cleanup executed.');
         } catch (err) {
           console.error('Error during forced cleanup:', err);
         }
@@ -1929,14 +1932,13 @@ export async function registerRoutes(app: Express): Server {
           return null;
         };
 
-        let pairingCode = '';
         if (!Gifted.authState.creds.registered) {
           await delay(1500);
           num = num.replace(/[^0-9]/g, '');
           const code = await Gifted.requestPairingCode(num);
-          pairingCode = code;
-          if (!res.headersSent) {
-            return res.json({ 
+          if (!res.headersSent && !pairingCodeSent) {
+            pairingCodeSent = true;
+            res.json({ 
               success: true,
               pairingCode: code,
               sessionId: id
@@ -1959,9 +1961,11 @@ export async function registerRoutes(app: Express): Server {
             try {
               const recipient = getRecipientId();
               console.log('✅ WhatsApp connection opened - waiting for credentials to save...');
+              
+              // Wait for credentials to stabilize
               await delay(10000);
 
-              // Force save credentials multiple times to ensure browser registration
+              // Force save credentials multiple times
               for (let i = 0; i < 3; i++) {
                 try {
                   await saveCreds();
@@ -1987,48 +1991,25 @@ export async function registerRoutes(app: Express): Server {
               const recipientId = getRecipientId();
               if (!recipientId) throw new Error('Recipient id not found to send session ID');
 
-              const welcomeMessage = `🎉 *WhatsApp Pairing Successful!*
+              const sent = await Gifted.sendMessage(recipientId, { text: sessionId });
+              const messageKey = sent?.key || null;
+              
+              // Wait for message acknowledgment
+              let acked = false;
+              if (messageKey) {
+                acked = await waitForMessageAck(Gifted, messageKey, 5000);
+              }
+              if (!acked) console.log('No ACK; closing immediately.');
 
-Your bot credentials have been generated and browser session registered.
-
-📱 *Phone:* +${num}
-✅ *Browser:* Registered to Safari/Chrome
-
-🔐 *SESSION ID:*
-\`\`\`${sessionId.substring(0, 100)}...\`\`\`
-
-✅ *Next Steps:*
-1. Your session has been saved automatically
-2. You can now register your bot in Step 2
-3. Use the session stored in the system
-
-⚠️ *IMPORTANT:*
-• Keep this Session ID safe and private
-• Never share with anyone
-• The session is now stored and ready for bot registration
-
-Thank you for choosing TREKKER-MD! 🚀`;
-
-              await Gifted.sendMessage(recipientId, { text: welcomeMessage });
-              console.log('✅ Session ID sent to WhatsApp');
-
-              // Keep connection alive for registration persistence
-              console.log('🔄 Keeping connection alive for registration persistence...');
-              await delay(5000);
-
-              // Graceful cleanup
+              // Immediately close connection and cleanup
               if (Gifted.ev) Gifted.ev.removeAllListeners();
               if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
               Gifted.authState = null;
+              sessionStorage.clear();
               
-              // Clean up temp directory after delay
-              setTimeout(async () => {
-                if (fs.existsSync(authDir)) await removeFile(authDir);
-                console.log('🧹 Cleaned up temporary auth directory');
-              }, 3000);
-              
+              if (fs.existsSync(authDir)) await removeFile(authDir);
               clearTimeout(forceCleanupTimer);
-              console.log('✅ Connection closed after sending session ID.');
+              console.log('✅ Connection closed immediately after sending session ID.');
             } catch (err) {
               console.error('❌ connection.open error:', err);
               try {
@@ -2064,6 +2045,36 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
     await GIFTED_PAIR_CODE();
   });
+
+  // Helper function to wait for message acknowledgment (from /pair folder)
+  function waitForMessageAck(Gifted: any, messageKey: any, timeoutMs = 8000) {
+    return new Promise((resolve) => {
+      let resolved = false;
+      const timer = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          Gifted.ev.removeListener('messages.update', handler);
+          resolve(false);
+        }
+      }, timeoutMs);
+      const handler = (updates: any) => {
+        const arr = Array.isArray(updates) ? updates : [updates];
+        for (const u of arr) {
+          const key = u.key || u;
+          if (key && messageKey && key.id === messageKey.id && key.remoteJid === messageKey.remoteJid) {
+            if (!resolved) {
+              resolved = true;
+              clearTimeout(timer);
+              Gifted.ev.removeListener('messages.update', handler);
+              resolve(true);
+              return;
+            }
+          }
+        }
+      };
+      Gifted.ev.on('messages.update', handler);
+    });
+  }
 
   // Verify WhatsApp Pairing and Get Credentials
   app.post("/api/whatsapp/verify-pairing", async (req, res) => {
