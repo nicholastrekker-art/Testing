@@ -7,7 +7,29 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { storage } from "./storage";
-import { giftedId, saveSessionLocally, sessionStorage } from "./utils/session-helpers";
+import { giftedId } from "../pair/lib/index.js";
+
+// Create sessionStorage locally since it's not exported from pair/lib
+const sessionStorage = new Map();
+
+// Define saveSessionLocally function locally
+async function saveSessionLocally(id: string, sock: any, num: string, pairingCode: string): Promise<string | null> {
+  try {
+    // Implementation moved here from missing utils/session-helpers
+    const credsBase64 = Buffer.from(JSON.stringify(sock.authState.creds)).toString('base64');
+    const now = new Date();
+    sessionStorage.set(credsBase64, {
+      sessionId: credsBase64,
+      credsData: credsBase64,
+      createdAt: now,
+      updatedAt: now
+    });
+    return credsBase64;
+  } catch (e) {
+    console.error('saveSessionLocally error:', e);
+    return null;
+  }
+}
 
 // ES Module __dirname and __filename equivalents
 const __filename = fileURLToPath(import.meta.url);
