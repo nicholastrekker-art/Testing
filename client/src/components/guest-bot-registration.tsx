@@ -20,11 +20,15 @@ interface GuestBotRegistrationProps {
 export default function GuestBotRegistration({ open, onClose }: GuestBotRegistrationProps) {
   const { toast } = useToast();
 
+  // Check for auto-register data from localStorage
+  const autoSessionId = localStorage.getItem('autoRegisterSessionId') || '';
+  const autoPhoneNumber = localStorage.getItem('autoRegisterPhoneNumber') || '';
+
   const [formData, setFormData] = useState({
     botName: '',
-    phoneNumber: '',
+    phoneNumber: autoPhoneNumber,
     credentialType: 'base64', // 'base64' or 'file'
-    sessionId: '',
+    sessionId: autoSessionId,
     credsFile: null as File | null,
     features: {
       autoLike: false,
@@ -36,6 +40,14 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     },
     selectedServer: '' // Added to store the selected server
   });
+
+  // Clear auto-register data after it's been used
+  React.useEffect(() => {
+    if (open && autoSessionId && autoPhoneNumber) {
+      localStorage.removeItem('autoRegisterSessionId');
+      localStorage.removeItem('autoRegisterPhoneNumber');
+    }
+  }, [open, autoSessionId, autoPhoneNumber]);
 
   // Auto-fill session ID and phone number from localStorage when dialog opens
   useEffect(() => {

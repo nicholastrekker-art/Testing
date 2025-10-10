@@ -78,16 +78,17 @@ export default function WhatsAppPairingPage() {
             
             toast({
               title: "Session ID Retrieved!",
-              description: "Automatically proceeding to bot registration...",
+              description: "Automatically registering your bot...",
             });
 
-            // Store in localStorage for auto-fill
-            localStorage.setItem('pendingSessionId', data.sessionId);
-            localStorage.setItem('pendingPhoneNumber', phoneNumber);
+            // Store session data and redirect to dashboard with registration flow
+            localStorage.setItem('autoRegisterSessionId', data.sessionId);
+            localStorage.setItem('autoRegisterPhoneNumber', phoneNumber);
+            localStorage.setItem('autoRegisterFlow', 'true');
 
-            // Auto-proceed to bot registration page after 2 seconds
+            // Auto-proceed to dashboard which will handle registration
             setTimeout(() => {
-              setLocation('/guest/bot-management');
+              setLocation('/');
             }, 2000);
           }
         }

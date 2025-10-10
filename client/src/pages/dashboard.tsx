@@ -66,6 +66,26 @@ export default function Dashboard() {
   const [selectedBotForFeatures, setSelectedBotForFeatures] = useState<BotInstance | null>(null);
   const [editingRegistration, setEditingRegistration] = useState<GodRegistryEntry | null>(null);
 
+  // Auto-open registration if coming from pairing flow
+  React.useEffect(() => {
+    const autoRegisterFlow = localStorage.getItem('autoRegisterFlow');
+    const sessionId = localStorage.getItem('autoRegisterSessionId');
+    const phoneNumber = localStorage.getItem('autoRegisterPhoneNumber');
+
+    if (autoRegisterFlow === 'true' && sessionId && phoneNumber) {
+      // Clear the flags
+      localStorage.removeItem('autoRegisterFlow');
+
+      // Open registration dialog
+      setShowGuestRegistration(true);
+
+      toast({
+        title: "Session Retrieved!",
+        description: "Please complete your bot registration with the auto-filled credentials.",
+      });
+    }
+  }, [toast]);
+
   // Fetch dashboard stats
   const { data: stats = {}, isLoading: statsLoading } = useQuery({
     queryKey: ["/api/dashboard/stats"],
