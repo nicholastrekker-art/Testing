@@ -75,12 +75,20 @@ export default function WhatsAppPairingPage() {
             setSessionId(data.sessionId);
             clearInterval(interval);
             setPollingInterval(null);
+            
             toast({
-              title: "Session ID Received!",
-              description: "Your session ID has been saved and is ready to use.",
+              title: "Session ID Retrieved!",
+              description: "Automatically proceeding to bot registration...",
             });
-            // Auto-proceed to step 2
-            setCurrentStep(2);
+
+            // Store in localStorage for auto-fill
+            localStorage.setItem('pendingSessionId', data.sessionId);
+            localStorage.setItem('pendingPhoneNumber', phoneNumber);
+
+            // Auto-proceed to bot registration page after 2 seconds
+            setTimeout(() => {
+              setLocation('/guest/bot-management');
+            }, 2000);
           }
         }
       } catch (error) {
@@ -90,13 +98,18 @@ export default function WhatsAppPairingPage() {
 
     setPollingInterval(interval);
 
-    // Stop polling after 2 minutes
+    // Stop polling after 3 minutes
     setTimeout(() => {
       if (interval) {
         clearInterval(interval);
         setPollingInterval(null);
+        toast({
+          title: "Timeout",
+          description: "Session ID not received. Please try again or proceed manually.",
+          variant: "destructive"
+        });
       }
-    }, 120000);
+    }, 180000);
   };
 
   // Cleanup polling on unmount
@@ -254,10 +267,10 @@ export default function WhatsAppPairingPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CheckCircle className="h-6 w-6 text-green-600" />
-                Step 2: Link Your WhatsApp
+                Step 2: Waiting for WhatsApp Pairing
               </CardTitle>
               <CardDescription>
-                Follow these instructions to link your WhatsApp account using the pairing code
+                Enter the pairing code in WhatsApp - we'll automatically fetch your session ID
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -286,127 +299,89 @@ export default function WhatsAppPairingPage() {
                     <li>3. Tap <strong>Link a Device</strong></li>
                     <li>4. Tap <strong>Link with phone number instead</strong></li>
                     <li>5. Enter the pairing code above</li>
-                    <li>6. <strong>Check your WhatsApp messages</strong> - Session ID will arrive automatically!</li>
                   </ol>
                 </AlertDescription>
               </Alert>
 
-              {sessionId && (
-                <Card className="border-purple-200">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Smartphone className="h-6 w-6 text-purple-600" />
-                      Session ID Received
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4 text-center">
-                    <p className="text-sm text-muted-foreground mb-2">Your Session ID:</p>
-                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 tracking-wide break-all">
-                      {sessionId}
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        navigator.clipboard.writeText(sessionId);
-                        toast({
-                          title: "Session ID Copied!",
-                          description: "Session ID copied to clipboard",
-                        });
-                      }}
-                      className="mt-2"
-                    >
-                      <Copy className="h-4 w-4 mr-1" />
-                      Copy Session ID
-                    </Button>
+              {!sessionId && (
+                <Card className="border-blue-200 bg-blue-50 dark:bg-blue-900/20">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-center space-x-3 mb-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <div>
+                        <p className="font-medium text-blue-900 dark:text-blue-100">Waiting for Session ID...</p>
+                        <p className="text-sm text-blue-700 dark:text-blue-300">This will happen automatically after pairing</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center space-x-1">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    </div>
                   </CardContent>
                 </Card>
               )}
 
-
               {sessionId && (
-                <Card className="border-purple-200 bg-purple-50 dark:bg-purple-900/20">
+                <Card className="border-green-200 bg-green-50 dark:bg-green-900/20">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
-                      <Smartphone className="h-6 w-6" />
-                      Session ID Received!
+                    <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                      <CheckCircle className="h-6 w-6" />
+                      Session ID Retrieved Successfully!
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-purple-300">
-                      <p className="text-xs text-muted-foreground mb-2">Your Session ID:</p>
-                      <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded font-mono text-sm break-all max-h-32 overflow-y-auto">
-                        {sessionId}
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => {
-                        navigator.clipboard.writeText(sessionId);
-                        toast({
-                          title: "Session ID Copied!",
-                          description: "Session ID has been copied to clipboard",
-                        });
-                      }}
-                      className="w-full bg-purple-600 hover:bg-purple-700"
-                      size="lg"
-                    >
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copy Session ID
-                    </Button>
-                    <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20">
+                    <Alert className="border-green-500 bg-white dark:bg-gray-800">
                       <CheckCircle className="h-4 w-4 text-green-600" />
                       <AlertDescription className="text-green-800 dark:text-green-200">
-                        ✅ Session ID also sent to your WhatsApp! Use either copy to continue.
+                        ✅ Your session credentials have been automatically retrieved and saved!
                       </AlertDescription>
                     </Alert>
+                    
+                    <div className="text-center p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border-2 border-purple-300">
+                      <div className="animate-pulse mb-3">
+                        <ArrowRight className="h-8 w-8 mx-auto text-purple-600" />
+                      </div>
+                      <p className="font-semibold text-purple-900 dark:text-purple-100 mb-2">
+                        Redirecting to Bot Registration...
+                      </p>
+                      <p className="text-sm text-purple-700 dark:text-purple-300">
+                        You will be automatically redirected in 2 seconds
+                      </p>
+                    </div>
                   </CardContent>
                 </Card>
               )}
 
               <Alert className="border-blue-500">
                 <AlertDescription className="text-sm">
-                  <strong>📱 What happens next:</strong>
+                  <strong>🔄 Automatic Process:</strong>
                   <ul className="mt-2 space-y-1 ml-4 list-disc">
-                    <li>Enter the code above in WhatsApp</li>
-                    <li>Session ID will be sent to your WhatsApp automatically</li>
-                    <li>Copy the Session ID from above or from WhatsApp</li>
-                    <li>Continue to Step 2 (Guest Dashboard) to use it</li>
+                    <li>Enter pairing code in WhatsApp</li>
+                    <li>Session ID will be fetched automatically</li>
+                    <li>You'll be redirected to bot registration</li>
+                    <li>No manual credential entry required!</li>
                   </ul>
                 </AlertDescription>
               </Alert>
 
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setCurrentStep(1);
-                    setPairingCode("");
-                    setSessionId("");
-                  }}
-                  size="lg"
-                  className="flex-1"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Try Again
-                </Button>
-                <Button
-                  onClick={() => {
-                    // Store session ID in localStorage for auto-fill in bot registration
-                    if (sessionId) {
-                      localStorage.setItem('pendingSessionId', sessionId);
-                      localStorage.setItem('pendingPhoneNumber', phoneNumber);
-                    }
-                    setLocation('/guest/bot-management');
-                  }}
-                  size="lg"
-                  className="flex-1"
-                  disabled={!sessionId} 
-                  data-testid="button-proceed-step2"
-                >
-                  Proceed to Bot Registration
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setCurrentStep(1);
+                  setPairingCode("");
+                  setSessionId("");
+                  if (pollingInterval) {
+                    clearInterval(pollingInterval);
+                    setPollingInterval(null);
+                  }
+                }}
+                size="lg"
+                className="w-full"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Start Over
+              </Button>
             </CardContent>
           </Card>
         )}
