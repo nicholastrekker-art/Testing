@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Smartphone, Copy, CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
@@ -10,17 +12,26 @@ export default function WhatsAppPairingPage() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [pairingCode, setPairingCode] = useState("");
   const [sessionId, setSessionId] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
 
   const generatePairingCode = async () => {
+    if (!phoneNumber) {
+      toast({
+        title: "Phone Number Required",
+        description: "Please enter your phone number first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsGenerating(true);
     try {
-      const response = await fetch('/api/pairing/code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch(`/api/whatsapp/pairing-code?number=${phoneNumber.replace(/[\s\-\(\)\+]/g, '')}`, {
+        method: 'GET',
       });
 
       if (!response.ok) {
@@ -31,7 +42,7 @@ export default function WhatsAppPairingPage() {
       setPairingCode(data.code);
 
       // Start polling for session ID
-      startPollingForSessionId(data.code);
+      startPollingForSessionId(data.code, phoneNumber);
 
       toast({
         title: "Pairing Code Generated!",
@@ -48,26 +59,28 @@ export default function WhatsAppPairingPage() {
     }
   };
 
-  const startPollingForSessionId = (code: string) => {
+  const startPollingForSessionId = (code: string, phoneNumber: string) => {
     // Clear any existing interval
     if (pollingInterval) {
       clearInterval(pollingInterval);
     }
 
-    // Poll every 3 seconds for the session ID
+    // Poll every 3 seconds for the session ID from the database
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(`/api/pairing/session-check?code=${code}`);
+        const response = await fetch(`/api/guest/session/${phoneNumber.replace(/[\s\-\(\)\+]/g, '')}`);
         if (response.ok) {
           const data = await response.json();
-          if (data.sessionId) {
+          if (data.found && data.sessionId) {
             setSessionId(data.sessionId);
             clearInterval(interval);
             setPollingInterval(null);
             toast({
               title: "Session ID Received!",
-              description: "Your WhatsApp session has been successfully linked.",
+              description: "Your session ID has been saved and is ready to use.",
             });
+            // Auto-proceed to step 2
+            setCurrentStep(2);
           }
         }
       } catch (error) {
@@ -160,22 +173,40 @@ export default function WhatsAppPairingPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Smartphone className="h-6 w-6 text-blue-600" />
-                Step 1: Generate Pairing Code
+                Step 1: Generate Session ID
               </CardTitle>
               <CardDescription>
-                Click the button below to generate a unique pairing code for your WhatsApp bot
+                Enter your phone number to generate a pairing code and session ID for your WhatsApp bot
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {!pairingCode ? (
-                <Button 
-                  onClick={generatePairingCode}
-                  disabled={isGenerating}
-                  size="lg"
-                  className="w-full"
-                >
-                  {isGenerating ? "Generating..." : "Generate Pairing Code"}
-                </Button>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number (with country code)</Label>
+                    <Input
+                      id="phone"
+                      data-testid="input-phone"
+                      type="tel"
+                      placeholder="+254700000000"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="text-lg"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Enter your WhatsApp number with country code
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={generatePairingCode}
+                    disabled={isGenerating || !phoneNumber}
+                    size="lg"
+                    className="w-full"
+                    data-testid="button-generate-code"
+                  >
+                    {isGenerating ? "Generating..." : "Generate Pairing Code"}
+                  </Button>
+                </>
               ) : (
                 <div className="space-y-4">
                   <div className="text-center p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200">
@@ -359,12 +390,20 @@ export default function WhatsAppPairingPage() {
                   Try Again
                 </Button>
                 <Button
-                  onClick={() => setLocation('/guest/bot-management')}
+                  onClick={() => {
+                    // Store session ID in localStorage for auto-fill in bot registration
+                    if (sessionId) {
+                      localStorage.setItem('pendingSessionId', sessionId);
+                      localStorage.setItem('pendingPhoneNumber', phoneNumber);
+                    }
+                    setLocation('/guest/bot-management');
+                  }}
                   size="lg"
                   className="flex-1"
                   disabled={!sessionId} 
+                  data-testid="button-proceed-step2"
                 >
-                  Go to Step 2
+                  Proceed to Bot Registration
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>

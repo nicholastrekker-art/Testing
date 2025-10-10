@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,39 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     },
     selectedServer: '' // Added to store the selected server
   });
+
+  // Auto-fill session ID and phone number from localStorage when dialog opens
+  useEffect(() => {
+    if (open) {
+      const pendingSessionId = localStorage.getItem('pendingSessionId');
+      const pendingPhoneNumber = localStorage.getItem('pendingPhoneNumber');
+      
+      if (pendingSessionId && pendingPhoneNumber) {
+        setFormData(prev => ({
+          ...prev,
+          sessionId: pendingSessionId,
+          phoneNumber: pendingPhoneNumber
+        }));
+        
+        // Clear from localStorage after using
+        localStorage.removeItem('pendingSessionId');
+        localStorage.removeItem('pendingPhoneNumber');
+        
+        // Show success message
+        toast({
+          title: "Session ID Loaded!",
+          description: "Your session ID has been automatically filled in. You can now proceed with bot registration.",
+        });
+
+        // Auto-proceed to phone check if we have a phone number
+        if (pendingPhoneNumber && step === 1) {
+          setTimeout(() => {
+            phoneCheckMutation.mutate(pendingPhoneNumber);
+          }, 500);
+        }
+      }
+    }
+  }, [open]);
 
   const [step, setStep] = useState(1); // 1: phone_number, 2: god_registry_check, 3: server_selection, 4: credentials, 5: features, 6: validation, 7: success, 8: existing_bot_management, 9: wrong_server, 10: server_full, 11: cross_tenancy_success
   const [existingBotData, setExistingBotData] = useState<any>(null);
