@@ -12,6 +12,7 @@ import NotFound from "@/pages/not-found";
 import GuestPhoneVerification from "@/pages/guest/verification";
 import GuestBotManagement from "@/pages/guest/bot-management";
 import GuestCrossServer from "@/pages/guest/cross-server";
+import WhatsAppPairingPage from "@/pages/guest/whatsapp-pairing";
 import Sidebar from "@/components/sidebar";
 import ProtectedRoute from "@/components/protected-route";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -46,6 +47,7 @@ function Router() {
           <Route path="/guest/verification" component={GuestPhoneVerification} />
           <Route path="/guest/bot-management" component={GuestBotManagement} />
           <Route path="/guest/cross-server" component={GuestCrossServer} />
+          <Route path="/guest/whatsapp-pairing" component={WhatsAppPairingPage} />
           <Route component={NotFound} />
         </Switch>
       </main>
