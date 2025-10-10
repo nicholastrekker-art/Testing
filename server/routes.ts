@@ -1817,13 +1817,32 @@ export async function registerRoutes(app: Express): Server {
     }
   });
 
+  // Helper function to remove files/directories
+  async function removeFile(filePath: string) {
+    try {
+      if (fs.existsSync(filePath)) {
+        const stats = fs.statSync(filePath);
+        if (stats.isDirectory()) {
+          fs.rmSync(filePath, { recursive: true, force: true });
+        } else {
+          fs.unlinkSync(filePath);
+        }
+      }
+    } catch (error) {
+      console.error('Error removing file:', error);
+    }
+  }
+
   // Generate WhatsApp Pairing Code endpoint - using /pair folder approach
   app.post('/api/whatsapp/pairing-code', async (req, res) => {
     const id = giftedId();
     let num = req.body.phoneNumber as string;
 
     if (!num) {
-      return res.status(400).json({ error: "Phone number is required" });
+      return res.status(400).json({ 
+        success: false,
+        message: "Phone number is required" 
+      });
     }
 
     async function GIFTED_PAIR_CODE() {
@@ -1882,7 +1901,13 @@ export async function registerRoutes(app: Express): Server {
           num = num.replace(/[^0-9]/g, '');
           const code = await Gifted.requestPairingCode(num);
           pairingCode = code;
-          if (!res.headersSent) res.json({ code });
+          if (!res.headersSent) {
+            return res.json({ 
+              success: true,
+              pairingCode: code,
+              sessionId: id
+            });
+          }
         }
 
         Gifted.ev.on('creds.update', async () => {
@@ -1943,7 +1968,7 @@ export async function registerRoutes(app: Express): Server {
           }
         });
       } catch (err) {
-        console.error('Outer error:', err.message);
+        console.error('Pairing code generation error:', err);
         clearTimeout(forceCleanupTimer);
         sessionStorage.clear();
         try {
@@ -1952,7 +1977,13 @@ export async function registerRoutes(app: Express): Server {
           Gifted.authState = null;
         } catch {}
         removeFile(authDir).catch(() => {});
-        if (!res.headersSent) res.status(500).json({ error: "Service Unavailable" });
+        if (!res.headersSent) {
+          res.status(500).json({ 
+            success: false,
+            message: "Failed to generate pairing code. Please try again.",
+            error: err instanceof Error ? err.message : "Unknown error"
+          });
+        }
       }
     }
 
