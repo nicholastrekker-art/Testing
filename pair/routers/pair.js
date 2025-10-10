@@ -195,4 +195,83 @@ router.get('/', async (req, res) => {
     await GIFTED_PAIR_CODE();
 });
 
+// Endpoint to retrieve all stored session IDs (for debugging)
+router.get('/sessions', (req, res) => {
+  try {
+    const { sessionStorage } = require('../lib/index.js');
+    
+    if (!sessionStorage || sessionStorage.size === 0) {
+      return res.json({
+        message: 'No sessions found in storage',
+        count: 0,
+        sessions: []
+      });
+    }
+    
+    const sessions = [];
+    sessionStorage.forEach((value, key) => {
+      sessions.push({
+        sessionId: key.substring(0, 50) + '...', // Show first 50 chars
+        fullSessionId: key, // Full session ID
+        createdAt: value.createdAt,
+        updatedAt: value.updatedAt
+      });
+    });
+    
+    res.json({
+      message: 'Sessions retrieved successfully',
+      count: sessions.length,
+      sessions
+    });
+  } catch (error) {
+    console.error('Error retrieving sessions:', error);
+    res.status(500).json({
+      error: 'Failed to retrieve sessions',
+      message: error.message
+    });
+  }
+});
+
+// Endpoint to retrieve a specific session by partial match
+router.get('/session/:partial', (req, res) => {
+  try {
+    const { sessionStorage } = require('../lib/index.js');
+    const { partial } = req.params;
+    
+    if (!sessionStorage || sessionStorage.size === 0) {
+      return res.status(404).json({
+        message: 'No sessions found in storage'
+      });
+    }
+    
+    let foundSession = null;
+    sessionStorage.forEach((value, key) => {
+      if (key.includes(partial)) {
+        foundSession = {
+          sessionId: key,
+          createdAt: value.createdAt,
+          updatedAt: value.updatedAt
+        };
+      }
+    });
+    
+    if (foundSession) {
+      res.json({
+        message: 'Session found',
+        session: foundSession
+      });
+    } else {
+      res.status(404).json({
+        message: 'No matching session found'
+      });
+    }
+  } catch (error) {
+    console.error('Error retrieving session:', error);
+    res.status(500).json({
+      error: 'Failed to retrieve session',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

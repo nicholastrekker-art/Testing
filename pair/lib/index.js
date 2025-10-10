@@ -86,6 +86,16 @@ function getSessionStorage() {
   return sessionStorage;
 }
 
+module.exports = {
+  giftedId,
+  downloadCreds,
+  getSessionStorage,
+  sessionStorage // Export the Map directly
+};
+function getSessionStorage() {
+  return sessionStorage;
+}
+
 async function removeFile(filePath) {
   try {
     await fs.access(filePath);
