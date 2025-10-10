@@ -1817,9 +1817,9 @@ export async function registerRoutes(app: Express): Server {
   });
 
   // Generate WhatsApp Pairing Code endpoint - using /pair folder approach
-  app.get('/api/whatsapp/pairing-code', async (req, res) => {
+  app.post('/api/whatsapp/pairing-code', async (req, res) => {
     const id = giftedId();
-    let num = req.query.number as string;
+    let num = req.body.phoneNumber as string;
 
     if (!num) {
       return res.status(400).json({ error: "Phone number is required" });
