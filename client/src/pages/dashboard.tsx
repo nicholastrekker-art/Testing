@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -81,13 +82,10 @@ export default function Dashboard() {
     });
 
     if (autoRegisterFlow === 'true' && sessionId && phoneNumber) {
-      // Clear the flags immediately to prevent re-triggering
       localStorage.removeItem('autoRegisterFlow');
       localStorage.removeItem('autoRegisterTimestamp');
 
       console.log('Opening registration dialog with auto-filled data');
-
-      // Open registration dialog immediately
       setShowGuestRegistration(true);
 
       toast({
@@ -107,7 +105,7 @@ export default function Dashboard() {
     queryKey: ["/api/server/info"],
   });
 
-  // Fetch bot instances - ADMIN ONLY (prevents privilege escalation)
+  // Fetch bot instances - ADMIN ONLY
   const { data: botInstances = [], isLoading: botsLoading } = useQuery({
     queryKey: ["/api/bot-instances"],
     enabled: isAdmin
@@ -130,7 +128,7 @@ export default function Dashboard() {
     queryKey: ["/api/activities"],
   });
 
-  // Fetch commands - ADMIN ONLY (prevents access to command system)
+  // Fetch commands - ADMIN ONLY
   const { data: commands = [], isLoading: commandsLoading } = useQuery({
     queryKey: ["/api/commands"],
     enabled: isAdmin
@@ -186,7 +184,7 @@ export default function Dashboard() {
     }
   });
 
-  // Revoke approval mutation for dashboard
+  // Revoke approval mutation
   const revokeApprovalMutation = useMutation({
     mutationFn: (botId: string) => apiRequest("POST", `/api/bot-instances/${botId}/revoke`),
     onSuccess: () => {
@@ -201,7 +199,7 @@ export default function Dashboard() {
     }
   });
 
-  // Restart bot mutation for dashboard
+  // Restart bot mutation
   const restartBotMutation = useMutation({
     mutationFn: (botId: string) => apiRequest("POST", `/api/bot-instances/${botId}/restart`),
     onSuccess: () => {
@@ -240,195 +238,218 @@ export default function Dashboard() {
     }
   });
 
-  // Auto-refresh for admin users
-  React.useEffect(() => {
-    if (isAdmin) {
-      // Refresh the page to load admin features if not already loaded
-      const hasRefreshed = sessionStorage.getItem('admin-refreshed');
-      if (!hasRefreshed) {
-        sessionStorage.setItem('admin-refreshed', 'true');
-        window.location.reload();
-      }
-    }
-  }, [isAdmin]);
-
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-emerald-950">
       {/* Offer Countdown Banner - Show only for guest users */}
       {!isAdmin && <OfferCountdownBanner />}
 
-      {/* Header */}
-      <header className="bg-card border-b border-border px-4 sm:px-6 py-4 pt-16 lg:pt-4">
+      {/* Header with glassmorphism effect */}
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-gray-900/80 border-b border-emerald-500/20 px-4 sm:px-6 py-4 shadow-lg shadow-emerald-500/5">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-foreground">🤖 {serverInfo.serverName || 'TREKKER-MD'} Dashboard</h2>
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center shadow-lg shadow-emerald-500/50">
+                <span className="text-2xl">🤖</span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 via-green-400 to-teal-400 bg-clip-text text-transparent">
+                  {serverInfo.serverName || 'TREKKER-MD'} Dashboard
+                </h2>
+                <p className="text-sm text-gray-400">
+                  Ultra-fast lifetime WhatsApp bot automation
+                </p>
+              </div>
             </div>
-            <p className="text-muted-foreground">
-              Ultra fast lifetime WhatsApp bot automation
-              {serverInfo.serverName && (
-                <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-1 rounded">
-                  {serverInfo.currentBots}/{serverInfo.maxBots} slots used
-                </span>
-              )}
-              {!serverInfo.hasSecretConfig && serverInfo.serverName === 'default-server' && (
-                <span className="ml-2 text-xs bg-yellow-600 text-white px-2 py-1 rounded">
-                  ⚠️ Default server name - Configure recommended
-                </span>
-              )}
-            </p>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             {isAdmin && (
               <div className="flex space-x-2">
                 <Button 
                   onClick={() => setShowCommandManagement(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-500/30"
                 >
-                  🔧 Manage Commands
+                  <i className="fas fa-terminal mr-2"></i>
+                  Commands
                 </Button>
                 <Button 
                   onClick={() => setShowAdminBotManagement(true)}
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg shadow-purple-500/30"
                 >
-                  👥 Manage Bots
+                  <i className="fas fa-robot mr-2"></i>
+                  Manage Bots
                 </Button>
                 <Button 
                   onClick={() => setShowGodRegistry(true)}
-                  className="bg-orange-600 hover:bg-orange-700 text-white"
+                  className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white shadow-lg shadow-orange-500/30"
                 >
-                  📱 God Registry
+                  <i className="fas fa-database mr-2"></i>
+                  Registry
                 </Button>
               </div>
             )}
-            <div className="relative">
-              <button className="w-10 h-10 bg-muted rounded-md flex items-center justify-center hover:bg-muted/80 transition-colors" data-testid="button-notifications">
-                <i className="fas fa-bell text-muted-foreground"></i>
-              </button>
-              <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full"></span>
-            </div>
           </div>
         </div>
       </header>
 
       <div className="p-6">
-        {/* Guest User Step-by-Step Guide */}
+        {/* Guest User Enhanced Step-by-Step Guide */}
         {!isAdmin && (
-          <Card className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-green-200 dark:border-green-800 mb-8">
-            <CardContent className="p-6">
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-bold text-green-700 dark:text-green-400 mb-2">
-                  🚀 Get Started with TREKKER-MD Bot
+          <div className="mb-8">
+            {/* Hero Section */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-green-600 to-teal-600 p-8 mb-6 shadow-2xl shadow-emerald-500/30">
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoNHYzNmgtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20"></div>
+              <div className="relative text-center">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-4 shadow-lg">
+                  <span className="text-5xl">🚀</span>
+                </div>
+                <h2 className="text-4xl font-bold text-white mb-3">
+                  Get Started with TREKKER-MD Bot
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                  Follow these simple steps to activate your WhatsApp bot
+                <p className="text-lg text-emerald-100 max-w-2xl mx-auto">
+                  Follow these simple steps to activate your ultra-fast WhatsApp automation bot
                 </p>
               </div>
+            </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
-                {/* Step 1: Generate Session ID */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border-2 border-blue-200 dark:border-blue-800 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
-                      1
+            {/* Steps Grid */}
+            <div className="grid gap-6 md:grid-cols-3">
+              {/* Step 1: Generate Session ID */}
+              <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-blue-500/30 hover:border-blue-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/30 hover:-translate-y-1">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/50 group-hover:scale-110 transition-transform">
+                      <span className="text-2xl font-bold text-white">1</span>
                     </div>
-                    <h3 className="font-semibold text-lg">Generate Session ID</h3>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Generate Session ID</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                        <span className="text-xs text-blue-400 font-medium">START HERE</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Get a pairing code to link your WhatsApp. Enter the code in WhatsApp Settings → Linked Devices to receive your session ID
+                  <p className="text-gray-300 mb-5 leading-relaxed">
+                    Get a pairing code to link your WhatsApp. Enter the code in <span className="font-semibold text-blue-400">WhatsApp Settings → Linked Devices</span> to receive your session ID automatically
                   </p>
                   <Button
                     onClick={() => setShowWhatsAppPairing(true)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all"
                     data-testid="button-open-pairing"
                   >
-                    <i className="fas fa-link mr-2"></i>
-                    <span>Get Pairing Code</span>
+                    <i className="fas fa-qrcode mr-2"></i>
+                    Get Pairing Code
+                    <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                   </Button>
                 </div>
+              </div>
 
-                {/* Step 2: Register Your Bot */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border-2 border-purple-200 dark:border-purple-800 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
-                      2
+              {/* Step 2: Register Your Bot */}
+              <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-purple-500/30 hover:border-purple-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/30 hover:-translate-y-1">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/50 group-hover:scale-110 transition-transform">
+                      <span className="text-2xl font-bold text-white">2</span>
                     </div>
-                    <h3 className="font-semibold text-lg">Register Your Bot</h3>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Register Your Bot</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+                        <span className="text-xs text-purple-400 font-medium">REQUIRED</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Upload your credentials and configure your bot features
+                  <p className="text-gray-300 mb-5 leading-relaxed">
+                    Upload your session credentials and configure your bot features. Choose from <span className="font-semibold text-purple-400">auto-like, auto-react, ChatGPT</span>, and more
                   </p>
                   <Button
                     onClick={() => setShowGuestRegistration(true)}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-all"
                   >
                     <i className="fas fa-rocket mr-2"></i>
                     Register Now
+                    <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                   </Button>
                 </div>
+              </div>
 
-                {/* Step 3: Manage Your Bot */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-5 border-2 border-emerald-200 dark:border-emerald-800 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
-                      3
+              {/* Step 3: Manage Your Bot */}
+              <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-emerald-500/30 hover:border-emerald-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/30 hover:-translate-y-1">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/50 group-hover:scale-110 transition-transform">
+                      <span className="text-2xl font-bold text-white">3</span>
                     </div>
-                    <h3 className="font-semibold text-lg">Manage Your Bot</h3>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Manage Your Bot</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span className="text-xs text-emerald-400 font-medium">FINAL STEP</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Control features, view stats, and manage your bot settings
+                  <p className="text-gray-300 mb-5 leading-relaxed">
+                    Control features, view statistics, and manage your bot settings. Access your <span className="font-semibold text-emerald-400">full dashboard</span> with real-time monitoring
                   </p>
                   <Link href="/guest/bot-management">
-                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <Button className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold py-3 shadow-lg shadow-emerald-500/30 group-hover:shadow-emerald-500/50 transition-all">
                       <i className="fas fa-cog mr-2"></i>
                       Bot Management
+                      <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                     </Button>
                   </Link>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
 
-        {/* Admin Bot Management or Guest Registration */}
+        {/* Admin Bot Management or Guest Features */}
         {isAdmin ? (
           <div className="space-y-6">
             {/* Pending Bots Section */}
-            <Card className="bg-card border-border">
-              <CardHeader className="border-b border-border">
+            <Card className="bg-gray-800/50 border-yellow-500/30 backdrop-blur-sm">
+              <CardHeader className="border-b border-yellow-500/20">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold text-foreground">⏳ Pending Bot Registrations</CardTitle>
+                  <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
+                    <i className="fas fa-clock text-yellow-400"></i>
+                    Pending Bot Registrations
+                  </CardTitle>
                   <Button 
                     onClick={() => setShowCommandManagement(true)}
                     size="sm"
                     className="bg-blue-600 hover:bg-blue-700"
                   >
-                    🔧 Manage Commands
+                    <i className="fas fa-terminal mr-2"></i>
+                    Manage Commands
                   </Button>
                 </div>
-                <p className="text-muted-foreground text-sm mt-1">Review and approve new bot registrations</p>
+                <p className="text-gray-400 text-sm mt-1">Review and approve new bot registrations</p>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {pendingLoading ? (
                     <div className="text-center py-4">
-                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-400"></div>
                     </div>
                   ) : (pendingBots as any[]).length === 0 ? (
-                    <div className="text-center py-4">
-                      <p className="text-muted-foreground">No pending bot registrations</p>
+                    <div className="text-center py-8">
+                      <i className="fas fa-check-circle text-5xl text-gray-600 mb-3"></i>
+                      <p className="text-gray-400">No pending bot registrations</p>
                     </div>
                   ) : (
                     (pendingBots as any[]).map((bot: any) => (
-                      <div key={bot.id} className="flex items-center justify-between p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-md" data-testid={`pending-bot-${bot.id}`}>
+                      <div key={bot.id} className="flex items-center justify-between p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg hover:bg-yellow-500/20 transition-colors" data-testid={`pending-bot-${bot.id}`}>
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                            <i className="fas fa-clock text-yellow-500"></i>
+                            <i className="fas fa-robot text-yellow-400"></i>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-foreground">{bot.name}</p>
-                            <p className="text-xs text-muted-foreground">{bot.phoneNumber || 'No phone number'}</p>
-                            <p className="text-xs text-muted-foreground">Registered: {new Date(bot.createdAt).toLocaleDateString()}</p>
+                            <p className="text-sm font-medium text-white">{bot.name}</p>
+                            <p className="text-xs text-gray-400">{bot.phoneNumber || 'No phone number'}</p>
+                            <p className="text-xs text-gray-500">Registered: {new Date(bot.createdAt).toLocaleDateString()}</p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -439,7 +460,8 @@ export default function Dashboard() {
                             className="bg-green-600 hover:bg-green-700 text-white"
                             data-testid={`button-approve-${bot.id}`}
                           >
-                            ✅ Approve
+                            <i className="fas fa-check mr-1"></i>
+                            Approve
                           </Button>
                           <Button 
                             size="sm"
@@ -448,7 +470,8 @@ export default function Dashboard() {
                             variant="destructive"
                             data-testid={`button-reject-${bot.id}`}
                           >
-                            ❌ Reject
+                            <i className="fas fa-times mr-1"></i>
+                            Reject
                           </Button>
                         </div>
                       </div>
@@ -459,121 +482,103 @@ export default function Dashboard() {
             </Card>
 
             {/* Approved Bots Section */}
-            {isAdmin && (
-              <Card className="bg-card border-border">
-                <CardHeader className="border-b border-border">
-                  <CardTitle className="text-lg font-semibold text-foreground">✅ Approved Bot Instances</CardTitle>
-                  <p className="text-muted-foreground text-sm mt-1">Active bots with auto-running capabilities</p>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    {approvedLoading ? (
-                      <div className="text-center py-4">
-                        <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                      </div>
-                    ) : (approvedBots as any[]).length === 0 ? (
-                      <div className="text-center py-4">
-                        <p className="text-muted-foreground">No approved bots yet</p>
-                      </div>
-                    ) : (
-                      (approvedBots as any[]).map((bot: any) => (
-                        <div key={bot.id} className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/20 rounded-md" data-testid={`approved-bot-${bot.id}`}>
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                              <i className="fas fa-robot text-green-500"></i>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-foreground">{bot.name}</p>
-                              <p className="text-xs text-muted-foreground">{bot.phoneNumber || 'No phone number'}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-xs px-2 py-1 rounded bg-green-500/10 text-green-500">
-                              APPROVED
-                            </span>
-                            <span className={`text-xs px-2 py-1 rounded ${
-                              bot.status === 'online' ? 'text-green-400 bg-green-500/10' :
-                              'text-gray-400 bg-gray-500/10'
-                            }`}>
-                              {bot.status?.toUpperCase() || 'UNKNOWN'}
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        ) : (
-          <div className="max-w-2xl mx-auto">
-            {/* Guest Registration Section */}
-            <Card className="bg-card border-border">
-              <CardHeader className="border-b border-border">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold text-foreground">🚀 Register Your Bot</CardTitle>
-                  <Button 
-                    onClick={() => setShowGuestRegistration(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                    data-testid="button-register-bot"
-                  >
-                    <i className="fas fa-plus mr-2"></i>
-                    Register Bot
-                  </Button>
-                </div>
-                <p className="text-muted-foreground text-sm mt-1">Upload credentials or paste session ID to register your TREKKER-MD bot</p>
+            <Card className="bg-gray-800/50 border-green-500/30 backdrop-blur-sm">
+              <CardHeader className="border-b border-green-500/20">
+                <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
+                  <i className="fas fa-check-circle text-green-400"></i>
+                  Approved Bot Instances
+                </CardTitle>
+                <p className="text-gray-400 text-sm mt-1">Active bots with auto-running capabilities</p>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-blue-600/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <i className="fas fa-robot text-blue-600 text-2xl"></i>
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">TREKKER-MD Lifetime Bot</h3>
-                  <p className="text-muted-foreground mb-6">Register your WhatsApp bot with credentials or session ID</p>
-                  <Button 
-                    onClick={() => setShowGuestRegistration(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white w-full max-w-xs"
-                    data-testid="button-start-registration"
-                  >
-                    <i className="fas fa-rocket mr-2"></i>
-                    Register Your Bot
-                  </Button>
+                <div className="space-y-4">
+                  {approvedLoading ? (
+                    <div className="text-center py-4">
+                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-400"></div>
+                    </div>
+                  ) : (approvedBots as any[]).length === 0 ? (
+                    <div className="text-center py-8">
+                      <i className="fas fa-robot text-5xl text-gray-600 mb-3"></i>
+                      <p className="text-gray-400">No approved bots yet</p>
+                    </div>
+                  ) : (
+                    (approvedBots as any[]).map((bot: any) => (
+                      <div key={bot.id} className="flex items-center justify-between p-4 bg-green-500/10 border border-green-500/20 rounded-lg hover:bg-green-500/20 transition-colors" data-testid={`approved-bot-${bot.id}`}>
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                            <i className="fas fa-robot text-green-400"></i>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-white">{bot.name}</p>
+                            <p className="text-xs text-gray-400">{bot.phoneNumber || 'No phone number'}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs px-2 py-1 rounded bg-green-500/10 text-green-400">
+                            APPROVED
+                          </span>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            bot.status === 'online' ? 'text-green-400 bg-green-500/10' :
+                            'text-gray-400 bg-gray-500/10'
+                          }`}>
+                            {bot.status?.toUpperCase() || 'UNKNOWN'}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
           </div>
-        )}
+        ) : null}
 
-        {/* TREKKER-MD Welcome & Contact - Moved to Bottom */}
-        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 border-none mt-8 text-white">
-          <CardContent className="p-6">
+        {/* TREKKER-MD Contact Section - Enhanced */}
+        <Card className="relative overflow-hidden bg-gradient-to-br from-emerald-600 via-green-600 to-teal-600 border-none mt-8 text-white shadow-2xl shadow-emerald-500/30">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djEyaDEyVjM0eiIvPjwvZz48L2c+PC9zdmc+')] opacity-30"></div>
+          <CardContent className="relative p-8">
             <div className="text-center">
-              <div className="mb-6">
-                <h2 className="text-3xl font-bold mb-3">🚀 TREKKER-MD LIFETIME BOT</h2>
-                <p className="text-lg text-blue-100 mb-2">You've Chosen the Ultra-Fast WhatsApp Automation</p>
-                <p className="text-sm text-blue-200">No Expiry • Lifetime Access • Premium Features</p>
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-4 shadow-lg">
+                <span className="text-5xl">🚀</span>
               </div>
+              <h2 className="text-4xl font-bold mb-3">TREKKER-MD LIFETIME BOT</h2>
+              <p className="text-xl text-emerald-100 mb-2">Ultra-Fast WhatsApp Automation Platform</p>
+              <p className="text-sm text-emerald-200/80 mb-6">No Expiry • Lifetime Access • Premium Features</p>
 
-              <div className="bg-white/10 rounded-lg p-4 mb-6 backdrop-blur-sm">
-                <h3 className="text-xl font-semibold mb-3">📋 Quick Start Guide</h3>
-                <div className="text-left space-y-2 text-sm">
-                  <p>✅ Use the Quoted Session ID to Deploy your Bot</p>
-                  <p>✅ DM the owner for lifetime TREKKER-MD bot support</p>
-                  <p>✅ Support us - Donations keep this service running</p>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 mb-6 border border-white/20">
+                <h3 className="text-xl font-semibold mb-4 flex items-center justify-center gap-2">
+                  <i className="fas fa-info-circle"></i>
+                  Quick Start Guide
+                </h3>
+                <div className="text-left space-y-3 text-sm">
+                  <div className="flex items-start gap-3">
+                    <i className="fas fa-check-circle text-emerald-300 mt-1"></i>
+                    <p>Use the Quoted Session ID to Deploy your Bot</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <i className="fas fa-check-circle text-emerald-300 mt-1"></i>
+                    <p>DM the owner for lifetime TREKKER-MD bot support</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <i className="fas fa-check-circle text-emerald-300 mt-1"></i>
+                    <p>Support us - Donations keep this service running</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="border-t border-white/20 pt-6 mt-6">
-                <h3 className="text-lg font-semibold mb-4">🔗 Connect With Us</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="border-t border-white/20 pt-6">
+                <h3 className="text-xl font-semibold mb-5 flex items-center justify-center gap-2">
+                  <i className="fas fa-link"></i>
+                  Connect With Us
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <a
                     href="https://t.me/trekkermd"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all rounded-lg p-3 text-white font-medium group"
                   >
-                    <i className="fab fa-telegram text-xl"></i>
+                    <i className="fab fa-telegram text-xl group-hover:scale-110 transition-transform"></i>
                     <span>Telegram</span>
                   </a>
 
@@ -581,9 +586,9 @@ export default function Dashboard() {
                     href="https://www.instagram.com/nicholaso_tesla?igsh=eG5oNWVuNXF6eGU0_"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all rounded-lg p-3 text-white font-medium group"
                   >
-                    <i className="fab fa-instagram text-xl"></i>
+                    <i className="fab fa-instagram text-xl group-hover:scale-110 transition-transform"></i>
                     <span>Instagram</span>
                   </a>
 
@@ -591,9 +596,9 @@ export default function Dashboard() {
                     href="https://wa.me/254704897825"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all rounded-lg p-3 text-white font-medium group"
                   >
-                    <i className="fab fa-whatsapp text-xl"></i>
+                    <i className="fab fa-whatsapp text-xl group-hover:scale-110 transition-transform"></i>
                     <span>WhatsApp</span>
                   </a>
 
@@ -601,9 +606,9 @@ export default function Dashboard() {
                     href="https://dc693d3f-99a0-4944-94cc-6b839418279c.e1-us-east-azure.choreoapps.dev/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all rounded-lg p-3 text-white font-medium group"
                   >
-                    <i className="fas fa-qrcode text-xl"></i>
+                    <i className="fas fa-qrcode text-xl group-hover:scale-110 transition-transform"></i>
                     <span>Pair Site</span>
                   </a>
 
@@ -611,15 +616,15 @@ export default function Dashboard() {
                     href="https://whatsapp.com/channel/0029Vb6vpSv6WaKiG6ZIy73H"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 transition-colors rounded-lg p-3 text-white font-medium sm:col-span-2 lg:col-span-1"
+                    className="flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all rounded-lg p-3 text-white font-medium group sm:col-span-2"
                   >
-                    <i className="fab fa-whatsapp text-xl"></i>
+                    <i className="fab fa-whatsapp text-xl group-hover:scale-110 transition-transform"></i>
                     <span>WhatsApp Channel</span>
                   </a>
                 </div>
               </div>
 
-              <p className="text-xs text-blue-200 mt-6 italic">
+              <p className="text-xs text-emerald-200/70 mt-6 italic">
                 Powered by TREKKER-MD • Ultra Fast Bot 💜
               </p>
             </div>
@@ -627,50 +632,28 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      {/* Modals */}
       <AddBotModal open={showAddBotModal} onClose={() => setShowAddBotModal(false)} />
-
-      {/* Command Management Modal */}
-      <CommandManagement
-        open={showCommandManagement}
-        onClose={() => setShowCommandManagement(false)}
-      />
-
-      {/* Guest Bot Registration Modal */}
-      <GuestBotRegistration
-        open={showGuestRegistration}
-        onClose={() => setShowGuestRegistration(false)}
-      />
-
-      {/* WhatsApp Pairing Dialog */}
-      <WhatsAppPairing
-        open={showWhatsAppPairing}
-        onClose={() => setShowWhatsAppPairing(false)}
-      />
-
-      {/* Admin Bot Management Modal */}
-      {isAdmin && (
-        <AdminBotManagement
-          open={showAdminBotManagement}
-          onClose={() => setShowAdminBotManagement(false)}
-        />
-      )}
+      <CommandManagement open={showCommandManagement} onClose={() => setShowCommandManagement(false)} />
+      <GuestBotRegistration open={showGuestRegistration} onClose={() => setShowGuestRegistration(false)} />
+      <WhatsAppPairing open={showWhatsAppPairing} onClose={() => setShowWhatsAppPairing(false)} />
+      {isAdmin && <AdminBotManagement open={showAdminBotManagement} onClose={() => setShowAdminBotManagement(false)} />}
 
       {/* Feature Management Dialog */}
       {selectedBotForFeatures && (
         <Dialog open={!!selectedBotForFeatures} onOpenChange={() => setSelectedBotForFeatures(null)}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md bg-gray-900 border-gray-700">
             <DialogHeader>
-              <DialogTitle className="text-lg font-semibold">
+              <DialogTitle className="text-lg font-semibold text-white">
                 Manage Bot Features - {selectedBotForFeatures.name}
               </DialogTitle>
             </DialogHeader>
 
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-gray-400">
                 Toggle features for this bot. Changes take effect immediately.
               </p>
 
-              {/* Feature toggles */}
               <div className="space-y-3">
                 {[
                   { key: 'autoLike', label: 'Auto Like Status', description: 'Automatically like WhatsApp status updates' },
@@ -682,10 +665,10 @@ export default function Dashboard() {
                   const currentValue = selectedBotForFeatures.settings?.features?.[feature.key] || false;
 
                   return (
-                    <div key={feature.key} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div key={feature.key} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg border border-gray-700">
                       <div className="flex-1">
-                        <Label className="text-sm font-medium">{feature.label}</Label>
-                        <p className="text-xs text-muted-foreground">{feature.description}</p>
+                        <Label className="text-sm font-medium text-white">{feature.label}</Label>
+                        <p className="text-xs text-gray-400">{feature.description}</p>
                       </div>
                       <Checkbox
                         checked={currentValue}
@@ -695,7 +678,6 @@ export default function Dashboard() {
                             feature: feature.key,
                             enabled: !!checked
                           });
-                          // Update local state immediately for UI responsiveness
                           setSelectedBotForFeatures((prev: BotInstance | null) => prev ? ({
                             ...prev,
                             settings: {
@@ -718,6 +700,7 @@ export default function Dashboard() {
                 <Button 
                   variant="outline" 
                   onClick={() => setSelectedBotForFeatures(null)}
+                  className="border-gray-700 text-gray-300 hover:bg-gray-800"
                 >
                   Close
                 </Button>
@@ -730,10 +713,10 @@ export default function Dashboard() {
       {/* God Registry Management Modal */}
       {showGodRegistry && (
         <Dialog open={showGodRegistry} onOpenChange={() => setShowGodRegistry(false)}>
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="max-w-4xl bg-gray-900 border-gray-700">
             <DialogHeader>
-              <DialogTitle>📱 God Registry Management</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-white">📱 God Registry Management</DialogTitle>
+              <DialogDescription className="text-gray-400">
                 Manage global phone number registrations across all tenants
               </DialogDescription>
             </DialogHeader>
@@ -741,25 +724,25 @@ export default function Dashboard() {
             <div className="space-y-4">
               {registryLoading ? (
                 <div className="flex justify-center py-8">
-                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
                 </div>
               ) : godRegistry.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-gray-400">
                   No registrations found
                 </div>
               ) : (
                 <div className="space-y-2">
                   {godRegistry.map((registration: GodRegistryEntry) => (
-                    <div key={registration.phoneNumber} className="border border-border rounded-lg p-4">
+                    <div key={registration.phoneNumber} className="border border-gray-700 rounded-lg p-4 bg-gray-800/50">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-foreground">
+                          <p className="font-medium text-white">
                             📱 {registration.phoneNumber}
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-gray-400">
                             Tenant: {registration.tenancyName}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-gray-500">
                             Registered: {new Date(registration.registeredAt).toLocaleDateString()}
                           </p>
                         </div>
@@ -769,6 +752,7 @@ export default function Dashboard() {
                             variant="outline"
                             size="sm"
                             onClick={() => setEditingRegistration(registration)}
+                            className="border-gray-700 text-gray-300 hover:bg-gray-800"
                             data-testid={`button-edit-${registration.phoneNumber}`}
                           >
                             ✏️ Edit
@@ -795,7 +779,7 @@ export default function Dashboard() {
             </div>
 
             <div className="flex justify-end">
-              <Button onClick={() => setShowGodRegistry(false)}>
+              <Button onClick={() => setShowGodRegistry(false)} className="bg-emerald-600 hover:bg-emerald-700">
                 Close
               </Button>
             </div>
@@ -806,10 +790,10 @@ export default function Dashboard() {
       {/* Edit Registration Modal */}
       {editingRegistration && (
         <Dialog open={!!editingRegistration} onOpenChange={() => setEditingRegistration(null)}>
-          <DialogContent>
+          <DialogContent className="bg-gray-900 border-gray-700">
             <DialogHeader>
-              <DialogTitle>✏️ Edit Registration</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-white">✏️ Edit Registration</DialogTitle>
+              <DialogDescription className="text-gray-400">
                 Update the tenant assignment for {editingRegistration.phoneNumber}
               </DialogDescription>
             </DialogHeader>
@@ -829,19 +813,19 @@ export default function Dashboard() {
               className="space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium mb-1 text-white">
                   Phone Number
                 </label>
                 <input 
                   type="text" 
                   value={editingRegistration.phoneNumber}
                   disabled
-                  className="w-full p-3 border border-border rounded-md bg-muted text-muted-foreground"
+                  className="w-full p-3 border border-gray-700 rounded-md bg-gray-800 text-gray-400"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium mb-1 text-white">
                   Tenant Name
                 </label>
                 <input 
@@ -850,7 +834,7 @@ export default function Dashboard() {
                   defaultValue={editingRegistration.tenancyName}
                   placeholder="Enter new tenant name"
                   required
-                  className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full p-3 border border-gray-700 rounded-md bg-gray-800 text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   data-testid="input-tenancy-name"
                 />
               </div>
@@ -860,12 +844,14 @@ export default function Dashboard() {
                   type="button"
                   variant="outline" 
                   onClick={() => setEditingRegistration(null)}
+                  className="border-gray-700 text-gray-300 hover:bg-gray-800"
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit"
                   disabled={updateRegistrationMutation.isPending}
+                  className="bg-emerald-600 hover:bg-emerald-700"
                   data-testid="button-update-registration"
                 >
                   {updateRegistrationMutation.isPending ? 'Updating...' : 'Update'}
@@ -875,44 +861,6 @@ export default function Dashboard() {
           </DialogContent>
         </Dialog>
       )}
-
     </div>
   );
-}
-
-function getActivityIcon(type: string): string {
-  switch (type) {
-    case 'command': return 'fas fa-comment text-green-400';
-    case 'auto_like': return 'fas fa-heart text-blue-400';
-    case 'error': return 'fas fa-exclamation-triangle text-yellow-400';
-    case 'chatgpt_response': return 'fas fa-brain text-purple-400';
-    case 'status_change': return 'fas fa-users text-green-400';
-    default: return 'fas fa-info text-blue-400';
-  }
-}
-
-function getActivityIconBg(type: string): string {
-  switch (type) {
-    case 'command': return 'bg-green-500/10';
-    case 'auto_like': return 'bg-blue-500/10';
-    case 'error': return 'bg-yellow-500/10';
-    case 'chatgpt_response': return 'bg-purple-500/10';
-    case 'status_change': return 'bg-green-500/10';
-    default: return 'bg-blue-500/10';
-  }
-}
-
-function getBotName(botInstanceId: string): string {
-  return 'Bot';
-}
-
-function formatTimeAgo(dateString: string): string {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-
-  if (diffInMinutes < 1) return 'Just now';
-  if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
-  if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
-  return `${Math.floor(diffInMinutes / 1440)} days ago`;
 }
