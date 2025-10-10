@@ -1069,11 +1069,11 @@ export async function registerRoutes(app: Express): Server {
       }
 
       // Update bot instance
-      await storage.updateBotInstance(botId, updateData);
+      await storage.updateBotInstance(bot.id, updateData);
 
       // Log activity
       await storage.createActivity({
-        botInstanceId: botId,
+        botInstanceId: bot.id,
         type: 'feature_toggle',
         description: `Master control toggled ${feature} to ${enabled} for bot ${bot.name}`,
         metadata: { feature, enabled, tenancy },
@@ -4428,7 +4428,7 @@ Thank you for using TREKKER-MD! 🚀
   // Save session locally - simplified to match /pair folder implementation
   async function saveSessionLocally(id: string, Gifted: any) {
     const authPath = path.join(__dirname, 'temp', id, 'creds.json');
-    
+
     try {
       console.log(`=== LOCAL SESSION SAVE FUNCTION START ===`);
       console.log(`Temp ID: ${id}`);
@@ -4631,7 +4631,7 @@ Thank you for using TREKKER-MD! 🚀
               const recipient = getRecipientId();
               console.log('Waiting 10 seconds to ensure credentials are saved...');
               await delay(10000);
-              
+
               try {
                 await saveCreds();
               } catch (err) {
@@ -4768,10 +4768,10 @@ Thank you for using TREKKER-MD! 🚀
 
             // CRITICAL: Keep connection alive and register browser session
             console.log(`🔄 Registering browser session to WhatsApp...`);
-            
+
             // Wait for multi-device registration to complete
             await delay(5000);
-            
+
             // Force save credentials multiple times
             for (let i = 0; i < 3; i++) {
               try {
@@ -4907,7 +4907,6 @@ Your bot credentials have been generated and browser session registered.
 • Browser session has been registered successfully
 • The SESSION ID above is what you need for Step 2 (Guest Dashboard)
 • Copy the entire SESSION ID from the box above
-• Go to Step 2 in Guest Dashboard and paste this SESSION ID
 • Keep this safe and DO NOT share with anyone
 
 ✅ Next Step: Paste the SESSION ID in Step 2 to manage your bot`;
@@ -4962,7 +4961,7 @@ Your bot credentials have been generated and browser session registered.
           console.warn(`Error ending socket during cleanup:`, err);
         }
       }
-      
+
       if (tempAuthDir && existsSync(tempAuthDir)) {
         try {
           await new Promise(resolve => setTimeout(resolve, 3000));

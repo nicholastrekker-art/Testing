@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -13,6 +13,7 @@ export default function WhatsAppPairingPage() {
   const [pairingCode, setPairingCode] = useState("");
   const [sessionId, setSessionId] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
 
   const generatePairingCode = async () => {
     setIsGenerating(true);
@@ -29,6 +30,9 @@ export default function WhatsAppPairingPage() {
       const data = await response.json();
       setPairingCode(data.code);
 
+      // Start polling for session ID
+      startPollingForSessionId(data.code);
+
       toast({
         title: "Pairing Code Generated!",
         description: "Use this code in WhatsApp to link your device",
@@ -43,6 +47,53 @@ export default function WhatsAppPairingPage() {
       setIsGenerating(false);
     }
   };
+
+  const startPollingForSessionId = (code: string) => {
+    // Clear any existing interval
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+    }
+
+    // Poll every 3 seconds for the session ID
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/pairing/session-check?code=${code}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.sessionId) {
+            setSessionId(data.sessionId);
+            clearInterval(interval);
+            setPollingInterval(null);
+            toast({
+              title: "Session ID Received!",
+              description: "Your WhatsApp session has been successfully linked.",
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error polling for session ID:', error);
+      }
+    }, 3000);
+
+    setPollingInterval(interval);
+
+    // Stop polling after 2 minutes
+    setTimeout(() => {
+      if (interval) {
+        clearInterval(interval);
+        setPollingInterval(null);
+      }
+    }, 120000);
+  };
+
+  // Cleanup polling on unmount
+  React.useEffect(() => {
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [pollingInterval]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
