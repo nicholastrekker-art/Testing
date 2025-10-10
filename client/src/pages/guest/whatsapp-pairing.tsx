@@ -11,6 +11,7 @@ export default function WhatsAppPairingPage() {
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [pairingCode, setPairingCode] = useState("");
+  const [sessionId, setSessionId] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generatePairingCode = async () => {
@@ -48,6 +49,14 @@ export default function WhatsAppPairingPage() {
     toast({
       title: "Copied!",
       description: "Pairing code copied to clipboard",
+    });
+  };
+
+  const handleSessionIdReceived = (id: string) => {
+    setSessionId(id);
+    toast({
+      title: "Session ID Received!",
+      description: "Your WhatsApp session has been successfully linked.",
     });
   };
 
@@ -200,6 +209,39 @@ export default function WhatsAppPairingPage() {
                 </AlertDescription>
               </Alert>
 
+              {sessionId && (
+                <Card className="border-purple-200">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Smartphone className="h-6 w-6 text-purple-600" />
+                      Session ID Received
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 text-center">
+                    <p className="text-sm text-muted-foreground mb-2">Your Session ID:</p>
+                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 tracking-wide break-all">
+                      {sessionId}
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(sessionId);
+                        toast({
+                          title: "Session ID Copied!",
+                          description: "Session ID copied to clipboard",
+                        });
+                      }}
+                      className="mt-2"
+                    >
+                      <Copy className="h-4 w-4 mr-1" />
+                      Copy Session ID
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
+
               <Alert className="border-blue-500">
                 <AlertDescription className="text-sm">
                   <strong>📱 What happens next:</strong>
@@ -217,6 +259,7 @@ export default function WhatsAppPairingPage() {
                   onClick={() => {
                     setCurrentStep(1);
                     setPairingCode("");
+                    setSessionId("");
                   }}
                   size="lg"
                   className="flex-1"
@@ -228,6 +271,7 @@ export default function WhatsAppPairingPage() {
                   onClick={() => setLocation('/guest/bot-management')}
                   size="lg"
                   className="flex-1"
+                  disabled={!sessionId} 
                 >
                   Go to Dashboard
                   <ArrowRight className="h-4 w-4 ml-2" />
