@@ -8,6 +8,7 @@ import {
   serverRegistry,
   viewedStatusIds,
   externalBotConnections,
+  guestSessions, // Import guestSessions
   type User,
   type InsertUser,
   type BotInstance,
@@ -194,12 +195,16 @@ export interface IStorage {
   revokeBotApproval(id: string, targetServerName: string): Promise<BotInstance>;
   deleteBotCrossServer(id: string, targetServerName: string): Promise<void>;
   deleteServer(serverName: string): Promise<void>;
-  
+
   // Promotional Offer methods
   getOfferConfig(): Promise<OfferConfig | undefined>;
   updateOfferConfig(updates: Partial<InsertOfferConfig>): Promise<OfferConfig>;
   isOfferActive(): Promise<boolean>;
   getOfferTimeRemaining(): Promise<number | null>;
+
+  // Guest Session methods
+  getGuestSession(phoneNumber: string): Promise<any | null>; // Type for guest session
+  saveGuestSession(data: { phoneNumber: string; sessionId: string; createdAt: Date }): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -676,7 +681,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(godRegister).where(eq(godRegister.phoneNumber, phoneNumber));
   }
 
-  async getAllGlobalRegistrations(): Promise<GodRegister[]> {
+  async getAllGlobalRegistrations(): Promise<GodRegister[] > {
     return await db.select().from(godRegister).orderBy(desc(godRegister.registeredAt));
   }
 
@@ -963,11 +968,11 @@ export class DatabaseStorage implements IStorage {
       .orderBy(serverRegistry.serverName);
 
     const serversWithSlots: ServerRegistry[] = [];
-    
+
     for (const server of allServers) {
       const allBots = await this.getBotInstancesForServer(server.serverName);
       const activeBots = allBots.filter(bot => !bot.invalidReason || bot.invalidReason === null || bot.invalidReason === '');
-      
+
       if (activeBots.length < server.maxBotCount) {
         serversWithSlots.push(server);
       }
@@ -986,7 +991,7 @@ export class DatabaseStorage implements IStorage {
         eq(botInstances.autoStart, true)
       )
     ).orderBy(desc(botInstances.createdAt));
-    
+
     // Filter out bots with invalidReason (these should not auto-start)
     return bots.filter(bot => !bot.invalidReason || bot.invalidReason === null || bot.invalidReason === '');
   }
@@ -1278,11 +1283,11 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .returning();
-    
+
     if (!connection) {
       throw new Error(`External bot connection ${id} not found on server ${currentServerName} or access denied`);
     }
-    
+
     return connection;
   }
 
@@ -1360,9 +1365,9 @@ export class DatabaseStorage implements IStorage {
       } else {
         // For remote servers, use CrossTenancyClient to validate on origin server
         console.log(`External bot validation for ${phoneNumber} from server ${originServerName}`);
-        
+
         const { crossTenancyClient } = await import('./services/crossTenancyClient');
-        
+
         // Call the origin server to validate credentials without storing locally
         // We'll create a custom validation endpoint call using the private makeRequest method
         const validationResponse = await (crossTenancyClient as any).makeRequest(
@@ -1403,9 +1408,9 @@ export class DatabaseStorage implements IStorage {
       }
     } catch (error) {
       console.error('External bot credential validation error:', error);
-      return { 
-        valid: false, 
-        error: `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      return {
+        valid: false,
+        error: `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }
@@ -1415,7 +1420,7 @@ export class DatabaseStorage implements IStorage {
       .delete(externalBotConnections)
       .where(sql`${externalBotConnections.expiresAt} <= CURRENT_TIMESTAMP`)
       .returning();
-    
+
     console.log(`🧹 Cleaned up ${result.length} expired external bot connections`);
     return result.length;
   }
@@ -1427,7 +1432,7 @@ export class DatabaseStorage implements IStorage {
 
   async approveBotCrossServer(id: string, targetServerName: string, expirationMonths?: number): Promise<BotInstance> {
     const now = new Date();
-    
+
     const [botInstance] = await db
       .update(botInstances)
       .set({
@@ -1516,13 +1521,13 @@ export class DatabaseStorage implements IStorage {
 
   async deleteServer(serverName: string): Promise<void> {
     const serverBots = await this.getBotInstancesForServer(serverName);
-    
+
     if (serverBots.length > 0) {
       throw new Error(`Cannot delete server ${serverName}: ${serverBots.length} bots still exist on this server`);
     }
 
     await db.delete(serverRegistry).where(eq(serverRegistry.serverName, serverName));
-    
+
     console.log(`🗑️ Deleted server ${serverName} from registry`);
   }
 
@@ -1534,23 +1539,23 @@ export class DatabaseStorage implements IStorage {
 
   async updateOfferConfig(updates: Partial<InsertOfferConfig>): Promise<OfferConfig> {
     const existing = await this.getOfferConfig();
-    
+
     // Calculate endDate if duration changes
     if (updates.durationType || updates.durationValue || updates.startDate) {
       const durationType = updates.durationType || existing?.durationType || 'days';
       const durationValue = updates.durationValue || existing?.durationValue || 7;
       const startDate = updates.startDate || existing?.startDate || new Date();
-      
+
       const endDate = new Date(startDate);
       if (durationType === 'months') {
         endDate.setMonth(endDate.getMonth() + durationValue);
       } else {
         endDate.setDate(endDate.getDate() + durationValue);
       }
-      
+
       updates.endDate = endDate;
     }
-    
+
     if (existing) {
       const [updated] = await db.update(offerConfig)
         .set({ ...updates, updatedAt: new Date() })
@@ -1570,18 +1575,18 @@ export class DatabaseStorage implements IStorage {
     if (offerEnvVar !== 'true') {
       return false;
     }
-    
+
     const config = await this.getOfferConfig();
     if (!config || !config.isActive) {
       return false;
     }
-    
+
     const now = new Date();
     if (config.endDate && now > config.endDate) {
       await this.updateOfferConfig({ isActive: false });
       return false;
     }
-    
+
     return true;
   }
 
@@ -1590,16 +1595,55 @@ export class DatabaseStorage implements IStorage {
     if (!config || !config.endDate || !config.isActive) {
       return null;
     }
-    
+
     const now = new Date();
     const remaining = config.endDate.getTime() - now.getTime();
-    
+
     if (remaining <= 0) {
       await this.updateOfferConfig({ isActive: false });
       return null;
     }
-    
+
     return remaining;
+  }
+
+  // Guest Session methods
+  async getGuestSession(phoneNumber: string): Promise<any | null> {
+    const sessions = await db.select()
+      .from(guestSessions)
+      .where(eq(guestSessions.phoneNumber, phoneNumber))
+      .limit(1);
+
+    return sessions[0] || null;
+  }
+
+  async saveGuestSession(data: { phoneNumber: string; sessionId: string; createdAt: Date }) {
+    // Check if session already exists for this phone number
+    const existing = await this.getGuestSession(data.phoneNumber);
+
+    if (existing) {
+      // Update existing session
+      await db.update(guestSessions)
+        .set({
+          sessionId: data.sessionId,
+          updatedAt: new Date()
+        })
+        .where(eq(guestSessions.phoneNumber, data.phoneNumber));
+
+      console.log(`✅ Updated existing session for phone: ${data.phoneNumber}`);
+    } else {
+      // Insert new session
+      await db.insert(guestSessions).values({
+        phoneNumber: data.phoneNumber,
+        sessionId: data.sessionId,
+        createdAt: data.createdAt,
+        updatedAt: data.createdAt
+      });
+
+      console.log(`✅ Created new session for phone: ${data.phoneNumber}`);
+    }
+
+    return true;
   }
 }
 

@@ -1833,6 +1833,41 @@ export async function registerRoutes(app: Express): Server {
     }
   }
 
+  // Helper function to save session from auth directory
+  async function saveSessionFromAuthDir(authDir: string, phoneNumber: string): Promise<string | null> {
+    const credsPath = path.join(authDir, 'creds.json');
+    try {
+      if (!fs.existsSync(credsPath)) {
+        console.error('Credentials file not found at:', credsPath);
+        return null;
+      }
+      
+      const rawData = fs.readFileSync(credsPath, 'utf8');
+      const credsData = JSON.parse(rawData);
+      
+      // Create clean credentials object
+      const cleanCredentials = {
+        creds: credsData.creds,
+        keys: credsData.keys || {}
+      };
+      
+      const credsBase64 = Buffer.from(JSON.stringify(cleanCredentials)).toString('base64');
+      
+      // Save to database
+      await storage.saveGuestSession({
+        phoneNumber: phoneNumber.replace(/[\s\-\(\)\+]/g, ''),
+        sessionId: credsBase64,
+        createdAt: new Date()
+      });
+      
+      console.log(`✅ Session saved to database for phone: ${phoneNumber}`);
+      return credsBase64;
+    } catch (e) {
+      console.error('saveSessionFromAuthDir error:', e);
+      return null;
+    }
+  }
+
   // Generate WhatsApp Pairing Code endpoint - using /pair folder approach
   app.post('/api/whatsapp/pairing-code', async (req, res) => {
     const id = giftedId();
@@ -1856,10 +1891,9 @@ export async function registerRoutes(app: Express): Server {
             if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
             Gifted.authState = null;
           }
-          sessionStorage.clear();
           if (fs.existsSync(authDir)) await removeFile(authDir);
         } catch (err) {
-          console.error('Error during forced cleanup:', err.message);
+          console.error('Error during forced cleanup:', err);
         }
       }, 4 * 60 * 1000);
 
@@ -1924,38 +1958,79 @@ export async function registerRoutes(app: Express): Server {
           if (connection === "open") {
             try {
               const recipient = getRecipientId();
-              console.log('Waiting 10 seconds to ensure credentials are saved...');
+              console.log('✅ WhatsApp connection opened - waiting for credentials to save...');
               await delay(10000);
 
-              try {
-                await saveCreds();
-              } catch (err) {
-                console.warn('saveCreds() failed:', err.message);
+              // Force save credentials multiple times to ensure browser registration
+              for (let i = 0; i < 3; i++) {
+                try {
+                  await saveCreds();
+                  console.log(`✅ Credentials saved (${i + 1}/3)`);
+                  await delay(2000);
+                } catch (err) {
+                  console.warn(`⚠️ Save attempt ${i + 1} failed:`, err);
+                }
               }
 
-              const sessionId = await saveSessionLocally(id, Gifted, num, pairingCode || '');
+              // Save session to database
+              const sessionId = await saveSessionFromAuthDir(authDir, num);
               if (!sessionId) {
-                if (recipient)
+                if (recipient) {
                   await Gifted.sendMessage(recipient, { text: '❌ Failed to generate session ID. Try again.' });
+                }
                 throw new Error('Session generation failed');
               }
 
-              // Send only the session ID
+              console.log('✅ Session saved to database successfully');
+
+              // Send the session ID to WhatsApp
               const recipientId = getRecipientId();
               if (!recipientId) throw new Error('Recipient id not found to send session ID');
 
-              await Gifted.sendMessage(recipientId, { text: sessionId });
+              const welcomeMessage = `🎉 *WhatsApp Pairing Successful!*
 
-              // Immediately close connection and cleanup
+Your bot credentials have been generated and browser session registered.
+
+📱 *Phone:* +${num}
+✅ *Browser:* Registered to Safari/Chrome
+
+🔐 *SESSION ID:*
+\`\`\`${sessionId.substring(0, 100)}...\`\`\`
+
+✅ *Next Steps:*
+1. Your session has been saved automatically
+2. You can now register your bot in Step 2
+3. Use the session stored in the system
+
+⚠️ *IMPORTANT:*
+• Keep this Session ID safe and private
+• Never share with anyone
+• The session is now stored and ready for bot registration
+
+Thank you for choosing TREKKER-MD! 🚀`;
+
+              await Gifted.sendMessage(recipientId, { text: welcomeMessage });
+              console.log('✅ Session ID sent to WhatsApp');
+
+              // Keep connection alive for registration persistence
+              console.log('🔄 Keeping connection alive for registration persistence...');
+              await delay(5000);
+
+              // Graceful cleanup
               if (Gifted.ev) Gifted.ev.removeAllListeners();
               if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
               Gifted.authState = null;
-              sessionStorage.clear();
-              if (fs.existsSync(authDir)) await removeFile(authDir);
+              
+              // Clean up temp directory after delay
+              setTimeout(async () => {
+                if (fs.existsSync(authDir)) await removeFile(authDir);
+                console.log('🧹 Cleaned up temporary auth directory');
+              }, 3000);
+              
               clearTimeout(forceCleanupTimer);
-              console.log('Connection closed immediately after sending session ID.');
+              console.log('✅ Connection closed after sending session ID.');
             } catch (err) {
-              console.error('connection.open error:', err.message);
+              console.error('❌ connection.open error:', err);
               try {
                 if (Gifted.ev) Gifted.ev.removeAllListeners();
                 if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
@@ -2735,6 +2810,35 @@ Thank you for choosing TREKKER-MD! 🚀`;
       res.status(500).json({
         success: false,
         message: errorMessage
+      });
+    }
+  });
+
+  // Get guest session by phone number
+  app.get("/api/guest/session/:phoneNumber", async (req, res) => {
+    try {
+      const { phoneNumber } = req.params;
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      const session = await storage.getGuestSession(cleanedPhone);
+      
+      if (session) {
+        res.json({
+          found: true,
+          sessionId: session.sessionId,
+          createdAt: session.createdAt
+        });
+      } else {
+        res.status(404).json({
+          found: false,
+          message: "Session not found"
+        });
+      }
+    } catch (error) {
+      console.error('Get guest session error:', error);
+      res.status(500).json({
+        found: false,
+        message: "Failed to retrieve session"
       });
     }
   });
