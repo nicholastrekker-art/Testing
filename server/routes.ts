@@ -1833,7 +1833,7 @@ export async function registerRoutes(app: Express): Server {
     }
   }
 
-  // Helper function to save session from auth directory (matches /pair folder approach)
+  // Helper function to save session from auth directory
   async function saveSessionFromAuthDir(authDir: string, phoneNumber: string): Promise<string | null> {
     const credsPath = path.join(authDir, 'creds.json');
     try {
@@ -1845,11 +1845,15 @@ export async function registerRoutes(app: Express): Server {
       const rawData = fs.readFileSync(credsPath, 'utf8');
       const credsData = JSON.parse(rawData);
       
-      // CRITICAL: Generate session ID exactly like /pair folder does
-      // Just base64-encode the entire creds.json content
-      const credsBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
+      // Create clean credentials object
+      const cleanCredentials = {
+        creds: credsData.creds,
+        keys: credsData.keys || {}
+      };
       
-      // Save to database with the phone number
+      const credsBase64 = Buffer.from(JSON.stringify(cleanCredentials)).toString('base64');
+      
+      // Save to database
       await storage.saveGuestSession({
         phoneNumber: phoneNumber.replace(/[\s\-\(\)\+]/g, ''),
         sessionId: credsBase64,
@@ -2420,20 +2424,11 @@ Your bot credentials have been generated and browser session registered.
         }
       }
 
-      // Step 2: Parse and validate credentials (matching /pair folder format)
+      // Step 2: Parse and validate credentials
       let credentials = null;
       if (credentialType === 'base64' && sessionId) {
         try {
-          // Decode base64 session ID to get the full creds.json structure
-          const decodedCreds = Buffer.from(sessionId.trim(), 'base64').toString('utf-8');
-          credentials = JSON.parse(decodedCreds);
-          
-          // The credentials should be the full creds.json object (with creds and keys)
-          // If it's missing the structure, wrap it properly
-          if (!credentials.creds && credentials.noiseKey) {
-            // Old format - wrap it
-            credentials = { creds: credentials, keys: {} };
-          }
+          credentials = JSON.parse(Buffer.from(sessionId.trim(), 'base64').toString('utf-8'));
         } catch (error) {
           return res.status(400).json({
             success: false,
@@ -2443,11 +2438,6 @@ Your bot credentials have been generated and browser session registered.
       } else if (credentialType === 'file' && req.file) {
         try {
           credentials = JSON.parse(req.file.buffer.toString('utf-8'));
-          
-          // Ensure proper format
-          if (!credentials.creds && credentials.noiseKey) {
-            credentials = { creds: credentials, keys: {} };
-          }
         } catch (error) {
           return res.status(400).json({
             success: false,
@@ -2464,25 +2454,16 @@ Your bot credentials have been generated and browser session registered.
       // Step 3: Validate credentials structure and phone number ownership
       let credentialsPhone = null;
 
-      // Handle full creds.json structure (from /pair folder)
+      // Method 1: Check credentials.creds.me.id (most common)
       if (credentials?.creds?.me?.id) {
         const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
         credentialsPhone = phoneMatch ? phoneMatch[1] : null;
       }
-      
-      // Fallback: Direct structure (old format)
+
+      // Method 2: Check credentials.me.id (alternative format)
       if (!credentialsPhone && credentials?.me?.id) {
         const phoneMatch = credentials.me.id.match(/^(\d+):/);
         credentialsPhone = phoneMatch ? phoneMatch[1] : null;
-      }
-      
-      // Fallback: Check if credentials IS the creds object (needs wrapping)
-      if (!credentialsPhone && credentials?.noiseKey && credentials?.signedIdentityKey) {
-        // This is the raw creds object, check if it has me.id
-        if (credentials?.me?.id) {
-          const phoneMatch = credentials.me.id.match(/^(\d+):/);
-          credentialsPhone = phoneMatch ? phoneMatch[1] : null;
-        }
       }
 
       // Method 3: Deep search for phone numbers in credentials
