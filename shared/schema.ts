@@ -149,6 +149,18 @@ export const offerConfig = pgTable("offer_config", {
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
+// Guest sessions table - stores session IDs permanently
+export const guestSessions = pgTable("guest_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  phoneNumber: text("phone_number").notNull(),
+  sessionId: text("session_id").notNull(), // Base64 encoded session data
+  pairingCode: text("pairing_code"), // WhatsApp pairing code used
+  serverName: text("server_name").notNull(), // Server where session was created
+  isUsed: boolean("is_used").default(false), // Whether session has been used for bot registration
+  expiresAt: timestamp("expires_at").default(sql`CURRENT_TIMESTAMP + INTERVAL '7 days'`),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
 // Relations
 export const botInstancesRelations = relations(botInstances, ({ many }) => ({
   commands: many(commands),
@@ -255,6 +267,11 @@ export const insertOfferConfigSchema = createInsertSchema(offerConfig).omit({
   updatedAt: true,
 });
 
+export const insertGuestSessionSchema = createInsertSchema(guestSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -285,3 +302,6 @@ export type InsertExternalBotConnection = z.infer<typeof insertExternalBotConnec
 
 export type OfferConfig = typeof offerConfig.$inferSelect;
 export type InsertOfferConfig = z.infer<typeof insertOfferConfigSchema>;
+
+export type GuestSession = typeof guestSessions.$inferSelect;
+export type InsertGuestSession = z.infer<typeof insertGuestSessionSchema>;
