@@ -293,13 +293,53 @@ export default function WhatsAppPairingPage() {
               )}
 
 
+              {sessionId && (
+                <Card className="border-purple-200 bg-purple-50 dark:bg-purple-900/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-purple-700 dark:text-purple-300">
+                      <Smartphone className="h-6 w-6" />
+                      Session ID Received!
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border-2 border-purple-300">
+                      <p className="text-xs text-muted-foreground mb-2">Your Session ID:</p>
+                      <div className="bg-gray-100 dark:bg-gray-900 p-3 rounded font-mono text-sm break-all max-h-32 overflow-y-auto">
+                        {sessionId}
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        navigator.clipboard.writeText(sessionId);
+                        toast({
+                          title: "Session ID Copied!",
+                          description: "Session ID has been copied to clipboard",
+                        });
+                      }}
+                      className="w-full bg-purple-600 hover:bg-purple-700"
+                      size="lg"
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Session ID
+                    </Button>
+                    <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <AlertDescription className="text-green-800 dark:text-green-200">
+                        ✅ Session ID also sent to your WhatsApp! Use either copy to continue.
+                      </AlertDescription>
+                    </Alert>
+                  </CardContent>
+                </Card>
+              )}
+
               <Alert className="border-blue-500">
                 <AlertDescription className="text-sm">
                   <strong>📱 What happens next:</strong>
                   <ul className="mt-2 space-y-1 ml-4 list-disc">
                     <li>Enter the code above in WhatsApp</li>
                     <li>Session ID will be sent to your WhatsApp automatically</li>
-                    <li>Copy that Session ID and continue to Step 2 (Guest Dashboard)</li>
+                    <li>Copy the Session ID from above or from WhatsApp</li>
+                    <li>Continue to Step 2 (Guest Dashboard) to use it</li>
                   </ul>
                 </AlertDescription>
               </Alert>
@@ -316,7 +356,7 @@ export default function WhatsAppPairingPage() {
                   className="flex-1"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
+                  Try Again
                 </Button>
                 <Button
                   onClick={() => setLocation('/guest/bot-management')}
@@ -324,7 +364,7 @@ export default function WhatsAppPairingPage() {
                   className="flex-1"
                   disabled={!sessionId} 
                 >
-                  Go to Dashboard
+                  Go to Step 2
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
