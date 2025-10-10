@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Bot, Play, Square, RefreshCw, Settings, Trash2, ExternalLink, AlertTriangle, Shield, CheckCircle, Phone, Eye, EyeOff, Upload, Power, Loader2, Smartphone } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 
 interface BotInfo {
   id: string;
@@ -44,7 +44,7 @@ type Step = 'session' | 'dashboard' | 'inactive';
 export default function GuestBotManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
 
   // State management
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -680,7 +680,7 @@ export default function GuestBotManagement() {
                       return;
                     }
                     // Redirect to the search page for phone number based search
-                    window.location.href = '/guest/verification';
+                    setLocation('/guest/verification');
                   }}
                   size="lg"
                   className="flex-1"
