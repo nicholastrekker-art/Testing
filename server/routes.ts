@@ -4549,43 +4549,13 @@ Thank you for using TREKKER-MD! 🚀
     }
   });
 
-  // Generate WhatsApp Pairing Code endpoint - FIXED to work like /pair project
+  // Generate WhatsApp Pairing Code endpoint - using /pair folder approach
   app.get('/api/whatsapp/pairing-code', async (req, res) => {
     const id = giftedId();
     let num = req.query.number as string;
 
     if (!num) {
       return res.status(400).send({ error: "Phone number is required" });
-    }
-
-    // Helper function to wait for message acknowledgment
-    function waitForMessageAck(Gifted: any, messageKey: any, timeoutMs = 10000) {
-      return new Promise((resolve) => {
-        let resolved = false;
-        const timer = setTimeout(() => {
-          if (!resolved) {
-            resolved = true;
-            Gifted.ev.removeListener('messages.update', handler);
-            resolve(false);
-          }
-        }, timeoutMs);
-        const handler = (updates: any) => {
-          const arr = Array.isArray(updates) ? updates : [updates];
-          for (const u of arr) {
-            const key = u.key || u;
-            if (key && messageKey && key.id === messageKey.id && key.remoteJid === messageKey.remoteJid) {
-              if (!resolved) {
-                resolved = true;
-                clearTimeout(timer);
-                Gifted.ev.removeListener('messages.update', handler);
-                resolve(true);
-                return;
-              }
-            }
-          }
-        };
-        Gifted.ev.on('messages.update', handler);
-      });
     }
 
     async function GIFTED_PAIR_CODE() {
@@ -4601,11 +4571,10 @@ Thank you for using TREKKER-MD! 🚀
           }
           sessionStorage.clear();
           if (fs.existsSync(authDir)) await removeFile(authDir);
-          console.log('Forced cleanup executed.');
         } catch (err) {
           console.error('Error during forced cleanup:', err.message);
         }
-      }, 5 * 60 * 1000); // Extended to 5 minutes
+      }, 4 * 60 * 1000);
 
       try {
         const {
@@ -4648,10 +4617,7 @@ Thank you for using TREKKER-MD! 🚀
 
         Gifted.ev.on('creds.update', async () => {
           try {
-            if (fs.existsSync(authDir)) {
-              await saveCreds();
-              console.log('✅ Credentials auto-saved on update');
-            }
+            if (fs.existsSync(authDir)) await saveCreds();
           } catch (err) {
             console.warn('saveCreds on creds.update failed:', err.message);
           }
@@ -4663,26 +4629,13 @@ Thank you for using TREKKER-MD! 🚀
           if (connection === "open") {
             try {
               const recipient = getRecipientId();
-              console.log('✅ Connection opened, ensuring credentials are saved...');
-
-              // Wait longer to ensure all credentials are fully written
-              await delay(15000); // Increased from 10s to 15s
-
-              // Force save credentials multiple times to ensure persistence
-              for (let i = 0; i < 3; i++) {
-                try {
-                  await saveCreds();
-                  console.log(`✅ Credentials saved (attempt ${i + 1}/3)`);
-                  await delay(2000); // Wait 2s between saves
-                } catch (err) {
-                  console.warn(`⚠️ Save attempt ${i + 1} failed:`, err.message);
-                }
-              }
-
-              // Verify credentials file exists before generating session ID
-              const credsPath = path.join(authDir, 'creds.json');
-              if (!fs.existsSync(credsPath)) {
-                throw new Error('Credentials file not created - pairing may have failed');
+              console.log('Waiting 10 seconds to ensure credentials are saved...');
+              await delay(10000);
+              
+              try {
+                await saveCreds();
+              } catch (err) {
+                console.warn('saveCreds() failed:', err.message);
               }
 
               const sessionId = await saveSessionLocally(id, Gifted);
@@ -4692,61 +4645,35 @@ Thank you for using TREKKER-MD! 🚀
                 throw new Error('Session generation failed');
               }
 
-              console.log('✅ Session ID generated, preparing to send...');
-
-              // Send session ID to WhatsApp
+              // Send only the session ID
               const recipientId = getRecipientId();
               if (!recipientId) throw new Error('Recipient id not found to send session ID');
 
-              console.log(`📤 Sending session ID to ${recipientId}...`);
-              const sent = await Gifted.sendMessage(recipientId, { text: sessionId });
-              console.log('✅ Session ID message sent, waiting for delivery...');
+              await Gifted.sendMessage(recipientId, { text: sessionId });
 
-              // Wait for message acknowledgment
-              const messageKey = sent?.key || null;
-              if (messageKey) {
-                const acked = await waitForMessageAck(Gifted, messageKey, 8000); // Increased timeout
-                if (acked) {
-                  console.log('✅ Message delivered successfully');
-                } else {
-                  console.log('⚠️ Message sent but acknowledgment timeout');
-                }
-              }
-
-              // Additional delay to ensure message is fully delivered
-              await delay(3000);
-
-              // Close connection and cleanup
-              console.log('🧹 Starting cleanup...');
+              // Immediately close connection and cleanup
               if (Gifted.ev) Gifted.ev.removeAllListeners();
               if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
               Gifted.authState = null;
               sessionStorage.clear();
               if (fs.existsSync(authDir)) await removeFile(authDir);
               clearTimeout(forceCleanupTimer);
-              console.log('✅ Cleanup completed - session ID sent to WhatsApp');
+              console.log('Connection closed immediately after sending session ID.');
             } catch (err) {
-              console.error('❌ connection.open error:', err.message);
-              console.error('Stack:', err.stack);
+              console.error('connection.open error:', err.message);
               try {
                 if (Gifted.ev) Gifted.ev.removeAllListeners();
                 if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
                 if (fs.existsSync(authDir)) await removeFile(authDir);
               } catch {}
             }
-          } else if (connection === "close") {
-            const statusCode = lastDisconnect?.error?.output?.statusCode;
-            console.log(`⚠️ Connection closed with status ${statusCode}`);
-            
-            if (statusCode === 401) {
-              console.log('❌ Logged out (401) - session ended');
-            } else {
-              console.log('ℹ️ Connection closed - cleanup timer will handle remaining resources');
-            }
+          } else if (connection === "close" && lastDisconnect?.error?.output?.statusCode !== 401) {
+            await delay(10000);
+            GIFTED_PAIR_CODE().catch(err => console.error('Restart error:', err));
           }
         });
       } catch (err) {
-        console.error('❌ Outer error:', err.message);
+        console.error('Outer error:', err.message);
         clearTimeout(forceCleanupTimer);
         sessionStorage.clear();
         try {
