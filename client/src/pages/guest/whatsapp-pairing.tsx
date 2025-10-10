@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,7 @@ import { Smartphone, Key, CheckCircle, AlertTriangle, Copy, Server, Gift, ArrowL
 
 export default function WhatsAppPairingPage() {
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
 
   const [step, setStep] = useState(1);
   const [selectedServer, setSelectedServer] = useState("");
@@ -127,7 +127,7 @@ export default function WhatsAppPairingPage() {
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ['/api/bots'] });
         queryClient.invalidateQueries({ queryKey: ['/api/bots/approved'] });
-        navigate('/guest/dashboard');
+        setLocation('/guest/dashboard');
       }, 2000);
     },
     onError: (error: Error) => {
@@ -257,7 +257,7 @@ export default function WhatsAppPairingPage() {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6 flex items-center gap-4">
-          <Button variant="outline" onClick={() => navigate('/guest/dashboard')}>
+          <Button variant="outline" onClick={() => setLocation('/guest/dashboard')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
@@ -429,7 +429,7 @@ export default function WhatsAppPairingPage() {
                   Try Again
                 </Button>
                 <Button 
-                  onClick={() => navigate('/guest/dashboard')}
+                  onClick={() => setLocation('/guest/dashboard')}
                   className="flex-1"
                 >
                   Done - Go to Dashboard
