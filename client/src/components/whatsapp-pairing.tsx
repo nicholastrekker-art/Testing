@@ -103,8 +103,13 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
   // Generate pairing code using new auto-pairing endpoint
   const generatePairingMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; selectedServer: string; botName?: string; features?: any }) => {
-      const response = await fetch(`/api/whatsapp/pairing-code?number=${data.phoneNumber}`, {
-        method: 'GET',
+      const response = await fetch('/api/whatsapp/pairing-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          phoneNumber: data.phoneNumber,
+          selectedServer: data.selectedServer
+        })
       });
 
       if (!response.ok) {
@@ -116,21 +121,19 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       return result;
     },
     onSuccess: (data) => {
-      if (data.code || data.pairingCode) {
+      if (data.success && data.pairingCode) {
         // Pairing code generated successfully
-        const code = data.code || data.pairingCode;
-        setPairingCode(code);
-        const sessionId = data.sessionId || `pair_${phoneNumber}_${Date.now()}`;
-        setPairingSessionId(sessionId);
+        setPairingCode(data.pairingCode);
+        setPairingSessionId(data.sessionId || `pair_${phoneNumber}_${Date.now()}`);
         setIsWaitingForAuth(true);
         setStep(3);
 
         toast({
           title: "Pairing Code Generated!",
-          description: "Enter this code in WhatsApp Settings → Linked Devices. Your session ID will be sent directly to your WhatsApp - check your messages!",
+          description: "Enter this code in WhatsApp Settings → Linked Devices. Your session ID will be sent directly to your WhatsApp!",
         });
 
-        // Start polling for session ID
+        // Start continuous polling for session ID
         startSessionPolling(phoneNumber);
       } else {
         throw new Error('No pairing code returned');
@@ -146,25 +149,26 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     }
   });
 
-  // Poll for session ID after pairing code is entered
+  // Poll for session ID after pairing code is entered - continuous polling
   const startSessionPolling = (phone: string) => {
+    console.log('Starting continuous session polling for:', phone);
+    
     const pollInterval = setInterval(async () => {
       try {
-        const response = await fetch('/api/whatsapp/check-session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phoneNumber: phone })
-        });
+        const response = await fetch(`/api/guest/session/${phone.replace(/[\s\-\(\)\+]/g, '')}`);
 
         if (response.ok) {
           const data = await response.json();
-          if (data.sessionId && data.credentials) {
+          console.log('Session poll response:', data);
+          
+          if (data.found && data.sessionId) {
             // Session found!
+            console.log('Session ID detected!', data.sessionId.substring(0, 20) + '...');
             clearInterval(pollInterval);
             setPollingInterval(null);
             setIsWaitingForAuth(false);
             setCredentials({
-              jid: data.credentials.me?.id || phone,
+              jid: phone + '@s.whatsapp.net',
               base64: data.sessionId
             });
             
@@ -177,18 +181,11 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       } catch (error) {
         console.log('Session polling error:', error);
       }
-    }, 3000); // Poll every 3 seconds
+    }, 2000); // Poll every 2 seconds
 
     setPollingInterval(pollInterval);
-
-    // Stop polling after 5 minutes
-    setTimeout(() => {
-      if (pollInterval) {
-        clearInterval(pollInterval);
-        setPollingInterval(null);
-        setIsWaitingForAuth(false);
-      }
-    }, 300000);
+    
+    // No timeout - keep polling as long as the dialog is open
   };
 
   // Register bot mutation - includes offer discount check
@@ -381,6 +378,11 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
   return (
     <Dialog open={open} onOpenChange={(open) => {
       if (!open) {
+        // Clean up polling when closing
+        if (pollingInterval) {
+          clearInterval(pollingInterval);
+          setPollingInterval(null);
+        }
         handleReset();
         onClose();
       }
@@ -539,17 +541,17 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
                         <li>3. Tap <strong>Link a Device</strong></li>
                         <li>4. Tap <strong>Link with phone number instead</strong></li>
                         <li>5. Enter the pairing code above</li>
-                        <li>6. <strong>Check your WhatsApp messages</strong> - Session ID will arrive automatically!</li>
+                        <li>6. Wait - Session ID will be detected automatically!</li>
                       </ol>
                     </AlertDescription>
                   </Alert>
 
-                  <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-900/20">
+                  <Alert className="border-blue-500 bg-blue-50 dark:bg-blue-900/20">
                     <div className="flex items-center gap-3">
-                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-amber-600 border-t-transparent"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
                       <AlertDescription className="text-sm">
-                        <strong>⏳ Fetching Session ID...</strong>
-                        <p className="mt-1">Please wait while we retrieve your session credentials. This usually takes 10-60 seconds after you enter the pairing code in WhatsApp.</p>
+                        <strong>🔄 Continuously Detecting Session ID...</strong>
+                        <p className="mt-1">Monitoring for your session credentials. The detection will continue until the session is found or you close this dialog.</p>
                       </AlertDescription>
                     </div>
                   </Alert>
