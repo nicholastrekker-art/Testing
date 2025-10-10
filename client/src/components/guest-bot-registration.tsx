@@ -69,18 +69,18 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     if (open) {
       const pendingSessionId = localStorage.getItem('pendingSessionId');
       const pendingPhoneNumber = localStorage.getItem('pendingPhoneNumber');
-      
+
       if (pendingSessionId && pendingPhoneNumber) {
         setFormData(prev => ({
           ...prev,
           sessionId: pendingSessionId,
           phoneNumber: pendingPhoneNumber
         }));
-        
+
         // Clear from localStorage after using
         localStorage.removeItem('pendingSessionId');
         localStorage.removeItem('pendingPhoneNumber');
-        
+
         // Show success message
         toast({
           title: "Session ID Loaded!",
@@ -594,9 +594,13 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                       required
                       className="mt-1 text-lg"
                       autoFocus
+                      readOnly={!!autoPhoneNumber}
+                      disabled={!!autoPhoneNumber}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      Enter your phone number with country code (+ will be removed automatically)
+                      {autoPhoneNumber 
+                        ? "Phone number from pairing (auto-filled)" 
+                        : "Enter your phone number with country code (+ will be removed automatically)"}
                     </p>
                   </div>
                 </CardContent>

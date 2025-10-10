@@ -122,13 +122,16 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
         setPairingCode(code);
         const sessionId = data.sessionId || `pair_${phoneNumber}_${Date.now()}`;
         setPairingSessionId(sessionId);
-        setIsWaitingForAuth(false);
+        setIsWaitingForAuth(true);
         setStep(3);
 
         toast({
           title: "Pairing Code Generated!",
           description: "Enter this code in WhatsApp Settings → Linked Devices. Your session ID will be sent directly to your WhatsApp - check your messages!",
         });
+
+        // Start polling for session ID
+        startSessionPolling(phoneNumber);
       } else {
         throw new Error('No pairing code returned');
       }
@@ -142,6 +145,51 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       });
     }
   });
+
+  // Poll for session ID after pairing code is entered
+  const startSessionPolling = (phone: string) => {
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch('/api/whatsapp/check-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber: phone })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.sessionId && data.credentials) {
+            // Session found!
+            clearInterval(pollInterval);
+            setPollingInterval(null);
+            setIsWaitingForAuth(false);
+            setCredentials({
+              jid: data.credentials.me?.id || phone,
+              base64: data.sessionId
+            });
+            
+            toast({
+              title: "Session Retrieved!",
+              description: "Your WhatsApp session credentials have been fetched successfully.",
+            });
+          }
+        }
+      } catch (error) {
+        console.log('Session polling error:', error);
+      }
+    }, 3000); // Poll every 3 seconds
+
+    setPollingInterval(pollInterval);
+
+    // Stop polling after 5 minutes
+    setTimeout(() => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        setPollingInterval(null);
+        setIsWaitingForAuth(false);
+      }
+    }, 300000);
+  };
 
   // Register bot mutation - includes offer discount check
   const registerBotMutation = useMutation({
@@ -450,7 +498,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
           </Card>
         )}
 
-        {/* Step 3: Pairing Code Display */}
+        {/* Step 3: Pairing Code Display & Session Fetching */}
         {step === 3 && (
           <Card className="border-blue-200">
             <CardHeader>
@@ -459,7 +507,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
                 Step 3: Enter Pairing Code in WhatsApp
               </CardTitle>
               <CardDescription>
-                Session ID will be sent automatically to your WhatsApp
+                {credentials ? "Session ID retrieved successfully!" : "Waiting for session ID..."}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -480,30 +528,41 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
                 </Button>
               </div>
 
-              <Alert className="border-green-500">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription>
-                  <ol className="space-y-1 text-sm">
-                    <li>1. Open WhatsApp on your phone</li>
-                    <li>2. Go to <strong>Settings → Linked Devices</strong></li>
-                    <li>3. Tap <strong>Link a Device</strong></li>
-                    <li>4. Tap <strong>Link with phone number instead</strong></li>
-                    <li>5. Enter the pairing code above</li>
-                    <li>6. <strong>Check your WhatsApp messages</strong> - Session ID will arrive automatically!</li>
-                  </ol>
-                </AlertDescription>
-              </Alert>
+              {!credentials ? (
+                <>
+                  <Alert className="border-green-500">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription>
+                      <ol className="space-y-1 text-sm">
+                        <li>1. Open WhatsApp on your phone</li>
+                        <li>2. Go to <strong>Settings → Linked Devices</strong></li>
+                        <li>3. Tap <strong>Link a Device</strong></li>
+                        <li>4. Tap <strong>Link with phone number instead</strong></li>
+                        <li>5. Enter the pairing code above</li>
+                        <li>6. <strong>Check your WhatsApp messages</strong> - Session ID will arrive automatically!</li>
+                      </ol>
+                    </AlertDescription>
+                  </Alert>
 
-              <Alert className="border-blue-500">
-                <AlertDescription className="text-sm">
-                  <strong>📱 What happens next:</strong>
-                  <ul className="mt-2 space-y-1 ml-4 list-disc">
-                    <li>Enter the code above in WhatsApp</li>
-                    <li>Session ID will be sent to your WhatsApp automatically</li>
-                    <li>Copy that Session ID and continue to Step 2 (Guest Dashboard)</li>
-                  </ul>
-                </AlertDescription>
-              </Alert>
+                  <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-900/20">
+                    <div className="flex items-center gap-3">
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-amber-600 border-t-transparent"></div>
+                      <AlertDescription className="text-sm">
+                        <strong>⏳ Fetching Session ID...</strong>
+                        <p className="mt-1">Please wait while we retrieve your session credentials. This usually takes 10-60 seconds after you enter the pairing code in WhatsApp.</p>
+                      </AlertDescription>
+                    </div>
+                  </Alert>
+                </>
+              ) : (
+                <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-sm text-green-800 dark:text-green-200">
+                    <strong>✅ Session ID Retrieved Successfully!</strong>
+                    <p className="mt-1">Your WhatsApp session has been established. Click below to continue with bot registration.</p>
+                  </AlertDescription>
+                </Alert>
+              )}
 
               <div className="flex gap-2">
                 <Button 
@@ -511,6 +570,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
                   onClick={() => {
                     setStep(2);
                     setPairingCode("");
+                    setCredentials(null);
                   }}
                   className="flex-1"
                 >
@@ -518,22 +578,40 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
                 </Button>
                 <Button 
                   onClick={() => {
+                    if (!credentials) {
+                      toast({
+                        title: "Session Not Ready",
+                        description: "Please wait for the session ID to be retrieved first",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+
                     // Store credentials for auto-registration
                     localStorage.setItem('autoRegisterSessionId', credentials.base64);
                     localStorage.setItem('autoRegisterPhoneNumber', phoneNumber);
                     localStorage.setItem('autoRegisterFlow', 'true');
                     localStorage.setItem('autoRegisterTimestamp', Date.now().toString());
 
+                    console.log('Storing auto-register data:', {
+                      sessionIdLength: credentials.base64?.length,
+                      phoneNumber,
+                      timestamp: Date.now()
+                    });
+
                     // Close pairing modal
                     handleReset();
                     onClose();
 
-                    // Trigger registration modal opening via page reload
-                    window.location.href = '/?openRegistration=true';
+                    // Small delay to ensure localStorage is written
+                    setTimeout(() => {
+                      window.location.href = '/?openRegistration=true';
+                    }, 100);
                   }}
+                  disabled={!credentials}
                   className="flex-1"
                 >
-                  Continue to Register Bot →
+                  {credentials ? "Continue to Register Bot →" : "Waiting for Session..."}
                 </Button>
               </div>
             </CardContent>

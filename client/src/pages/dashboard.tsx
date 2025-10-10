@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -72,7 +71,7 @@ export default function Dashboard() {
     // Check URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const shouldOpenRegistration = urlParams.get('openRegistration') === 'true';
-    
+
     const autoRegisterFlow = localStorage.getItem('autoRegisterFlow');
     const sessionId = localStorage.getItem('autoRegisterSessionId');
     const phoneNumber = localStorage.getItem('autoRegisterPhoneNumber');
@@ -87,21 +86,24 @@ export default function Dashboard() {
     });
 
     if ((autoRegisterFlow === 'true' || shouldOpenRegistration) && sessionId && phoneNumber) {
-      localStorage.removeItem('autoRegisterFlow');
-      localStorage.removeItem('autoRegisterTimestamp');
-
-      // Clean URL
+      // Clean URL first
       if (shouldOpenRegistration) {
         window.history.replaceState({}, '', '/');
       }
 
-      console.log('Opening registration dialog with auto-filled data');
-      setShowGuestRegistration(true);
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        localStorage.removeItem('autoRegisterFlow');
+        localStorage.removeItem('autoRegisterTimestamp');
 
-      toast({
-        title: "Ready to Register!",
-        description: "Your credentials are ready. Complete your bot registration now.",
-      });
+        console.log('Opening registration dialog with auto-filled data');
+        setShowGuestRegistration(true);
+
+        toast({
+          title: "Ready to Register!",
+          description: "Your credentials are ready. Complete your bot registration now.",
+        });
+      }, 100);
     }
   }, [toast]);
 
@@ -307,7 +309,7 @@ export default function Dashboard() {
           <div className="mb-8">
             {/* Hero Section */}
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-green-600 to-teal-600 p-8 mb-6 shadow-2xl shadow-emerald-500/30">
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoNHYzNmgtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-20"></div>
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoNHYzNmgtNHp2Lz48L2c+PC9nPjwvc3ZnPg==')] opacity-20"></div>
               <div className="relative text-center">
                 <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-4 shadow-lg">
                   <span className="text-5xl">🚀</span>
