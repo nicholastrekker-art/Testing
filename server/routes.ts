@@ -1959,10 +1959,7 @@ export async function registerRoutes(app: Express): Server {
 
           if (connection === "open") {
             try {
-              const recipient = getRecipientId();
-              console.log('✅ WhatsApp connection opened - waiting for browser registration...');
-              
-              // CRITICAL: Wait 10 seconds to ensure credentials are saved (same as /pair folder)
+              // Wait 10 seconds to ensure credentials are saved (same as /pair folder)
               console.log('Waiting 10 seconds to ensure credentials are saved...');
               await delay(10000);
               
@@ -1977,6 +1974,7 @@ export async function registerRoutes(app: Express): Server {
               // Save session to database
               const sessionId = await saveSessionFromAuthDir(authDir, num);
               if (!sessionId) {
+                const recipient = getRecipientId();
                 if (recipient) {
                   await Gifted.sendMessage(recipient, { text: '❌ Failed to generate session ID. Try again.' });
                 }
@@ -1985,7 +1983,7 @@ export async function registerRoutes(app: Express): Server {
 
               console.log('✅ Session saved to database successfully');
 
-              // Send the session ID to WhatsApp (only session ID, not extra messages)
+              // Send ONLY the session ID to WhatsApp (same as /pair folder)
               const recipientId = getRecipientId();
               if (!recipientId) throw new Error('Recipient id not found to send session ID');
 
@@ -1999,7 +1997,7 @@ export async function registerRoutes(app: Express): Server {
               }
               if (!acked) console.log('No ACK; closing immediately.');
 
-              // IMPORTANT: Immediately close connection and cleanup (same as /pair folder)
+              // Immediately close connection and cleanup (same as /pair folder)
               if (Gifted.ev) Gifted.ev.removeAllListeners();
               if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
               Gifted.authState = null;
