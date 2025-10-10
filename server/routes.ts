@@ -2051,7 +2051,7 @@ export async function registerRoutes(app: Express): Server {
       const timer = setTimeout(() => {
         if (!resolved) {
           resolved = true;
-          Gifted.ev.removeListener('messages.update', handler);
+          Gifted.ev.off('messages.update', handler);
           resolve(false);
         }
       }, timeoutMs);
@@ -2063,7 +2063,7 @@ export async function registerRoutes(app: Express): Server {
             if (!resolved) {
               resolved = true;
               clearTimeout(timer);
-              Gifted.ev.removeListener('messages.update', handler);
+              Gifted.ev.off('messages.update', handler);
               resolve(true);
               return;
             }
