@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import * as React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,7 +42,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
   });
 
   // Clear auto-register data after it's been used and show success message
-  React.useEffect(() => {
+  useEffect(() => {
     if (open && autoSessionId && autoPhoneNumber) {
       console.log('Guest registration opened with auto-filled data:', {
         sessionIdLength: autoSessionId.length,
@@ -55,6 +54,9 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
         title: "Credentials Auto-Filled!",
         description: `Session ID and phone number (${autoPhoneNumber}) have been automatically filled. Just enter your bot name and configure features.`,
       });
+
+      // Auto-skip to credentials step (step 4) since we already have phone and session
+      setStep(4);
 
       // Clear from localStorage after displaying
       localStorage.removeItem('autoRegisterSessionId');

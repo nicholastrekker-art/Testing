@@ -69,6 +69,10 @@ export default function Dashboard() {
 
   // Auto-open registration if coming from pairing flow
   React.useEffect(() => {
+    // Check URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldOpenRegistration = urlParams.get('openRegistration') === 'true';
+    
     const autoRegisterFlow = localStorage.getItem('autoRegisterFlow');
     const sessionId = localStorage.getItem('autoRegisterSessionId');
     const phoneNumber = localStorage.getItem('autoRegisterPhoneNumber');
@@ -78,19 +82,25 @@ export default function Dashboard() {
       autoRegisterFlow,
       hasSessionId: !!sessionId,
       hasPhoneNumber: !!phoneNumber,
-      timestamp
+      timestamp,
+      shouldOpenRegistration
     });
 
-    if (autoRegisterFlow === 'true' && sessionId && phoneNumber) {
+    if ((autoRegisterFlow === 'true' || shouldOpenRegistration) && sessionId && phoneNumber) {
       localStorage.removeItem('autoRegisterFlow');
       localStorage.removeItem('autoRegisterTimestamp');
+
+      // Clean URL
+      if (shouldOpenRegistration) {
+        window.history.replaceState({}, '', '/');
+      }
 
       console.log('Opening registration dialog with auto-filled data');
       setShowGuestRegistration(true);
 
       toast({
-        title: "Session Retrieved!",
-        description: "Please complete your bot registration with the auto-filled credentials.",
+        title: "Ready to Register!",
+        description: "Your credentials are ready. Complete your bot registration now.",
       });
     }
   }, [toast]);

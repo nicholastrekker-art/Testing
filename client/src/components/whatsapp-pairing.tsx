@@ -54,7 +54,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
   const checkAuthStatus = async (sessionId: string) => {
     try {
       const response = await fetch(`/api/whatsapp/pairing-status/${sessionId}`);
-      
+
       // Check if response is OK and is JSON
       if (!response.ok) {
         return; // Silently return for 404s during polling
@@ -106,12 +106,12 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       const response = await fetch(`/api/whatsapp/pairing-code?number=${data.phoneNumber}`, {
         method: 'GET',
       });
-      
+
       if (!response.ok) {
         const error = await response.json().catch(() => ({ message: 'Failed to generate pairing code' }));
         throw new Error(error.message || 'Failed to generate pairing code');
       }
-      
+
       const result = await response.json();
       return result;
     },
@@ -153,7 +153,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       formData.append('sessionId', data.sessionId);
       formData.append('features', JSON.stringify(data.features));
       formData.append('selectedServer', data.selectedServer);
-      
+
       // Include pairing session ID for temp file cleanup
       if (data.pairingSessionId) {
         formData.append('pairingSessionId', data.pairingSessionId);
@@ -173,14 +173,14 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     },
     onSuccess: (data) => {
       const isAutoApproved = (offerStatus as any)?.isActive;
-      
+
       toast({
         title: isAutoApproved ? "🎉 Bot Auto-Approved!" : "Bot Registered Successfully!",
         description: isAutoApproved 
           ? "Your bot was auto-approved due to active promotional offer!" 
           : data.message || "Your bot has been submitted for approval.",
       });
-      
+
       // Close dialog and refresh
       setTimeout(() => {
         onClose();
@@ -222,7 +222,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
 
     // Clean phone number
     const cleaned = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-    
+
     if (!/^\d{10,15}$/.test(cleaned)) {
       toast({
         title: "Invalid Phone Number",
@@ -244,7 +244,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
 
       if (response.ok) {
         const data = await response.json();
-        
+
         if (data.registered || data.serverMismatch) {
           const serverName = data.registeredTo || 'another server';
           toast({
@@ -271,7 +271,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
 
     // Update phone number state with cleaned version
     setPhoneNumber(cleaned);
-    
+
     // Generate pairing code - session will be sent automatically to WhatsApp
     generatePairingMutation.mutate({ phoneNumber: cleaned, selectedServer });
   };
@@ -311,7 +311,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       clearInterval(pollingInterval);
       setPollingInterval(null);
     }
-    
+
     setStep(1);
     setSelectedServer("");
     setPhoneNumber("");
@@ -517,10 +517,23 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
                   Try Again
                 </Button>
                 <Button 
-                  onClick={handleReset}
+                  onClick={() => {
+                    // Store credentials for auto-registration
+                    localStorage.setItem('autoRegisterSessionId', credentials.base64);
+                    localStorage.setItem('autoRegisterPhoneNumber', phoneNumber);
+                    localStorage.setItem('autoRegisterFlow', 'true');
+                    localStorage.setItem('autoRegisterTimestamp', Date.now().toString());
+
+                    // Close pairing modal
+                    handleReset();
+                    onClose();
+
+                    // Trigger registration modal opening via page reload
+                    window.location.href = '/?openRegistration=true';
+                  }}
                   className="flex-1"
                 >
-                  Done - Go to Step 2
+                  Continue to Register Bot →
                 </Button>
               </div>
             </CardContent>
@@ -555,7 +568,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
                   </AlertDescription>
                 </Alert>
               )}
-              
+
               <Alert className="border-blue-500">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
@@ -567,7 +580,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
                   </ul>
                 </AlertDescription>
               </Alert>
-              
+
               <Alert className="border-orange-500">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription className="font-semibold">
@@ -654,7 +667,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
 
               <div className="space-y-3">
                 <Label>Bot Features</Label>
-                
+
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="autoLike"
