@@ -11,7 +11,7 @@ import { storage } from "./storage";
 // ES Module __dirname and __filename equivalents
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-import { insertBotInstanceSchema, insertCommandSchema, insertActivitySchema, botInstances } from "@shared/schema";
+import { insertBotInstanceSchema, insertCommandSchema, insertActivitySchema, botInstances, guestSessions } from "@shared/schema";
 import { botManager } from "./services/bot-manager";
 import { getServerName, db } from "./db";
 import { and, eq, desc, asc, isNotNull, sql } from "drizzle-orm";
@@ -4425,14 +4425,16 @@ Thank you for using TREKKER-MD! 🚀
     }
   }
 
-  // Save session locally - simplified to match /pair folder implementation
-  async function saveSessionLocally(id: string, Gifted: any) {
+  // Save session to database - permanent storage instead of temp folder
+  async function saveSessionLocally(id: string, Gifted: any, phoneNumber: string, pairingCode: string) {
     const authPath = path.join(__dirname, 'temp', id, 'creds.json');
 
     try {
-      console.log(`=== LOCAL SESSION SAVE FUNCTION START ===`);
+      console.log(`=== DATABASE SESSION SAVE FUNCTION START ===`);
       console.log(`Temp ID: ${id}`);
       console.log(`Auth path: ${authPath}`);
+      console.log(`Phone: ${phoneNumber}`);
+      console.log(`Pairing Code: ${pairingCode}`);
 
       // Verify creds file exists
       if (!fs.existsSync(authPath)) {
@@ -4460,16 +4462,17 @@ Thank you for using TREKKER-MD! 🚀
       const credsBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
       console.log(`✅ Generated Base64 session ID: ${credsBase64.substring(0, 50)}...`);
 
-      // Save to local storage instead of MongoDB
-      const now = new Date();
-      sessionStorage.set(credsBase64, {
+      // Save to database permanently
+      const serverName = getServerName();
+      await db.insert(guestSessions).values({
+        phoneNumber: phoneNumber.replace(/[\s\-\(\)\+]/g, ''),
         sessionId: credsBase64,
-        credsData: credsBase64,
-        createdAt: now,
-        updatedAt: now
+        pairingCode: pairingCode,
+        serverName: serverName,
+        isUsed: false
       });
 
-      console.log(`✅ Session saved locally: ${credsBase64.substring(0, 50)}...`);
+      console.log(`✅ Session saved to database permanently for phone: ${phoneNumber}`);
 
       return credsBase64;
 
@@ -4608,10 +4611,12 @@ Thank you for using TREKKER-MD! 🚀
           return null;
         };
 
+        let pairingCode = '';
         if (!Gifted.authState.creds.registered) {
           await delay(1500);
           num = num.replace(/[^0-9]/g, '');
           const code = await Gifted.requestPairingCode(num);
+          pairingCode = code;
           if (!res.headersSent) res.send({ code });
         }
 
@@ -4638,7 +4643,7 @@ Thank you for using TREKKER-MD! 🚀
                 console.warn('saveCreds() failed:', err.message);
               }
 
-              const sessionId = await saveSessionLocally(id, Gifted);
+              const sessionId = await saveSessionLocally(id, Gifted, num, pairingCode);
               if (!sessionId) {
                 if (recipient)
                   await Gifted.sendMessage(recipient, { text: '❌ Failed to generate session ID. Try again.' });
