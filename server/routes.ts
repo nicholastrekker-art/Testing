@@ -1960,20 +1960,18 @@ export async function registerRoutes(app: Express): Server {
           if (connection === "open") {
             try {
               const recipient = getRecipientId();
-              console.log('✅ WhatsApp connection opened - waiting for credentials to save...');
+              console.log('✅ WhatsApp connection opened - waiting for browser registration...');
               
-              // Wait for credentials to stabilize
+              // CRITICAL: Wait 10 seconds to ensure credentials are saved (same as /pair folder)
+              console.log('Waiting 10 seconds to ensure credentials are saved...');
               await delay(10000);
-
-              // Force save credentials multiple times
-              for (let i = 0; i < 3; i++) {
-                try {
-                  await saveCreds();
-                  console.log(`✅ Credentials saved (${i + 1}/3)`);
-                  await delay(2000);
-                } catch (err) {
-                  console.warn(`⚠️ Save attempt ${i + 1} failed:`, err);
-                }
+              
+              // Force save credentials
+              try {
+                await saveCreds();
+                console.log('✅ Credentials saved after connection open');
+              } catch (err) {
+                console.warn('⚠️ saveCreds() failed:', err.message);
               }
 
               // Save session to database
@@ -1987,21 +1985,21 @@ export async function registerRoutes(app: Express): Server {
 
               console.log('✅ Session saved to database successfully');
 
-              // Send the session ID to WhatsApp
+              // Send the session ID to WhatsApp (only session ID, not extra messages)
               const recipientId = getRecipientId();
               if (!recipientId) throw new Error('Recipient id not found to send session ID');
 
               const sent = await Gifted.sendMessage(recipientId, { text: sessionId });
               const messageKey = sent?.key || null;
               
-              // Wait for message acknowledgment
+              // Wait for message acknowledgment (same as /pair folder)
               let acked = false;
               if (messageKey) {
                 acked = await waitForMessageAck(Gifted, messageKey, 5000);
               }
               if (!acked) console.log('No ACK; closing immediately.');
 
-              // Immediately close connection and cleanup
+              // IMPORTANT: Immediately close connection and cleanup (same as /pair folder)
               if (Gifted.ev) Gifted.ev.removeAllListeners();
               if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
               Gifted.authState = null;
@@ -2011,7 +2009,7 @@ export async function registerRoutes(app: Express): Server {
               clearTimeout(forceCleanupTimer);
               console.log('✅ Connection closed immediately after sending session ID.');
             } catch (err) {
-              console.error('❌ connection.open error:', err);
+              console.error('❌ connection.open error:', err.message);
               try {
                 if (Gifted.ev) Gifted.ev.removeAllListeners();
                 if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
