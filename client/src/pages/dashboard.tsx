@@ -71,12 +71,23 @@ export default function Dashboard() {
     const autoRegisterFlow = localStorage.getItem('autoRegisterFlow');
     const sessionId = localStorage.getItem('autoRegisterSessionId');
     const phoneNumber = localStorage.getItem('autoRegisterPhoneNumber');
+    const timestamp = localStorage.getItem('autoRegisterTimestamp');
+
+    console.log('Dashboard auto-register check:', {
+      autoRegisterFlow,
+      hasSessionId: !!sessionId,
+      hasPhoneNumber: !!phoneNumber,
+      timestamp
+    });
 
     if (autoRegisterFlow === 'true' && sessionId && phoneNumber) {
-      // Clear the flags
+      // Clear the flags immediately to prevent re-triggering
       localStorage.removeItem('autoRegisterFlow');
+      localStorage.removeItem('autoRegisterTimestamp');
 
-      // Open registration dialog
+      console.log('Opening registration dialog with auto-filled data');
+
+      // Open registration dialog immediately
       setShowGuestRegistration(true);
 
       toast({

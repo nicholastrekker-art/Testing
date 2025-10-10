@@ -42,13 +42,25 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     selectedServer: '' // Added to store the selected server
   });
 
-  // Clear auto-register data after it's been used
+  // Clear auto-register data after it's been used and show success message
   React.useEffect(() => {
     if (open && autoSessionId && autoPhoneNumber) {
+      console.log('Guest registration opened with auto-filled data:', {
+        sessionIdLength: autoSessionId.length,
+        phoneNumber: autoPhoneNumber
+      });
+
+      // Show success toast
+      toast({
+        title: "Credentials Auto-Filled!",
+        description: `Session ID and phone number (${autoPhoneNumber}) have been automatically filled. Just enter your bot name and configure features.`,
+      });
+
+      // Clear from localStorage after displaying
       localStorage.removeItem('autoRegisterSessionId');
       localStorage.removeItem('autoRegisterPhoneNumber');
     }
-  }, [open, autoSessionId, autoPhoneNumber]);
+  }, [open, autoSessionId, autoPhoneNumber, toast]);
 
   // Auto-fill session ID and phone number from localStorage when dialog opens
   useEffect(() => {
