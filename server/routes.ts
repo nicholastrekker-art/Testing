@@ -4155,49 +4155,20 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
   // Direct pairing routes (no proxy middleware to avoid dashboard conflicts)
   app.get('/pairing/pair', async (req, res) => {
-    res.sendFile(path.join(__dirname, '../pair/trekkerpair/public/pair.html'));
+    res.sendFile(path.join(__dirname, '../trekkerpair/trekkerpair/public/pair.html'));
   });
 
-  // Pairing code generation endpoint - inform users to use the pairing page
-  app.get("/api/pairing/code", async (req, res) => {
+  app.get('/pairing/code', async (req, res) => {
     try {
-      const number = req.query.number as string;
-
-      if (!number) {
-        return res.status(400).json({ 
-          error: 'Phone number is required',
-          redirectUrl: '/pairing/pair'
-        });
-      }
-
-      // Clean phone number
-      const cleanedNumber = number.replace(/[\s\-\(\)\+]/g, '');
-
-      // Validate phone number format
-      if (!/^\d{10,15}$/.test(cleanedNumber)) {
-        return res.status(400).json({
-          error: 'Invalid phone number format',
-          message: 'Please enter a valid phone number with country code (10-15 digits)',
-          redirectUrl: '/pairing/pair'
-        });
-      }
-
-      console.log(`📱 Pairing code request for: ${cleanedNumber} - redirecting to pairing page`);
-
-      // Return response directing user to the pairing page
-      res.json({
-        error: 'Please use the pairing page for code generation',
-        message: 'For security and reliability, please use the dedicated pairing page.',
-        redirectUrl: '/pairing/pair',
-        phoneNumber: cleanedNumber
-      });
-
-    } catch (error: any) {
-      console.error('Pairing endpoint error:', error);
+      const number = req.query.number;
+      const pairingResponse = await fetch(`http://localhost:3001/code?number=${number}`);
+      const data = await pairingResponse.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Pairing code error:', error);
       res.status(500).json({
-        error: 'Please use the pairing page',
-        message: 'Visit /pairing/pair to generate your pairing code',
-        redirectUrl: '/pairing/pair'
+        error: 'Failed to generate pairing code',
+        message: 'Please ensure the pairing server is running on port 3001'
       });
     }
   });
