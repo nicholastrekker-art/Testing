@@ -1988,21 +1988,21 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
           if (connection === 'open' && !authCompleted) {
             authCompleted = true;
-            console.log('✅ WhatsApp connection opened!');
+            console.log('✅ WhatsApp connection opened successfully!');
 
             try {
               const recipient = getRecipientId();
 
-              // Wait to ensure credentials are saved
+              // Wait to ensure credentials are fully saved
               console.log('⏳ Waiting for credentials to be fully populated...');
-              await delay(15000); // Increased delay to ensure all keys are saved
+              await delay(15000);
 
-              // Force save credentials one more time
+              // Force save credentials
               try {
                 await saveCreds();
                 console.log('✅ Credentials saved to disk');
               } catch (err) {
-                console.warn('Final saveCreds failed:', err);
+                console.warn('⚠️ Final saveCreds warning:', err);
               }
 
               // Read and validate credentials
@@ -2014,7 +2014,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
               const rawData = readFileSync(credsPath, 'utf8');
               const credsData = JSON.parse(rawData);
 
-              // Validate that credentials have proper keys before saving
+              // Validate credentials structure
               if (!credsData.creds || !credsData.creds.noiseKey || !credsData.creds.signedIdentityKey) {
                 console.error('❌ Credentials incomplete, missing required fields');
                 throw new Error('Incomplete credentials - missing authentication keys');
@@ -2044,17 +2044,28 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
               const sessionBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
 
-              // Save to database
-              console.log('💾 Saving session to database...');
+              // Save to database with proper error handling
+              console.log('💾 Attempting to save session to database...');
               try {
-                await db.insert(guestSessions).values({
+                // First delete any existing sessions for this phone
+                await db.delete(guestSessions).where(eq(guestSessions.phoneNumber, cleanedPhone));
+                console.log(`🧹 Cleared previous sessions for ${cleanedPhone}`);
+
+                // Insert new session
+                const [insertedSession] = await db.insert(guestSessions).values({
                   phoneNumber: cleanedPhone,
                   sessionId: sessionBase64,
                   pairingCode: pairingCode,
                   serverName: getServerName(),
                   isUsed: false
+                }).returning();
+
+                console.log(`✅ Session saved to database successfully:`, {
+                  id: insertedSession.id,
+                  phoneNumber: insertedSession.phoneNumber,
+                  pairingCode: insertedSession.pairingCode,
+                  sessionIdLength: insertedSession.sessionId.length
                 });
-                console.log(`✅ Session saved to database for ${cleanedPhone}`);
               } catch (dbError) {
                 console.error('❌ Database save failed:', dbError);
                 throw dbError;
@@ -2070,19 +2081,18 @@ Thank you for choosing TREKKER-MD! 🚀`;
               if (recipient) {
                 const message = `🔑 *Your Session ID*\n\n${sessionBase64}\n\n⚠️ Keep this safe - it's your bot credentials!`;
 
-                console.log('📤 Sending session ID message...');
+                console.log('📤 Sending session ID message to WhatsApp...');
                 const sentMsg = await sock.sendMessage(recipient, { text: message });
-                console.log('✅ Session ID message sent, key:', sentMsg?.key?.id);
+                console.log('✅ Session ID message sent, message key:', sentMsg?.key?.id);
 
-                // Wait for message delivery confirmation
-                console.log('⏳ Waiting for message delivery confirmation...');
+                // Wait for message delivery
                 await delay(5000);
               }
 
-              console.log('🎉 Pairing completed successfully');
+              console.log('🎉 Pairing completed successfully - session saved and sent!');
 
-              // Cleanup connection after message is delivered
-              console.log('🧹 Starting cleanup after successful message delivery...');
+              // Cleanup connection after successful save
+              console.log('🧹 Starting cleanup after successful completion...');
               sock.ev.removeAllListeners();
               if (sock.ws && sock.ws.readyState === 1) await sock.ws.close();
               clearTimeout(forceCleanupTimer);
@@ -2090,13 +2100,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
               console.log('✅ Cleanup completed');
 
             } catch (err) {
-              console.error('Post-auth error:', err);
+              console.error('❌ Post-auth error:', err);
               clearTimeout(forceCleanupTimer);
               await cleanup();
               throw err;
             }
           } else if (connection === 'close' && lastDisconnect?.error?.output?.statusCode !== 401) {
-            console.log('⚠️ Connection closed, attempting retry...');
+            console.log('⚠️ Connection closed, will retry after delay...');
             await delay(10000);
           }
         });
@@ -3455,8 +3465,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
       const { phoneNumber } = req.params;
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
 
-      console.log(`🔍 Looking for session ID for phone: ${cleanedPhone}`);
-
       // Get the most recent unused session for this phone number
       const sessions = await db.select()
         .from(guestSessions)
@@ -3470,7 +3478,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
         .limit(1);
 
       if (sessions.length === 0) {
-        console.log(`❌ No session found for phone ${cleanedPhone}`);
         return res.status(404).json({
           message: "No session found for this phone number",
           found: false
@@ -3478,6 +3485,12 @@ Thank you for choosing TREKKER-MD! 🚀`;
       }
 
       const session = sessions[0];
+      console.log(`📊 Session found for ${cleanedPhone}:`, {
+        id: session.id,
+        pairingCode: session.pairingCode,
+        createdAt: session.createdAt,
+        sessionIdLength: session.sessionId?.length || 0
+      });
 
       // Validate the session ID before returning it
       try {
@@ -3502,7 +3515,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           });
         }
 
-        console.log(`✅ Valid session found for phone ${cleanedPhone}`);
+        console.log(`✅ Valid session retrieved for ${cleanedPhone}`);
 
         return res.json({
           found: true,
