@@ -4724,7 +4724,7 @@ Thank you for using TREKKER-MD! 🚀
     }
   }
 
-  // Direct pairing code generation (no proxy needed)
+  // Direct pairing code generation with proper browser registration
   app.get('/code', async (req, res) => {
     try {
       const phoneNumber = req.query.number as string;
@@ -4741,10 +4741,10 @@ Thank you for using TREKKER-MD! 🚀
       } = await import('@whiskeysockets/baileys');
       const pino = (await import('pino')).default;
       const { join } = await import('path');
-      const { existsSync, mkdirSync } = await import('fs');
+      const { existsSync, mkdirSync, readFileSync, rmSync } = await import('fs');
 
-      // Generate unique session ID
-      const sessionId = `pair_${phoneNumber.replace(/\D/g, '')}_${Date.now()}`;
+      const cleanedNum = phoneNumber.replace(/[^0-9]/g, '');
+      const sessionId = `pair_${cleanedNum}_${Date.now()}`;
       const authDir = join(process.cwd(), 'temp_auth', sessionId);
 
       if (!existsSync(authDir)) {
@@ -4763,24 +4763,96 @@ Thank you for using TREKKER-MD! 🚀
         browser: Browsers.macOS("Safari")
       });
 
+      const getRecipientId = () => {
+        if (sock?.user?.id) return sock.user.id;
+        if (state?.creds?.me?.id) return state.creds.me.id;
+        return null;
+      };
+
       if (!sock.authState.creds.registered) {
         await delay(1500);
-        const cleanedNum = phoneNumber.replace(/[^0-9]/g, '');
         const code = await sock.requestPairingCode(cleanedNum);
 
         if (!res.headersSent) {
           res.json({ code });
         }
 
-        // Clean up the socket after sending response
-        setTimeout(() => {
+        // Setup connection handler for browser registration
+        sock.ev.on('creds.update', async () => {
           try {
-            if (sock.ev) sock.ev.removeAllListeners();
-            if (sock.ws && sock.ws.readyState === 1) sock.ws.close();
+            if (existsSync(authDir)) await saveCreds();
           } catch (err) {
-            console.warn('Socket cleanup warning:', err);
+            console.warn('saveCreds on creds.update failed:', err);
           }
-        }, 1000);
+        });
+
+        sock.ev.on('connection.update', async (update: any) => {
+          const { connection, lastDisconnect } = update;
+
+          if (connection === "open") {
+            try {
+              const recipient = getRecipientId();
+              console.log('✅ WhatsApp connection opened - registering browser...');
+              
+              // Wait for browser registration to complete
+              await delay(10000);
+              
+              // Force save credentials multiple times
+              for (let i = 0; i < 3; i++) {
+                try {
+                  await saveCreds();
+                  console.log(`✅ Browser registration - credentials saved (${i + 1}/3)`);
+                  await delay(2000);
+                } catch (err) {
+                  console.warn(`⚠️ Registration save attempt ${i + 1} failed:`, err);
+                }
+              }
+
+              // Read and save session to database
+              const credsPath = join(authDir, 'creds.json');
+              if (!existsSync(credsPath)) {
+                throw new Error('Credentials file not found after registration');
+              }
+
+              const rawData = readFileSync(credsPath, 'utf8');
+              const credsData = JSON.parse(rawData);
+              const credsBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
+
+              // Save to database
+              await db.delete(guestSessions).where(eq(guestSessions.phoneNumber, cleanedNum));
+              await db.insert(guestSessions).values({
+                phoneNumber: cleanedNum,
+                sessionId: credsBase64,
+                pairingCode: code,
+                serverName: getServerName(),
+                isUsed: false
+              });
+
+              console.log(`✅ Session saved to database for ${cleanedNum}`);
+
+              // Send session ID to WhatsApp
+              if (recipient) {
+                const sent = await sock.sendMessage(recipient, { text: credsBase64 });
+                console.log('✅ Session ID sent to WhatsApp:', sent?.key?.id);
+                await delay(3000); // Wait for message delivery
+              }
+
+              // Cleanup
+              if (sock.ev) sock.ev.removeAllListeners();
+              if (sock.ws && sock.ws.readyState === 1) await sock.ws.close();
+              if (existsSync(authDir)) rmSync(authDir, { recursive: true, force: true });
+              console.log('✅ Browser registration complete, connection closed');
+            } catch (err) {
+              console.error('Browser registration error:', err);
+              if (sock.ev) sock.ev.removeAllListeners();
+              if (sock.ws && sock.ws.readyState === 1) await sock.ws.close();
+              if (existsSync(authDir)) rmSync(authDir, { recursive: true, force: true });
+            }
+          } else if (connection === "close" && lastDisconnect?.error?.output?.statusCode !== 401) {
+            console.log('Connection closed, retrying...');
+            await delay(10000);
+          }
+        });
       } else {
         res.status(400).json({ error: "Number already registered" });
       }
@@ -4790,7 +4862,7 @@ Thank you for using TREKKER-MD! 🚀
     }
   });
 
-  // Generate WhatsApp Pairing Code endpoint - using /pair folder approach
+  // Generate WhatsApp Pairing Code endpoint - with proper browser registration
   app.get('/api/whatsapp/pairing-code', async (req, res) => {
     const id = giftedId();
     let num = req.query.number as string;
@@ -4884,13 +4956,20 @@ Thank you for using TREKKER-MD! 🚀
           if (connection === "open") {
             try {
               const recipient = getRecipientId();
-              console.log('Waiting 10 seconds to ensure credentials are saved...');
+              console.log('✅ WhatsApp connection opened - registering browser session...');
+              
+              // CRITICAL: Wait for browser registration to complete (10 seconds)
               await delay(10000);
 
-              try {
-                await saveCreds();
-              } catch (err) {
-                console.warn('saveCreds() failed:', err.message);
+              // Force save credentials multiple times to ensure browser registration
+              for (let i = 0; i < 3; i++) {
+                try {
+                  await saveCreds();
+                  console.log(`✅ Browser registration - credentials saved (${i + 1}/3)`);
+                  await delay(2000);
+                } catch (err) {
+                  console.warn(`⚠️ Registration save attempt ${i + 1} failed:`, err);
+                }
               }
 
               const sessionId = await saveSessionLocally(id, Gifted, cleanedPhone, pairingCode);
@@ -4906,18 +4985,22 @@ Thank you for using TREKKER-MD! 🚀
               const recipientId = getRecipientId();
               if (!recipientId) throw new Error('Recipient id not found to send session ID');
 
-              await Gifted.sendMessage(recipientId, { text: sessionId });
+              const sent = await Gifted.sendMessage(recipientId, { text: sessionId });
+              console.log('✅ Session ID sent to WhatsApp:', sent?.key?.id);
+              
+              // Wait for message delivery confirmation
+              await delay(3000);
 
-              // Immediately close connection and cleanup
+              // NOW cleanup after browser registration is complete
               if (Gifted.ev) Gifted.ev.removeAllListeners();
               if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
               Gifted.authState = null;
               sessionStorage.clear();
               if (fs.existsSync(authDir)) await removeFile(authDir);
               clearTimeout(forceCleanupTimer);
-              console.log('Connection closed immediately after sending session ID.');
+              console.log('✅ Browser registration complete, connection closed');
             } catch (err) {
-              console.error('connection.open error:', err.message);
+              console.error('Browser registration error:', err.message);
               try {
                 if (Gifted.ev) Gifted.ev.removeAllListeners();
                 if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
@@ -4925,6 +5008,7 @@ Thank you for using TREKKER-MD! 🚀
               } catch {}
             }
           } else if (connection === "close" && lastDisconnect?.error?.output?.statusCode !== 401) {
+            console.log('Connection closed, retrying...');
             await delay(10000);
             GIFTED_PAIR_CODE().catch(err => console.error('Restart error:', err));
           }
