@@ -275,7 +275,12 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center space-x-3">
             <Button 
-              onClick={() => window.open('http://localhost:3001', '_blank')}
+              onClick={() => {
+                const protocol = window.location.protocol;
+                const hostname = window.location.hostname;
+                const pairUrl = `${protocol}//${hostname}:3001`;
+                window.open(pairUrl, '_blank');
+              }}
               className="bg-gradient-to-r from-teal-600 to-cyan-700 hover:from-teal-700 hover:to-cyan-800 text-white shadow-lg shadow-teal-500/30"
               data-testid="button-trekker-pair"
             >
