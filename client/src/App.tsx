@@ -13,6 +13,7 @@ import GuestPhoneVerification from "@/pages/guest/verification";
 import GuestBotManagement from "@/pages/guest/bot-management";
 import GuestCrossServer from "@/pages/guest/cross-server";
 import WhatsAppPairingPage from "@/pages/guest/whatsapp-pairing";
+import PairingPage from "@/pages/pairing-page";
 import Sidebar from "@/components/sidebar";
 import ProtectedRoute from "@/components/protected-route";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -24,6 +25,7 @@ function Router() {
       <main className="flex-1 overflow-auto w-full lg:w-auto">
         <Switch>
           <Route path="/" component={Dashboard} />
+          <Route path="/trekker-pair" component={PairingPage} />
           <Route path="/bot-instances">
             <ProtectedRoute requireAdmin={true}>
               <BotInstances />
