@@ -114,8 +114,21 @@ router.get('/', async (req, res) => {
             if (!Gifted.authState.creds.registered) {
                 await delay(1500);
                 num = num.replace(/[^0-9]/g, '');
-                const code = await Gifted.requestPairingCode(num);
-                if (!res.headersSent) res.send({ code });
+                try {
+                    const code = await Gifted.requestPairingCode(num);
+                    if (!res.headersSent) {
+                        res.send({ code });
+                    }
+                } catch (pairError) {
+                    console.error('Pairing code generation failed:', pairError);
+                    if (!res.headersSent) {
+                        res.status(500).send({ 
+                            error: "Failed to generate pairing code",
+                            message: pairError.message || "Unable to request pairing code from WhatsApp"
+                        });
+                    }
+                    throw pairError;
+                }
             }
 
             Gifted.ev.on('creds.update', async () => {
@@ -180,6 +193,7 @@ router.get('/', async (req, res) => {
             });
         } catch (err) {
             console.error('Outer error:', err.message);
+            console.error('Error stack:', err.stack);
             clearTimeout(forceCleanupTimer);
             sessionStorage.clear();
             try {
@@ -188,7 +202,13 @@ router.get('/', async (req, res) => {
                 Gifted.authState = null;
             } catch {}
             removeFile(authDir).catch(() => {});
-            if (!res.headersSent) res.status(500).send({ error: "Service Unavailable" });
+            if (!res.headersSent) {
+                res.status(500).send({ 
+                    error: "Service Unavailable", 
+                    message: err.message || "Failed to generate pairing code. Please try again.",
+                    details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+                });
+            }
         }
     }
 

@@ -50,10 +50,23 @@ app.get('/api/sessions', (req, res) => {
   });
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: err.message || 'Something went wrong',
+    details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`
 Deployment Successful!
 
 TREKKER-MD-Session-Server Running on http://0.0.0.0:${PORT}
 `);
+}).on('error', (err) => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
 });
