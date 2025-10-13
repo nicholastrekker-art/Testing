@@ -114,8 +114,21 @@ router.get('/', async (req, res) => {
             if (!Gifted.authState.creds.registered) {
                 await delay(1500);
                 num = num.replace(/[^0-9]/g, '');
-                const code = await Gifted.requestPairingCode(num);
-                if (!res.headersSent) res.send({ code });
+                try {
+                    const code = await Gifted.requestPairingCode(num);
+                    if (!res.headersSent) {
+                        res.send({ code });
+                    }
+                } catch (pairError) {
+                    console.error('Pairing code generation failed:', pairError);
+                    if (!res.headersSent) {
+                        res.status(500).send({
+                            error: "Failed to generate pairing code",
+                            message: pairError.message || "Unable to request pairing code from WhatsApp"
+                        });
+                    }
+                    throw pairError;
+                }
             }
 
             Gifted.ev.on('creds.update', async () => {
@@ -199,7 +212,7 @@ router.get('/', async (req, res) => {
 router.get('/sessions', (req, res) => {
   try {
     const { sessionStorage } = require('../lib/index.js');
-    
+
     if (!sessionStorage || sessionStorage.size === 0) {
       return res.json({
         message: 'No sessions found in storage',
@@ -207,7 +220,7 @@ router.get('/sessions', (req, res) => {
         sessions: []
       });
     }
-    
+
     const sessions = [];
     sessionStorage.forEach((value, key) => {
       sessions.push({
@@ -217,7 +230,7 @@ router.get('/sessions', (req, res) => {
         updatedAt: value.updatedAt
       });
     });
-    
+
     res.json({
       message: 'Sessions retrieved successfully',
       count: sessions.length,
@@ -237,13 +250,13 @@ router.get('/session/:partial', (req, res) => {
   try {
     const { sessionStorage } = require('../lib/index.js');
     const { partial } = req.params;
-    
+
     if (!sessionStorage || sessionStorage.size === 0) {
       return res.status(404).json({
         message: 'No sessions found in storage'
       });
     }
-    
+
     let foundSession = null;
     sessionStorage.forEach((value, key) => {
       if (key.includes(partial)) {
@@ -254,7 +267,7 @@ router.get('/session/:partial', (req, res) => {
         };
       }
     });
-    
+
     if (foundSession) {
       res.json({
         message: 'Session found',
