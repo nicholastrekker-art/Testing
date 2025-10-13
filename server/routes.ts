@@ -405,8 +405,10 @@ export async function registerRoutes(app: Express): Server {
     }
   }
 
-  // Resume all saved bots from database on startup
-  await resumeSavedBots();
+  // Resume all saved bots from database on startup (non-blocking)
+  resumeSavedBots().catch(error => {
+    console.error('❌ Critical error in bot resume process:', error);
+  });
 
   // Auth endpoints
   app.post("/api/auth/login", async (req, res) => {

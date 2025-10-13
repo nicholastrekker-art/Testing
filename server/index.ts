@@ -149,6 +149,50 @@ app.use((req, res, next) => {
   // Serve pairing interface files directly from pair/public
   app.use('/pair', express.static(path.join(__dirname, '../pair/public')));
 
+  // Integrate pairing API routes from pair/routers/pair.js with rate limiting
+  try {
+    const pairRouterModule = await import('../pair/routers/pair.js');
+    const pairRouter = pairRouterModule.default;
+    
+    // Simple rate limiting for pairing endpoint (max 5 requests per 15 minutes per IP)
+    const pairingRateLimiter = new Map<string, { count: number; resetTime: number }>();
+    
+    app.use('/api/pairing', (req, res, next) => {
+      const ip = req.ip || req.socket.remoteAddress || 'unknown';
+      const now = Date.now();
+      const limit = 5;
+      const windowMs = 15 * 60 * 1000; // 15 minutes
+      
+      if (!pairingRateLimiter.has(ip)) {
+        pairingRateLimiter.set(ip, { count: 1, resetTime: now + windowMs });
+        return next();
+      }
+      
+      const record = pairingRateLimiter.get(ip)!;
+      
+      if (now > record.resetTime) {
+        // Reset window
+        pairingRateLimiter.set(ip, { count: 1, resetTime: now + windowMs });
+        return next();
+      }
+      
+      if (record.count >= limit) {
+        return res.status(429).json({ 
+          error: 'Too many pairing requests. Please try again later.',
+          retryAfter: Math.ceil((record.resetTime - now) / 1000)
+        });
+      }
+      
+      record.count++;
+      next();
+    });
+    
+    app.use('/api/pairing', pairRouter);
+    log('✅ Pairing API routes integrated successfully with rate limiting');
+  } catch (error) {
+    console.error('❌ Failed to load pairing routes:', error);
+  }
+
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";

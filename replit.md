@@ -4,7 +4,16 @@
 
 This is a WhatsApp Bot Management application built as a full-stack web application for creating, managing, and monitoring WhatsApp bot instances. The system provides a comprehensive dashboard for controlling multiple bot instances, managing commands, and tracking activities in real-time. Each bot can be configured with automation features like auto-like, auto-react, and ChatGPT integration for intelligent responses.
 
-## Recent Changes (October 8, 2025)
+## Recent Changes (October 13, 2025)
+
+- **Production Frontend Fix**: Fixed BASE_PATH in vite.config.ts to default to '/' instead of '/default/server1/rest-service/v1.0/' for proper production builds
+- **Pairing API Integration**: Integrated WhatsApp pairing service from /pair directory into main application at /api/pairing endpoint
+- **Rate Limiting**: Added IP-based rate limiting (5 requests per 15 minutes) to pairing endpoint to prevent abuse
+- **Non-Blocking Server Startup**: Made bot resume process non-blocking to ensure server starts listening on port 5000 immediately
+- **Production Workflow**: Configured workflow to run 'yarn start' in production mode, serving built static files from /dist/public
+- **Security Note**: Pairing endpoint is publicly accessible by design (users need to generate session IDs before registration) but protected with rate limiting
+
+## Previous Changes (October 8, 2025)
 
 - **Server Health Tracking**: Added `lastActive` timestamp to serverRegistry that updates every 30 minutes via heartbeat system
 - **Invalid Bot Handling**: Bots with invalid credentials are automatically marked with `invalidReason` and skipped during auto-start

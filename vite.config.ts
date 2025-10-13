@@ -11,8 +11,8 @@ export default defineConfig(({ mode }) => {
   const isProd = mode === 'production' || process.env.NODE_ENV === 'production';
   
   // Configure base path for deployment behind reverse proxies
-  // Use external REST endpoint path for production
-  const base = isProd ? (process.env.BASE_PATH || '/default/server1/rest-service/v1.0/') : '/';
+  // Use root path for production unless BASE_PATH is explicitly set
+  const base = isProd ? (process.env.BASE_PATH || '/') : '/';
   
   const plugins = [react()];
   
