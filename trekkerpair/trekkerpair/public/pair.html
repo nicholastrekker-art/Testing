@@ -569,48 +569,24 @@
             actionButtons.style.display = 'none';
 
             try {
-                const response = await axios.get(`/code?number=${fullNumber}`);
-                const data = response.data;
+                const { data } = await axios.get(`/code?number=${fullNumber}`);
                 
-                console.log('Pairing response:', data);
-                
-                // Check if we got a valid pairing code
-                if (data && data.code && data.code.trim() !== '') {
-                    const code = data.code;
-                    pairDiv.innerHTML = `<p>Your Pairing Code is: <strong style="font-size: 1.5em; color: #6C63FF;">${code}</strong></p>`;
-                    copyCodeButton.dataset.code = code;
-                    validateCodeButton.dataset.code = code;
-                    actionButtons.style.display = 'flex';
-                } else if (data.error) {
-                    // Handle error response from server
+                if (data.error) {
                     pairDiv.innerHTML = `<p style="color: red;">❗ ${data.error}</p>
                         ${data.message ? `<p style="color: orange; font-size: 0.9em;">${data.message}</p>` : ''}`;
                     actionButtons.style.display = 'none';
                 } else {
-                    // Unexpected response format
-                    pairDiv.innerHTML = `<p style="color: red;">❗ Invalid response from server</p>
-                        <p style="color: orange; font-size: 0.9em;">Please try again or contact support.</p>`;
-                    actionButtons.style.display = 'none';
+                    const code = data.code || "❗ Service Unavailable";
+                    pairDiv.innerHTML = `<p>Your Pairing Code is: <strong>${code}</strong></p>`;
+                    copyCodeButton.dataset.code = code;
+                    validateCodeButton.dataset.code = code;
+                    actionButtons.style.display = 'flex';
                 }
             } catch (error) {
                 console.error('Pairing error:', error);
-                console.error('Error response:', error.response);
-                
-                let errorMsg = 'Service Currently Unavailable';
-                
-                if (error.response) {
-                    // Server responded with error
-                    errorMsg = error.response.data?.message || error.response.data?.error || errorMsg;
-                } else if (error.request) {
-                    // Request made but no response
-                    errorMsg = 'No response from server. Please check if the pairing service is running.';
-                } else {
-                    // Something else happened
-                    errorMsg = error.message || errorMsg;
-                }
-                
+                const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Service Currently Unavailable';
                 pairDiv.innerHTML = `<p style="color: red;">❗ ${errorMsg}</p>
-                    <p style="color: orange; font-size: 0.9em;">Please try again in a moment.</p>`;
+                    <p style="color: orange; font-size: 0.9em;">Please check your internet connection and try again.</p>`;
                 actionButtons.style.display = 'none';
             } finally {
                 loadingSpinner.style.display = 'none';
