@@ -1,9 +1,13 @@
 import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
+import { fileURLToPath } from 'url';
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeDatabase } from "./db";
 import "./services/enhanced-commands";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Guard to prevent double-start of monitoring
 let monitoringStarted = false;
