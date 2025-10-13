@@ -1873,11 +1873,11 @@ export async function registerRoutes(app: Express): Server {
         }
       };
 
-      // Force cleanup after 5 minutes
+      // Force cleanup after 4 minutes
       const forceCleanupTimer = setTimeout(async () => {
-        console.log('⏰ Force cleanup triggered after 5 minutes');
+        console.log('⏰ Force cleanup triggered after 4 minutes');
         await cleanup();
-      }, 5 * 60 * 1000);
+      }, 4 * 60 * 1000);
 
       try {
         // Create auth directory
