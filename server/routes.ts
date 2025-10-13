@@ -1520,7 +1520,7 @@ export async function registerRoutes(app: Express): Server {
       broadcast({ type: 'BOT_APPROVED', data: updatedBot });
       res.json({ message: "Bot approved successfully and starting automatically" });
     } catch (error) {
-      console.error("Approve bot error:", error);
+      console.error("Bot approval error:", error);
       res.status(500).json({ message: "Failed to approve bot" });
     }
   });
@@ -2031,7 +2031,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
               console.log('💾 Saving session to database...');
               try {
                 await db.delete(guestSessions).where(eq(guestSessions.phoneNumber, cleanedPhone));
-                
+
                 const [insertedSession] = await db.insert(guestSessions).values({
                   phoneNumber: cleanedPhone,
                   sessionId: sessionBase64,
@@ -2053,7 +2053,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
               // Send session ID and welcome message to WhatsApp
               if (recipient) {
                 const sessionMessage = sessionBase64;
-                
+
                 const welcomeMessage = `*✅ SESSION ID GENERATED ✅*
 ______________________________
 ╔════◇
@@ -2078,7 +2078,7 @@ Powered by TREKKER-MD - Ultra Fast Bot`;
                   await delay(2000);
                   await sock.sendMessage(recipient, { text: welcomeMessage }, { quoted: sessionMsg });
                   console.log('✅ Session ID and welcome message sent');
-                  
+
                   // Wait 8 seconds for delivery
                   await delay(8000);
                 } catch (msgError) {
@@ -2100,7 +2100,7 @@ Powered by TREKKER-MD - Ultra Fast Bot`;
 
             } catch (err) {
               console.error('❌ Post-auth error:', err);
-              
+
               // Try to send error message to user
               try {
                 const recipient = getRecipientId();
@@ -2112,7 +2112,7 @@ Powered by TREKKER-MD - Ultra Fast Bot`;
               } catch (msgError) {
                 console.error('Failed to send error message:', msgError);
               }
-              
+
               clearTimeout(forceCleanupTimer);
               await cleanup();
               throw err;
@@ -2409,7 +2409,7 @@ Powered by TREKKER-MD - Ultra Fast Bot`;
       const { existsSync, readFileSync } = await import('fs');
 
       // Extract server from sessionId (format: auto_pair_{phone}_{timestamp} or use default)
-      const authDir = join(process.cwd(), 'temp_auth', sessionId);
+      const authDir = join(process.cwd(), 'temp_auth', sessionId); // Assuming sessionId contains server name, otherwise need parsing
 
       if (existsSync(join(authDir, 'creds.json'))) {
         const rawData = readFileSync(join(authDir, 'creds.json'), 'utf8');
@@ -4272,7 +4272,7 @@ Thank you for using TREKKER-MD! 🚀
 
         console.log(`✅ Bot successfully registered on selected server: ${selectedServer}`);
 
-        // Send success messageto the user via WhatsApp
+        // Send success message to the user via WhatsApp
         try {
           if (credentials) {
             const validationMessage = offerActive
@@ -4926,6 +4926,44 @@ Thank you for choosing TREKKER-MD! 🚀`;
         message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
+  });
+
+  // Proxy route for pairing server
+  app.get('/trekker-pair', async (req, res) => {
+    res.redirect('/pair');
+  });
+
+  app.get('/pair', async (req, res) => {
+    res.sendFile(path.join(__dirname, '../trekkerpair/trekkerpair/public/pair.html'));
+  });
+
+  app.get('/code', async (req, res) => {
+    try {
+      const number = req.query.number;
+      const pairingResponse = await fetch(`http://localhost:3001/code?number=${number}`);
+      const data = await pairingResponse.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Pairing proxy error:', error);
+      res.status(500).json({
+        error: 'Failed to connect to pairing service',
+        message: 'Please ensure the pairing server is running on port 3001'
+      });
+    }
+  });
+
+  // Optional: session debugging endpoint
+  app.get('/api/sessions', (req, res) => {
+    const { getSessionStorage } = require('./lib');
+    const sessionStorage = getSessionStorage();
+    const sessions = Array.from(sessionStorage.keys());
+    res.json({
+      total: sessions.length,
+      sessions: sessions.map(id => ({
+        id,
+        createdAt: sessionStorage.get(id)?.createdAt
+      }))
+    });
   });
 
   return httpServer;
