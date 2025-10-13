@@ -275,22 +275,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center space-x-3">
             <Button 
-              onClick={() => {
-                const protocol = window.location.protocol;
-                const hostname = window.location.hostname;
-                let pairUrl;
-                
-                if (hostname.includes('.repl.co') || hostname.includes('.replit.dev')) {
-                  const parts = hostname.split('.');
-                  const baseDomain = parts.slice(-3).join('.');
-                  const subdomain = parts.slice(0, -3).join('.');
-                  pairUrl = `${protocol}//${subdomain}-3001.${baseDomain}`;
-                } else {
-                  pairUrl = `${protocol}//${hostname}:3001`;
-                }
-                
-                window.open(pairUrl, '_blank');
-              }}
+              onClick={() => window.open('/pairing/pair', '_blank')}
               className="bg-gradient-to-r from-teal-600 to-cyan-700 hover:from-teal-700 hover:to-cyan-800 text-white shadow-lg shadow-teal-500/30"
               data-testid="button-trekker-pair"
             >
