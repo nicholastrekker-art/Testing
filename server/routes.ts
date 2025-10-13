@@ -1929,16 +1929,19 @@ export async function registerRoutes(app: Express): Server {
             try {
               const recipient = getRecipientId();
 
-              // Wait to ensure credentials are saved
-              await delay(10000);
+              // Wait to ensure credentials are fully saved with all keys
+              console.log('⏳ Waiting for credentials to be fully populated...');
+              await delay(15000); // Increased delay to ensure all keys are saved
 
+              // Force save credentials one more time
               try {
                 await saveCreds();
+                console.log('✅ Credentials saved to disk');
               } catch (err) {
                 console.warn('Final saveCreds failed:', err);
               }
 
-              // Read and encode credentials
+              // Read and validate credentials
               const credsPath = join(authDir, 'creds.json');
               if (!existsSync(credsPath)) {
                 throw new Error('Credentials file not found');
@@ -1946,7 +1949,52 @@ export async function registerRoutes(app: Express): Server {
 
               const rawData = readFileSync(credsPath, 'utf8');
               const credsData = JSON.parse(rawData);
+              
+              // Validate that credentials have proper keys before saving
+              if (!credsData.creds || !credsData.creds.noiseKey || !credsData.creds.signedIdentityKey) {
+                console.error('❌ Credentials incomplete, missing required fields');
+                throw new Error('Incomplete credentials - missing authentication keys');
+              }
+
+              // Check if keys object is populated
+              const keysCount = Object.keys(credsData.keys || {}).length;
+              console.log(`📊 Credentials validation: ${keysCount} keys found`);
+              
+              if (keysCount === 0) {
+                console.warn('⚠️ Keys object is empty, waiting longer for key generation...');
+                await delay(10000);
+                
+                // Re-read credentials after additional wait
+                const updatedRawData = readFileSync(credsPath, 'utf8');
+                const updatedCredsData = JSON.parse(updatedRawData);
+                const updatedKeysCount = Object.keys(updatedCredsData.keys || {}).length;
+                
+                if (updatedKeysCount === 0) {
+                  console.error('❌ Keys still empty after extended wait');
+                  throw new Error('Session keys were not generated properly');
+                }
+                
+                console.log(`✅ Keys populated after additional wait: ${updatedKeysCount} keys`);
+                Object.assign(credsData, updatedCredsData);
+              }
+
               const sessionBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
+
+              // Save to database
+              console.log('💾 Saving session to database...');
+              try {
+                await db.insert(guestSessions).values({
+                  phoneNumber: cleanedPhone,
+                  sessionId: sessionBase64,
+                  pairingCode: pairingCode,
+                  serverName: getServerName(),
+                  isUsed: false
+                });
+                console.log(`✅ Session saved to database for ${cleanedPhone}`);
+              } catch (dbError) {
+                console.error('❌ Database save failed:', dbError);
+                throw dbError;
+              }
 
               sessionData = {
                 base64: sessionBase64,
@@ -1962,14 +2010,14 @@ export async function registerRoutes(app: Express): Server {
                 const sentMsg = await sock.sendMessage(recipient, { text: message });
                 console.log('✅ Session ID message sent, key:', sentMsg?.key?.id);
 
-                // Wait longer for message to be delivered before cleanup
+                // Wait for message delivery confirmation
                 console.log('⏳ Waiting for message delivery confirmation...');
-                await delay(8000);
+                await delay(5000);
               }
 
               console.log('🎉 Pairing completed successfully');
 
-              // NOW cleanup connection after message is delivered
+              // Cleanup connection after message is delivered
               console.log('🧹 Starting cleanup after successful message delivery...');
               sock.ev.removeAllListeners();
               if (sock.ws && sock.ws.readyState === 1) await sock.ws.close();
@@ -1980,8 +2028,7 @@ export async function registerRoutes(app: Express): Server {
             } catch (err) {
               console.error('Post-auth error:', err);
               clearTimeout(forceCleanupTimer);
-
-              // Don't cleanup immediately on error - let the force cleanup timer handle it
+              await cleanup();
               throw err;
             }
           } else if (connection === 'close' && lastDisconnect?.error?.output?.statusCode !== 401) {
