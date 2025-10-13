@@ -66,7 +66,7 @@ export async function setupVite(app: Express, server: Server) {
 
   app.use(vite.middlewares);
   // Only serve HTML for non-API routes to prevent API endpoints from returning HTML
-  app.get("*", async (req, res, next) => {
+  app.get("/:catchAll(.*)", async (req, res, next) => {
     const url = req.originalUrl;
     
     // Skip API routes - let them be handled by the registered API routes
@@ -120,7 +120,7 @@ export function serveStatic(app: Express) {
   
   if (basePath === '/') {
     // Root deployment - catch all non-API routes
-    app.use("*", (req, res, next) => {
+    app.use("/:catchAll(.*)", (req, res, next) => {
       // Skip API routes - let them be handled by the registered API routes
       if (req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/ws')) {
         return next();
@@ -129,7 +129,7 @@ export function serveStatic(app: Express) {
     });
   } else {
     // Path-based deployment - catch routes under base path
-    app.get([basePath, `${basePath}/*`], (req, res, next) => {
+    app.get([basePath, `${basePath}/:catchAll(.*)`], (req, res, next) => {
       // Skip API routes - let them be handled by the registered API routes  
       if (req.originalUrl.startsWith(`${basePath}/api/`) || req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/ws')) {
         return next();
@@ -138,7 +138,7 @@ export function serveStatic(app: Express) {
     });
     
     // Also handle root-level API routes for compatibility
-    app.use("*", (req, res, next) => {
+    app.use("/:catchAll(.*)", (req, res, next) => {
       if (req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/ws')) {
         return next();
       }
