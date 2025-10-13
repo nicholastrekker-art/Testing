@@ -66,7 +66,7 @@ export async function setupVite(app: Express, server: Server) {
 
   app.use(vite.middlewares);
   // Only serve HTML for non-API routes to prevent API endpoints from returning HTML
-  app.get("*", async (req, res, next) => {
+  app.use(async (req, res, next) => {
     const url = req.originalUrl;
     
     // Skip API routes - let them be handled by the registered API routes
@@ -118,35 +118,18 @@ export function serveStatic(app: Express) {
   // Handle SPA routing - serve index.html for non-API routes under base path
   const indexPath = path.resolve(distPath, "index.html");
   
-  if (basePath === '/') {
-    // Root deployment - catch all non-API routes
-    app.use("*", (req, res, next) => {
-      // Skip API routes - let them be handled by the registered API routes
-      if (req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/ws')) {
-        return next();
-      }
-      res.sendFile(indexPath);
-    });
-  } else {
-    // Path-based deployment - catch routes under base path
-    app.get([basePath, `${basePath}/*`], (req, res, next) => {
-      // Skip API routes - let them be handled by the registered API routes  
-      if (req.originalUrl.startsWith(`${basePath}/api/`) || req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/ws')) {
-        return next();
-      }
-      res.sendFile(indexPath);
-    });
+  // Handle SPA routing - catch all non-API routes
+  app.use((req, res, next) => {
+    // Skip API routes - let them be handled by the registered API routes
+    if (req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/ws')) {
+      return next();
+    }
     
-    // Also handle root-level API routes for compatibility
-    app.use("*", (req, res, next) => {
-      if (req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/ws')) {
-        return next();
-      }
-      // For non-API routes not under base path, redirect to base path
-      if (!req.originalUrl.startsWith(basePath)) {
-        return res.redirect(basePath);
-      }
-      next();
-    });
-  }
+    // For non-root base paths, redirect if needed
+    if (basePath !== '/' && !req.originalUrl.startsWith(basePath)) {
+      return res.redirect(basePath);
+    }
+    
+    res.sendFile(indexPath);
+  });
 }
