@@ -274,6 +274,14 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center space-x-3">
+            <Button 
+              onClick={() => window.open('http://localhost:3001', '_blank')}
+              className="bg-gradient-to-r from-teal-600 to-cyan-700 hover:from-teal-700 hover:to-cyan-800 text-white shadow-lg shadow-teal-500/30"
+              data-testid="button-trekker-pair"
+            >
+              <i className="fas fa-link mr-2"></i>
+              TREKKER-md pair
+            </Button>
             {isAdmin && (
               <div className="flex space-x-2">
                 <Button 
