@@ -4158,13 +4158,16 @@ Thank you for choosing TREKKER-MD! 🚀`;
     res.sendFile(path.join(__dirname, '../pair/trekkerpair/public/pair.html'));
   });
 
-  // Pairing code generation endpoint - generates WhatsApp pairing code
+  // Pairing code generation endpoint - inform users to use the pairing page
   app.get("/api/pairing/code", async (req, res) => {
     try {
       const number = req.query.number as string;
 
       if (!number) {
-        return res.status(400).json({ error: 'Phone number is required' });
+        return res.status(400).json({ 
+          error: 'Phone number is required',
+          redirectUrl: '/pairing/pair'
+        });
       }
 
       // Clean phone number
@@ -4174,37 +4177,27 @@ Thank you for choosing TREKKER-MD! 🚀`;
       if (!/^\d{10,15}$/.test(cleanedNumber)) {
         return res.status(400).json({
           error: 'Invalid phone number format',
-          message: 'Please enter a valid phone number with country code (10-15 digits)'
+          message: 'Please enter a valid phone number with country code (10-15 digits)',
+          redirectUrl: '/pairing/pair'
         });
       }
 
-      console.log(`📱 Generating pairing code for: ${cleanedNumber}`);
+      console.log(`📱 Pairing code request for: ${cleanedNumber} - redirecting to pairing page`);
 
-      // Use the WhatsApp pairing service from pair directory
-      try {
-        const { generatePairingCode } = await import('../pair/routers/pair.js');
-        const result = await generatePairingCode(cleanedNumber);
+      // Return response directing user to the pairing page
+      res.json({
+        error: 'Please use the pairing page for code generation',
+        message: 'For security and reliability, please use the dedicated pairing page.',
+        redirectUrl: '/pairing/pair',
+        phoneNumber: cleanedNumber
+      });
 
-        if (result.code) {
-          console.log(`✅ Pairing code generated: ${result.code}`);
-          res.json({ code: result.code });
-        } else {
-          throw new Error('No pairing code returned');
-        }
-      } catch (pairError: any) {
-        console.error('❌ Pairing generation error:', pairError);
-
-        // Fallback: Return instructional message
-        res.status(503).json({
-          error: 'Pairing service temporarily unavailable',
-          message: 'Please use the standalone pairing page at /pair or try again in a moment'
-        });
-      }
     } catch (error: any) {
       console.error('Pairing endpoint error:', error);
       res.status(500).json({
-        error: 'Failed to generate pairing code',
-        message: error.message || 'Unknown error occurred'
+        error: 'Please use the pairing page',
+        message: 'Visit /pairing/pair to generate your pairing code',
+        redirectUrl: '/pairing/pair'
       });
     }
   });
