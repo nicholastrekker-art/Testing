@@ -2416,6 +2416,229 @@ Thank you for choosing TREKKER-MD! 🚀`;
     }
   });
 
+  // Enhanced WhatsApp Pairing with Auto-Session-ID Delivery (Integrated from /pair project)
+  app.post('/api/whatsapp/pair-and-register', async (req, res) => {
+    try {
+      const { phoneNumber, selectedServer, botName, features } = req.body;
+
+      if (!phoneNumber || !selectedServer) {
+        return res.status(400).json({
+          success: false,
+          message: "Phone number and server selection are required"
+        });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+
+      // Validate phone number format
+      if (!/^\d{10,15}$/.test(cleanedPhone)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid phone number format"
+        });
+      }
+
+      console.log(`🚀 Starting auto-pairing for: ${cleanedPhone} on server: ${selectedServer}`);
+
+      const {
+        default: makeWASocket,
+        useMultiFileAuthState,
+        DisconnectReason,
+        makeCacheableSignalKeyStore,
+        Browsers,
+        delay
+      } = await import('@whiskeysockets/baileys');
+      const pino = (await import('pino')).default;
+      const { join } = await import('path');
+      const { existsSync, mkdirSync, readFileSync, rmSync } = await import('fs');
+
+      // Create unique session directory
+      const sessionId = `auto_pair_${cleanedPhone}_${Date.now()}`;
+      const authDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
+
+      // Cleanup function
+      const cleanup = async () => {
+        try {
+          if (existsSync(authDir)) {
+            rmSync(authDir, { recursive: true, force: true });
+            console.log(`🧹 Cleaned up temp auth directory: ${authDir}`);
+          }
+        } catch (err) {
+          console.error('Cleanup error:', err);
+        }
+      };
+
+      // Force cleanup after 4 minutes
+      const forceCleanupTimer = setTimeout(async () => {
+        console.log('⏰ Force cleanup triggered after 4 minutes');
+        await cleanup();
+      }, 4 * 60 * 1000);
+
+      try {
+        // Create auth directory
+        if (!existsSync(authDir)) {
+          mkdirSync(authDir, { recursive: true });
+        }
+
+        const { state, saveCreds } = await useMultiFileAuthState(authDir);
+
+        const logger = pino({ level: "fatal" }).child({ level: "fatal" });
+
+        const sock = makeWASocket({
+          auth: {
+            creds: state.creds,
+            keys: makeCacheableSignalKeyStore(state.keys, logger)
+          },
+          printQRInTerminal: false,
+          logger: logger,
+          browser: Browsers.macOS("Safari")
+        });
+
+        // Helper to get recipient ID
+        const getRecipientId = () => {
+          if (sock?.user?.id) return sock.user.id;
+          if (state?.creds?.me?.id) return state.creds.me.id;
+          return null;
+        };
+
+        let pairingCode: string | null = null;
+        let sessionData: any = null;
+        let authCompleted = false;
+
+        // Set up event handlers
+        sock.ev.on('creds.update', async () => {
+          try {
+            if (existsSync(authDir)) await saveCreds();
+          } catch (err) {
+            console.warn('saveCreds failed:', err);
+          }
+        });
+
+        sock.ev.on('connection.update', async (update) => {
+          const { connection, lastDisconnect } = update;
+
+          if (connection === 'open' && !authCompleted) {
+            authCompleted = true;
+            console.log('✅ WhatsApp connection opened!');
+
+            try {
+              const recipient = getRecipientId();
+
+              // Wait to ensure credentials are saved
+              await delay(10000);
+
+              try {
+                await saveCreds();
+              } catch (err) {
+                console.warn('Final saveCreds failed:', err);
+              }
+
+              // Read and encode credentials
+              const credsPath = join(authDir, 'creds.json');
+              if (!existsSync(credsPath)) {
+                throw new Error('Credentials file not found');
+              }
+
+              const rawData = readFileSync(credsPath, 'utf8');
+              const credsData = JSON.parse(rawData);
+              const sessionBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
+
+              sessionData = {
+                base64: sessionBase64,
+                jid: recipient || cleanedPhone + '@s.whatsapp.net',
+                phoneNumber: cleanedPhone
+              };
+
+              // Send session ID to WhatsApp
+              if (recipient) {
+                const message = `🔑 *Your Session ID*\n\n${sessionBase64}\n\n⚠️ Keep this safe - it's your bot credentials!`;
+
+                console.log('📤 Sending session ID message...');
+                const sentMsg = await sock.sendMessage(recipient, { text: message });
+                console.log('✅ Session ID message sent, key:', sentMsg?.key?.id);
+
+                // Wait for message acknowledgment
+                await delay(3000);
+              }
+
+              console.log('🎉 Pairing completed successfully');
+
+              // NOW cleanup connection after message is delivered
+              console.log('🧹 Starting cleanup after successful message delivery...');
+              sock.ev.removeAllListeners();
+              if (sock.ws && sock.ws.readyState === 1) await sock.ws.close();
+              clearTimeout(forceCleanupTimer);
+              await cleanup();
+              console.log('✅ Cleanup completed');
+
+            } catch (err) {
+              console.error('Post-auth error:', err);
+              clearTimeout(forceCleanupTimer);
+              await cleanup();
+              throw err;
+            }
+          } else if (connection === 'close' && lastDisconnect?.error?.output?.statusCode !== 401) {
+            console.log('⚠️ Connection closed, attempting retry...');
+            await delay(10000);
+          }
+        });
+
+        // Request pairing code
+        if (!sock.authState.creds.registered) {
+          await delay(1500);
+          pairingCode = await sock.requestPairingCode(cleanedPhone);
+          console.log(`✅ Pairing code generated: ${pairingCode}`);
+
+          // Send response with pairing code
+          res.json({
+            success: true,
+            pairingCode,
+            sessionId,
+            message: "Enter this pairing code in WhatsApp. Session ID will be sent to your WhatsApp automatically."
+          });
+
+          // Wait for authentication (max 60 seconds)
+          await new Promise((resolve) => {
+            const checkInterval = setInterval(() => {
+              if (authCompleted || sessionData) {
+                clearInterval(checkInterval);
+                resolve(true);
+              }
+            }, 1000);
+
+            setTimeout(() => {
+              clearInterval(checkInterval);
+              resolve(false);
+            }, 60000);
+          });
+
+        } else {
+          clearTimeout(forceCleanupTimer);
+          await cleanup();
+
+          return res.status(400).json({
+            success: false,
+            message: "This number is already registered"
+          });
+        }
+
+      } catch (innerError) {
+        console.error('Pairing inner error:', innerError);
+        clearTimeout(forceCleanupTimer);
+        await cleanup();
+
+        throw innerError;
+      }
+
+    } catch (error) {
+      console.error('Auto-pairing error:', error);
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : "Auto-pairing failed"
+      });
+    }
+  });
+
   // Enhanced session validation endpoint with proper WhatsApp credentials validation
   app.post('/api/whatsapp/validate-session', async (req, res) => {
     try {
@@ -3693,1575 +3916,322 @@ Thank you for using TREKKER-MD! 🚀
                 }
               }, 3000);
             }
-          } catch (testError) {
-            console.error(`❌ Error testing credentials for ${phoneNumber}:`, testError);
-            await db
-              .update(botInstances)
-              .set({
-                credentialVerified: false,
-                invalidReason: `Credential test error: ${testError.message}`,
-                status: 'offline',
-                updatedAt: sql`CURRENT_TIMESTAMP`
-              })
-              .where(
-                and(
-                  eq(botInstances.phoneNumber, phoneNumber),
-                  eq(botInstances.serverName, botServer)
-                )
-              );
-
-            // Set validation failure flag for response
-            botActive = false;
-          }
-        }
-
-        // Generate guest token for future authenticated requests
-        const token = generateGuestToken(phoneNumber, bot.id);
-
-        // Get updated bot status after credential testing
-        const updatedBotInstance = await db.select()
-          .from(botInstances)
-          .where(
-            and(
-              eq(botInstances.phoneNumber, phoneNumber),
-              eq(botInstances.serverName, botServer)
-            )
-          )
-          .limit(1);
-
-        const updatedBot = updatedBotInstance[0] || bot;
-        const credentialTestFailed = !updatedBot.credentialVerified && updatedBot.invalidReason;
-
-        res.json({
-          success: !credentialTestFailed, // Success if credentials didn't fail validation
-          phoneNumber: `+${phoneNumber}`,
-          botActive,
-          botServer,
-          crossServer: botServer !== currentServer,
-          token,
-          message: credentialTestFailed
-            ? `Credential validation failed: ${updatedBot.invalidReason}`
-            : botActive
-              ? "Bot is active and connected"
-              : "Credentials updated successfully and success message sent to WhatsApp",
-          botId: bot.id,
-          botName: bot.name,
-          lastActivity: bot.lastActivity,
-          connectionUpdated: credentials && !credentialTestFailed ? true : false,
-          tenancyPreserved: true,
-          updateMethod: 'direct_database_access',
-          nextStep: !credentialTestFailed ? 'authenticated' : 'update_credentials',
-          credentialValidationFailed: credentialTestFailed
-        });
-
-      } catch (error) {
-        console.error('Guest session verification error:', error);
-        res.status(500).json({ message: "Failed to verify session" });
-      }
-    });
-
-    app.patch("/api/bot-instances/:id", async (req, res) => {
-      try {
-        const bot = await storage.updateBotInstance(req.params.id, req.body);
-        broadcast({ type: 'BOT_UPDATED', data: bot });
-        res.json(bot);
-      } catch (error) {
-        res.status(500).json({ message: "Failed to update bot instance" });
-      }
-    });
-
-    app.delete("/api/bot-instances/:id", authenticateAdmin, async (req: AuthRequest, res) => {
-      try {
-        // Get bot instance to retrieve phone number before deletion
-        const botInstance = await storage.getBotInstance(req.params.id);
-
-        await botManager.destroyBot(req.params.id);
-
-        // Delete all related data (commands, activities, groups)
-        await storage.deleteBotRelatedData(req.params.id);
-
-        // Delete the bot instance itself
-        await storage.deleteBotInstance(req.params.id);
-
-        // Remove from god register table if bot instance was found
-        if (botInstance && botInstance.phoneNumber) {
-          await storage.deleteGlobalRegistration(botInstance.phoneNumber);
-          console.log(`🗑️ Removed ${botInstance.phoneNumber} from god register table`);
-        }
-
-        broadcast({ type: 'BOT_DELETED', data: { id: req.params.id } });
-        res.json({ success: true });
-      } catch (error) {
-        console.error('Delete bot error:', error);
-        res.status(500).json({ message: "Failed to delete bot instance" });
-      }
-    });
-
-    // Toggle Bot Feature
-    app.post("/api/bot-instances/:id/toggle-feature", async (req, res) => {
-      try {
-        const { id } = req.params;
-        const { feature, enabled } = req.body;
-
-        if (!feature || enabled === undefined) {
-          return res.status(400).json({ message: "Feature and enabled status are required" });
-        }
-
-        // Get bot instance
-        const bot = await storage.getBotInstance(id);
-        if (!bot) {
-          return res.status(404).json({ message: "Bot not found" });
-        }
-
-        // Only allow approved bots to have features toggled
-        if (bot.approvalStatus !== 'approved') {
-          return res.status(400).json({ message: "Only approved bots can have features toggled" });
-        }
-
-        // Map feature names to database columns
-        const featureMap: Record<string, string> = {
-          'autoLike': 'autoLike',
-          'autoView': 'autoViewStatus',
-          'autoReact': 'autoReact',
-          'chatGPT': 'chatgptEnabled',
-          'alwaysOnline': 'alwaysOnline',
-          'typingIndicator': 'typingMode',
-          'presenceAutoSwitch': 'presenceAutoSwitch'
-        };
-
-        const dbField = featureMap[feature];
-        if (!dbField) {
-          return res.status(400).json({ message: "Invalid feature name" });
-        }
-
-        // Prepare update object
-        const updateData: any = {};
-
-        // Handle special feature mappings
-        if (feature === 'typingIndicator') {
-          updateData.typingMode = enabled ? 'typing' : 'none';
-        } else {
-          updateData[dbField] = enabled;
-        }
-
-        // Also update settings.features
-        const currentSettings = (bot.settings as any) || {};
-        const currentFeatures = (currentSettings.features as any) || {};
-        updateData.settings = {
-          ...currentSettings,
-          features: {
-            ...currentFeatures,
-            [feature]: enabled
-          }
-        };
-
-        await storage.updateBotInstance(id, updateData);
-
-        // Log activity
-        await storage.createActivity({
-          botInstanceId: id,
-          type: 'feature_toggle',
-          description: `${feature} ${enabled ? 'enabled' : 'disabled'}`,
-          metadata: { feature, enabled },
-          serverName: getServerName()
-        });
-
-        res.json({ message: "Feature updated successfully", feature, enabled });
-
-      } catch (error) {
-        console.error('Feature toggle error:', error);
-        res.status(500).json({ message: "Failed to toggle feature" });
-      }
-    });
-
-    // Approve Bot
-    app.post("/api/bot-instances/:id/approve", async (req, res) => {
-      try {
-        const { id } = req.params;
-        const { expirationMonths = 3 } = req.body;
-
-        const bot = await storage.getBotInstance(id);
-        if (!bot) {
-          return res.status(404).json({ message: "Bot not found" });
-        }
-
-        if (bot.approvalStatus !== 'pending') {
-          return res.status(400).json({ message: "Only pending bots can be approved" });
-        }
-
-        // Update bot to approved status
-        const updatedBot = await storage.updateBotInstance(id, {
-          approvalStatus: 'approved',
-          approvalDate: new Date().toISOString(),
-          expirationMonths,
-          status: 'loading' // Set to loading as we're about to start it
-        });
-
-        // Log activity
-        await storage.createActivity({
-          botInstanceId: id,
-          type: 'approval',
-          description: `Bot approved for ${expirationMonths} months`,
-          metadata: { expirationMonths },
-          serverName: getServerName()
-        });
-
-        // Automatically start the bot after approval
-        try {
-          console.log(`Auto-starting approved bot ${bot.name} (${bot.id})...`);
-          await botManager.startBot(id);
-
-          // Wait a moment for the bot to initialize before sending notification
-          setTimeout(async () => {
-            try {
-              if (bot.phoneNumber) {
-                const approvalMessage = `╔══════════════════════════════════════════╗
-║ 🎉        TREKKER-MD APPROVAL        🎉   ║
-╠══════════════════════════════════════════╣
-║ ✅ Bot "${bot.name}" is now ACTIVE!           ║
-║ 📱 Phone: ${bot.phoneNumber}                    ║
-║ 📅 Approved: ${new Date().toLocaleDateString()}                    ║
-║ ⏳ Valid: ${expirationMonths} Months                       ║
-╠══════════════════════════════════════════╣
-║ 🚀 Features Enabled:                      ║
-║ • Automation & ChatGPT                    ║
-║ • Auto-like / Auto-react                  ║
-║ • Status Viewing                          ║
-╠══════════════════════════════════════════╣
-║ 🔥 Thank you for choosing TREKKER-MD!     ║
-╚══════════════════════════════════════════╝`;
-
-                // Send notification using the bot's own credentials
-                const messageSent = await botManager.sendMessageThroughBot(id, bot.phoneNumber, approvalMessage);
-
-                if (messageSent) {
-                  console.log(`✅ Approval notification sent to ${bot.phoneNumber} via bot ${bot.name}`);
-                } else {
-                  console.log(`⚠️ Failed to send approval notification to ${bot.phoneNumber} - bot might not be online yet`);
-                }
-              }
-            } catch (notificationError) {
-              console.error('Failed to send approval notification:', notificationError);
-            }
-          }, 5000); // Wait 5 seconds for bot to fully initialize
-
-        } catch (startError) {
-          console.error(`Failed to auto-start bot ${bot.id}:`, startError);
-          // Update status to error if start failed
-          await storage.updateBotInstance(id, { status: 'error' });
-        }
-
-        // Broadcast update
-        broadcast({ type: 'BOT_APPROVED', data: updatedBot });
-        res.json({ message: "Bot approved successfully and starting automatically" });
-      } catch (error) {
-        console.error('Bot approval error:', error);
-        res.status(500).json({ message: "Failed to approve bot" });
-      }
-    });
-
-    // Revoke Bot Approval (change back to normal/pending status)
-    app.post("/api/bot-instances/:id/revoke", authenticateAdmin, async (req: AuthRequest, res) => {
-      try {
-        const { id } = req.params;
-
-        // Get bot instance first
-        const botInstance = await storage.getBotInstance(id);
-        if (!botInstance) {
-          return res.status(404).json({ message: "Bot not found" });
-        }
-
-        // Stop the bot if it's running
-        await botManager.destroyBot(id);
-
-        // Update bot status to pending
-        const bot = await storage.updateBotInstance(id, {
-          approvalStatus: 'pending',
-          status: 'offline',
-          approvalDate: null,
-          expirationMonths: null,
-        });
-
-        // Log activity
-        await storage.createActivity({
-          botInstanceId: id,
-          type: 'revoke_approval',
-          description: `Bot approval revoked - returned to pending status`,
-          metadata: { previousStatus: botInstance.approvalStatus },
-          serverName: getServerName()
-        });
-
-        // Broadcast update
-        broadcast({ type: 'BOT_APPROVAL_REVOKED', data: bot });
-
-        res.json({ message: "Bot approval revoked successfully" });
-      } catch (error) {
-        console.error('Bot approval revoke error:', error);
-        res.status(500).json({ message: "Failed to revoke bot approval" });
-      }
-    });
-
-    // Bot control endpoints (restricted to admins)
-    app.post("/api/bot-instances/:id/start", authenticateAdmin, async (req: AuthRequest, res) => {
-      try {
-        const bot = await storage.getBotInstance(req.params.id);
-        if (!bot) {
-          return res.status(404).json({ message: "Bot instance not found" });
-        }
-
-        console.log(`Starting bot ${bot.name} (${bot.id})...`);
-        await botManager.startBot(req.params.id);
-
-        const updatedBot = await storage.updateBotInstance(req.params.id, { status: 'loading' });
-        broadcast({ type: 'BOT_STATUS_CHANGED', data: updatedBot });
-
-        res.json({
-          success: true,
-          message: `Bot ${bot.name} startup initiated - TREKKERMD LIFETIME BOT initializing...`
-        });
-      } catch (error) {
-        console.error('Bot start error:', error);
-        const errorMessage = error instanceof Error ? error.message : "Failed to start bot";
-
-        // Update bot status to error
-        try {
-          const bot = await storage.updateBotInstance(req.params.id, { status: 'error' });
-          broadcast({ type: 'BOT_STATUS_CHANGED', data: bot });
-        } catch (updateError) {
-          console.error('Failed to update bot status:', updateError);
-        }
-
-        res.status(500).json({ message: errorMessage });
-      }
-    });
-
-    app.post("/api/bot-instances/:id/stop", authenticateAdmin, async (req: AuthRequest, res) => {
-      try {
-        await botManager.stopBot(req.params.id);
-        const bot = await storage.updateBotInstance(req.params.id, { status: 'offline' });
-        broadcast({ type: 'BOT_STATUS_CHANGED', data: bot });
-        res.json({ success: true });
-      } catch (error) {
-        res.status(500).json({ message: "Failed to stop bot" });
-      }
-    });
-
-    app.post("/api/bot-instances/:id/restart", authenticateAdmin, async (req: AuthRequest, res) => {
-      try {
-        await botManager.restartBot(req.params.id);
-        const bot = await storage.updateBotInstance(req.params.id, { status: 'loading' });
-        broadcast({ type: 'BOT_STATUS_CHANGED', data: bot });
-        res.json({ success: true });
-      } catch (error) {
-        res.status(500).json({ message: "Failed to restart bot" });
-      }
-    });
-
-    // Commands
-    app.get("/api/commands", async (req, res) => {
-      try {
-        const botInstanceId = req.query.botInstanceId as string;
-        let commands = await storage.getCommands(botInstanceId);
-
-        // If database is empty and no specific bot instance requested, populate with registered commands
-        if (commands.length === 0 && !botInstanceId) {
-          try {
-            const { commandRegistry } = await import('./services/command-registry.js');
-            const registeredCommands = commandRegistry.getAllCommands();
-
-            console.log('Database empty, populating with registered commands...');
-
-            for (const command of registeredCommands) {
-              try {
-                await storage.createCommand({
-                  name: command.name,
-                  description: command.description,
-                  response: `Executing ${command.name}...`,
-                  isActive: true,
-                  useChatGPT: false,
-                  serverName: getServerName()
-                });
-              } catch (error: any) {
-                // Ignore duplicate errors
-                if (!error?.message?.includes('duplicate') && !error?.message?.includes('unique')) {
-                  console.log(`Error saving ${command.name}:`, error?.message);
-                }
-              }
-            }
-
-            // Fetch commands again after populating
-            commands = await storage.getCommands(botInstanceId);
-            console.log(`✅ Populated database with ${commands.length} commands`);
-          } catch (error) {
-            console.log('Note: Could not populate database with commands:', error);
-          }
-        }
-
-        res.json(commands);
-      } catch (error) {
-        console.error("Commands error:", error);
-        res.status(500).json({ message: "Failed to fetch commands" });
-      }
-    });
-
-    app.post("/api/commands", async (req, res) => {
-      try {
-        const validatedData = insertCommandSchema.parse(req.body);
-        const command = await storage.createCommand(validatedData);
-        broadcast({ type: 'COMMAND_CREATED', data: command });
-        res.json(command);
-      } catch (error) {
-        res.status(400).json({ message: error instanceof Error ? error.message : "Failed to create command" });
-      }
-    });
-
-    app.patch("/api/commands/:id", async (req, res) => {
-      try {
-        const command = await storage.updateCommand(req.params.id, req.body);
-        broadcast({ type: 'COMMAND_UPDATED', data: command });
-        res.json(command);
-      } catch (error) {
-        res.status(500).json({ message: "Failed to update command" });
-      }
-    });
-
-    app.delete("/api/commands/:id", async (req, res) => {
-      try {
-        await storage.deleteCommand(req.params.id);
-        broadcast({ type: 'COMMAND_DELETED', data: { id: req.params.id } });
-        res.json({ success: true });
-      } catch (error) {
-        res.status(500).json({ message: "Failed to delete command" });
-      }
-    });
-
-    // Sync registered commands with database
-    app.post("/api/commands/sync", async (req, res) => {
-      try {
-        const { commandRegistry } = await import('./services/command-registry.js');
-        const registeredCommands = commandRegistry.getAllCommands();
-        const existingCommands = await storage.getCommands();
-        const existingCommandNames = new Set(existingCommands.map(cmd => cmd.name));
-
-        let addedCount = 0;
-
-        for (const command of registeredCommands) {
-          if (!existingCommandNames.has(command.name)) {
-            try {
-              await storage.createCommand({
-                name: command.name,
-                description: command.description,
-                response: `Executing ${command.name}...`,
-                isActive: true,
-                useChatGPT: false,
-                serverName: getServerName()
-              });
-              addedCount++;
-            } catch (error: any) {
-              console.log(`Error adding ${command.name}:`, error?.message);
-            }
-          }
-        }
-
-        console.log(`✅ Command sync completed: ${addedCount} new commands added`);
-        res.json({
-          success: true,
-          message: `Sync completed: ${addedCount} new commands added`,
-          addedCount
-        });
-      } catch (error) {
-        console.error("Command sync error:", error);
-        res.status(500).json({ message: "Failed to sync commands" });
-      }
-    });
-
-    // Custom Command Code Execution - Admin Only
-    app.post("/api/commands/custom", authenticateAdmin, async (req: AuthRequest, res) => {
-      try {
-        const { name, code, description, category } = req.body;
-
-        if (!name || !code || !description) {
-          return res.status(400).json({ message: "Name, code, and description are required" });
-        }
-
-        // Validate the command code (basic safety check)
-        if (code.includes('require(') && !code.includes('// @allow-require')) {
-          return res.status(400).json({ message: "Custom require() not allowed for security reasons" });
-        }
-
-        // Create command in database
-        const commandData = {
-          name: name.toLowerCase(),
-          description,
-          response: code, // Store the custom code in response field
-          isActive: true,
-          useChatGPT: false,
-          category: category || 'CUSTOM',
-          customCode: true // Flag to identify custom code commands
-        };
-
-        const command = await storage.createCommand({
-          ...commandData,
-          serverName: getServerName()
-        });
-
-        // Register the command in the command registry dynamically
-        const { commandRegistry } = await import('./services/command-registry.js');
-
-        try {
-          // Create a safe execution context for the custom command
-          const customHandler = new Function('context', `
-            const { respond, args, message, client } = context;
-            return (async () => {
-              ${code}
-            })();
-          `);
-
-          commandRegistry.register({
-            name: name.toLowerCase(),
-            description,
-            category: category || 'CUSTOM',
-            handler: customHandler as any
-          });
-
-          console.log(`✅ Custom command '${name}' registered successfully`);
-        } catch (error) {
-          console.error(`❌ Failed to register custom command '${name}':`, error);
-          // Remove from database if registration fails
-          await storage.deleteCommand(command.id);
-          return res.status(400).json({ message: "Invalid command code syntax" });
-        }
-
-        broadcast({ type: 'CUSTOM_COMMAND_CREATED', data: command });
-        res.json({ success: true, command });
-
-      } catch (error) {
-        console.error('Custom command creation error:', error);
-        res.status(500).json({ message: "Failed to create custom command" });
-      }
-    });
-
-    // ======= ADMIN GOD REGISTRY ENDPOINTS =======
-
-    // Get all God Registry entries (Admin only)
-    app.get("/api/admin/god-registry", authenticateAdmin, async (req: AuthRequest, res) => {
-      try {
-        const registrations = await storage.getAllGlobalRegistrations();
-        res.json(registrations);
-      } catch (error) {
-        console.error('Get God Registry error:', error);
-        res.status(500).json({ message: "Failed to fetch God Registry" });
-      }
-    });
-
-    // Update God Registry entry (Admin only)
-    app.put("/api/admin/god-registry/:phoneNumber", authenticateAdmin, async (req: AuthRequest, res) => {
-      try {
-        const { phoneNumber } = req.params;
-        const { tenancyName } = req.body;
-
-        if (!tenancyName) {
-          return res.status(400).json({ message: "Tenancy name is required" });
-        }
-
-        // Delete old registration
-        await storage.deleteGlobalRegistration(phoneNumber);
-
-        // Create new registration with updated tenancy
-        await storage.addGlobalRegistration(phoneNumber, tenancyName);
-
-        // Log activity
-        await storage.createActivity({
-          botInstanceId: 'god-registry-admin',
-          type: 'god_registry_update',
-          description: `God Registry updated: ${phoneNumber} moved to ${tenancyName}`,
-          metadata: { phoneNumber, tenancyName, updatedBy: 'admin' },
-          serverName: getServerName()
-        });
-
-        res.json({ message: "Registration updated successfully" });
-      } catch (error) {
-        console.error('Update God Registry error:', error);
-        res.status(500).json({ message: "Failed to update registration" });
-      }
-    });
-
-    // Delete God Registry entry (Admin only)
-    app.delete("/api/admin/god-registry/:phoneNumber", authenticateAdmin, async (req: AuthRequest, res) => {
-      try {
-        const { phoneNumber } = req.params;
-
-        await storage.deleteGlobalRegistration(phoneNumber);
-
-        // Log activity
-        await storage.createActivity({
-          botInstanceId: 'god-registry-admin',
-          type: 'god_registry_delete',
-          description: `God Registry entry deleted: ${phoneNumber}`,
-          metadata: { phoneNumber, deletedBy: 'admin' },
-          serverName: getServerName()
-        });
-
-        res.json({ message: "Registration deleted successfully" });
-      } catch (error) {
-        console.error('Delete God Registry error:', error);
-        res.status(500).json({ message: "Failed to delete registration" });
-      }
-    });
-
-    // ======= GUEST AUTHENTICATION ENDPOINTS =======
-
-    // Guest Registration Check - Check if phone number is registered in God Registry
-    app.post("/api/guest/check-registration", async (req, res) => {
-      try {
-        const { phoneNumber } = req.body;
-
-        if (!phoneNumber) {
-          return res.status(400).json({ message: "Phone number is required" });
-        }
-
-        const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-        const currentServer = getServerName();
-
-        console.log(`🔍 Checking registration for phone ${cleanedPhone} on server ${currentServer}`);
-
-        // Check God Registry to find if phone number is registered anywhere
-        const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
-
-        if (!globalRegistration) {
-          // Phone number is not registered anywhere
-          return res.json({
-            registered: false,
-            phoneNumber: cleanedPhone,
-            message: "Phone number not found in our system",
-            canRegister: true
-          });
-        }
-
-        const hostingServer = globalRegistration.tenancyName;
-        const isCurrentServer = hostingServer === currentServer;
-
-        if (isCurrentServer) {
-          // Phone number is registered on current server - check for actual bot
-          const bot = await storage.getBotByPhoneNumber(cleanedPhone);
-
-          return res.json({
-            registered: true,
-            currentServer: true,
-            phoneNumber: cleanedPhone,
-            hasBot: !!bot,
-            bot: bot ? maskBotDataForGuest(bot, true) : null,
-            message: bot
-              ? "Phone number found with existing bot on this server"
-              : "Phone number registered to this server but no bot found"
-          });
-        } else {
-          // Phone number is registered on different server
-          return res.status(400).json({
-            registered: true,
-            currentServer: false,
-            registeredTo: hostingServer,
-            phoneNumber: cleanedPhone,
-            message: `This phone number is registered to ${hostingServer}. Please use that server to manage your bot.`
-          });
-        }
-
-      } catch (error) {
-        console.error('Guest check registration error:', error);
-        res.status(500).json({ message: "Failed to check registration" });
-      }
-    });
-
-    // Admin: Send test message through bot
-    app.post("/api/admin/send-message/:botId", isAdmin, async (req, res) => {
-      try {
-        const { botId } = req.params;
-        const { recipient, message } = req.body;
-
-        if (!recipient || !message) {
-          return res.status(400).json({ message: "Recipient and message are required" });
-        }
-
-        // Get bot instance
-        const bot = botManager.getBot(botId);
-        if (!bot) {
-          return res.status(404).json({ message: "Bot not found or not running" });
-        }
-
-        // Format recipient number
-        const jid = recipient.includes('@') ? recipient : `${recipient}@s.whatsapp.net`;
-
-        // Send message
-        await bot.sendDirectMessage(jid, message);
-
-        res.json({
-          success: true,
-          message: "Message sent successfully",
-          recipient: jid
-        });
-      } catch (error) {
-        console.error("Error sending admin test message:", error);
-        res.status(500).json({
-          message: "Failed to send message",
-          error: error instanceof Error ? error.message : "Unknown error"
-        });
-      }
-    });
-
-    // Guest Bot Status Check - Check if bot exists and its status
-    app.post("/api/guest/bot/status", async (req, res) => {
-      try {
-        const { phoneNumber } = req.body;
-
-        if (!phoneNumber) {
-          return res.status(400).json({ message: "Phone number is required" });
-        }
-
-        // Clean phone number
-        const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-        console.log(`🔍 Checking bot status for phone: ${cleanedPhone}`);
-
-        // Check if bot exists in current server
-        const currentServerName = process.env.RUNTIME_SERVER_NAME || process.env.SERVER_NAME || 'Server1';
-        const bot = await db.select()
-          .from(botInstances)
-          .where(
-            and(
-              eq(botInstances.phoneNumber, cleanedPhone),
-              eq(botInstances.serverName, currentServerName)
-            )
-          )
-          .limit(1);
-
-        if (bot.length === 0) {
-          console.log(`❌ No bot found for phone ${cleanedPhone} on server ${currentServerName}`);
-          return res.status(404).json({
-            message: "Bot not found",
-            exists: false
-          });
-        }
-
-        const botData = bot[0];
-        const isActive = botData.status === 'online';
-        const isApproved = botData.approvalStatus === 'approved';
-
-        console.log(`✅ Bot found - Status: ${botData.status}, Approval: ${botData.approvalStatus}`);
-
-        // Apply data masking for guest endpoint
-        const maskedBotData = maskBotDataForGuest(botData, true);
-        return res.json({
-          exists: true,
-          ...maskedBotData
-        });
-
-      } catch (error) {
-        console.error("❌ Error checking bot status:", error);
-        return res.status(500).json({ message: "Failed to check bot status" });
-      }
-    });
-
-    // Get session ID by phone number with validation
-    app.get("/api/guest/session/:phoneNumber", async (req, res) => {
-      try {
-        const { phoneNumber } = req.params;
-        const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-
-        console.log(`🔍 Looking for session ID for phone: ${cleanedPhone}`);
-
-        // Get the most recent unused session for this phone number
-        const sessions = await db.select()
-          .from(guestSessions)
-          .where(
-            and(
-              eq(guestSessions.phoneNumber, cleanedPhone),
-              eq(guestSessions.isUsed, false)
-            )
-          )
-          .orderBy(desc(guestSessions.createdAt))
-          .limit(1);
-
-        if (sessions.length === 0) {
-          console.log(`❌ No session found for phone ${cleanedPhone}`);
-          return res.status(404).json({
-            message: "No session found for this phone number",
-            found: false
-          });
-        }
-
-        const session = sessions[0];
-
-        // Validate the session ID before returning it
-        try {
-          const decoded = Buffer.from(session.sessionId.trim(), 'base64').toString('utf-8');
-          const credentials = JSON.parse(decoded);
-
-          // Check for essential WhatsApp credentials
-          const isValid = credentials?.creds?.noiseKey &&
-                         credentials?.creds?.signedIdentityKey &&
-                         credentials?.creds?.signedPreKey &&
-                         credentials?.creds?.registrationId &&
-                         credentials?.keys &&
-                         Object.keys(credentials.keys).length > 0;
-
-          if (!isValid) {
-            console.error(`❌ Invalid session ID found for ${cleanedPhone} - missing essential fields`);
-            // Delete the invalid session
-            await db.delete(guestSessions).where(eq(guestSessions.id, session.id));
-            return res.status(404).json({
-              message: "Session ID is invalid - please generate a new pairing code",
-              found: false
-            });
-          }
-
-          console.log(`✅ Valid session found for phone ${cleanedPhone}`);
-
-          return res.json({
-            found: true,
-            sessionId: session.sessionId,
-            pairingCode: session.pairingCode,
-            createdAt: session.createdAt
-          });
-
-        } catch (validationError) {
-          console.error(`❌ Session validation error for ${cleanedPhone}:`, validationError);
-          // Delete the corrupted session
-          await db.delete(guestSessions).where(eq(guestSessions.id, session.id));
-          return res.status(404).json({
-            message: "Session ID is corrupted - please generate a new pairing code",
-            found: false
-          });
-        }
-
-      } catch (error) {
-        console.error("❌ Error retrieving session:", error);
-        return res.status(500).json({ message: "Failed to retrieve session" });
-      }
-    });
-
-    // Guest OTP Request - Send verification code via WhatsApp with credential validation
-    app.post("/api/guest/auth/send-otp", async (req, res) => {
-      console.log("[secure_guest_otp] Enhanced security endpoint reached - enforcing credential validation");
-      try {
-        const { phoneNumber, sessionData } = req.body;
-
-        if (!phoneNumber) {
-          return res.status(400).json({ message: "Phone number is required" });
-        }
-
-        // Clean phone number
-        const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-
-        // Validate phone number format (basic check)
-        if (!/^\d{10,15}$/.test(cleanedPhone)) {
-          return res.status(400).json({ message: "Invalid phone number format" });
-        }
-
-        console.log(`🔍 Enhanced Guest OTP: Checking bot status first for ${cleanedPhone}`);
-
-        // Step 1: Check if bot exists and get its status
-        const currentServerName = process.env.RUNTIME_SERVER_NAME || process.env.SERVER_NAME || 'Server1';
-        const bot = await db.select()
-          .from(botInstances)
-          .where(
-            and(
-              eq(botInstances.phoneNumber, cleanedPhone),
-              eq(botInstances.serverName, currentServerName)
-            )
-          )
-          .limit(1);
-
-        if (bot.length === 0) {
-          console.log(`❌ Bot not found for phone ${cleanedPhone}`);
-          return res.status(404).json({
-            message: "Bot not found. Please register your bot first.",
-            exists: false
-          });
-        }
-
-        const botData = bot[0];
-        const isActive = botData.status === 'online';
-        const isApproved = botData.approvalStatus === 'approved';
-
-        console.log(`📊 Bot Status - Active: ${isActive}, Approved: ${isApproved}`);
-
-        // Step 2: Enhanced bot status checking with credential verification
-        console.log(`📊 Enhanced Status - Active: ${isActive}, Approved: ${isApproved}, CredVerified: ${botData.credentialVerified || false}`);
-
-        // Check if bot is not approved (priority check)
-        if (!isApproved) {
-          console.log(`⚠️ Bot not approved by admin`);
-          return res.status(403).json({
-            message: "Your bot is not approved by admin. Please wait for admin approval.",
-            botStatus: "not_approved",
-            nextStep: "wait_approval",
-            canManage: false
-          });
-        }
-
-        // Check if bot has expired (for approved bots)
-        const isExpired = botData.approvalDate && botData.expirationMonths
-          ? new Date() > new Date(new Date(botData.approvalDate).getTime() + (botData.expirationMonths * 30 * 24 * 60 * 60 * 1000))
-          : false;
-
-        if (isExpired) {
-          console.log(`⏰ Bot has expired`);
-          return res.status(403).json({
-            message: "Your bot has expired. Please contact admin for renewal.",
-            botStatus: "expired",
-            nextStep: "wait_approval",
-            canManage: false
-          });
-        }
-
-        // Check credential verification status (key enhancement)
-        const invalidStatuses = ['offline', 'error', 'loading', 'connecting'];
-        if (!botData.credentialVerified || invalidStatuses.includes(botData.status)) {
-          const reason = botData.invalidReason || 'Credentials need verification';
-          console.log(`🔐 Bot needs credential verification - Status: ${botData.status}, CredVerified: ${botData.credentialVerified}, Reason: ${reason}`);
-          return res.status(400).json({
-            message: "Your bot credentials need to be updated before you can authenticate.",
-            botStatus: "needs_credentials",
-            nextStep: "update_credentials",
-            invalidReason: reason,
-            needsCredentials: true,
-            canManage: false,
-            credentialUploadEndpoint: "/api/guest/verify-credentials"
-          });
-        }
-
-        // Step 3: For verified bots, send OTP using stored credentials
-        console.log(`✅ Bot is verified and approved - proceeding with OTP generation`);
-
-        // Use stored credentials (already validated via credential verification system)
-        let credentials = null;
-        if (botData.credentials) {
-          try {
-            credentials = JSON.parse(JSON.stringify(botData.credentials));
-            console.log(`🔑 Using verified stored credentials for ${cleanedPhone}`);
-          } catch (error) {
-            console.error(`❌ Invalid stored credentials format for ${cleanedPhone}:`, error);
-            return res.status(500).json({
-              message: "Stored credentials are corrupted. Please update your credentials.",
-              botStatus: "needs_credentials",
-              nextStep: "update_credentials",
-              credentialUploadEndpoint: "/api/guest/verify-credentials"
-            });
-          }
-        } else {
-          console.error(`❌ No stored credentials found for verified bot ${cleanedPhone}`);
-          return res.status(500).json({
-            message: "No credentials found for verified bot. Please update your credentials.",
-            botStatus: "needs_credentials",
-            nextStep: "update_credentials",
-            credentialUploadEndpoint: "/api/guest/verify-credentials"
-          });
-        }
-
-        // Generate and send OTP via WhatsApp
-        const otp = generateGuestOTP();
-        createGuestSession(cleanedPhone, otp);
-
-        const message = `🔐 Your verification code for bot management: ${otp}\n\nThis code expires in 10 minutes. Keep it secure!`;
-
-        try {
-          await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), message, true);
-
-          console.log(`📱 OTP sent via WhatsApp to ${cleanedPhone}: ${otp}`);
-
-          res.json({
-            success: true,
-            message: "Verification code sent to your WhatsApp",
-            method: 'whatsapp',
-            expiresIn: 600, // 10 minutes
-            botStatus: "verified_approved",
-            botId: botData.id,
-            nextStep: "verify_otp",
-            // For development/demo - remove in production
-            ...(process.env.NODE_ENV === 'development' && { otp })
-          });
-
-        } catch (error) {
-          console.error(`⚠️ Failed to send WhatsApp OTP to ${cleanedPhone}:`, error);
-
-          // Log OTP for development/fallback
-          console.log(`🔑 Guest OTP for ${cleanedPhone}: ${otp} (Display method - WhatsApp failed)`);
-
-          res.json({
-            success: true,
-            message: "OTP generated but failed to send WhatsApp message. Check server logs for verification code.",
-            method: 'display',
-            expiresIn: 600, // 10 minutes
-            botStatus: "verified_approved",
-            botId: botData.id,
-            nextStep: "verify_otp",
-            // For development/demo - remove in production
-            ...(process.env.NODE_ENV === 'development' && { otp })
-          });
-        }
-
-      } catch (error) {
-        console.error('Guest OTP send error:', error);
-        res.status(500).json({ message: "Failed to send verification code" });
-      }
-    });
-
-    // Guest Session Verification - Extract phone number from session ID and check bot status
-    app.post("/api/guest/verify-session", async (req, res) => {
-      try {
-        const { sessionId } = req.body;
-
-        if (!sessionId || typeof sessionId !== 'string' || sessionId.trim().length === 0) {
-          return res.status(400).json({ message: "Session ID is required" });
-        }
-
-        // Parse credentials from base64 encoded session ID
-        let credentials;
-        try {
-          const base64Data = sessionId.trim();
-
-          // Check Base64 size limit (5MB when decoded)
-          const estimatedSize = (base64Data.length * 3) / 4;
-          const maxSizeBytes = 5 * 1024 * 1024; // 5MB
-
-          if (estimatedSize > maxSizeBytes) {
-            return res.status(400).json({
-              message: `Session ID too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.`
-            });
-          }
-
-          const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
-
-          if (decoded.length > maxSizeBytes) {
-            return res.status(400).json({
-              message: `Decoded session data too large (${(decoded.length / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.`
-            });
-          }
-
-          credentials = JSON.parse(decoded);
-        } catch (error) {
-          return res.status(400).json({ message: "Invalid session ID format. Please ensure it's properly encoded WhatsApp session data." });
-        }
-
-        // Enhanced phone number extraction with multiple fallback methods
-        let phoneNumber = null;
-
-        // Method 1: Check credentials.creds.me.id (most common)
-        if (credentials?.creds?.me?.id) {
-          const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
-          phoneNumber = phoneMatch ? phoneMatch[1] : null;
-        }
-
-        // Method 2: Check credentials.me.id (alternative format)
-        if (!phoneNumber && credentials?.me?.id) {
-          const phoneMatch = credentials.me.id.match(/^(\d+):/);
-          phoneNumber = phoneMatch ? phoneMatch[1] : null;
-        }
-
-        // Method 3: Deep search for phone numbers in credentials
-        if (!phoneNumber) {
-          const findPhoneInObject = (obj: any, depth = 0): string | null => {
-            if (depth > 5 || !obj || typeof obj !== 'object') return null;
-
-            for (const [key, value] of Object.entries(obj)) {
-              if (typeof value === 'string') {
-                // Look for patterns like "1234567890:x@s.whatsapp.net"
-                const phoneMatch = value.match(/(\d{10,15}):/);
-                if (phoneMatch) return phoneMatch[1];
-
-                // Look for standalone phone numbers in phone-related fields
-                if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number')) {
-                  const cleanNumber = value.replace(/\D/g, '');
-                  if (cleanNumber.length >= 10 && cleanNumber.length <= 15) {
-                    return cleanNumber;
-                  }
-                }
-              } else if (typeof value === 'object') {
-                const found = findPhoneInObject(value, depth + 1);
-                if (found) return found;
-              }
-            }
-            return null;
-          };
-
-          phoneNumber = findPhoneInObject(credentials);
-        }
-
-        if (!phoneNumber) {
-          console.error('Failed to extract phone number from credentials:', {
-            hasCredsMe: !!(credentials?.creds?.me),
-            hasMe: !!(credentials?.me),
-            credsKeys: credentials?.creds ? Object.keys(credentials.creds) : [],
-            topLevelKeys: credentials ? Object.keys(credentials) : []
-          });
-          return res.status(400).json({
-            message: "Cannot extract phone number from session credentials. Please ensure you're using valid WhatsApp session data."
-          });
-        }
-
-        // Check if bot exists in global registry
-        const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
-        if (!globalRegistration) {
-          return res.status(404).json({ message: "No bot found with this phone number" });
-        }
-
-        const botServer = globalRegistration.tenancyName;
-        const currentServer = getServerName();
-
-        // Find bot directly in database using shared database access (preserves tenancy)
-        const botInstance = await db.select()
-          .from(botInstances)
-          .where(
-            and(
-              eq(botInstances.phoneNumber, phoneNumber),
-              eq(botInstances.serverName, botServer) // Use original tenancy
-            )
-          )
-          .limit(1);
-
-        if (botInstance.length === 0) {
-          return res.status(404).json({ message: "Bot not found in database" });
-        }
-
-        const bot = botInstance[0];
-        let botActive = false;
-
-        // Check if bot is on current server for active status check
-        if (botServer === currentServer) {
-          // Check if bot is actually active/connected locally
-          const botStatuses = botManager.getAllBotStatuses();
-          botActive = botStatuses[bot.id] === 'online';
-        }
-
-        // Test credentials on current server and update in original tenancy if valid
-        if (!botActive && credentials) {
-          console.log(`🔄 Testing new credentials on current server for bot from ${botServer} (phone: ${phoneNumber})`);
-
-          try {
-            // Test connection with new credentials on current server
-            const { validateCredentialsByPhoneNumber } = await import('./services/creds-validator');
-            const testResult = await validateCredentialsByPhoneNumber(phoneNumber, credentials);
-
-            if (testResult.isValid) {
-              console.log(`✅ Connection test successful - updating credentials in ${botServer} tenancy`);
-
-              // Direct database update preserving original tenancy
-              const [updatedBot] = await db
-                .update(botInstances)
-                .set({
-                  credentials: credentials,
-                  credentialVerified: true,
-                  invalidReason: null,
-                  autoStart: true, // Re-enable auto-start when credentials are fixed
-                  status: 'loading',
-                  updatedAt: sql`CURRENT_TIMESTAMP`
-                })
-                .where(
-                  and(
-                    eq(botInstances.phoneNumber, phoneNumber),
-                    eq(botInstances.serverName, botServer) // Preserve original tenancy
-                  )
-                )
-                .returning();
-
-              if (updatedBot) {
-                console.log(`✅ Updated credentials for bot ${bot.id} in ${botServer} tenancy via direct database access`);
-
-                // If bot is on current server, restart it with new credentials
-                if (botServer === currentServer) {
-                  try {
-                    await botManager.destroyBot(bot.id);
-                    await botManager.createBot(bot.id, { ...updatedBot, credentials });
-                    await botManager.startBot(bot.id);
-                    botActive = true;
-                    console.log(`✅ Bot restarted successfully on current server`);
-                  } catch (restartError) {
-                    console.error(`❌ Failed to restart bot ${bot.id}:`, restartError);
-                    await db
-                      .update(botInstances)
-                      .set({
-                        status: 'error',
-                        invalidReason: `Restart failed: ${restartError.message}`,
-                        updatedAt: sql`CURRENT_TIMESTAMP`
-                      })
-                      .where(
-                        and(
-                          eq(botInstances.phoneNumber, phoneNumber),
-                          eq(botInstances.serverName, botServer)
-                        )
-                      );
-                  }
-                }
-
-                // Log activity preserving original tenancy
-                await storage.createCrossTenancyActivity({
-                  type: 'cross_server_credential_update',
-                  description: `Credentials tested on ${currentServer} and updated for bot on ${botServer}`,
-                  metadata: {
-                    testServer: currentServer,
-                    botServer: botServer,
-                    botId: bot.id,
-                    connectionTestSuccessful: testResult.isValid,
-                    tenancyPreserved: true
-                  },
-                  serverName: botServer, // Log to original tenancy
-                  phoneNumber: phoneNumber,
-                  botInstanceId: bot.id,
-                  remoteTenancy: currentServer
-                });
-
-                // Send success message
-                setTimeout(async () => {
-                  try {
-                    const successMessage = `🎉 *Session Update Successful!* 🎉
-
-Your TREKKER-MD bot "${bot.name}" has been successfully updated with new credentials!
-
-📱 *Phone:* ${phoneNumber}
-🆔 *JID:* ${bot.userJid}
-🔐 *Update Details:*
-• Bot Server: ${botServer}
-• Status: ✅ Credentials Updated ${botServer === currentServer ? '& Reconnecting' : '& Saved'}
-• Time: ${new Date().toLocaleString()}
-
-${botServer === currentServer ? '🚀 Your bot will be online shortly!' : '🌐 Your bot credentials are updated on the hosting server.'}
-
-Thank you for using TREKKER-MD! 🚀
-
----
-*TREKKER-MD - Ultra Fast Lifetime WhatsApp Bot Automation*`;
-
-                    if (botServer === currentServer) {
-                      // Try to send via the bot itself
-                      const messageSent = await botManager.sendMessageThroughBot(bot.id, phoneNumber, successMessage);
-                      if (!messageSent) {
-                        await sendGuestValidationMessage(phoneNumber, JSON.stringify(credentials), successMessage, true);
-                      }
-                    } else {
-                      // Send via validation bot since it's cross-server
-                      await sendGuestValidationMessage(phoneNumber, JSON.stringify(credentials), successMessage, true);
-                    }
-                    console.log(`✅ Session update success message sent to ${phoneNumber}`);
-                  } catch (notificationError) {
-                    console.error('Failed to send session update notification:', notificationError);
-                  }
-                }, 3000);
-              }
-            } else {
-              console.log(`❌ Connection test failed for ${phoneNumber}:`, testResult.message);
-              // Update with test failure but preserve tenancy
-              await db
-                .update(botInstances)
-                .set({
-                  credentialVerified: false,
-                  invalidReason: testResult.message || 'Connection test failed',
-                  status: 'offline',
-                  updatedAt: sql`CURRENT_TIMESTAMP`
-                })
-                .where(
-                  and(
-                    eq(botInstances.phoneNumber, phoneNumber),
-                    eq(botInstances.serverName, botServer)
-                  )
-                );
-
-              // Set validation failure flag for response
-              botActive = false;
-            }
-          } catch (testError) {
-            console.error(`❌ Error testing credentials for ${phoneNumber}:`, testError);
-            await db
-              .update(botInstances)
-              .set({
-                credentialVerified: false,
-                invalidReason: `Credential test error: ${testError.message}`,
-                status: 'offline',
-                updatedAt: sql`CURRENT_TIMESTAMP`
-              })
-              .where(
-                and(
-                  eq(botInstances.phoneNumber, phoneNumber),
-                  eq(botInstances.serverName, botServer)
-                )
-              );
-
-            // Set validation failure flag for response
-            botActive = false;
-          }
-        }
-
-        // Generate guest token for future authenticated requests
-        const token = generateGuestToken(phoneNumber, bot.id);
-
-        // Get updated bot status after credential testing
-        const updatedBotInstance = await db.select()
-          .from(botInstances)
-          .where(
-            and(
-              eq(botInstances.phoneNumber, phoneNumber),
-              eq(botInstances.serverName, botServer)
-            )
-          )
-          .limit(1);
-
-        const updatedBot = updatedBotInstance[0] || bot;
-        const credentialTestFailed = !updatedBot.credentialVerified && updatedBot.invalidReason;
-
-        res.json({
-          success: !credentialTestFailed, // Success if credentials didn't fail validation
-          phoneNumber: `+${phoneNumber}`,
-          botActive,
-          botServer,
-          crossServer: botServer !== currentServer,
-          token,
-          message: credentialTestFailed
-            ? `Credential validation failed: ${updatedBot.invalidReason}`
-            : botActive
-              ? "Bot is active and connected"
-              : "Credentials updated successfully and success message sent to WhatsApp",
-          botId: bot.id,
-          botName: bot.name,
-          lastActivity: bot.lastActivity,
-          connectionUpdated: credentials && !credentialTestFailed ? true : false,
-          tenancyPreserved: true,
-          updateMethod: 'direct_database_access',
-          nextStep: !credentialTestFailed ? 'authenticated' : 'update_credentials',
-          credentialValidationFailed: credentialTestFailed
-        });
-
-      } catch (error) {
-        console.error('Guest session verification error:', error);
-        res.status(500).json({ message: "Failed to verify session" });
-      }
-    });
-
-    // Guest Bot Registration
-    app.post("/api/guest/register-bot", upload.single('credsFile') as any, async (req, res) => {
-      try {
-        console.log('🎯 Guest bot registration request received');
-        console.log('📋 Form data:', {
-          botName: req.body.botName,
-          phoneNumber: req.body.phoneNumber,
-          credentialType: req.body.credentialType,
-          hasSessionId: !!req.body.sessionId,
-          hasCredsFile: !!req.file,
-          features: req.body.features,
-          selectedServer: req.body.selectedServer // CRITICAL: Log selectedServer
-        });
-
-        const { botName, phoneNumber, credentialType, features, selectedServer } = req.body;
-        let { sessionId } = req.body;
-
-        // Validate required fields
-        if (!botName || !phoneNumber) {
-          return res.status(400).json({
-            success: false,
-            message: "Bot name and phone number are required"
-          });
-        }
-
-        // Clean phone number
-        const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-
-        // Validate phone number format
-        if (!/^\d{10,15}$/.test(cleanedPhone)) {
-          return res.status(400).json({
-            success: false,
-            message: "Invalid phone number format. Please enter a valid phone number with country code."
-          });
-        }
-
-        console.log(`📱 Processing registration for phone: ${cleanedPhone}`);
-        console.log(`🎯 Target server: ${selectedServer || 'current server'}`);
-
-        // Step 1: Check if phone number already exists in God Registry
-        const existingRegistration = await storage.checkGlobalRegistration(cleanedPhone);
-        if (existingRegistration) {
-          const hostingServer = existingRegistration.tenancyName;
-          const currentServer = getServerName();
-
-          console.log(`📍 Phone ${cleanedPhone} found in God Registry on server: ${hostingServer}`);
-
-          if (hostingServer === currentServer) {
-            // Phone exists on current server - check for existing bot
-            const existingBot = await storage.getBotByPhoneNumber(cleanedPhone);
-            if (existingBot) {
-              console.log(`🤖 Existing bot found: ${existingBot.name}`);
-              return res.json({
-                success: false,
-                type: 'existing_bot_found',
-                message: `Welcome back! You already have a bot "${existingBot.name}" registered with this phone number.`,
-                botDetails: maskBotDataForGuest(existingBot, true)
-              });
-            }
           } else {
-            // Phone exists on different server - cannot register duplicate
-            return res.status(400).json({
-              success: false,
-              message: `This phone number is already registered on ${hostingServer}. Each phone number can only be used once across all servers.`
-            });
-          }
-        }
+            console.log(`❌ Connection test failed for ${phoneNumber}:`, testResult.message);
+            // Update with test failure but preserve tenancy
+            await db
+              .update(botInstances)
+              .set({
+                credentialVerified: false,
+                invalidReason: testResult.message || 'Connection test failed',
+                status: 'offline',
+                updatedAt: sql`CURRENT_TIMESTAMP`
+              })
+              .where(
+                and(
+                  eq(botInstances.phoneNumber, phoneNumber),
+                  eq(botInstances.serverName, botServer)
+                )
+              );
 
-        // Step 2: Parse and validate credentials
-        let credentials = null;
-        if (credentialType === 'base64' && sessionId) {
-          try {
-            credentials = JSON.parse(Buffer.from(sessionId.trim(), 'base64').toString('utf-8'));
-          } catch (error) {
-            return res.status(400).json({
-              success: false,
-              message: "Invalid session ID format. Please ensure you're providing valid base64-encoded credentials."
-            });
+            // Set validation failure flag for response
+            botActive = false;
           }
-        } else if (credentialType === 'file' && req.file) {
-          try {
-            credentials = JSON.parse(req.file.buffer.toString('utf-8'));
-          } catch (error) {
-            return res.status(400).json({
+        } catch (testError) {
+          console.error(`❌ Error testing credentials for ${phoneNumber}:`, testError);
+          await db
+            .update(botInstances)
+            .set({
+              credentialVerified: false,
+              invalidReason: `Credential test error: ${testError.message}`,
+              status: 'offline',
+              updatedAt: sql`CURRENT_TIMESTAMP`
+            })
+            .where(
+              and(
+                eq(botInstances.phoneNumber, phoneNumber),
+                eq(botInstances.serverName, botServer)
+              )
+            );
+
+          // Set validation failure flag for response
+          botActive = false;
+        }
+      }
+
+      // Generate guest token for future authenticated requests
+      const token = generateGuestToken(phoneNumber, bot.id);
+
+      // Get updated bot status after credential testing
+      const updatedBotInstance = await db.select()
+        .from(botInstances)
+        .where(
+          and(
+            eq(botInstances.phoneNumber, phoneNumber),
+            eq(botInstances.serverName, botServer)
+          )
+        )
+        .limit(1);
+
+      const updatedBot = updatedBotInstance[0] || bot;
+      const credentialTestFailed = !updatedBot.credentialVerified && updatedBot.invalidReason;
+
+      res.json({
+        success: !credentialTestFailed, // Success if credentials didn't fail validation
+        phoneNumber: `+${phoneNumber}`,
+        botActive,
+        botServer,
+        crossServer: botServer !== currentServer,
+        token,
+        message: credentialTestFailed
+          ? `Credential validation failed: ${updatedBot.invalidReason}`
+          : botActive
+            ? "Bot is active and connected"
+            : "Credentials updated successfully and success message sent to WhatsApp",
+        botId: bot.id,
+        botName: bot.name,
+        lastActivity: bot.lastActivity,
+        connectionUpdated: credentials && !credentialTestFailed ? true : false,
+        tenancyPreserved: true,
+        updateMethod: 'direct_database_access',
+        nextStep: !credentialTestFailed ? 'authenticated' : 'update_credentials',
+        credentialValidationFailed: credentialTestFailed
+      });
+
+    } catch (error) {
+      console.error('Guest session verification error:', error);
+      res.status(500).json({ message: "Failed to verify session" });
+    }
+  });
+
+  // Guest Bot Registration
+  app.post("/api/guest/register-bot", upload.single('credsFile') as any, async (req, res) => {
+    try {
+      console.log('🎯 Guest bot registration request received');
+      console.log('📋 Form data:', {
+        botName: req.body.botName,
+        phoneNumber: req.body.phoneNumber,
+        credentialType: req.body.credentialType,
+        hasSessionId: !!req.body.sessionId,
+        hasCredsFile: !!req.file,
+        features: req.body.features,
+        selectedServer: req.body.selectedServer // CRITICAL: Log selectedServer
+      });
+
+      const { botName, phoneNumber, credentialType, features, selectedServer } = req.body;
+      let { sessionId } = req.body;
+
+      // Validate required fields
+      if (!botName || !phoneNumber) {
+        return res.status(400).json({
+          success: false,
+          message: "Bot name and phone number are required"
+        });
+      }
+
+      // Clean phone number
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+
+      // Validate phone number format
+      if (!/^\d{10,15}$/.test(cleanedPhone)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid phone number format. Please enter a valid phone number with country code."
+        });
+      }
+
+      console.log(`📱 Processing registration for phone: ${cleanedPhone}`);
+      console.log(`🎯 Target server: ${selectedServer || 'current server'}`);
+
+      // Step 1: Check if phone number already exists in God Registry
+      const existingRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      if (existingRegistration) {
+        const hostingServer = existingRegistration.tenancyName;
+        const currentServer = getServerName();
+
+        console.log(`📍 Phone ${cleanedPhone} found in God Registry on server: ${hostingServer}`);
+
+        if (hostingServer === currentServer) {
+          // Phone exists on current server - check for existing bot
+          const existingBot = await storage.getBotByPhoneNumber(cleanedPhone);
+          if (existingBot) {
+            console.log(`🤖 Existing bot found: ${existingBot.name}`);
+            return res.json({
               success: false,
-              message: "Invalid credentials file format. Please upload a valid JSON file."
+              type: 'existing_bot_found',
+              message: `Welcome back! You already have a bot "${existingBot.name}" registered with this phone number.`,
+              botDetails: maskBotDataForGuest(existingBot, true)
             });
           }
         } else {
+          // Phone exists on different server - cannot register duplicate
           return res.status(400).json({
             success: false,
-            message: "Please provide credentials either as base64 session ID or upload a credentials file."
+            message: `This phone number is already registered on ${hostingServer}. Each phone number can only be used once across all servers.`
           });
         }
+      }
 
-        // Step 3: Validate credentials structure and phone number ownership
-        let credentialsPhone = null;
-
-        // Method 1: Check credentials.creds.me.id (most common)
-        if (credentials?.creds?.me?.id) {
-          const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
-          credentialsPhone = phoneMatch ? phoneMatch[1] : null;
+      // Step 2: Parse and validate credentials
+      let credentials = null;
+      if (credentialType === 'base64' && sessionId) {
+        try {
+          credentials = JSON.parse(Buffer.from(sessionId.trim(), 'base64').toString('utf-8'));
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid session ID format. Please ensure you're providing valid base64-encoded credentials."
+          });
         }
-
-        // Method 2: Check credentials.me.id (alternative format)
-        if (!credentialsPhone && credentials?.me?.id) {
-          const phoneMatch = credentials.me.id.match(/^(\d+):/);
-          credentialsPhone = phoneMatch ? phoneMatch[1] : null;
+      } else if (credentialType === 'file' && req.file) {
+        try {
+          credentials = JSON.parse(req.file.buffer.toString('utf-8'));
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid credentials file format. Please upload a valid JSON file."
+          });
         }
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "Please provide credentials either as base64 session ID or upload a credentials file."
+        });
+      }
 
-        // Method 3: Deep search for phone numbers in credentials
-        if (!credentialsPhone) {
-          const findPhoneInObject = (obj: any, depth = 0): string | null => {
-            if (depth > 5 || !obj || typeof obj !== 'object') return null;
+      // Step 3: Validate credentials structure and phone number ownership
+      let credentialsPhone = null;
 
-            for (const [key, value] of Object.entries(obj)) {
-              if (typeof value === 'string') {
-                // Look for patterns like "1234567890:x@s.whatsapp.net"
-                const phoneMatch = value.match(/(\d{10,15}):/);
-                if (phoneMatch) return phoneMatch[1];
+      // Method 1: Check credentials.creds.me.id (most common)
+      if (credentials?.creds?.me?.id) {
+        const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
+        credentialsPhone = phoneMatch ? phoneMatch[1] : null;
+      }
 
-                // Look for standalone phone numbers in phone-related fields
-                if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number')) {
-                  const cleanNumber = value.replace(/\D/g, '');
-                  if (cleanNumber.length >= 10 && cleanNumber.length <= 15) {
-                    return cleanNumber;
-                  }
+      // Method 2: Check credentials.me.id (alternative format)
+      if (!credentialsPhone && credentials?.me?.id) {
+        const phoneMatch = credentials.me.id.match(/^(\d+):/);
+        credentialsPhone = phoneMatch ? phoneMatch[1] : null;
+      }
+
+      // Method 3: Deep search for phone numbers in credentials
+      if (!credentialsPhone) {
+        const findPhoneInObject = (obj: any, depth = 0): string | null => {
+          if (depth > 5 || !obj || typeof obj !== 'object') return null;
+
+          for (const [key, value] of Object.entries(obj)) {
+            if (typeof value === 'string') {
+              // Look for patterns like "1234567890:x@s.whatsapp.net"
+              const phoneMatch = value.match(/(\d{10,15}):/);
+              if (phoneMatch) return phoneMatch[1];
+
+              // Look for standalone phone numbers in phone-related fields
+              if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number')) {
+                const cleanNumber = value.replace(/\D/g, '');
+                if (cleanNumber.length >= 10 && cleanNumber.length <= 15) {
+                  return cleanNumber;
                 }
-              } else if (typeof value === 'object') {
-                const found = findPhoneInObject(value, depth + 1);
-                if (found) return found;
               }
+            } else if (typeof value === 'object') {
+              const found = findPhoneInObject(value, depth + 1);
+              if (found) return found;
             }
-            return null;
-          };
-
-          credentialsPhone = findPhoneInObject(credentials);
-        }
-
-        if (!credentialsPhone || credentialsPhone !== cleanedPhone) {
-          return res.status(400).json({
-            success: false,
-            message: `Credentials phone number mismatch. The session belongs to +${credentialsPhone || 'unknown'} but you provided +${cleanedPhone}.`
-          });
-        }
-
-        console.log(`✅ Credentials validated for phone: ${cleanedPhone}`);
-
-        // Step 4: Check if promotional offer is active
-        const offerActive = await storage.isOfferActive();
-        console.log(`🎁 Promotional offer status: ${offerActive ? 'ACTIVE' : 'inactive'}`);
-
-        // Step 5: Prepare bot data with auto-approval if offer is active
-        const parsedFeatures = features ? JSON.parse(features) : {};
-
-        // Note: serverName will be added dynamically based on target server selection
-        const botData: any = {
-          name: botName,
-          phoneNumber: cleanedPhone,
-          credentials,
-          status: 'loading',
-          approvalStatus: offerActive ? 'approved' : 'pending',
-          autoLike: parsedFeatures.autoLike || false,
-          autoViewStatus: parsedFeatures.autoView || false,
-          autoReact: parsedFeatures.autoReact || false,
-          chatgptEnabled: parsedFeatures.chatGPT || false,
-          presenceMode: parsedFeatures.presenceMode || 'none',
-          autoStart: true,
-          credentialVerified: true,
-          isGuest: true,
-          messagesCount: 0,
-          commandsCount: 0
+          }
+          return null;
         };
 
-        console.log(`📊 Bot data prepared:`, {
-          name: botData.name,
-          phone: botData.phoneNumber,
-          features: {
-            autoLike: botData.autoLike,
-            autoReact: botData.autoReact,
-            autoView: botData.autoViewStatus,
-            chatGPT: botData.chatgptEnabled
-          }
+        credentialsPhone = findPhoneInObject(credentials);
+      }
+
+      if (!credentialsPhone || credentialsPhone !== cleanedPhone) {
+        return res.status(400).json({
+          success: false,
+          message: `Credentials phone number mismatch. The session belongs to +${credentialsPhone || 'unknown'} but you provided +${cleanedPhone}.`
         });
+      }
 
-        const currentServer = getServerName();
+      console.log(`✅ Credentials validated for phone: ${cleanedPhone}`);
 
-        // Step 5: Handle server selection - CRITICAL FIX
-        if (selectedServer && selectedServer !== currentServer) {
-          console.log(`🌍 Cross-server registration requested: ${currentServer} → ${selectedServer}`);
+      // Step 4: Check if promotional offer is active
+      const offerActive = await storage.isOfferActive();
+      console.log(`🎁 Promotional offer status: ${offerActive ? 'ACTIVE' : 'inactive'}`);
 
-          // Verify target server exists and has capacity
-          const targetServerInfo = await storage.getServerByName(selectedServer);
-          if (!targetServerInfo) {
-            return res.status(400).json({
-              success: false,
-              message: `Selected server "${selectedServer}" does not exist.`
-            });
-          }
+      // Step 5: Prepare bot data with auto-approval if offer is active
+      const parsedFeatures = features ? JSON.parse(features) : {};
 
-          // Check target server capacity
-          const targetCapacityCheck = await storage.strictCheckBotCountLimit(selectedServer);
-          if (!targetCapacityCheck.canAdd) {
-            return res.status(400).json({
-              success: false,
-              message: `Selected server "${selectedServer}" is at capacity (${targetCapacityCheck.currentCount}/${targetCapacityCheck.maxCount}). Please choose a different server.`
-            });
-          }
+      // Note: serverName will be added dynamically based on target server selection
+      const botData: any = {
+        name: botName,
+        phoneNumber: cleanedPhone,
+        credentials,
+        status: 'loading',
+        approvalStatus: offerActive ? 'approved' : 'pending',
+        autoLike: parsedFeatures.autoLike || false,
+        autoViewStatus: parsedFeatures.autoView || false,
+        autoReact: parsedFeatures.autoReact || false,
+        chatgptEnabled: parsedFeatures.chatGPT || false,
+        presenceMode: parsedFeatures.presenceMode || 'none',
+        autoStart: true,
+        credentialVerified: true,
+        isGuest: true,
+        messagesCount: 0,
+        commandsCount: 0
+      };
 
-          console.log(`✅ Target server ${selectedServer} has capacity: ${targetCapacityCheck.currentCount}/${targetCapacityCheck.maxCount}`);
+      console.log(`📊 Bot data prepared:`, {
+        name: botData.name,
+        phone: botData.phoneNumber,
+        features: {
+          autoLike: botData.autoLike,
+          autoReact: botData.autoReact,
+          autoView: botData.autoViewStatus,
+          chatGPT: botData.chatgptEnabled
+        }
+      });
 
-          // Perform cross-server registration to selected server
-          const crossServerResult = await storage.createCrossServerRegistration(
-            cleanedPhone,
-            selectedServer,
-            botData
-          );
+      const currentServer = getServerName();
 
-          if (!crossServerResult.success) {
-            return res.status(500).json({
-              success: false,
-              message: crossServerResult.error || "Cross-server registration failed"
-            });
-          }
+      // Step 5: Handle server selection - CRITICAL FIX
+      if (selectedServer && selectedServer !== currentServer) {
+        console.log(`🌍 Cross-server registration requested: ${currentServer} → ${selectedServer}`);
 
-          console.log(`✅ Bot successfully registered on selected server: ${selectedServer}`);
+        // Verify target server exists and has capacity
+        const targetServerInfo = await storage.getServerByName(selectedServer);
+        if (!targetServerInfo) {
+          return res.status(400).json({
+            success: false,
+            message: `Selected server "${selectedServer}" does not exist.`
+          });
+        }
 
-          // Send success messageto the user via WhatsApp
+        // Check target server capacity
+        const targetCapacityCheck = await storage.strictCheckBotCountLimit(selectedServer);
+        if (!targetCapacityCheck.canAdd) {
+          return res.status(400).json({
+            success: false,
+            message: `Selected server "${selectedServer}" is at capacity (${targetCapacityCheck.currentCount}/${targetCapacityCheck.maxCount}). Please choose a different server.`
+          });
+        }
+
+        console.log(`✅ Target server ${selectedServer} has capacity: ${targetCapacityCheck.currentCount}/${targetCapacityCheck.maxCount}`);
+
+        // Perform cross-server registration to selected server
+        const crossServerResult = await storage.createCrossServerRegistration(
+          cleanedPhone,
+          selectedServer,
+          botData
+        );
+
+        if (!crossServerResult.success) {
+          return res.status(500).json({
+            success: false,
+            message: crossServerResult.error || "Cross-server registration failed"
+          });
+        }
+
+        console.log(`✅ Bot successfully registered on selected server: ${selectedServer}`);
+
+        // Send success messageto the user via WhatsApp
         try {
           if (credentials) {
             const validationMessage = offerActive
@@ -5688,7 +4658,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
         serverName: getServerName(),
         botInstanceId: botInstance.id,
         remoteTenancy: req.sourceServer,
-        phoneNumber,
       });
 
       res.json({
