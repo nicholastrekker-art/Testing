@@ -14,11 +14,7 @@ async function startMonitoringOnce() {
   monitoringStarted = true;
 
   try {
-    // Verify database connection before starting monitoring
-    const { storage } = await import('./storage');
-    await storage.initializeCurrentServer();
-    console.log('✅ Database connection verified');
-    
+    console.log('✅ Starting scheduled bot monitoring...');
     await startScheduledBotMonitoring();
   } catch (error) {
     console.error('❌ Failed to start monitoring:', error);
@@ -172,15 +168,15 @@ app.use((req, res, next) => {
   }, () => {
     log(`serving on port ${port}`);
 
-    // Delay monitoring startup by 5 seconds to ensure DB is fully ready
-    console.log('🚀 Scheduled monitoring system will start in 5 seconds...');
+    // Delay monitoring startup by 10 seconds to ensure DB is fully ready
+    console.log('🚀 Scheduled monitoring system will start in 10 seconds...');
     setTimeout(() => {
       startMonitoringOnce().catch(error => {
         console.error('❌ Failed to start monitoring:', error);
         console.error('Stack trace:', error.stack);
         // Don't crash the server - just log the error
       });
-    }, 5000);
+    }, 10000);
   });
 
   // Graceful shutdown handling for containerized environments
