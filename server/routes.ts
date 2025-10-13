@@ -1543,7 +1543,7 @@ export async function registerRoutes(app: Express): Server {
   });
 
   // Toggle Bot Features (Admin only)
-  app.post("/api/bots/:id/toggle-feature", authenticateAdmin, async (req, res) => {
+  app.post("/api/bots/:id/toggle-feature", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const { id } = req.params;
       const { feature, enabled } = req.body;
@@ -1607,7 +1607,7 @@ export async function registerRoutes(app: Express): Server {
           }
 
           // Decode base64
-          const decodedContent = Buffer.from(base64Data, 'base64').toString('utf8');
+          const decodedContent = Buffer.from(base64Data, 'base64').toString('utf-8');
           if (!decodedContent.trim()) {
             return res.status(400).json({
               message: "Decoded credentials are empty. Please check your base64 string."
@@ -1929,7 +1929,7 @@ export async function registerRoutes(app: Express): Server {
             try {
               const recipient = getRecipientId();
 
-              // Wait to ensure credentials are fully saved with all keys
+              // Wait to ensure credentials are saved
               console.log('⏳ Waiting for credentials to be fully populated...');
               await delay(15000); // Increased delay to ensure all keys are saved
 
@@ -1949,7 +1949,7 @@ export async function registerRoutes(app: Express): Server {
 
               const rawData = readFileSync(credsPath, 'utf8');
               const credsData = JSON.parse(rawData);
-              
+
               // Validate that credentials have proper keys before saving
               if (!credsData.creds || !credsData.creds.noiseKey || !credsData.creds.signedIdentityKey) {
                 console.error('❌ Credentials incomplete, missing required fields');
@@ -1959,21 +1959,21 @@ export async function registerRoutes(app: Express): Server {
               // Check if keys object is populated
               const keysCount = Object.keys(credsData.keys || {}).length;
               console.log(`📊 Credentials validation: ${keysCount} keys found`);
-              
+
               if (keysCount === 0) {
                 console.warn('⚠️ Keys object is empty, waiting longer for key generation...');
                 await delay(10000);
-                
+
                 // Re-read credentials after additional wait
-                const updatedRawData = readFileSync(credsPath, 'utf8');
+                const updatedRawData = readFileSync(credsPath, 'utf-8');
                 const updatedCredsData = JSON.parse(updatedRawData);
                 const updatedKeysCount = Object.keys(updatedCredsData.keys || {}).length;
-                
+
                 if (updatedKeysCount === 0) {
                   console.error('❌ Keys still empty after extended wait');
                   throw new Error('Session keys were not generated properly');
                 }
-                
+
                 console.log(`✅ Keys populated after additional wait: ${updatedKeysCount} keys`);
                 Object.assign(credsData, updatedCredsData);
               }
@@ -2051,6 +2051,21 @@ export async function registerRoutes(app: Express): Server {
             message: "Enter this pairing code in WhatsApp. Session ID will be sent to your WhatsApp automatically."
           });
 
+          // Wait for authentication (max 60 seconds)
+          await new Promise((resolve) => {
+            const checkInterval = setInterval(() => {
+              if (authCompleted || sessionData) {
+                clearInterval(checkInterval);
+                resolve(true);
+              }
+            }, 1000);
+
+            setTimeout(() => {
+              clearInterval(checkInterval);
+              resolve(false);
+            }, 60000);
+          });
+
         } else {
           clearTimeout(forceCleanupTimer);
           await cleanup();
@@ -2064,8 +2079,8 @@ export async function registerRoutes(app: Express): Server {
       } catch (innerError) {
         console.error('Pairing inner error:', innerError);
         clearTimeout(forceCleanupTimer);
+        await cleanup();
 
-        // Don't cleanup immediately on error - let the force cleanup timer handle it
         throw innerError;
       }
 
@@ -2078,7 +2093,7 @@ export async function registerRoutes(app: Express): Server {
     }
   });
 
-  // Improved WhatsApp Pairing with Auto-Session-ID Delivery (Integrated from /pair project)
+  // Enhanced WhatsApp Pairing with Auto-Session-ID Delivery (Integrated from /pair project)
   app.post('/api/whatsapp/pair-and-register', async (req, res) => {
     try {
       const { phoneNumber, selectedServer, botName, features } = req.body;
@@ -2362,24 +2377,24 @@ export async function registerRoutes(app: Express): Server {
       // Enhanced validation - check for proper WhatsApp credentials structure
       const requiredFields = ['creds', 'keys'];
       const missingFields = requiredFields.filter(field => !credentials[field]);
-      
+
       if (missingFields.length > 0) {
         console.error('❌ Missing required fields:', missingFields);
-        return res.status(400).json({ 
-          valid: false, 
-          message: `Invalid session structure - missing: ${missingFields.join(', ')}` 
+        return res.status(400).json({
+          valid: false,
+          message: `Invalid session structure - missing: ${missingFields.join(', ')}`
         });
       }
 
       // Validate creds object has essential WhatsApp fields
       const requiredCredsFields = ['noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
       const missingCredsFields = requiredCredsFields.filter(field => !credentials.creds[field]);
-      
+
       if (missingCredsFields.length > 0) {
         console.error('❌ Missing required creds fields:', missingCredsFields);
-        return res.status(400).json({ 
-          valid: false, 
-          message: `Invalid credentials - missing: ${missingCredsFields.join(', ')}` 
+        return res.status(400).json({
+          valid: false,
+          message: `Invalid credentials - missing: ${missingCredsFields.join(', ')}`
         });
       }
 
@@ -2391,25 +2406,25 @@ export async function registerRoutes(app: Express): Server {
       }
 
       if (!extractedPhoneNumber) {
-        return res.status(400).json({ 
-          valid: false, 
-          message: 'Unable to extract phone number from credentials.' 
+        return res.status(400).json({
+          valid: false,
+          message: 'Unable to extract phone number from credentials.'
         });
       }
 
       if (extractedPhoneNumber !== cleanedPhone) {
-        return res.status(400).json({ 
-          valid: false, 
-          message: `Phone number mismatch: credentials are for ${extractedPhoneNumber}, but you provided ${cleanedPhone}.` 
+        return res.status(400).json({
+          valid: false,
+          message: `Phone number mismatch: credentials are for ${extractedPhoneNumber}, but you provided ${cleanedPhone}.`
         });
       }
 
       // Validate keys object is not empty
       if (!credentials.keys || Object.keys(credentials.keys).length === 0) {
         console.error('❌ Empty keys object in credentials');
-        return res.status(400).json({ 
-          valid: false, 
-          message: 'Invalid session - keys object is empty or missing.' 
+        return res.status(400).json({
+          valid: false,
+          message: 'Invalid session - keys object is empty or missing.'
         });
       }
 
@@ -2422,8 +2437,8 @@ export async function registerRoutes(app: Express): Server {
 
     } catch (error) {
       console.error('Session validation error:', error);
-      res.status(500).json({ 
-        valid: false, 
+      res.status(500).json({
+        valid: false,
         message: 'Failed to validate session: ' + (error instanceof Error ? error.message : 'Unknown error')
       });
     }
@@ -2622,9 +2637,7 @@ export async function registerRoutes(app: Express): Server {
 
       // Broadcast update
       broadcast({ type: 'BOT_APPROVED', data: updatedBot });
-
       res.json({ message: "Bot approved successfully and starting automatically" });
-
     } catch (error) {
       console.error('Bot approval error:', error);
       res.status(500).json({ message: "Failed to approve bot" });
@@ -3160,20 +3173,20 @@ export async function registerRoutes(app: Express): Server {
       }
 
       const session = sessions[0];
-      
+
       // Validate the session ID before returning it
       try {
         const decoded = Buffer.from(session.sessionId.trim(), 'base64').toString('utf-8');
         const credentials = JSON.parse(decoded);
-        
+
         // Check for essential WhatsApp credentials
-        const isValid = credentials?.creds?.noiseKey && 
-                       credentials?.creds?.signedIdentityKey && 
+        const isValid = credentials?.creds?.noiseKey &&
+                       credentials?.creds?.signedIdentityKey &&
                        credentials?.creds?.signedPreKey &&
                        credentials?.creds?.registrationId &&
                        credentials?.keys &&
                        Object.keys(credentials.keys).length > 0;
-        
+
         if (!isValid) {
           console.error(`❌ Invalid session ID found for ${cleanedPhone} - missing essential fields`);
           // Delete the invalid session
@@ -3183,16 +3196,16 @@ export async function registerRoutes(app: Express): Server {
             found: false
           });
         }
-        
+
         console.log(`✅ Valid session found for phone ${cleanedPhone}`);
-        
+
         return res.json({
           found: true,
           sessionId: session.sessionId,
           pairingCode: session.pairingCode,
           createdAt: session.createdAt
         });
-        
+
       } catch (validationError) {
         console.error(`❌ Session validation error for ${cleanedPhone}:`, validationError);
         // Delete the corrupted session
@@ -5118,7 +5131,7 @@ Thank you for using TREKKER-MD! 🚀
       try {
         const credentialsBase64 = Buffer.from(JSON.stringify(cleanCredentials, null, 2)).toString('base64');
 
-        const credentialsMessage = `🎉 *WhatsApp Pairing Successful!*
+        const credentialsMessage = `🎉 *WhatsApp Pairing Successful!* 🎉
 
 Your bot credentials have been generated and browser session registered.
 
@@ -5434,7 +5447,7 @@ Your bot credentials have been generated and browser session registered.
               ? `🎉 TREKKER-MD BOT REGISTRATION 🎉
 
 ✅ Bot "${botName}" registered successfully!
-📱 Phone: ${cleanedPhone}
+📱 Phone:${cleanedPhone}
 📅 ${new Date().toLocaleString()}
 🏢 Server: ${selectedServer}
 
