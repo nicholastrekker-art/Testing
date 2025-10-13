@@ -2286,6 +2286,56 @@ export async function registerRoutes(app: Express): Server {
     }
   });
 
+  // Placeholder for validate-session endpoint, required for session polling validation
+  app.post('/api/whatsapp/validate-session', async (req, res) => {
+    try {
+      const { sessionId, phoneNumber } = req.body;
+
+      if (!sessionId || !phoneNumber) {
+        return res.status(400).json({ valid: false, message: 'Session ID and phone number are required.' });
+      }
+
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+
+      // Attempt to parse the session ID
+      let credentials = null;
+      try {
+        credentials = JSON.parse(Buffer.from(sessionId.trim(), 'base64').toString('utf-8'));
+      } catch (error) {
+        return res.status(400).json({ valid: false, message: 'Invalid session ID format.' });
+      }
+
+      // Basic validation of credentials structure and phone number match
+      let extractedPhoneNumber = null;
+      if (credentials?.creds?.me?.id) {
+        const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
+        extractedPhoneNumber = phoneMatch ? phoneMatch[1] : null;
+      }
+
+      if (!extractedPhoneNumber || extractedPhoneNumber !== cleanedPhone) {
+        return res.status(400).json({ valid: false, message: 'Phone number mismatch in session ID.' });
+      }
+
+      // For now, assume valid if basic checks pass. In a real scenario, this would involve
+      // attempting a connection or a handshake to truly validate.
+      // For this implementation, we'll simulate validation by checking for essential keys.
+      if (credentials?.creds?.noiseKey && credentials?.creds?.signedIdentityKey) {
+        console.log(`✅ Simulated validation successful for session ID of ${cleanedPhone}`);
+        res.json({
+          valid: true,
+          message: 'Session validated successfully.',
+          jid: credentials.creds.me.id || `${cleanedPhone}@s.whatsapp.net` // Provide JID if available
+        });
+      } else {
+        res.json({ valid: false, message: 'Incomplete credentials in session ID.' });
+      }
+
+    } catch (error) {
+      console.error('Session validation error:', error);
+      res.status(500).json({ valid: false, message: 'Failed to validate session.' });
+    }
+  });
+
   app.patch("/api/bot-instances/:id", async (req, res) => {
     try {
       const bot = await storage.updateBotInstance(req.params.id, req.body);
@@ -2993,7 +3043,7 @@ export async function registerRoutes(app: Express): Server {
     try {
       const { phoneNumber } = req.params;
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
+
       console.log(`🔍 Looking for session ID for phone: ${cleanedPhone}`);
 
       // Get the most recent unused session for this phone number
@@ -4858,7 +4908,7 @@ Thank you for using TREKKER-MD! 🚀
 
       const authResult: any = await authPromise;
 
-      // Additional wait to ensure browser registration completes
+      // Additional wait to ensure registration completes
       console.log(`⏳ Finalizing browser registration...`);
       await new Promise(resolve => setTimeout(resolve, 3000));
 
