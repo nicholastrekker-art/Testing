@@ -4,3 +4,16 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
+
+[workflows]
+  [[workflows.workflow]]
+    name = "Run Application"
+    mode = "sequential"
+    author = "replit"
+
+    [[workflows.workflow.tasks]]
+      task = "shell.exec"
+      args = "yarn start"
+
+    [workflows.workflow.metadata]
+      agentRequireRestartOnSave = false
