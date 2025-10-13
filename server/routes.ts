@@ -4153,52 +4153,25 @@ Thank you for choosing TREKKER-MD! 🚀`;
     }
   });
 
-  // Proxy route for pairing server
-  app.get('/trekker-pair', async (req, res) => {
-    res.redirect('/pair');
-  });
-
-  app.get('/pair', async (req, res) => {
+  // Direct pairing routes (no proxy middleware to avoid dashboard conflicts)
+  app.get('/pairing/pair', async (req, res) => {
     res.sendFile(path.join(__dirname, '../trekkerpair/trekkerpair/public/pair.html'));
   });
 
-  app.get('/code', async (req, res) => {
+  app.get('/pairing/code', async (req, res) => {
     try {
       const number = req.query.number;
       const pairingResponse = await fetch(`http://localhost:3001/code?number=${number}`);
       const data = await pairingResponse.json();
       res.json(data);
     } catch (error) {
-      console.error('Pairing proxy error:', error);
+      console.error('Pairing code error:', error);
       res.status(500).json({
-        error: 'Failed to connect to pairing service',
+        error: 'Failed to generate pairing code',
         message: 'Please ensure the pairing server is running on port 3001'
       });
     }
   });
-
-  // Proxy requests to pair server - handle both /pair and /pairing routes
-  app.use('/pair', createProxyMiddleware({
-    target: 'http://localhost:3001',
-    changeOrigin: true,
-    pathRewrite: {
-      '^/pair': ''
-    },
-    onProxyReq: (proxyReq, req, res) => {
-      console.log(`Proxying /pair request to pairing server: ${req.url}`);
-    }
-  }));
-
-  app.use('/pairing', createProxyMiddleware({
-    target: 'http://localhost:3001',
-    changeOrigin: true,
-    pathRewrite: {
-      '^/pairing': ''
-    },
-    onProxyReq: (proxyReq, req, res) => {
-      console.log(`Proxying /pairing request to pairing server: ${req.url}`);
-    }
-  }));
 
   // Optional: session debugging endpoint
   app.get('/api/sessions', (req, res) => {

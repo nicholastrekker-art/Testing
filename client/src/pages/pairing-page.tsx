@@ -85,7 +85,7 @@ export default function PairingPage() {
           data-testid="iframe-pairing"
           onLoad={handleIframeLoad}
           onError={handleIframeError}
-          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-same-origin"
         />
       </div>
     </div>
