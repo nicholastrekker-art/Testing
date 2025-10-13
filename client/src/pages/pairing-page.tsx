@@ -79,7 +79,7 @@ export default function PairingPage() {
       {/* Iframe container */}
       <div className="flex-1 relative">
         <iframe
-          src="/pairing/pair"
+          src="/pair/pair.html"
           className="absolute inset-0 w-full h-full border-0"
           title="TREKKER-MD Pairing Interface"
           data-testid="iframe-pairing"

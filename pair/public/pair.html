@@ -569,7 +569,7 @@
             actionButtons.style.display = 'none';
 
             try {
-                const response = await axios.get(`/code?number=${fullNumber}`);
+                const response = await axios.get(`/api/pairing/code?number=${fullNumber}`);
                 const data = response.data;
 
                 console.log('Pairing response:', data);

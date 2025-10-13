@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeDatabase } from "./db";
@@ -136,40 +137,8 @@ app.use((req, res, next) => {
 
   const server = await registerRoutes(app);
 
-  // Proxy for pairing server - forward all /pairing/* requests to port 3001
-  app.use('/pairing', async (req, res) => {
-    try {
-      const pairPort = process.env.PAIR_PORT || '3001';
-      const targetUrl = `http://localhost:${pairPort}${req.path === '/' ? '' : req.path}`;
-      
-      const response = await fetch(targetUrl, {
-        method: req.method,
-        headers: req.headers as HeadersInit,
-        body: req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(req.body) : undefined,
-      });
-
-      res.status(response.status);
-      
-      response.headers.forEach((value, key) => {
-        res.setHeader(key, value);
-      });
-
-      const contentType = response.headers.get('content-type');
-      if (contentType?.includes('text/html') || contentType?.includes('text/plain')) {
-        const text = await response.text();
-        res.send(text);
-      } else if (contentType?.includes('application/json')) {
-        const json = await response.json();
-        res.json(json);
-      } else {
-        const buffer = await response.arrayBuffer();
-        res.send(Buffer.from(buffer));
-      }
-    } catch (error) {
-      console.error('Pairing proxy error:', error);
-      res.status(500).send('Pairing server unavailable');
-    }
-  });
+  // Serve pairing interface files directly from pair/public
+  app.use('/pair', express.static(path.join(__dirname, '../pair/public')));
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
