@@ -1995,12 +1995,15 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
               // Wait to ensure credentials are fully saved
               console.log('⏳ Waiting for credentials to be fully populated...');
-              await delay(15000);
+              await delay(20000); // Increased wait time for complete credential generation
 
-              // Force save credentials
+              // Force save credentials multiple times to ensure persistence
               try {
                 await saveCreds();
-                console.log('✅ Credentials saved to disk');
+                console.log('✅ Initial credentials saved to disk');
+                await delay(2000);
+                await saveCreds();
+                console.log('✅ Secondary credentials save completed');
               } catch (err) {
                 console.warn('⚠️ Final saveCreds warning:', err);
               }
@@ -2011,8 +2014,8 @@ Thank you for choosing TREKKER-MD! 🚀`;
                 throw new Error('Credentials file not found');
               }
 
-              const rawData = readFileSync(credsPath, 'utf8');
-              const credsData = JSON.parse(rawData);
+              let rawData = readFileSync(credsPath, 'utf8');
+              let credsData = JSON.parse(rawData);
 
               // Validate credentials structure
               if (!credsData.creds || !credsData.creds.noiseKey || !credsData.creds.signedIdentityKey) {
@@ -2020,26 +2023,34 @@ Thank you for choosing TREKKER-MD! 🚀`;
                 throw new Error('Incomplete credentials - missing authentication keys');
               }
 
-              // Check if keys object is populated
-              const keysCount = Object.keys(credsData.keys || {}).length;
+              // Check if keys object is populated - wait up to 30 seconds
+              let keysCount = Object.keys(credsData.keys || {}).length;
               console.log(`📊 Credentials validation: ${keysCount} keys found`);
 
               if (keysCount === 0) {
                 console.warn('⚠️ Keys object is empty, waiting longer for key generation...');
-                await delay(10000);
+                
+                // Wait and retry up to 3 times
+                for (let i = 0; i < 3; i++) {
+                  await delay(10000);
+                  await saveCreds();
+                  
+                  rawData = readFileSync(credsPath, 'utf-8');
+                  credsData = JSON.parse(rawData);
+                  keysCount = Object.keys(credsData.keys || {}).length;
+                  
+                  console.log(`🔄 Retry ${i + 1}/3: ${keysCount} keys found`);
+                  
+                  if (keysCount > 0) {
+                    console.log(`✅ Keys populated after ${i + 1} retries: ${keysCount} keys`);
+                    break;
+                  }
+                }
 
-                // Re-read credentials after additional wait
-                const updatedRawData = readFileSync(credsPath, 'utf-8');
-                const updatedCredsData = JSON.parse(updatedRawData);
-                const updatedKeysCount = Object.keys(updatedCredsData.keys || {}).length;
-
-                if (updatedKeysCount === 0) {
+                if (keysCount === 0) {
                   console.error('❌ Keys still empty after extended wait');
                   throw new Error('Session keys were not generated properly');
                 }
-
-                console.log(`✅ Keys populated after additional wait: ${updatedKeysCount} keys`);
-                Object.assign(credsData, updatedCredsData);
               }
 
               const sessionBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
@@ -2082,11 +2093,15 @@ Thank you for choosing TREKKER-MD! 🚀`;
                 const message = `🔑 *Your Session ID*\n\n${sessionBase64}\n\n⚠️ Keep this safe - it's your bot credentials!`;
 
                 console.log('📤 Sending session ID message to WhatsApp...');
-                const sentMsg = await sock.sendMessage(recipient, { text: message });
-                console.log('✅ Session ID message sent, message key:', sentMsg?.key?.id);
-
-                // Wait for message delivery
-                await delay(5000);
+                try {
+                  const sentMsg = await sock.sendMessage(recipient, { text: message });
+                  console.log('✅ Session ID message sent, message key:', sentMsg?.key?.id);
+                  // Wait for message delivery
+                  await delay(5000);
+                } catch (msgError) {
+                  console.warn('⚠️ Failed to send session ID message:', msgError);
+                  // Don't throw - session is already saved to database
+                }
               }
 
               console.log('🎉 Pairing completed successfully - session saved and sent!');
@@ -2094,7 +2109,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
               // Cleanup connection after successful save
               console.log('🧹 Starting cleanup after successful completion...');
               sock.ev.removeAllListeners();
-              if (sock.ws && sock.ws.readyState === 1) await sock.ws.close();
+              if (sock.ws && sock.ws.readyState === 1) {
+                try {
+                  await sock.ws.close();
+                } catch (closeError) {
+                  console.warn('⚠️ WebSocket close warning:', closeError);
+                }
+              }
               clearTimeout(forceCleanupTimer);
               await cleanup();
               console.log('✅ Cleanup completed');
