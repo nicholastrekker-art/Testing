@@ -16,7 +16,6 @@ import AddBotModal from "@/components/add-bot-modal";
 import CommandManagement from "@/components/command-management";
 import GuestBotRegistration from "@/components/guest-bot-registration";
 import AdminBotManagement from "@/components/admin-bot-management";
-import WhatsAppPairing from "@/components/whatsapp-pairing";
 
 // Type definitions
 interface ServerInfo {
@@ -62,7 +61,6 @@ export default function Dashboard() {
   const [showGuestRegistration, setShowGuestRegistration] = useState(false);
   const [showAdminBotManagement, setShowAdminBotManagement] = useState(false);
   const [showGodRegistry, setShowGodRegistry] = useState(false);
-  const [showWhatsAppPairing, setShowWhatsAppPairing] = useState(false);
   const [selectedBotForFeatures, setSelectedBotForFeatures] = useState<BotInstance | null>(null);
   const [editingRegistration, setEditingRegistration] = useState<GodRegistryEntry | null>(null);
 
@@ -333,51 +331,20 @@ export default function Dashboard() {
             </div>
 
             {/* Steps Grid */}
-            <div className="grid gap-6 md:grid-cols-3">
-              {/* Step 1: Generate Session ID */}
-              <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-blue-500/30 hover:border-blue-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/30 hover:-translate-y-1">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="relative p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/50 group-hover:scale-110 transition-transform">
-                      <span className="text-2xl font-bold text-white">1</span>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-white">Generate Session ID</h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-                        <span className="text-xs text-blue-400 font-medium">START HERE</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-gray-300 mb-5 leading-relaxed">
-                    Get a pairing code to link your WhatsApp. Enter the code in <span className="font-semibold text-blue-400">WhatsApp Settings → Linked Devices</span> to receive your session ID automatically
-                  </p>
-                  <Button
-                    onClick={() => setShowWhatsAppPairing(true)}
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all"
-                    data-testid="button-open-pairing"
-                  >
-                    <i className="fas fa-qrcode mr-2"></i>
-                    Get Pairing Code
-                    <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                  </Button>
-                </div>
-              </div>
-
-              {/* Step 2: Register Your Bot */}
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Step 1: Register Your Bot */}
               <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-purple-500/30 hover:border-purple-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/30 hover:-translate-y-1">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative p-6">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/50 group-hover:scale-110 transition-transform">
-                      <span className="text-2xl font-bold text-white">2</span>
+                      <span className="text-2xl font-bold text-white">1</span>
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-white">Register Your Bot</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
-                        <span className="text-xs text-purple-400 font-medium">REQUIRED</span>
+                        <span className="text-xs text-purple-400 font-medium">START HERE</span>
                       </div>
                     </div>
                   </div>
@@ -395,13 +362,13 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Step 3: Manage Your Bot */}
+              {/* Step 2: Manage Your Bot */}
               <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-emerald-500/30 hover:border-emerald-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/30 hover:-translate-y-1">
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative p-6">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/50 group-hover:scale-110 transition-transform">
-                      <span className="text-2xl font-bold text-white">3</span>
+                      <span className="text-2xl font-bold text-white">2</span>
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-white">Manage Your Bot</h3>
@@ -657,7 +624,6 @@ export default function Dashboard() {
       <AddBotModal open={showAddBotModal} onClose={() => setShowAddBotModal(false)} />
       <CommandManagement open={showCommandManagement} onClose={() => setShowCommandManagement(false)} />
       <GuestBotRegistration open={showGuestRegistration} onClose={() => setShowGuestRegistration(false)} />
-      <WhatsAppPairing open={showWhatsAppPairing} onClose={() => setShowWhatsAppPairing(false)} />
       {isAdmin && <AdminBotManagement open={showAdminBotManagement} onClose={() => setShowAdminBotManagement(false)} />}
 
       {/* Feature Management Dialog */}
