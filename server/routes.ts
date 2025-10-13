@@ -1880,7 +1880,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
     }
   });
 
-  // Generate WhatsApp Pairing Code with Auto Session ID Delivery (integrated pair system)
+  // Generate WhatsApp Pairing Code with Auto Session ID Delivery (browser-based registration)
   app.post('/api/whatsapp/pairing-code', async (req, res) => {
     try {
       const { phoneNumber, selectedServer } = req.body;
@@ -1921,8 +1921,8 @@ Thank you for choosing TREKKER-MD! 🚀`;
       const { join } = await import('path');
       const { existsSync, mkdirSync, readFileSync, rmSync } = await import('fs');
 
-      // Create unique session directory
-      const sessionId = `pairing_${cleanedPhone}_${Date.now()}`;
+      // Create unique session directory using timestamp
+      const sessionId = crypto.randomBytes(11).toString('hex');
       const authDir = join(process.cwd(), 'temp_auth', selectedServer, sessionId);
 
       // Cleanup function
@@ -1939,7 +1939,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
       // Force cleanup after 4 minutes
       const forceCleanupTimer = setTimeout(async () => {
-        console.log('⏰ 4-minute timeout - forcing cleanup');
+        console.log(`⏰ 4-minute timeout reached for session: ${sessionId} - Forcing complete cleanup`);
         await cleanup();
       }, 4 * 60 * 1000);
 
@@ -1986,13 +1986,20 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
           if (connection === 'open' && !authCompleted) {
             authCompleted = true;
-            console.log('✅ WhatsApp connection opened!');
+            console.log(`✅ Connection opened for pairing session: ${sessionId}`);
 
             try {
               const recipient = getRecipientId();
 
+              // Send initial confirmation
+              if (recipient) {
+                await sock.sendMessage(recipient, { 
+                  text: '🎉 WhatsApp connected successfully! Starting session generation...' 
+                });
+              }
+
               // Wait for credentials to be fully saved
-              console.log('⏳ Waiting 5 seconds for credential generation...');
+              console.log('⏳ Waiting 5 seconds to ensure credentials are fully saved...');
               await delay(5000);
 
               // Force save credentials
@@ -2043,9 +2050,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
                 throw dbError;
               }
 
-              // Send session ID to WhatsApp
+              // Send session ID and welcome message to WhatsApp
               if (recipient) {
-                const sessionMessage = `🔑 *Your Session ID*\n\n${sessionBase64}\n\n⚠️ Keep this safe - it's your bot credentials!`;
+                const sessionMessage = sessionBase64;
                 
                 const welcomeMessage = `*✅ SESSION ID GENERATED ✅*
 ______________________________
@@ -2081,7 +2088,7 @@ Powered by TREKKER-MD - Ultra Fast Bot`;
 
               console.log('🎉 Pairing completed successfully!');
 
-              // Cleanup
+              // Cleanup - remove event listeners and close connection
               console.log('🧹 Starting cleanup...');
               sock.ev.removeAllListeners();
               if (sock.ws && sock.ws.readyState === 1) {
@@ -2089,10 +2096,23 @@ Powered by TREKKER-MD - Ultra Fast Bot`;
               }
               clearTimeout(forceCleanupTimer);
               await cleanup();
-              console.log('✅ Cleanup completed');
+              console.log('✅ Cleanup completed - system reset to default state');
 
             } catch (err) {
               console.error('❌ Post-auth error:', err);
+              
+              // Try to send error message to user
+              try {
+                const recipient = getRecipientId();
+                if (recipient) {
+                  await sock.sendMessage(recipient, { 
+                    text: '❌ Credential encoding failed. Please try again.' 
+                  });
+                }
+              } catch (msgError) {
+                console.error('Failed to send error message:', msgError);
+              }
+              
               clearTimeout(forceCleanupTimer);
               await cleanup();
               throw err;
