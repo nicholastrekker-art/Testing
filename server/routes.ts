@@ -4664,57 +4664,61 @@ Thank you for using TREKKER-MD! 🚀
     const authPath = path.join(__dirname, 'temp', id, 'creds.json');
 
     try {
-      console.log(`=== DATABASE SESSION SAVE FUNCTION START ===`);
-      console.log(`Temp ID: ${id}`);
-      console.log(`Auth path: ${authPath}`);
-      console.log(`Phone: ${phoneNumber}`);
-      console.log(`Pairing Code: ${pairingCode}`);
+      console.log(`💾 Saving session to database for ${phoneNumber}...`);
 
       // Verify creds file exists
       if (!fs.existsSync(authPath)) {
-        console.error(`❌ File does not exist at: ${authPath}`);
+        console.error(`❌ Credentials file not found at: ${authPath}`);
         throw new Error(`Credentials file not found at: ${authPath}`);
       }
 
-      console.log(`✅ File exists at: ${authPath}`);
-
       // Parse credentials data
       const rawData = fs.readFileSync(authPath, 'utf8');
-      console.log(`Raw file content length: ${rawData.length}`);
       const credsData = JSON.parse(rawData);
-      console.log(`✅ JSON parsed successfully`);
 
       // Validate credentials data
       if (!credsData || typeof credsData !== 'object') {
-        console.error(`❌ Invalid creds data type: ${typeof credsData}`);
+        console.error(`❌ Invalid credentials data format`);
         throw new Error('Invalid credentials data format');
       }
 
-      console.log(`✅ Credentials data validated`);
+      // Check for essential WhatsApp credential fields
+      if (!credsData.creds || !credsData.creds.noiseKey || !credsData.creds.signedIdentityKey) {
+        console.error(`❌ Missing essential credential fields`);
+        throw new Error('Missing essential credential fields in creds.json');
+      }
+
+      console.log(`✅ Credentials validated successfully`);
 
       // Convert entire creds.json to Base64
       const credsBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
-      console.log(`✅ Generated Base64 session ID: ${credsBase64.substring(0, 50)}...`);
+      console.log(`✅ Generated Base64 session ID (${credsBase64.length} chars)`);
+
+      // Clean phone number
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+
+      // Delete any existing session for this phone first
+      await db.delete(guestSessions).where(eq(guestSessions.phoneNumber, cleanedPhone));
 
       // Save to database permanently
       const serverName = getServerName();
       await db.insert(guestSessions).values({
-        phoneNumber: phoneNumber.replace(/[\s\-\(\)\+]/g, ''),
+        phoneNumber: cleanedPhone,
         sessionId: credsBase64,
         pairingCode: pairingCode,
         serverName: serverName,
         isUsed: false
       });
 
-      console.log(`✅ Session saved to database permanently for phone: ${phoneNumber}`);
+      console.log(`✅ Session saved to database for phone: ${cleanedPhone}`);
 
       return credsBase64;
 
     } catch (error: any) {
-      console.error('Error in saveSessionLocally:', {
+      console.error(`❌ Error saving session:`, {
         tempId: id,
-        error: error.message,
-        stack: error.stack
+        phoneNumber,
+        error: error.message
       });
       return null;
     }
@@ -4793,6 +4797,18 @@ Thank you for using TREKKER-MD! 🚀
 
     if (!num) {
       return res.status(400).send({ error: "Phone number is required" });
+    }
+
+    // Clean phone number
+    const cleanedPhone = num.replace(/[\s\-\(\)\+]/g, '');
+
+    // CLEANUP: Delete any existing sessions for this phone number from database
+    try {
+      console.log(`🧹 Cleaning up previous sessions for ${cleanedPhone}...`);
+      await db.delete(guestSessions).where(eq(guestSessions.phoneNumber, cleanedPhone));
+      console.log(`✅ Previous sessions cleaned for ${cleanedPhone}`);
+    } catch (cleanupError) {
+      console.error(`❌ Error cleaning previous sessions:`, cleanupError);
     }
 
     async function GIFTED_PAIR_CODE() {
@@ -4877,12 +4893,14 @@ Thank you for using TREKKER-MD! 🚀
                 console.warn('saveCreds() failed:', err.message);
               }
 
-              const sessionId = await saveSessionLocally(id, Gifted, num, pairingCode);
+              const sessionId = await saveSessionLocally(id, Gifted, cleanedPhone, pairingCode);
               if (!sessionId) {
                 if (recipient)
                   await Gifted.sendMessage(recipient, { text: '❌ Failed to generate session ID. Try again.' });
                 throw new Error('Session generation failed');
               }
+
+              console.log(`✅ Session ID generated and saved to database for ${cleanedPhone}`);
 
               // Send only the session ID
               const recipientId = getRecipientId();
