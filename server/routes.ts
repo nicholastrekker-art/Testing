@@ -1840,6 +1840,11 @@ export async function registerRoutes(app: Express): Server {
 
       console.log(`📱 Starting auto-pairing for: ${cleanedPhone} on server: ${selectedServer}`);
 
+      // IMPORTANT: Clean up any existing sessions for this phone number first
+      console.log(`🧹 Cleaning up previous sessions for ${cleanedPhone}...`);
+      await db.delete(guestSessions).where(eq(guestSessions.phoneNumber, cleanedPhone));
+      console.log(`✅ Previous sessions cleaned for ${cleanedPhone}`);
+
       const {
         default: makeWASocket,
         useMultiFileAuthState,
@@ -2286,7 +2291,7 @@ export async function registerRoutes(app: Express): Server {
     }
   });
 
-  // Placeholder for validate-session endpoint, required for session polling validation
+  // Enhanced session validation endpoint with proper WhatsApp credentials validation
   app.post('/api/whatsapp/validate-session', async (req, res) => {
     try {
       const { sessionId, phoneNumber } = req.body;
@@ -2300,39 +2305,80 @@ export async function registerRoutes(app: Express): Server {
       // Attempt to parse the session ID
       let credentials = null;
       try {
-        credentials = JSON.parse(Buffer.from(sessionId.trim(), 'base64').toString('utf-8'));
+        const decoded = Buffer.from(sessionId.trim(), 'base64').toString('utf-8');
+        credentials = JSON.parse(decoded);
       } catch (error) {
-        return res.status(400).json({ valid: false, message: 'Invalid session ID format.' });
+        console.error('❌ Session ID decode/parse error:', error);
+        return res.status(400).json({ valid: false, message: 'Invalid session ID format - unable to decode.' });
       }
 
-      // Basic validation of credentials structure and phone number match
+      // Enhanced validation - check for proper WhatsApp credentials structure
+      const requiredFields = ['creds', 'keys'];
+      const missingFields = requiredFields.filter(field => !credentials[field]);
+      
+      if (missingFields.length > 0) {
+        console.error('❌ Missing required fields:', missingFields);
+        return res.status(400).json({ 
+          valid: false, 
+          message: `Invalid session structure - missing: ${missingFields.join(', ')}` 
+        });
+      }
+
+      // Validate creds object has essential WhatsApp fields
+      const requiredCredsFields = ['noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
+      const missingCredsFields = requiredCredsFields.filter(field => !credentials.creds[field]);
+      
+      if (missingCredsFields.length > 0) {
+        console.error('❌ Missing required creds fields:', missingCredsFields);
+        return res.status(400).json({ 
+          valid: false, 
+          message: `Invalid credentials - missing: ${missingCredsFields.join(', ')}` 
+        });
+      }
+
+      // Extract and validate phone number from credentials
       let extractedPhoneNumber = null;
       if (credentials?.creds?.me?.id) {
         const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
         extractedPhoneNumber = phoneMatch ? phoneMatch[1] : null;
       }
 
-      if (!extractedPhoneNumber || extractedPhoneNumber !== cleanedPhone) {
-        return res.status(400).json({ valid: false, message: 'Phone number mismatch in session ID.' });
+      if (!extractedPhoneNumber) {
+        return res.status(400).json({ 
+          valid: false, 
+          message: 'Unable to extract phone number from credentials.' 
+        });
       }
 
-      // For now, assume valid if basic checks pass. In a real scenario, this would involve
-      // attempting a connection or a handshake to truly validate.
-      // For this implementation, we'll simulate validation by checking for essential keys.
-      if (credentials?.creds?.noiseKey && credentials?.creds?.signedIdentityKey) {
-        console.log(`✅ Simulated validation successful for session ID of ${cleanedPhone}`);
-        res.json({
-          valid: true,
-          message: 'Session validated successfully.',
-          jid: credentials.creds.me.id || `${cleanedPhone}@s.whatsapp.net` // Provide JID if available
+      if (extractedPhoneNumber !== cleanedPhone) {
+        return res.status(400).json({ 
+          valid: false, 
+          message: `Phone number mismatch: credentials are for ${extractedPhoneNumber}, but you provided ${cleanedPhone}.` 
         });
-      } else {
-        res.json({ valid: false, message: 'Incomplete credentials in session ID.' });
       }
+
+      // Validate keys object is not empty
+      if (!credentials.keys || Object.keys(credentials.keys).length === 0) {
+        console.error('❌ Empty keys object in credentials');
+        return res.status(400).json({ 
+          valid: false, 
+          message: 'Invalid session - keys object is empty or missing.' 
+        });
+      }
+
+      console.log(`✅ Session validation successful for ${cleanedPhone}`);
+      res.json({
+        valid: true,
+        message: 'Session validated successfully.',
+        jid: credentials.creds.me.id || `${cleanedPhone}@s.whatsapp.net`
+      });
 
     } catch (error) {
       console.error('Session validation error:', error);
-      res.status(500).json({ valid: false, message: 'Failed to validate session.' });
+      res.status(500).json({ 
+        valid: false, 
+        message: 'Failed to validate session: ' + (error instanceof Error ? error.message : 'Unknown error')
+      });
     }
   });
 
@@ -3038,7 +3084,7 @@ export async function registerRoutes(app: Express): Server {
     }
   });
 
-  // Get session ID by phone number
+  // Get session ID by phone number with validation
   app.get("/api/guest/session/:phoneNumber", async (req, res) => {
     try {
       const { phoneNumber } = req.params;
@@ -3067,14 +3113,48 @@ export async function registerRoutes(app: Express): Server {
       }
 
       const session = sessions[0];
-      console.log(`✅ Session found for phone ${cleanedPhone}`);
-
-      return res.json({
-        found: true,
-        sessionId: session.sessionId,
-        pairingCode: session.pairingCode,
-        createdAt: session.createdAt
-      });
+      
+      // Validate the session ID before returning it
+      try {
+        const decoded = Buffer.from(session.sessionId.trim(), 'base64').toString('utf-8');
+        const credentials = JSON.parse(decoded);
+        
+        // Check for essential WhatsApp credentials
+        const isValid = credentials?.creds?.noiseKey && 
+                       credentials?.creds?.signedIdentityKey && 
+                       credentials?.creds?.signedPreKey &&
+                       credentials?.creds?.registrationId &&
+                       credentials?.keys &&
+                       Object.keys(credentials.keys).length > 0;
+        
+        if (!isValid) {
+          console.error(`❌ Invalid session ID found for ${cleanedPhone} - missing essential fields`);
+          // Delete the invalid session
+          await db.delete(guestSessions).where(eq(guestSessions.id, session.id));
+          return res.status(404).json({
+            message: "Session ID is invalid - please generate a new pairing code",
+            found: false
+          });
+        }
+        
+        console.log(`✅ Valid session found for phone ${cleanedPhone}`);
+        
+        return res.json({
+          found: true,
+          sessionId: session.sessionId,
+          pairingCode: session.pairingCode,
+          createdAt: session.createdAt
+        });
+        
+      } catch (validationError) {
+        console.error(`❌ Session validation error for ${cleanedPhone}:`, validationError);
+        // Delete the corrupted session
+        await db.delete(guestSessions).where(eq(guestSessions.id, session.id));
+        return res.status(404).json({
+          message: "Session ID is corrupted - please generate a new pairing code",
+          found: false
+        });
+      }
 
     } catch (error) {
       console.error("❌ Error retrieving session:", error);

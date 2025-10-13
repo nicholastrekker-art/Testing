@@ -149,7 +149,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     }
   });
 
-  // Poll for session ID after pairing code is entered - continuous polling
+  // Poll for session ID after pairing code is entered - continuous polling with validation
   const startSessionPolling = (phone: string) => {
     console.log('Starting continuous session polling for:', phone);
     
@@ -162,20 +162,65 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
           console.log('Session poll response:', data);
           
           if (data.found && data.sessionId) {
-            // Session found!
-            console.log('Session ID detected!', data.sessionId.substring(0, 20) + '...');
+            // Validate session ID before accepting it
+            try {
+              const validationResponse = await fetch('/api/whatsapp/validate-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  sessionId: data.sessionId,
+                  phoneNumber: phone.replace(/[\s\-\(\)\+]/g, '')
+                })
+              });
+
+              const validationData = await validationResponse.json();
+              
+              if (validationData.valid) {
+                // Valid session - proceed
+                console.log('✅ Session validated successfully!');
+                clearInterval(pollInterval);
+                setPollingInterval(null);
+                setIsWaitingForAuth(false);
+                setCredentials({
+                  jid: validationData.jid || (phone + '@s.whatsapp.net'),
+                  base64: data.sessionId
+                });
+                
+                toast({
+                  title: "Session Retrieved & Validated!",
+                  description: "Your WhatsApp session credentials are valid and ready to use.",
+                });
+              } else {
+                // Invalid session - show error and continue polling
+                console.error('❌ Session validation failed:', validationData.message);
+                toast({
+                  title: "Invalid Session Detected",
+                  description: validationData.message || "Session ID is invalid. Waiting for valid session...",
+                  variant: "destructive"
+                });
+              }
+            } catch (validationError) {
+              console.error('Session validation error:', validationError);
+              toast({
+                title: "Validation Error",
+                description: "Failed to validate session. Please try generating a new pairing code.",
+                variant: "destructive"
+              });
+            }
+          }
+        } else if (response.status === 404) {
+          const errorData = await response.json();
+          if (errorData.message?.includes('invalid') || errorData.message?.includes('corrupted')) {
+            // Session was found but invalid - notify user to restart
             clearInterval(pollInterval);
             setPollingInterval(null);
             setIsWaitingForAuth(false);
-            setCredentials({
-              jid: phone + '@s.whatsapp.net',
-              base64: data.sessionId
-            });
-            
             toast({
-              title: "Session Retrieved!",
-              description: "Your WhatsApp session credentials have been fetched successfully.",
+              title: "Invalid Session Detected",
+              description: "The session ID was invalid. Please generate a new pairing code.",
+              variant: "destructive"
             });
+            setStep(2); // Go back to phone input
           }
         }
       } catch (error) {
