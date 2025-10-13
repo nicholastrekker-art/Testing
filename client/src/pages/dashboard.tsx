@@ -272,15 +272,6 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <Link href="/trekker-pair">
-              <Button 
-                className="bg-gradient-to-r from-teal-600 to-cyan-700 hover:from-teal-700 hover:to-cyan-800 text-white shadow-lg shadow-teal-500/30"
-                data-testid="button-trekker-pair"
-              >
-                <i className="fas fa-link mr-2"></i>
-                TREKKER-md pair
-              </Button>
-            </Link>
             {isAdmin && (
               <div className="flex space-x-2">
                 <Button 
@@ -332,19 +323,48 @@ export default function Dashboard() {
 
             {/* Steps Grid */}
             <div className="grid gap-6 md:grid-cols-2">
-              {/* Step 1: Register Your Bot */}
+              {/* Step 1: Get Session ID */}
+              <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-teal-500/30 hover:border-teal-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-teal-500/30 hover:-translate-y-1">
+                <div className="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 shadow-lg shadow-teal-500/50 group-hover:scale-110 transition-transform">
+                      <span className="text-2xl font-bold text-white">1</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Get Session ID</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                        <span className="text-xs text-teal-400 font-medium">START HERE</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-300 mb-5 leading-relaxed">
+                    Get your WhatsApp session credentials using our pairing system. Generate a <span className="font-semibold text-teal-400">pairing code</span> and link your device
+                  </p>
+                  <Link href="/trekker-pair">
+                    <Button className="w-full bg-gradient-to-r from-teal-600 to-cyan-700 hover:from-teal-700 hover:to-cyan-800 text-white font-semibold py-3 shadow-lg shadow-teal-500/30 group-hover:shadow-teal-500/50 transition-all">
+                      <i className="fas fa-link mr-2"></i>
+                      TREKKER-md pair
+                      <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Step 2: Register Your Bot */}
               <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-purple-500/30 hover:border-purple-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/30 hover:-translate-y-1">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative p-6">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/50 group-hover:scale-110 transition-transform">
-                      <span className="text-2xl font-bold text-white">1</span>
+                      <span className="text-2xl font-bold text-white">2</span>
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-white">Register Your Bot</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
-                        <span className="text-xs text-purple-400 font-medium">START HERE</span>
+                        <span className="text-xs text-purple-400 font-medium">STEP 2</span>
                       </div>
                     </div>
                   </div>
@@ -362,13 +382,13 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Step 2: Manage Your Bot */}
+              {/* Step 3: Manage Your Bot */}
               <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-emerald-500/30 hover:border-emerald-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/30 hover:-translate-y-1">
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative p-6">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/50 group-hover:scale-110 transition-transform">
-                      <span className="text-2xl font-bold text-white">2</span>
+                      <span className="text-2xl font-bold text-white">3</span>
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-white">Manage Your Bot</h3>
