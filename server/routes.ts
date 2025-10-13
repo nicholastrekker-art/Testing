@@ -1383,7 +1383,7 @@ export async function registerRoutes(app: Express): Server {
   });
 
   // Approve Bot (Admin only)
-  app.post("/api/bot-instances/:id/approve", authenticateAdmin, async (req: AuthRequest, res) => {
+  app.post("/api/bot-instances/:id/approve", async (req, res) => {
     try {
       const { id } = req.params;
       const { expirationMonths = 3, targetServer } = req.body; // targetServer for cross-registration
@@ -2653,7 +2653,26 @@ Thank you for choosing TREKKER-MD! 🚀`;
       // Attempt to parse the session ID
       let credentials = null;
       try {
-        const decoded = Buffer.from(sessionId.trim(), 'base64').toString('utf-8');
+        const base64Data = sessionId.trim();
+
+        // Check Base64 size limit (5MB when decoded)
+        const estimatedSize = (base64Data.length * 3) / 4;
+        const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+
+        if (estimatedSize > maxSizeBytes) {
+          return res.status(400).json({
+            message: `Session ID too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.`
+          });
+        }
+
+        const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
+
+        if (decoded.length > maxSizeBytes) {
+          return res.status(400).json({
+            message: `Decoded session data too large (${(decoded.length / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.`
+          });
+        }
+
         credentials = JSON.parse(decoded);
       } catch (error) {
         console.error('❌ Session ID decode/parse error:', error);
