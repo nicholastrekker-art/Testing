@@ -308,7 +308,7 @@
     <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode">
         <i class="fas fa-moon"></i>
     </button>
-    
+
     <div class="container">
         <div class="flex justify-center mb-4">
             <img src="./trekker-icon.jpg" alt="TREKKER-MD Lifetime Bot" class="round-image">
@@ -514,22 +514,22 @@
     <script>
         const themeToggle = document.getElementById('theme-toggle');
         const currentTheme = localStorage.getItem('theme') || 'dark';  
-        
+
         document.documentElement.setAttribute('data-theme', currentTheme);
-        
+
         if (currentTheme === 'dark') {
             themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
         } else {
             themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
         }
-        
+
         themeToggle.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            
+
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            
+
             if (newTheme === 'dark') {
                 themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
             } else {
@@ -569,24 +569,49 @@
             actionButtons.style.display = 'none';
 
             try {
-                const { data } = await axios.get(`/code?number=${fullNumber}`);
-                
-                if (data.error) {
+                // Make request to the pairing server through the proxy
+                const response = await axios.get(`/pairing/code?number=${fullNumber}`);
+                const data = response.data;
+
+                console.log('Pairing response:', data);
+
+                // Check if we got a valid pairing code
+                if (data && data.code && data.code.trim() !== '') {
+                    const code = data.code;
+                    pairDiv.innerHTML = `<p>Your Pairing Code is: <strong style="font-size: 1.5em; color: #6C63FF;">${code}</strong></p>`;
+                    copyCodeButton.dataset.code = code;
+                    validateCodeButton.dataset.code = code;
+                    actionButtons.style.display = 'flex';
+                } else if (data.error) {
+                    // Handle error response from server
                     pairDiv.innerHTML = `<p style="color: red;">❗ ${data.error}</p>
                         ${data.message ? `<p style="color: orange; font-size: 0.9em;">${data.message}</p>` : ''}`;
                     actionButtons.style.display = 'none';
                 } else {
-                    const code = data.code || "❗ Service Unavailable";
-                    pairDiv.innerHTML = `<p>Your Pairing Code is: <strong>${code}</strong></p>`;
-                    copyCodeButton.dataset.code = code;
-                    validateCodeButton.dataset.code = code;
-                    actionButtons.style.display = 'flex';
+                    // Unexpected response format
+                    pairDiv.innerHTML = `<p style="color: red;">❗ Invalid response from server</p>
+                        <p style="color: orange; font-size: 0.9em;">Please try again or contact support.</p>`;
+                    actionButtons.style.display = 'none';
                 }
             } catch (error) {
                 console.error('Pairing error:', error);
-                const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Service Currently Unavailable';
+                console.error('Error response:', error.response);
+
+                let errorMsg = 'Service Currently Unavailable';
+
+                if (error.response) {
+                    // Server responded with error
+                    errorMsg = error.response.data?.message || error.response.data?.error || errorMsg;
+                } else if (error.request) {
+                    // Request made but no response
+                    errorMsg = 'No response from server. Please check if the pairing service is running.';
+                } else {
+                    // Something else happened
+                    errorMsg = error.message || errorMsg;
+                }
+
                 pairDiv.innerHTML = `<p style="color: red;">❗ ${errorMsg}</p>
-                    <p style="color: orange; font-size: 0.9em;">Please check your internet connection and try again.</p>`;
+                    <p style="color: orange; font-size: 0.9em;">Please try again in a moment.</p>`;
                 actionButtons.style.display = 'none';
             } finally {
                 loadingSpinner.style.display = 'none';
