@@ -1,9 +1,32 @@
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { useState } from "react";
 
 export default function PairingPage() {
   const [, setLocation] = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+
+  const handleIframeLoad = () => {
+    setIsLoading(false);
+    setLoadError(false);
+  };
+
+  const handleIframeError = () => {
+    setIsLoading(false);
+    setLoadError(true);
+  };
+
+  const handleRetry = () => {
+    setIsLoading(true);
+    setLoadError(false);
+    // Force iframe reload by changing the key
+    const iframe = document.querySelector('iframe[data-testid="iframe-pairing"]') as HTMLIFrameElement;
+    if (iframe) {
+      iframe.src = iframe.src;
+    }
+  };
 
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-gray-950 via-gray-900 to-emerald-950">
@@ -28,6 +51,31 @@ export default function PairingPage() {
         </div>
       </div>
 
+      {/* Loading state */}
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-950/50 z-30">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 animate-spin text-emerald-400 mx-auto mb-4" />
+            <p className="text-gray-300 text-lg">Loading Pairing Interface...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error state */}
+      {loadError && !isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-950/50 z-30">
+          <div className="text-center">
+            <div className="text-red-400 text-xl mb-4">Failed to load pairing interface</div>
+            <Button
+              onClick={handleRetry}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              Retry
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Iframe container */}
       <div className="flex-1 relative">
         <iframe
@@ -35,6 +83,9 @@ export default function PairingPage() {
           className="absolute inset-0 w-full h-full border-0"
           title="TREKKER-MD Pairing Interface"
           data-testid="iframe-pairing"
+          onLoad={handleIframeLoad}
+          onError={handleIframeError}
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
         />
       </div>
     </div>

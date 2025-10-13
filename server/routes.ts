@@ -40,6 +40,7 @@ import { sendValidationMessage, sendGuestValidationMessage, validateWhatsAppCred
 import { CrossTenancyClient } from "./services/crossTenancyClient";
 import { z } from "zod";
 import crypto from 'crypto';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 // Helper function to resolve bot location by phone number across tenancies
 async function resolveBotByPhone(phoneNumber: string): Promise<{
@@ -1880,7 +1881,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
     }
   });
 
-  
+
 
   // Enhanced session validation endpoint with proper WhatsApp credentials validation
   app.post('/api/whatsapp/validate-session', async (req, res) => {
@@ -4175,6 +4176,29 @@ Thank you for choosing TREKKER-MD! 🚀`;
       });
     }
   });
+
+  // Proxy requests to pair server - handle both /pair and /pairing routes
+  app.use('/pair', createProxyMiddleware({
+    target: 'http://localhost:3001',
+    changeOrigin: true,
+    pathRewrite: {
+      '^/pair': ''
+    },
+    onProxyReq: (proxyReq, req, res) => {
+      console.log(`Proxying /pair request to pairing server: ${req.url}`);
+    }
+  }));
+
+  app.use('/pairing', createProxyMiddleware({
+    target: 'http://localhost:3001',
+    changeOrigin: true,
+    pathRewrite: {
+      '^/pairing': ''
+    },
+    onProxyReq: (proxyReq, req, res) => {
+      console.log(`Proxying /pairing request to pairing server: ${req.url}`);
+    }
+  }));
 
   // Optional: session debugging endpoint
   app.get('/api/sessions', (req, res) => {
