@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 __path = process.cwd();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PAIR_PORT || 3001;
 
 // Only include existing routes
 let pairRoute = require('./routers/pair');
