@@ -1880,7 +1880,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
     }
   });
 
-  // Generate WhatsApp Pairing Code with Auto Session ID Delivery (like /pair project)
+  // Generate WhatsApp Pairing Code with Auto Session ID Delivery (integrated pair system)
   app.post('/api/whatsapp/pairing-code', async (req, res) => {
     try {
       const { phoneNumber, selectedServer } = req.body;
@@ -1904,7 +1904,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
       console.log(`📱 Starting auto-pairing for: ${cleanedPhone} on server: ${selectedServer}`);
 
-      // IMPORTANT: Clean up any existing sessions for this phone number first
+      // Clean up any existing sessions for this phone number
       console.log(`🧹 Cleaning up previous sessions for ${cleanedPhone}...`);
       await db.delete(guestSessions).where(eq(guestSessions.phoneNumber, cleanedPhone));
       console.log(`✅ Previous sessions cleaned for ${cleanedPhone}`);
@@ -1939,7 +1939,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
       // Force cleanup after 4 minutes
       const forceCleanupTimer = setTimeout(async () => {
-        console.log('⏰ Force cleanup triggered after 4 minutes');
+        console.log('⏰ 4-minute timeout - forcing cleanup');
         await cleanup();
       }, 4 * 60 * 1000);
 
@@ -1950,7 +1950,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
         }
 
         const { state, saveCreds } = await useMultiFileAuthState(authDir);
-
         const logger = pino({ level: "fatal" }).child({ level: "fatal" });
 
         const sock = makeWASocket({
@@ -1971,7 +1970,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
         };
 
         let pairingCode: string | null = null;
-        let sessionData: any = null;
         let authCompleted = false;
 
         // Set up event handlers
@@ -1988,24 +1986,21 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
           if (connection === 'open' && !authCompleted) {
             authCompleted = true;
-            console.log('✅ WhatsApp connection opened successfully!');
+            console.log('✅ WhatsApp connection opened!');
 
             try {
               const recipient = getRecipientId();
 
-              // Wait to ensure credentials are fully saved
-              console.log('⏳ Waiting for credentials to be fully populated...');
-              await delay(20000); // Increased wait time for complete credential generation
+              // Wait for credentials to be fully saved
+              console.log('⏳ Waiting 5 seconds for credential generation...');
+              await delay(5000);
 
-              // Force save credentials multiple times to ensure persistence
+              // Force save credentials
               try {
                 await saveCreds();
-                console.log('✅ Initial credentials saved to disk');
-                await delay(2000);
-                await saveCreds();
-                console.log('✅ Secondary credentials save completed');
+                console.log('✅ Credentials saved to disk');
               } catch (err) {
-                console.warn('⚠️ Final saveCreds warning:', err);
+                console.warn('⚠️ saveCreds warning:', err);
               }
 
               // Read and validate credentials
@@ -2014,55 +2009,22 @@ Thank you for choosing TREKKER-MD! 🚀`;
                 throw new Error('Credentials file not found');
               }
 
-              let rawData = readFileSync(credsPath, 'utf8');
-              let credsData = JSON.parse(rawData);
+              const rawData = readFileSync(credsPath, 'utf8');
+              const credsData = JSON.parse(rawData);
 
               // Validate credentials structure
               if (!credsData.creds || !credsData.creds.noiseKey || !credsData.creds.signedIdentityKey) {
-                console.error('❌ Credentials incomplete, missing required fields');
                 throw new Error('Incomplete credentials - missing authentication keys');
               }
 
-              // Check if keys object is populated - wait up to 30 seconds
-              let keysCount = Object.keys(credsData.keys || {}).length;
-              console.log(`📊 Credentials validation: ${keysCount} keys found`);
-
-              if (keysCount === 0) {
-                console.warn('⚠️ Keys object is empty, waiting longer for key generation...');
-                
-                // Wait and retry up to 3 times
-                for (let i = 0; i < 3; i++) {
-                  await delay(10000);
-                  await saveCreds();
-                  
-                  rawData = readFileSync(credsPath, 'utf-8');
-                  credsData = JSON.parse(rawData);
-                  keysCount = Object.keys(credsData.keys || {}).length;
-                  
-                  console.log(`🔄 Retry ${i + 1}/3: ${keysCount} keys found`);
-                  
-                  if (keysCount > 0) {
-                    console.log(`✅ Keys populated after ${i + 1} retries: ${keysCount} keys`);
-                    break;
-                  }
-                }
-
-                if (keysCount === 0) {
-                  console.error('❌ Keys still empty after extended wait');
-                  throw new Error('Session keys were not generated properly');
-                }
-              }
-
+              // Encode credentials as Base64
               const sessionBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
 
-              // Save to database with proper error handling
-              console.log('💾 Attempting to save session to database...');
+              // Save to database
+              console.log('💾 Saving session to database...');
               try {
-                // First delete any existing sessions for this phone
                 await db.delete(guestSessions).where(eq(guestSessions.phoneNumber, cleanedPhone));
-                console.log(`🧹 Cleared previous sessions for ${cleanedPhone}`);
-
-                // Insert new session
+                
                 const [insertedSession] = await db.insert(guestSessions).values({
                   phoneNumber: cleanedPhone,
                   sessionId: sessionBase64,
@@ -2071,10 +2033,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
                   isUsed: false
                 }).returning();
 
-                console.log(`✅ Session saved to database successfully:`, {
+                console.log(`✅ Session saved to database:`, {
                   id: insertedSession.id,
                   phoneNumber: insertedSession.phoneNumber,
-                  pairingCode: insertedSession.pairingCode,
                   sessionIdLength: insertedSession.sessionId.length
                 });
               } catch (dbError) {
@@ -2082,39 +2043,49 @@ Thank you for choosing TREKKER-MD! 🚀`;
                 throw dbError;
               }
 
-              sessionData = {
-                base64: sessionBase64,
-                jid: recipient || cleanedPhone + '@s.whatsapp.net',
-                phoneNumber: cleanedPhone
-              };
-
               // Send session ID to WhatsApp
               if (recipient) {
-                const message = `🔑 *Your Session ID*\n\n${sessionBase64}\n\n⚠️ Keep this safe - it's your bot credentials!`;
+                const sessionMessage = `🔑 *Your Session ID*\n\n${sessionBase64}\n\n⚠️ Keep this safe - it's your bot credentials!`;
+                
+                const welcomeMessage = `*✅ SESSION ID GENERATED ✅*
+______________________________
+╔════◇
+║『 𝐘𝐎𝐔'𝐕𝐄 𝐂𝐇𝐎𝐒𝐄𝐍 TREKKER-MD LIFETIME BOT 』
+╚══════════════╝
+╔═════◇
+║ 『••• 𝗩𝗶𝘀𝗶𝘁 𝗙𝗼𝗿 𝗛𝗲𝗹𝗽 •••』
+║❒ TELEGRAM: https://t.me/trekkermd_
+║❒ INSTAGRAM: https://www.instagram.com/nicholaso_tesla
+║📞 WhatsApp: +254704897825
+║❒ 𝐖𝐚𝐂𝐡𝐚𝐧𝐧𝐞𝐥: https://whatsapp.com/channel/0029Vb6vpSv6WaKiG6ZIy73H
+╚══════════════╝
 
-                console.log('📤 Sending session ID message to WhatsApp...');
+Use the Quoted Session ID to Deploy your Bot.
+❤️ Support us - donations keep this service running ❤️
+
+Powered by TREKKER-MD - Ultra Fast Bot`;
+
+                console.log('📤 Sending session ID to WhatsApp...');
                 try {
-                  const sentMsg = await sock.sendMessage(recipient, { text: message });
-                  console.log('✅ Session ID message sent, message key:', sentMsg?.key?.id);
-                  // Wait for message delivery
-                  await delay(5000);
+                  const sessionMsg = await sock.sendMessage(recipient, { text: sessionMessage });
+                  await delay(2000);
+                  await sock.sendMessage(recipient, { text: welcomeMessage }, { quoted: sessionMsg });
+                  console.log('✅ Session ID and welcome message sent');
+                  
+                  // Wait 8 seconds for delivery
+                  await delay(8000);
                 } catch (msgError) {
-                  console.warn('⚠️ Failed to send session ID message:', msgError);
-                  // Don't throw - session is already saved to database
+                  console.warn('⚠️ Failed to send messages:', msgError);
                 }
               }
 
-              console.log('🎉 Pairing completed successfully - session saved and sent!');
+              console.log('🎉 Pairing completed successfully!');
 
-              // Cleanup connection after successful save
-              console.log('🧹 Starting cleanup after successful completion...');
+              // Cleanup
+              console.log('🧹 Starting cleanup...');
               sock.ev.removeAllListeners();
               if (sock.ws && sock.ws.readyState === 1) {
-                try {
-                  await sock.ws.close();
-                } catch (closeError) {
-                  console.warn('⚠️ WebSocket close warning:', closeError);
-                }
+                await sock.ws.close();
               }
               clearTimeout(forceCleanupTimer);
               await cleanup();
@@ -2127,7 +2098,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
               throw err;
             }
           } else if (connection === 'close' && lastDisconnect?.error?.output?.statusCode !== 401) {
-            console.log('⚠️ Connection closed, will retry after delay...');
+            console.log('⚠️ Connection closed, retrying...');
             await delay(10000);
           }
         });
@@ -2138,7 +2109,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
           pairingCode = await sock.requestPairingCode(cleanedPhone);
           console.log(`✅ Pairing code generated: ${pairingCode}`);
 
-          // Send response with pairing code
           res.json({
             success: true,
             pairingCode,
@@ -2149,7 +2119,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
           // Wait for authentication (max 60 seconds)
           await new Promise((resolve) => {
             const checkInterval = setInterval(() => {
-              if (authCompleted || sessionData) {
+              if (authCompleted) {
                 clearInterval(checkInterval);
                 resolve(true);
               }
@@ -2164,7 +2134,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
         } else {
           clearTimeout(forceCleanupTimer);
           await cleanup();
-
           return res.status(400).json({
             success: false,
             message: "This number is already registered"
@@ -2175,7 +2144,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
         console.error('Pairing inner error:', innerError);
         clearTimeout(forceCleanupTimer);
         await cleanup();
-
         throw innerError;
       }
 
