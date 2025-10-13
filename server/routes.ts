@@ -4192,30 +4192,5 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
 
 // Pairing code generation endpoint
-app.get("/api/pairing/code", async (req, res) => {
-  try {
-    const number = req.query.number as string;
-    
-    if (!number) {
-      return res.status(400).json({ error: 'Phone number is required' });
-    }
-
-    // Import the pairing logic from the pair router
-    const pairLogic = require('../pair/routers/pair');
-    
-    // Execute pairing code generation
-    // This will need to be adapted based on your pair.js implementation
-    // For now, return a placeholder response
-    res.json({ 
-      error: 'Pairing service not yet configured for this deployment',
-      message: 'Please use the Replit deployment for pairing functionality'
-    });
-    
-  } catch (error: any) {
-    console.error('Pairing error:', error);
-    res.status(500).json({ 
-      error: 'Failed to generate pairing code',
-      message: error.message 
-    });
-  }
-});
+// This endpoint is now handled by the dedicated /api/guest/auth/send-otp endpoint or cross-tenancy registration flows.
+// The original /api/pairing/code endpoint was removed as it was redundant and caused conflicts.
