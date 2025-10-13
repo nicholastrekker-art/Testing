@@ -16,3 +16,7 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "yarn start"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
