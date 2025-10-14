@@ -100,25 +100,30 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     }
   };
 
-  // Generate pairing code using new auto-pairing endpoint
+  // Generate pairing code using pair server endpoint
   const generatePairingMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; selectedServer: string; botName?: string; features?: any }) => {
-      const response = await fetch('/api/whatsapp/pairing-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          phoneNumber: data.phoneNumber,
-          selectedServer: data.selectedServer
-        })
+      const cleanedPhone = data.phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      const response = await fetch(`/api/pair?number=${cleanedPhone}`, {
+        method: 'GET'
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to generate pairing code' }));
-        throw new Error(error.message || 'Failed to generate pairing code');
+        throw new Error('Failed to generate pairing code. Please try again.');
       }
 
       const result = await response.json();
-      return result;
+      
+      if (!result.code) {
+        throw new Error('No pairing code returned from server');
+      }
+      
+      return {
+        success: true,
+        pairingCode: result.code,
+        sessionId: `pair_${cleanedPhone}_${Date.now()}`
+      };
     },
     onSuccess: (data) => {
       if (data.success && data.pairingCode) {
@@ -503,10 +508,10 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Smartphone className="h-5 w-5" />
-                Step 2: Enter Phone Number
+                Step 2: Generate Pairing Code
               </CardTitle>
               <CardDescription>
-                Enter your WhatsApp phone number (with country code, no + or spaces)
+                Enter your WhatsApp phone number to generate a pairing code (with country code, no + or spaces)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -551,7 +556,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Key className="h-5 w-5 text-blue-600" />
-                Step 3: Enter Pairing Code in WhatsApp
+                Step 3: Link Device with Pairing Code
               </CardTitle>
               <CardDescription>
                 {credentials ? "Session ID retrieved successfully!" : "Waiting for session ID..."}
