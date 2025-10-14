@@ -219,7 +219,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
   const registerBotMutation = useMutation({
     mutationFn: async (data: typeof formData & { selectedServer?: string }) => {
       const formDataToSend = new FormData();
-      formDataToSend.append('botName', data.botName);
+      formDataFormDataToSend.append('botName', data.botName);
       formDataToSend.append('phoneNumber', data.phoneNumber);
       formDataToSend.append('credentialType', data.credentialType);
       formDataToSend.append('features', JSON.stringify(data.features));
@@ -598,8 +598,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                       disabled={!!autoPhoneNumber}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      {autoPhoneNumber 
-                        ? "Phone number from pairing (auto-filled)" 
+                      {autoPhoneNumber
+                        ? "Phone number from pairing (auto-filled)"
                         : "Enter your phone number with country code (+ will be removed automatically)"}
                     </p>
                   </div>
@@ -863,43 +863,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
-                      <Checkbox
-                        id="autoLike"
-                        data-testid="checkbox-auto-like"
-                        checked={formData.features.autoLike}
-                        onCheckedChange={(checked) =>
-                          setFormData(prev => ({
-                            ...prev,
-                            features: { ...prev.features, autoLike: !!checked }
-                          }))
-                        }
-                        className="mt-1"
-                      />
-                      <div className="flex-1">
-                        <Label htmlFor="autoLike" className="text-sm font-medium cursor-pointer">Auto Like Status</Label>
-                        <p className="text-xs text-muted-foreground mt-1">Automatically like WhatsApp status updates</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
-                      <Checkbox
-                        id="autoReact"
-                        data-testid="checkbox-auto-react"
-                        checked={formData.features.autoReact}
-                        onCheckedChange={(checked) =>
-                          setFormData(prev => ({
-                            ...prev,
-                            features: { ...prev.features, autoReact: !!checked }
-                          }))
-                        }
-                        className="mt-1"
-                      />
-                      <div className="flex-1">
-                        <Label htmlFor="autoReact" className="text-sm font-medium cursor-pointer">Auto React</Label>
-                        <p className="text-xs text-muted-foreground mt-1">Automatically react to messages</p>
-                      </div>
-                    </div>
+                    {/* Removed autolike and autoreact checkboxes */}
 
                     <div className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50">
                       <Checkbox
@@ -1342,9 +1306,9 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
         {/* Step 11: Cross Tenancy Success */}
         {step === 11 && crossTenancyData && (
           <div className="space-y-6 pb-4">
-            <div className="text-center p-8 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+            <div className="text-center p-6 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
               <div className="flex items-center justify-center mb-4">
-                <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center text-white text-2xl">
+                <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center text-white text-xl">
                   🌍
                 </div>
               </div>

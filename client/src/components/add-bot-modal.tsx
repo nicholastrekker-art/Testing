@@ -38,9 +38,7 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      autoLike: true,
       autoViewStatus: true,
-      autoReact: false,
       typingMode: "none",
       chatgptEnabled: false,
     },
@@ -288,30 +286,12 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox
-                    id="autoLike"
-                    checked={form.watch("autoLike") || false}
-                    onCheckedChange={(checked) => form.setValue("autoLike", checked as boolean)}
-                    data-testid="checkbox-auto-like"
-                  />
-                  <Label htmlFor="autoLike" className="text-sm text-foreground">Auto Like</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
                     id="autoViewStatus"
                     checked={form.watch("autoViewStatus") || false}
                     onCheckedChange={(checked) => form.setValue("autoViewStatus", checked as boolean)}
                     data-testid="checkbox-auto-view-status"
                   />
                   <Label htmlFor="autoViewStatus" className="text-sm text-foreground">Auto View Status</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="autoReact"
-                    checked={form.watch("autoReact") || false}
-                    onCheckedChange={(checked) => form.setValue("autoReact", checked as boolean)}
-                    data-testid="checkbox-auto-react"
-                  />
-                  <Label htmlFor="autoReact" className="text-sm text-foreground">Auto React</Label>
                 </div>
               </div>
             </div>

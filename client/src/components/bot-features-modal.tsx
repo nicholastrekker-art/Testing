@@ -29,8 +29,6 @@ export function BotFeaturesModal({ bot, isOpen, onClose }: BotFeaturesModalProps
 
   const [features, setFeatures] = useState<Record<string, boolean>>(() => {
     return {
-      autoLike: bot.autoLike || false,
-      autoReact: bot.autoReact || false,
       autoView: bot.autoViewStatus || false,
       typingIndicator: bot.typingMode !== 'none',
       chatGPT: bot.chatgptEnabled || false,
@@ -65,20 +63,6 @@ export function BotFeaturesModal({ bot, isOpen, onClose }: BotFeaturesModalProps
   };
 
   const automationFeatures: FeatureDefinition[] = [
-    {
-      id: 'autoLike',
-      label: 'Auto Like Status',
-      description: 'Automatically like WhatsApp status updates',
-      apiKey: 'autoLike',
-      getValue: () => features.autoLike
-    },
-    {
-      id: 'autoReact',
-      label: 'Auto React',
-      description: 'Automatically react to messages',
-      apiKey: 'autoReact',
-      getValue: () => features.autoReact
-    },
     {
       id: 'autoView',
       label: 'Auto View Status',

@@ -1063,18 +1063,6 @@ export default function GuestBotManagement() {
                           {/* Feature toggles for inactive bots */}
                           <div className="grid grid-cols-2 gap-2 text-xs mb-4">
                             <div className="flex justify-between items-center">
-                              <span className="text-muted-foreground">Auto Like</span>
-                              <button
-                                onClick={() => handleFeatureToggle('autoLike', !bot.features?.autoLike, bot)}
-                                disabled={featureToggleMutation.isPending || bot.approvalStatus !== 'approved'}
-                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
-                                  bot.features?.autoLike ? 'bg-primary justify-end' : 'bg-muted justify-start'
-                                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
-                              >
-                                <div className={`w-2 h-2 rounded-full ${bot.features?.autoLike ? 'bg-white' : 'bg-muted-foreground'}`}></div>
-                              </button>
-                            </div>
-                            <div className="flex justify-between items-center">
                               <span className="text-muted-foreground">Auto View</span>
                               <button
                                 onClick={() => handleFeatureToggle('autoViewStatus', !bot.features?.autoView, bot)}
@@ -1084,18 +1072,6 @@ export default function GuestBotManagement() {
                                 } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
                               >
                                 <div className={`w-2 h-2 rounded-full ${bot.features?.autoView ? 'bg-white' : 'bg-muted-foreground'}`}></div>
-                              </button>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-muted-foreground">Auto React</span>
-                              <button
-                                onClick={() => handleFeatureToggle('autoReact', !bot.features?.autoReact, bot)}
-                                disabled={featureToggleMutation.isPending || bot.approvalStatus !== 'approved'}
-                                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
-                                  bot.features?.autoReact ? 'bg-primary justify-end' : 'bg-muted justify-start'
-                                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
-                              >
-                                <div className={`w-2 h-2 rounded-full ${bot.features?.autoReact ? 'bg-white' : 'bg-muted-foreground'}`}></div>
                               </button>
                             </div>
                             <div className="flex justify-between items-center">

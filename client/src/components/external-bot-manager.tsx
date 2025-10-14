@@ -96,31 +96,6 @@ function CrossTenancyBotCard({ bot, onFeatureToggle, onBotAction }: CrossTenancy
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-sm">
-                <Heart className="h-3 w-3" />
-                Auto Like
-              </span>
-              <Switch
-                data-testid={`switch-autolike-${bot.phoneNumber}`}
-                checked={bot.features.autoLike || false}
-                onCheckedChange={(checked) => onFeatureToggle(bot.id, 'autoLike', checked)}
-                disabled={bot.approvalStatus !== 'approved'}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-sm">
-                <MessageSquare className="h-3 w-3" />
-                Auto React
-              </span>
-              <Switch
-                data-testid={`switch-autoreact-${bot.phoneNumber}`}
-                checked={bot.features.autoReact || false}
-                onCheckedChange={(checked) => onFeatureToggle(bot.id, 'autoReact', checked)}
-                disabled={bot.approvalStatus !== 'approved'}
-              />
-            </div>
 
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2 text-sm">

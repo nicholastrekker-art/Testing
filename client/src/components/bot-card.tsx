@@ -320,18 +320,6 @@ export default function BotCard({ bot }: BotCardProps) {
           {/* Feature toggles */}
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Auto Like</span>
-              <button
-                onClick={() => toggleFeatureMutation.mutate({ feature: 'autoLike', enabled: !bot.autoLike })}
-                disabled={toggleFeatureMutation.isPending || bot.approvalStatus !== 'approved'}
-                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
-                  bot.autoLike ? 'bg-primary justify-end' : 'bg-muted justify-start'
-                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
-              >
-                <div className={`w-2 h-2 rounded-full ${bot.autoLike ? 'bg-white' : 'bg-muted-foreground'}`}></div>
-              </button>
-            </div>
-            <div className="flex justify-between items-center">
               <span className="text-muted-foreground">Auto View</span>
               <button
                 onClick={() => toggleFeatureMutation.mutate({ feature: 'autoView', enabled: !bot.autoViewStatus })}
@@ -341,18 +329,6 @@ export default function BotCard({ bot }: BotCardProps) {
                 } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
               >
                 <div className={`w-2 h-2 rounded-full ${bot.autoViewStatus ? 'bg-white' : 'bg-muted-foreground'}`}></div>
-              </button>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Auto React</span>
-              <button
-                onClick={() => toggleFeatureMutation.mutate({ feature: 'autoReact', enabled: !bot.autoReact })}
-                disabled={toggleFeatureMutation.isPending || bot.approvalStatus !== 'approved'}
-                className={`w-8 h-4 rounded-full flex items-center px-1 transition-colors ${
-                  bot.autoReact ? 'bg-primary justify-end' : 'bg-muted justify-start'
-                } ${bot.approvalStatus !== 'approved' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
-              >
-                <div className={`w-2 h-2 rounded-full ${bot.autoReact ? 'bg-white' : 'bg-muted-foreground'}`}></div>
               </button>
             </div>
             <div className="flex justify-between items-center">

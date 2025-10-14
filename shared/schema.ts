@@ -43,9 +43,7 @@ export const botInstances = pgTable("bot_instances", {
   status: text("status").notNull().default("offline"), // online, offline, error, loading
   credentials: jsonb("credentials"), // encrypted creds.json data
   settings: jsonb("settings").default({}), // bot configuration
-  autoLike: boolean("auto_like").default(true),
   autoViewStatus: boolean("auto_view_status").default(true),
-  autoReact: boolean("auto_react").default(true),
   typingMode: text("typing_mode").default("recording"), // none, typing, recording, both
   presenceMode: text("presence_mode").default("available"), // available, unavailable, composing, recording
   alwaysOnline: boolean("always_online").default(false),

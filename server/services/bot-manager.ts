@@ -344,7 +344,7 @@ class BotManager {
       { name: 'ping', description: 'Test bot responsiveness', response: 'Pong! Bot is responding.', isActive: true, useChatGPT: false },
       { name: 'info', description: 'Bot information', response: 'WhatsApp Bot powered by Bailey\'s Bot Management System', isActive: true, useChatGPT: false },
       { name: 'version', description: 'Bot version info', response: 'Bailey\'s WhatsApp Bot v2.0 - Advanced Multi-Bot Management System', isActive: true, useChatGPT: false },
-      { name: 'about', description: 'About this bot', response: 'Advanced WhatsApp automation bot with AI integration, auto-features, and comprehensive command system.', isActive: true, useChatGPT: false },
+      { name: 'about', description: 'About this bot', response: 'Advanced WhatsApp automation bot with AI integration and comprehensive command system.', isActive: true, useChatGPT: false },
       
       // Group Management Commands
       { name: 'mute', description: 'Mute group notifications', response: 'Group notifications muted for 1 hour.', isActive: true, useChatGPT: false },
@@ -622,8 +622,6 @@ class BotManager {
       { name: 'toggle', description: 'Toggle features', response: '', isActive: true, useChatGPT: true },
       { name: 'enable', description: 'Enable features', response: '', isActive: true, useChatGPT: true },
       { name: 'disable', description: 'Disable features', response: '', isActive: true, useChatGPT: true },
-      { name: 'autolike', description: 'Auto-like settings', response: 'Auto-like feature configured. Bot will automatically like status updates.', isActive: true, useChatGPT: false },
-      { name: 'autoreact', description: 'Auto-react settings', response: 'Auto-react feature configured. Bot will automatically react to messages.', isActive: true, useChatGPT: false },
       { name: 'autoview', description: 'Auto-view settings', response: 'Auto-view status feature configured. Bot will automatically view status updates.', isActive: true, useChatGPT: false },
       { name: 'typing', description: 'Typing indicator settings', response: 'Typing indicator configured. Bot will show typing status.', isActive: true, useChatGPT: false },
       { name: 'recording', description: 'Recording indicator settings', response: 'Recording indicator configured. Bot will show recording status.', isActive: true, useChatGPT: false },
