@@ -529,7 +529,12 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      // Only allow closing via explicit close button (X), not by clicking outside
+      if (!isOpen) {
+        return;
+      }
+    }}>
       <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
