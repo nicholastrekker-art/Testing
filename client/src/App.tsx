@@ -25,7 +25,6 @@ function Router() {
       <main className="flex-1 overflow-auto w-full lg:w-auto">
         <Switch>
           <Route path="/" component={Dashboard} />
-          <Route path="/trekker-pair" component={PairingPage} />
           <Route path="/bot-instances">
             <ProtectedRoute requireAdmin={true}>
               <BotInstances />

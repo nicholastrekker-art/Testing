@@ -4155,40 +4155,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
     }
   });
 
-  // Direct pairing routes (no proxy middleware to avoid dashboard conflicts)
-  app.get('/pairing/pair', async (req, res) => {
-    res.sendFile(path.join(__dirname, '../trekkerpair/trekkerpair/public/pair.html'));
-  });
-
-  app.get('/pairing/code', async (req, res) => {
-    try {
-      const number = req.query.number;
-      const pairingResponse = await fetch(`http://localhost:3001/code?number=${number}`);
-      const data = await pairingResponse.json();
-      res.json(data);
-    } catch (error) {
-      console.error('Pairing code error:', error);
-      res.status(500).json({
-        error: 'Failed to generate pairing code',
-        message: 'Please ensure the pairing server is running on port 3001'
-      });
-    }
-  });
-
-  // Optional: session debugging endpoint
-  app.get('/api/sessions', (req, res) => {
-    const { getSessionStorage } = require('./lib');
-    const sessionStorage = getSessionStorage();
-    const sessions = Array.from(sessionStorage.keys());
-    res.json({
-      total: sessions.length,
-      sessions: sessions.map(id => ({
-        id,
-        createdAt: sessionStorage.get(id)?.createdAt
-      }))
-    });
-  });
-
   return httpServer;
 }
 
