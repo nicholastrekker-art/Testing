@@ -524,18 +524,23 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
   };
 
   const handleBack = () => {
-    // General back handler: decrement step, ensure it doesn't go below 1
-    setStep(prevStep => Math.max(prevStep - 1, 1));
+    if (step === 1) {
+      // If at first step, close the dialog
+      handleClose();
+    } else {
+      // Otherwise, go back one step
+      setStep(prevStep => Math.max(prevStep - 1, 1));
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => {
-      // Only allow closing via explicit close button (X), not by clicking outside
+      // Allow closing via X button
       if (!isOpen) {
-        return;
+        handleClose();
       }
     }}>
-      <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+      <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100" onEscapeKeyDown={(e) => e.preventDefault()} onPointerDownOutside={(e) => e.preventDefault()} onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
             🚀 Register Your TREKKER-MD Bot
