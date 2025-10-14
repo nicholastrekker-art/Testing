@@ -31,9 +31,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     sessionId: autoSessionId,
     credsFile: null as File | null,
     features: {
-      autoLike: false,
-      autoReact: false,
       autoView: false,
+      typingMode: 'none' as 'none' | 'typing' | 'recording' | 'both',
       presenceMode: 'none' as 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch',
       intervalSeconds: 30, // for auto_switch mode
       chatGPT: false
@@ -886,8 +885,34 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
 
                     <div className="p-3 border rounded-lg hover:bg-muted/50">
                       <div className="mb-3">
-                        <Label className="text-sm font-medium">Presence Configuration</Label>
-                        <p className="text-xs text-muted-foreground mt-1">Configure how the bot appears online to other users</p>
+                        <Label className="text-sm font-medium">Typing Indicator</Label>
+                        <p className="text-xs text-muted-foreground mt-1">Show typing/recording indicator when bot is processing messages</p>
+                      </div>
+                      <Select
+                        value={formData.features.typingMode || 'none'}
+                        onValueChange={(value: 'none' | 'typing' | 'recording' | 'both') =>
+                          setFormData(prev => ({
+                            ...prev,
+                            features: { ...prev.features, typingMode: value }
+                          }))
+                        }
+                      >
+                        <SelectTrigger data-testid="select-typing-mode">
+                          <SelectValue placeholder="Select typing mode" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None - No indicator</SelectItem>
+                          <SelectItem value="typing">Typing indicator</SelectItem>
+                          <SelectItem value="recording">Recording indicator</SelectItem>
+                          <SelectItem value="both">Switch between both</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="p-3 border rounded-lg hover:bg-muted/50">
+                      <div className="mb-3">
+                        <Label className="text-sm font-medium">Presence Mode</Label>
+                        <p className="text-xs text-muted-foreground mt-1">Control bot's overall online/availability status</p>
                       </div>
                       <Select
                         value={formData.features.presenceMode}
@@ -902,11 +927,11 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
                           <SelectValue placeholder="Select presence mode" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">None - Appear as normal</SelectItem>
+                          <SelectItem value="none">None - Normal status</SelectItem>
                           <SelectItem value="always_online">Always Online</SelectItem>
-                          <SelectItem value="always_typing">Always Typing</SelectItem>
+                          <SelectItem value="always_typing">Always Composing</SelectItem>
                           <SelectItem value="always_recording">Always Recording</SelectItem>
-                          <SelectItem value="auto_switch">Auto Switch (Recording & Typing)</SelectItem>
+                          <SelectItem value="auto_switch">Auto Switch (30s interval)</SelectItem>
                         </SelectContent>
                       </Select>
 

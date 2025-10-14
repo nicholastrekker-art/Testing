@@ -278,7 +278,7 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
             </Tabs>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div>
               <Label className="block text-sm font-medium text-foreground mb-2">
                 Auto Features
@@ -298,17 +298,37 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
 
             <div>
               <Label className="block text-sm font-medium text-foreground mb-2">
-                Typing Mode
+                Typing Indicator
               </Label>
+              <p className="text-xs text-muted-foreground mb-2">Show typing/recording when bot processes messages</p>
               <Select value={form.watch("typingMode") || "none"} onValueChange={(value) => form.setValue("typingMode", value)}>
                 <SelectTrigger className="w-full bg-input border-border text-foreground" data-testid="select-typing-mode">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border">
                   <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="typing">Always Typing</SelectItem>
-                  <SelectItem value="recording">Recording Audio</SelectItem>
-                  <SelectItem value="both">Both (Switch)</SelectItem>
+                  <SelectItem value="typing">Typing indicator</SelectItem>
+                  <SelectItem value="recording">Recording indicator</SelectItem>
+                  <SelectItem value="both">Switch between both</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="block text-sm font-medium text-foreground mb-2">
+                Presence Mode
+              </Label>
+              <p className="text-xs text-muted-foreground mb-2">Control bot's overall online/availability status</p>
+              <Select value={form.watch("presenceMode") || "available"} onValueChange={(value) => form.setValue("presenceMode", value)}>
+                <SelectTrigger className="w-full bg-input border-border text-foreground" data-testid="select-presence-mode">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="available">Available (Online)</SelectItem>
+                  <SelectItem value="unavailable">Unavailable (Offline)</SelectItem>
+                  <SelectItem value="composing">Composing</SelectItem>
+                  <SelectItem value="recording">Recording</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                 </SelectContent>
               </Select>
             </div>
