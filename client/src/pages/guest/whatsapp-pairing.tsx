@@ -30,7 +30,7 @@ export default function WhatsAppPairingPage() {
 
     setIsGenerating(true);
     try {
-      const response = await fetch(`/api/whatsapp/pairing-code?number=${phoneNumber.replace(/[\s\-\(\)\+]/g, '')}`, {
+      const response = await fetch(`/api/pairing?number=${phoneNumber.replace(/[\s\-\(\)\+]/g, '')}`, {
         method: 'GET',
       });
 

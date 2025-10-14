@@ -149,6 +149,71 @@ app.use((req, res, next) => {
   // Serve pairing interface files directly from pair/public
   app.use('/pair', express.static(path.join(__dirname, '../pair/public')));
 
+  // Track phone-to-pairing-code mapping for correlating sessions
+  const phoneToPairingCode = new Map<string, { code: string; timestamp: number; phoneNumber: string }>();
+
+  // Wrap the sessionStorage Map to auto-save to database when sessions are added
+  try {
+    const { getSessionStorage } = await import('../pair/lib/index.js');
+    const sessionStorage = getSessionStorage();
+    const serverName = process.env.SERVER_NAME || process.env.NAME || 'default';
+    
+    // Store the original set method
+    const originalSet = sessionStorage.set.bind(sessionStorage);
+    
+    // Override the set method to auto-save to database
+    sessionStorage.set = function(key: string, value: any) {
+      // Call the original set method
+      const result = originalSet(key, value);
+      
+      // Immediately save to database (async, non-blocking)
+      (async () => {
+        try {
+          const { db } = await import('./db');
+          const { guestSessions } = await import('../shared/schema');
+          const { eq, and } = await import('drizzle-orm');
+          
+          // Find the most recent pending pairing code entry (within last 5 minutes)
+          const pending = await db.select()
+            .from(guestSessions)
+            .where(
+              and(
+                eq(guestSessions.sessionId, ''),
+                eq(guestSessions.serverName, serverName)
+              )
+            )
+            .orderBy(guestSessions.createdAt, 'desc')
+            .limit(1);
+          
+          if (pending.length > 0 && pending[0].phoneNumber) {
+            // Update the most recent pending entry with the session ID
+            await db.update(guestSessions)
+              .set({ sessionId: key })
+              .where(eq(guestSessions.id, pending[0].id));
+            
+            console.log(`✅ Linked session ID to phone ${pending[0].phoneNumber} with pairing code ${pending[0].pairingCode}: ${key.substring(0, 20)}...`);
+            
+            // Clean up the tracking map for this phone
+            if (pending[0].pairingCode) {
+              phoneToPairingCode.delete(pending[0].pairingCode);
+            }
+          } else {
+            // No pending entry found - this shouldn't happen in normal flow
+            console.error(`⚠️ Session ${key.substring(0, 20)}... created but no pending pairing code found`);
+          }
+        } catch (error) {
+          console.error('❌ Failed to auto-save session to database:', error);
+        }
+      })();
+      
+      return result;
+    };
+    
+    console.log('✅ SessionStorage wrapper installed for auto-save to database');
+  } catch (error) {
+    console.error('❌ Failed to wrap sessionStorage:', error);
+  }
+  
   // Integrate pairing API routes from pair/routers/pair.js with rate limiting
   try {
     const pairRouterModule = await import('../pair/routers/pair.js');
@@ -184,6 +249,54 @@ app.use((req, res, next) => {
       }
       
       record.count++;
+      next();
+    });
+    
+    // Middleware to save pairing sessions to database for frontend polling
+    app.use('/api/pairing', async (req, res, next) => {
+      // Capture the response
+      const originalJson = res.json.bind(res);
+      res.json = function (data: any) {
+        // If pairing code was successfully generated, save to database asynchronously
+        if (res.statusCode === 200 && data?.code && req.query.number) {
+          (async () => {
+            try {
+              const { db } = await import('./db');
+              const { guestSessions } = await import('../shared/schema');
+              const cleanedPhone = String(req.query.number).replace(/[\s\-\(\)\+]/g, '');
+              const serverName = process.env.SERVER_NAME || process.env.NAME || 'default';
+              
+              // Track this pairing code with the phone number for correlation
+              phoneToPairingCode.set(data.code, {
+                code: data.code,
+                phoneNumber: cleanedPhone,
+                timestamp: Date.now()
+              });
+              
+              // Clean up old entries (older than 5 minutes)
+              for (const [code, entry] of phoneToPairingCode.entries()) {
+                if (Date.now() - entry.timestamp > 5 * 60 * 1000) {
+                  phoneToPairingCode.delete(code);
+                }
+              }
+              
+              // Save session to database for frontend polling
+              await db.insert(guestSessions).values({
+                phoneNumber: cleanedPhone,
+                sessionId: '', // Will be updated when session ID is available
+                pairingCode: data.code,
+                serverName,
+                isUsed: false,
+              });
+              
+              console.log(`✅ Pairing code ${data.code} saved to database and tracked for phone ${cleanedPhone}`);
+            } catch (error) {
+              console.error('❌ Failed to save pairing code to database:', error);
+            }
+          })();
+        }
+        return originalJson(data);
+      };
       next();
     });
     
