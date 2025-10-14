@@ -306,6 +306,18 @@ export async function registerRoutes(app: Express): Server {
   // Set broadcast function in bot manager
   botManager.setBroadcastFunction(broadcast);
 
+  // Proxy middleware for pair server on port 3001
+  app.use('/pair-api', createProxyMiddleware({
+    target: 'http://localhost:3001',
+    changeOrigin: true,
+    pathRewrite: {
+      '^/pair-api': '/code'
+    },
+    onError: (err, req, res) => {
+      console.error('Pair server proxy error:', err);
+      res.status(500).json({ error: 'Pairing service unavailable' });
+    }
+  }));
 
   // Function to resume all saved bots from database on startup
   async function resumeSavedBots() {
