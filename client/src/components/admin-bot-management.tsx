@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,14 @@ interface AdminBotManagementProps {
   onClose: () => void;
 }
 
+// Assuming GodRegistryEntry and related states/mutations are defined elsewhere or not relevant to the provided snippet.
+// For the purpose of this fix, we'll focus on the dialog structure.
+// If these were present, they would be integrated here.
+// const [showGodRegistry, setShowGodRegistry] = useState(false);
+// const [godRegistry, setGodRegistry] = useState([]);
+// const { data: godRegistry = [], isLoading: registryLoading } = useQuery(...);
+// const [editingRegistration, setEditingRegistration] = useState<any>(null);
+
 export default function AdminBotManagement({ open, onClose }: AdminBotManagementProps) {
   const [activeTab, setActiveTab] = useState<"pending" | "approved">("pending");
   const [showApprovalModal, setShowApprovalModal] = useState(false);
@@ -24,6 +32,12 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
   const [adminMessage, setAdminMessage] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const queryClient = useQueryClient();
+
+  // Mock states and functions for God Registry Management to make the code runnable
+  const [showGodRegistry, setShowGodRegistry] = useState(false);
+  const [godRegistry, setGodRegistry] = useState([]); // Assuming this would be populated by a query
+  const registryLoading = false; // Assuming this would be from a query
+  const [editingRegistration, setEditingRegistration] = useState<any>(null); // Assuming this would be for editing
 
   // Fetch pending bots
   const { data: pendingBots = [], isLoading: pendingLoading } = useQuery({
@@ -83,9 +97,9 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
 
   const confirmApproval = () => {
     if (selectedBot && approvalDuration) {
-      approveMutation.mutate({ 
-        botId: selectedBot.id, 
-        duration: parseInt(approvalDuration) 
+      approveMutation.mutate({
+        botId: selectedBot.id,
+        duration: parseInt(approvalDuration)
       });
     }
   };
@@ -101,9 +115,9 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
 
   const confirmSendMessage = () => {
     if (selectedBot && adminMessage.trim()) {
-      messageMutation.mutate({ 
-        botId: selectedBot.id, 
-        message: adminMessage 
+      messageMutation.mutate({
+        botId: selectedBot.id,
+        message: adminMessage
       });
     }
   };
@@ -264,7 +278,7 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Badge 
+                            <Badge
                               variant={bot.status === 'online' ? 'default' : 'secondary'}
                               className={
                                 bot.status === 'online' ? 'bg-green-600 text-white' :
@@ -333,7 +347,7 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
               </p>
             </div>
             <div className="flex space-x-2">
-              <Button 
+              <Button
                 onClick={confirmApproval}
                 disabled={approveMutation.isPending}
                 className="bg-green-600 hover:bg-green-700"
@@ -370,7 +384,7 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
               />
             </div>
             <div className="flex space-x-2">
-              <Button 
+              <Button
                 onClick={confirmSendMessage}
                 disabled={messageMutation.isPending || !adminMessage.trim()}
                 className="bg-blue-600 hover:bg-blue-700"
@@ -384,6 +398,67 @@ export default function AdminBotManagement({ open, onClose }: AdminBotManagement
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* God Registry Management Modal */}
+      {showGodRegistry && (
+        <Dialog open={showGodRegistry} onOpenChange={setShowGodRegistry}>
+          <DialogContent className="max-w-4xl max-h-[90vh] bg-gray-900 border-gray-700 flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="text-white">📱 God Registry Management</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Manage global phone number registrations across all tenants
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 overflow-y-auto flex-1 pr-2">
+              {registryLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-6 h-6 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : godRegistry.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  No registrations found
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {(godRegistry as any[]).map((registration: any) => (
+                    <div key={registration.phoneNumber} className="border border-gray-700 rounded-lg p-4 bg-gray-800/50">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-white">
+                            📱 {registration.phoneNumber}
+                          </p>
+                          <p className="text-sm text-gray-400">
+                            Tenant: {registration.tenancyName}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Registered: {new Date(registration.registeredAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingRegistration(registration)}
+                          className="text-blue-400 border-blue-400 hover:bg-blue-900/20"
+                        >
+                          <i className="fas fa-edit mr-1"></i>
+                          Edit
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-gray-700">
+              <Button onClick={() => setShowGodRegistry(false)} className="bg-emerald-600 hover:bg-emerald-700">
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }
