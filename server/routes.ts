@@ -306,15 +306,25 @@ export async function registerRoutes(app: Express): Server {
   // Set broadcast function in bot manager
   botManager.setBroadcastFunction(broadcast);
 
-  // Proxy middleware for pair server on port 3001
-  app.use('/pair-api', createProxyMiddleware({
+  // Proxy middleware for pair server on port 3001 - must be registered before other routes
+  console.log('📡 Registering /api/pair proxy middleware...');
+  app.use('/api/pair', (req, res, next) => {
+    console.log(`📍 /api/pair middleware hit: ${req.method} ${req.url}`);
+    next();
+  }, createProxyMiddleware({
     target: 'http://localhost:3001',
     changeOrigin: true,
     pathRewrite: {
-      '^/pair-api': '/code'
+      '^/api/pair': '/code'
+    },
+    onProxyReq: (proxyReq, req, res) => {
+      console.log(`🔄 Proxying ${req.method} ${req.url} -> http://localhost:3001${proxyReq.path}`);
+    },
+    onProxyRes: (proxyRes, req, res) => {
+      console.log(`✅ Proxy response: ${proxyRes.statusCode} for ${req.url}`);
     },
     onError: (err, req, res) => {
-      console.error('Pair server proxy error:', err);
+      console.error('❌ Pair server proxy error:', err);
       res.status(500).json({ error: 'Pairing service unavailable' });
     }
   }));

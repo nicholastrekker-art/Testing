@@ -48,6 +48,7 @@ function Router() {
           <Route path="/guest/verification" component={GuestPhoneVerification} />
           <Route path="/guest/bot-management" component={GuestBotManagement} />
           <Route path="/guest/cross-server" component={GuestCrossServer} />
+          <Route path="/guest/whatsapp-pairing" component={WhatsAppPairingPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

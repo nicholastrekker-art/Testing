@@ -322,20 +322,49 @@ export default function Dashboard() {
             </div>
 
             {/* Steps Grid */}
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Step 1: Register Your Bot */}
+            <div className="grid gap-6 md:grid-cols-3">
+              {/* Step 1: Get Session */}
+              <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-blue-500/30 hover:border-blue-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/30 hover:-translate-y-1">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg shadow-blue-500/50 group-hover:scale-110 transition-transform">
+                      <span className="text-2xl font-bold text-white">1</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Get Session</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+                        <span className="text-xs text-blue-400 font-medium">START HERE</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-300 mb-5 leading-relaxed">
+                    Generate your WhatsApp session credentials using our secure pairing system. Get your <span className="font-semibold text-blue-400">pairing code</span> instantly
+                  </p>
+                  <Link href="/guest/whatsapp-pairing" data-testid="link-get-session">
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all" data-testid="button-get-session">
+                      <i className="fas fa-key mr-2"></i>
+                      Get Session
+                      <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Step 2: Register Your Bot */}
               <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-purple-500/30 hover:border-purple-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/30 hover:-translate-y-1">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative p-6">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg shadow-purple-500/50 group-hover:scale-110 transition-transform">
-                      <span className="text-2xl font-bold text-white">1</span>
+                      <span className="text-2xl font-bold text-white">2</span>
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-white">Register Your Bot</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
-                        <span className="text-xs text-purple-400 font-medium">START HERE</span>
+                        <span className="text-xs text-purple-400 font-medium">NEXT STEP</span>
                       </div>
                     </div>
                   </div>
@@ -345,6 +374,7 @@ export default function Dashboard() {
                   <Button
                     onClick={() => setShowGuestRegistration(true)}
                     className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-all"
+                    data-testid="button-register-bot"
                   >
                     <i className="fas fa-rocket mr-2"></i>
                     Register Now
@@ -353,13 +383,13 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Step 2: Manage Your Bot */}
+              {/* Step 3: Manage Your Bot */}
               <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-emerald-500/30 hover:border-emerald-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/30 hover:-translate-y-1">
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative p-6">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/50 group-hover:scale-110 transition-transform">
-                      <span className="text-2xl font-bold text-white">2</span>
+                      <span className="text-2xl font-bold text-white">3</span>
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-white">Manage Your Bot</h3>
@@ -373,7 +403,7 @@ export default function Dashboard() {
                     Control features, view statistics, and manage your bot settings. Access your <span className="font-semibold text-emerald-400">full dashboard</span> with real-time monitoring
                   </p>
                   <Link href="/guest/bot-management">
-                    <Button className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold py-3 shadow-lg shadow-emerald-500/30 group-hover:shadow-emerald-500/50 transition-all">
+                    <Button className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold py-3 shadow-lg shadow-emerald-500/30 group-hover:shadow-emerald-500/50 transition-all" data-testid="button-manage-bot">
                       <i className="fas fa-cog mr-2"></i>
                       Bot Management
                       <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
