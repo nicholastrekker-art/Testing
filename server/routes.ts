@@ -306,27 +306,40 @@ export async function registerRoutes(app: Express): Server {
   // Set broadcast function in bot manager
   botManager.setBroadcastFunction(broadcast);
 
-  // Proxy middleware for pair server on port 3001 - must be registered before other routes
-  console.log('📡 Registering /api/pair proxy middleware...');
-  app.use('/api/pair', createProxyMiddleware({
-    target: 'http://0.0.0.0:3001',
-    changeOrigin: true,
-    pathRewrite: {
-      '^/api/pair': '/code'
-    },
-    onProxyReq: (proxyReq, req, res) => {
-      console.log(`🔄 Proxying ${req.method} ${req.originalUrl} -> http://0.0.0.0:3001/code${req.url}`);
-    },
-    onProxyRes: (proxyRes, req, res) => {
-      console.log(`✅ Proxy response: ${proxyRes.statusCode} for ${req.originalUrl}`);
-    },
-    onError: (err, req, res) => {
-      console.error('❌ Pair server proxy error:', err);
-      if (!res.headersSent) {
-        res.status(500).json({ error: 'Pairing service unavailable. Please ensure the pair server is running.' });
+  // Pairing code endpoint - forwards to pair server on port 3001
+  console.log('📡 Registering /api/pair endpoint...');
+  app.get('/api/pair', async (req, res) => {
+    try {
+      const phoneNumber = req.query.number;
+      if (!phoneNumber) {
+        return res.status(400).json({ error: 'Phone number is required' });
       }
+
+      console.log(`🔄 Forwarding pairing request for ${phoneNumber} to pair server...`);
+      
+      const pairServerUrl = `http://0.0.0.0:3001/code/?number=${phoneNumber}`;
+      console.log(`📞 Calling: ${pairServerUrl}`);
+      
+      const response = await fetch(pairServerUrl, { 
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      
+      console.log(`📥 Response status: ${response.status}`);
+      
+      if (!response.ok) {
+        throw new Error(`Pair server returned status ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log(`✅ Received pairing code from pair server:`, data);
+      
+      res.json(data);
+    } catch (error) {
+      console.error('❌ Pair server error:', error);
+      res.status(500).json({ error: 'Failed to generate pairing code. Please try again.' });
     }
-  }));
+  });
 
   // Function to resume all saved bots from database on startup
   async function resumeSavedBots() {
