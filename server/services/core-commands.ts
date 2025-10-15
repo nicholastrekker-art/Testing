@@ -458,11 +458,11 @@ commandRegistry.register({
 // Register download commands
 commandRegistry.register({
   name: 'play',
-  aliases: ['song', 'audio', 'mp3'],
+  aliases: ['song', 'audio', 'mp3', 'playdoc'],
   description: 'Download audio from YouTube',
   category: 'DOWNLOAD',
   handler: async (context: CommandContext) => {
-    const { respond, args } = context;
+    const { respond, args, client, from, message } = context;
 
     if (!args.length) {
       return await respond('❌ Please provide a song name or YouTube URL.\n\n*Example:* .play Ed Sheeran Perfect');
@@ -472,21 +472,104 @@ commandRegistry.register({
     await respond(`🔍 Searching for: *${query}*\nPlease wait...`);
 
     try {
-      // This is a placeholder - in real implementation you'd integrate with YouTube API
-      await respond(`🎵 *Audio Download*\n\n📝 *Title:* ${query}\n🎧 *Format:* MP3\n⬇️ *Status:* Processing...\n\n⚠️ *Note:* Audio download functionality requires YouTube API integration.`);
+      // Perform YouTube search
+      const ytSearch = require('yt-search');
+      const searchResults = await ytSearch(query);
+
+      if (!searchResults || !searchResults.videos.length) {
+        return await respond('❌ No video found for the specified query.');
+      }
+
+      const firstVideo = searchResults.videos[0];
+      const videoUrl = firstVideo.url;
+
+      // Function to get download data from APIs
+      const getDownloadData = async (url: string) => {
+        try {
+          const response = await axios.get(url);
+          return response.data;
+        } catch (error) {
+          console.error('Error fetching data from API:', error);
+          return { success: false };
+        }
+      };
+
+      // List of APIs to try
+      const apis = [
+        `https://api-rin-tohsaka.vercel.app/download/ytmp4?url=${encodeURIComponent(videoUrl)}`,
+        `https://api.davidcyriltech.my.id/download/ytmp3?url=${encodeURIComponent(videoUrl)}`,
+        `https://www.dark-yasiya-api.site/download/ytmp3?url=${encodeURIComponent(videoUrl)}`,
+        `https://api.giftedtech.web.id/api/download/dlmp3?url=${encodeURIComponent(videoUrl)}&apikey=gifted-md`,
+        `https://api.dreaded.site/api/ytdl/audio?url=${encodeURIComponent(videoUrl)}`
+      ];
+
+      let downloadData: any;
+      for (const api of apis) {
+        downloadData = await getDownloadData(api);
+        if (downloadData && downloadData.success) break;
+      }
+
+      if (!downloadData || !downloadData.success) {
+        return await respond('❌ Failed to retrieve download URL from all sources. Please try again later.');
+      }
+
+      const downloadUrl = downloadData.result.download_url;
+      const videoDetails = downloadData.result;
+
+      // Prepare message payloads with external ad details
+      const messagePayloads = [
+        {
+          audio: { url: downloadUrl },
+          mimetype: 'audio/mp4',
+          contextInfo: {
+            externalAdReply: {
+              title: "TREKKER-MD LIFETIME BOT",
+              body: videoDetails.title || firstVideo.title,
+              mediaType: 1,
+              sourceUrl: 'https://whatsapp.com/channel/0029VaihcQv84Om8LP59fO3f',
+              thumbnailUrl: firstVideo.thumbnail,
+              renderLargerThumbnail: false,
+              showAdAttribution: true,
+            },
+          },
+        },
+        {
+          document: { url: downloadUrl },
+          mimetype: 'audio/mpeg',
+          fileName: `${firstVideo.title}.mp3`,
+          contextInfo: {
+            externalAdReply: {
+              title: "TREKKER-MD LIFETIME BOT",
+              body: videoDetails.title || firstVideo.title,
+              mediaType: 1,
+              sourceUrl: 'https://whatsapp.com/channel/0029VaihcQv84Om8LP59fO3f',
+              thumbnailUrl: firstVideo.thumbnail,
+              renderLargerThumbnail: false,
+              showAdAttribution: true,
+            },
+          },
+        }
+      ];
+
+      // Send the download to the user
+      for (const messagePayload of messagePayloads) {
+        await client.sendMessage(from, messagePayload, { quoted: message });
+      }
+
     } catch (error) {
-      await respond('❌ Sorry, audio download is currently unavailable. Please try again later.');
+      console.error('Error during download process:', error);
+      await respond(`❌ Download failed due to an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
 
 commandRegistry.register({
   name: 'video',
-  aliases: ['mp4', 'ytdl'],
+  aliases: ['mp4', 'ytdl', 'videodoc', 'film'],
   description: 'Download video from YouTube',
   category: 'DOWNLOAD',
   handler: async (context: CommandContext) => {
-    const { respond, args } = context;
+    const { respond, args, client, from, message } = context;
 
     if (!args.length) {
       return await respond('❌ Please provide a video name or YouTube URL.\n\n*Example:* .video Funny cats compilation');
@@ -496,10 +579,93 @@ commandRegistry.register({
     await respond(`🔍 Searching for: *${query}*\nPlease wait...`);
 
     try {
-      // This is a placeholder - in real implementation you'd integrate with YouTube API
-      await respond(`🎬 *Video Download*\n\n📝 *Title:* ${query}\n📱 *Format:* MP4\n⬇️ *Status:* Processing...\n\n⚠️ *Note:* Video download functionality requires YouTube API integration.`);
+      // Perform YouTube search
+      const ytSearch = require('yt-search');
+      const searchResults = await ytSearch(query);
+
+      if (!searchResults || !searchResults.videos.length) {
+        return await respond('❌ No video found for the specified query.');
+      }
+
+      const firstVideo = searchResults.videos[0];
+      const videoUrl = firstVideo.url;
+
+      // Function to get download data from APIs
+      const getDownloadData = async (url: string) => {
+        try {
+          const response = await axios.get(url);
+          return response.data;
+        } catch (error) {
+          console.error('Error fetching data from API:', error);
+          return { success: false };
+        }
+      };
+
+      // List of APIs to try
+      const apis = [
+        `https://api-rin-tohsaka.vercel.app/download/ytmp4?url=${encodeURIComponent(videoUrl)}`,
+        `https://api.davidcyriltech.my.id/download/ytmp4?url=${encodeURIComponent(videoUrl)}`,
+        `https://www.dark-yasiya-api.site/download/ytmp4?url=${encodeURIComponent(videoUrl)}`,
+        `https://api.giftedtech.web.id/api/download/dlmp4?url=${encodeURIComponent(videoUrl)}&apikey=gifted-md`,
+        `https://api.dreaded.site/api/ytdl/video?url=${encodeURIComponent(videoUrl)}`
+      ];
+
+      let downloadData: any;
+      for (const api of apis) {
+        downloadData = await getDownloadData(api);
+        if (downloadData && downloadData.success) break;
+      }
+
+      if (!downloadData || !downloadData.success) {
+        return await respond('❌ Failed to retrieve download URL from all sources. Please try again later.');
+      }
+
+      const downloadUrl = downloadData.result.download_url;
+      const videoDetails = downloadData.result;
+
+      // Prepare message payloads with external ad details
+      const messagePayloads = [
+        {
+          video: { url: downloadUrl },
+          mimetype: 'video/mp4',
+          contextInfo: {
+            externalAdReply: {
+              title: "TREKKER-MD LIFETIME BOT",
+              body: videoDetails.title || firstVideo.title,
+              mediaType: 1,
+              sourceUrl: 'https://whatsapp.com/channel/0029VaihcQv84Om8LP59fO3f',
+              thumbnailUrl: firstVideo.thumbnail,
+              renderLargerThumbnail: false,
+              showAdAttribution: true,
+            },
+          },
+        },
+        {
+          document: { url: downloadUrl },
+          mimetype: 'video/mp4',
+          fileName: `${firstVideo.title}.mp4`,
+          contextInfo: {
+            externalAdReply: {
+              title: "TREKKER-MD LIFETIME BOT",
+              body: videoDetails.title || firstVideo.title,
+              mediaType: 1,
+              sourceUrl: 'https://whatsapp.com/channel/0029VaihcQv84Om8LP59fO3f',
+              thumbnailUrl: firstVideo.thumbnail,
+              renderLargerThumbnail: false,
+              showAdAttribution: true,
+            },
+          },
+        }
+      ];
+
+      // Send the download to the user
+      for (const messagePayload of messagePayloads) {
+        await client.sendMessage(from, messagePayload, { quoted: message });
+      }
+
     } catch (error) {
-      await respond('❌ Sorry, video download is currently unavailable. Please try again later.');
+      console.error('Error during download process:', error);
+      await respond(`❌ Download failed due to an error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 });
