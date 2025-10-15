@@ -80,8 +80,8 @@ async function startScheduledBotMonitoring() {
   // Initial check after 10 seconds (faster startup)
   setTimeout(checkApprovedBots, 10000);
 
-  // Schedule checks every 30 seconds (reduced from 3 minutes for faster recovery)
-  setInterval(checkApprovedBots, 30000);
+  // Schedule checks every 5 minutes (300000ms)
+  setInterval(checkApprovedBots, 300000);
 
     // Server heartbeat - update lastActive every 30 minutes
     const updateServerHeartbeat = async () => {
