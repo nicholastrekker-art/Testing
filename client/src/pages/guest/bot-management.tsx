@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, Play, Square, RefreshCw, Settings, Trash2, ExternalLink, AlertTriangle, Shield, CheckCircle, Phone, Eye, EyeOff, Upload, Power, Loader2, Smartphone } from "lucide-react";
+import { Bot, Play, Square, RefreshCw, Settings, Trash2, ExternalLink, AlertTriangle, Shield, CheckCircle, Phone, Upload, Power, Loader2, Smartphone } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation } from "wouter";
 
@@ -52,7 +52,7 @@ export default function GuestBotManagement() {
   const [currentStep, setCurrentStep] = useState<Step>('session');
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [authenticatedBotId, setAuthenticatedBotId] = useState<string | null>(null);
-  const [showSessionId, setShowSessionId] = useState(false);
+  
   const [botInfo, setBotInfo] = useState<any>(null);
   const [showPhoneEntry, setShowPhoneEntry] = useState(false);
 
@@ -568,21 +568,12 @@ export default function GuestBotManagement() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium">Session ID (Base64 Credentials)</label>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowSessionId(!showSessionId)}
-                  >
-                    {showSessionId ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
                 </div>
                 <textarea
                   placeholder="Paste your base64 encoded credentials here..."
                   value={sessionId}
                   onChange={(e) => setSessionId(e.target.value)}
-                  className={`w-full h-32 p-3 border rounded-md resize-none font-mono text-sm ${
-                    showSessionId ? '' : 'filter blur-sm hover:filter-none focus:filter-none'
-                  }`}
+                  className="w-full h-32 p-3 border rounded-md resize-none font-mono text-sm"
                   onKeyDown={(e) => e.key === 'Enter' && e.ctrlKey && handleSessionVerification()}
                 />
                 <p className="text-xs text-muted-foreground">
@@ -716,21 +707,12 @@ export default function GuestBotManagement() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium">Updated Session ID (Base64 Credentials)</label>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowSessionId(!showSessionId)}
-                  >
-                    {showSessionId ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
                 </div>
                 <textarea
                   placeholder="Paste your NEW base64 session credentials here..."
                   value={sessionId}
                   onChange={(e) => setSessionId(e.target.value)}
-                  className={`w-full h-32 p-3 border rounded-md resize-none font-mono text-sm ${
-                    showSessionId ? '' : 'filter blur-sm hover:filter-none focus:filter-none'
-                  }`}
+                  className="w-full h-32 p-3 border rounded-md resize-none font-mono text-sm"
                 />
                 <p className="text-xs text-muted-foreground">
                   We'll test your NEW session ID connection, verify it works, then update your bot credentials
