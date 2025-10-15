@@ -25,13 +25,20 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  const logoutMutation = useMutation({
-    mutationFn: () => apiRequest("POST", "/api/logout"),
-    onSuccess: () => {
-      logout();
-      toast({ title: "Logged out successfully" });
+  const handleLogout = () => {
+    // Clear auth state immediately
+    logout();
+    toast({ title: "Logged out successfully" });
+    
+    // Optionally notify server (if endpoint exists)
+    try {
+      apiRequest("POST", "/api/logout").catch(() => {
+        // Ignore server errors - client logout is what matters
+      });
+    } catch (error) {
+      // Ignore - client logout already succeeded
     }
-  });
+  };
 
   const menuItems = isAdmin ? [
     { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -114,10 +121,9 @@ export default function Sidebar() {
           {user ? (
             <Button
               onClick={() => {
-                logoutMutation.mutate();
+                handleLogout();
                 setIsOpen(false);
               }}
-              disabled={logoutMutation.isPending}
               variant="outline"
               className="w-full text-sm lg:text-base"
             >
