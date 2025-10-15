@@ -43,18 +43,6 @@ task = "shell.exec"
 args = "yarn start"
 waitForPort = 5000
 
-[[workflows.workflow]]
-name = "Pair Server"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "console"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd pair && PORT=3001 node index.js"
-waitForPort = 3001
-
 [[ports]]
 localPort = 3001
 externalPort = 3001
