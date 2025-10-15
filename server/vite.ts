@@ -27,18 +27,18 @@ export async function setupVite(app: Express, server: Server) {
   }
 
   log("Setting up development vite middleware");
-  
+
   // Dynamic imports to avoid loading vite in production
   const { createServer: createViteServer, createLogger } = await import("vite");
   const userCfgExport = (await import("../vite.config")).default;
-  
+
   // Resolve the config function to get the actual configuration
   const userCfg = typeof userCfgExport === "function"
     ? userCfgExport({ mode: process.env.NODE_ENV === "production" ? "production" : "development", command: "serve" })
     : userCfgExport;
-  
+
   const viteLogger = createLogger();
-  
+
   const vite = await createViteServer({
     ...userCfg,
     configFile: false,
@@ -52,10 +52,10 @@ export async function setupVite(app: Express, server: Server) {
     server: {
       ...userCfg.server,
       middlewareMode: true,
-      hmr: { 
+      hmr: {
         server,
         host: "0.0.0.0",
-        clientPort: 5000 
+        clientPort: 5000
       },
       host: "0.0.0.0",
       allowedHosts: true,
@@ -68,7 +68,7 @@ export async function setupVite(app: Express, server: Server) {
   // Only serve HTML for non-API routes to prevent API endpoints from returning HTML
   app.use(async (req, res, next) => {
     const url = req.originalUrl;
-    
+
     // Skip API routes - let them be handled by the registered API routes
     if (url.startsWith('/api/') || url.startsWith('/ws')) {
       return next();
@@ -98,7 +98,7 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(__dirname, "..", "dist", "public");
+  const distPath = path.resolve(process.cwd(), "dist/public");
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
@@ -106,30 +106,29 @@ export function serveStatic(app: Express) {
     );
   }
 
-  // For Cloud Run deployment, always serve at root path
-  const base = '/';
-  const basePath = base;
+  // Serve static assets with proper cache headers
+  app.use(express.static(distPath, {
+    maxAge: '1y',
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, filePath) => {
+      // Set proper cache headers for assets
+      if (filePath.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    }
+  }));
 
-  log(`Serving static files at base path: ${basePath}`);
-
-  // Serve static assets under the base path
-  app.use(basePath, express.static(distPath));
-
-  // Handle SPA routing - serve index.html for non-API routes under base path
-  const indexPath = path.resolve(distPath, "index.html");
-  
-  // Handle SPA routing - catch all non-API routes
-  app.use((req, res, next) => {
-    // Skip API routes - let them be handled by the registered API routes
-    if (req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/ws')) {
+  // Serve index.html for all non-API routes (SPA fallback)
+  app.get("*", (req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith('/api')) {
       return next();
     }
-    
-    // For non-root base paths, redirect if needed
-    if (basePath !== '/' && !req.originalUrl.startsWith(basePath)) {
-      return res.redirect(basePath);
-    }
-    
-    res.sendFile(indexPath);
+    res.sendFile(path.resolve(distPath, "index.html"), (err) => {
+      if (err) {
+        next(err);
+      }
+    });
   });
 }
