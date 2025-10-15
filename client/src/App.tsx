@@ -25,7 +25,9 @@ function Router() {
       <Sidebar />
       <main className="flex-1 overflow-auto w-full lg:w-auto">
         <Switch>
-          <Route path="/" component={Dashboard} />
+          <Route path="/">
+            <Dashboard />
+          </Route>
           <Route path="/bot-instances">
             <ProtectedRoute requireAdmin={true}>
               <BotInstances />
