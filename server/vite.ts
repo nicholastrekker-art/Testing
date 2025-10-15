@@ -120,7 +120,7 @@ export function serveStatic(app: Express) {
   }));
 
   // Serve index.html for all non-API routes (SPA fallback)
-  app.get("*", (req, res, next) => {
+  app.use((req, res, next) => {
     // Skip API routes
     if (req.path.startsWith('/api')) {
       return next();
