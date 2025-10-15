@@ -369,17 +369,18 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <p className="text-gray-300 mb-5 leading-relaxed">
-                    Upload your session credentials and configure your bot features. Choose from <span className="font-semibold text-purple-400">auto-like, auto-react, ChatGPT</span>, and more
+                    Upload your session credentials and configure your bot features. Choose from <span className="font-semibold text-purple-400">auto-view, ChatGPT</span>, and more
                   </p>
-                  <Button
-                    onClick={() => setShowGuestRegistration(true)}
-                    className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-all"
-                    data-testid="button-register-bot"
-                  >
-                    <i className="fas fa-rocket mr-2"></i>
-                    Register Now
-                    <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                  </Button>
+                  <Link href="/guest/bot-registration">
+                    <Button
+                      className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-all"
+                      data-testid="button-register-bot"
+                    >
+                      <i className="fas fa-rocket mr-2"></i>
+                      Register Now
+                      <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </Button>
+                  </Link>
                 </div>
               </div>
 
