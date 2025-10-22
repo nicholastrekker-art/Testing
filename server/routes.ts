@@ -463,7 +463,13 @@ export async function registerRoutes(app: Express): Server {
       if (req.body.sessionData) {
         credentialType = 'base64';
         try {
-          const base64Data = req.body.sessionData.trim();
+          let base64Data = req.body.sessionData.trim();
+
+          // Remove TREKKER~ prefix if present
+          if (base64Data.startsWith('TREKKER~')) {
+            console.log('🔧 Removing TREKKER~ prefix from session ID');
+            base64Data = base64Data.substring(8); // Remove 'TREKKER~' (8 characters)
+          }
 
           // Check Base64 size limit (5MB when decoded)
           const estimatedSize = (base64Data.length * 3) / 4; // Rough estimate of decoded size

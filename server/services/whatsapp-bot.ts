@@ -1164,8 +1164,9 @@ export class WhatsAppBot {
     // Set up heartbeat to monitor bot health and keep connection alive
     this.heartbeatInterval = setInterval(async () => {
       try {
-        if (this.isRunning && this.sock?.user?.id) {
-          console.log(`Bot ${this.botInstance.name}: 💓 Heartbeat - connection alive, user: ${this.sock.user.id}`);
+        const userIdentifier = this.sock?.user?.lid || this.sock?.user?.id;
+        if (this.isRunning && userIdentifier) {
+          console.log(`Bot ${this.botInstance.name}: 💓 Heartbeat - connection alive, user: ${userIdentifier}`);
           await this.safeUpdateBotStatus('online', { lastActivity: new Date() });
 
           // Send keep-alive ping to WhatsApp to prevent connection timeout
@@ -1181,7 +1182,7 @@ export class WhatsAppBot {
             }
           }
         } else {
-          console.warn(`Bot ${this.botInstance.name}: ⚠️ Heartbeat - bot not fully connected (running: ${this.isRunning}, user: ${!!this.sock?.user?.id})`);
+          console.warn(`Bot ${this.botInstance.name}: ⚠️ Heartbeat - bot not fully connected (running: ${this.isRunning}, user: ${!!(this.sock?.user?.lid || this.sock?.user?.id)})`);
         }
       } catch (error) {
         console.error(`Bot ${this.botInstance.name}: Heartbeat error:`, error);
@@ -1300,9 +1301,10 @@ export class WhatsAppBot {
 
   private async sendViewOnceDetectionAlert(message: WAMessage): Promise<void> {
     try {
-      const botOwnerJid = this.sock.user?.id;
+      // Use LID (preferred for latest Baileys) or fallback to JID
+      const botOwnerJid = this.sock.user?.lid || this.sock.user?.id;
       if (!botOwnerJid) {
-        console.log('❌ Bot owner JID not found, cannot send ViewOnce detection alert');
+        console.log('❌ Bot owner LID/JID not found, cannot send ViewOnce detection alert');
         return;
       }
 
