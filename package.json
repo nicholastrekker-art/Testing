@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "NODE_ENV=development yarn tsx server/index.ts",
-    "start": "concurrently \"NODE_ENV=production yarn tsx server/index.ts\" \"cd pair && PORT=3001 node index.js\"",
+    "start": "NODE_ENV=production yarn tsx server/index.ts",
     "build": "BASE_PATH=/ yarn vite build",
     "build:prod": "NODE_ENV=production BASE_PATH=/ yarn vite build",
     "start:prod": "NODE_ENV=production BASE_PATH=/ yarn tsx server/index.ts",
