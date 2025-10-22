@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, Play, Square, RefreshCw, Settings, Trash2, ExternalLink, AlertTriangle, Shield, CheckCircle, Phone, Upload, Power, Loader2, Smartphone } from "lucide-react";
+import { Bot, Play, Square, RefreshCw, Settings, Trash2, ExternalLink, AlertTriangle, Shield, CheckCircle, Phone, Upload, Loader2, Smartphone } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation } from "wouter";
 
@@ -52,7 +52,7 @@ export default function GuestBotManagement() {
   const [currentStep, setCurrentStep] = useState<Step>('session');
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [authenticatedBotId, setAuthenticatedBotId] = useState<string | null>(null);
-  
+
   const [botInfo, setBotInfo] = useState<any>(null);
   const [showPhoneEntry, setShowPhoneEntry] = useState(false);
 
@@ -576,9 +576,19 @@ export default function GuestBotManagement() {
                   className="w-full h-32 p-3 border rounded-md resize-none font-mono text-sm"
                   onKeyDown={(e) => e.key === 'Enter' && e.ctrlKey && handleSessionVerification()}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground mt-1">
                   We'll extract the phone number and check if your bot is currently active
                 </p>
+                <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800 mb-2">
+                  <p className="text-xs text-amber-800 dark:text-amber-200 font-medium mb-1">
+                    💡 Session ID Format Requirements:
+                  </p>
+                  <ul className="text-xs text-amber-700 dark:text-amber-300 space-y-1 ml-4">
+                    <li>• Must be base64 encoded (contains letters, numbers, +, /, =)</li>
+                    <li>• Should be copied completely without spaces or line breaks</li>
+                    <li>• Contains your WhatsApp credentials in JSON format</li>
+                  </ul>
+                </div>
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                   <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
                     <strong>Need a new session ID?</strong> If your credentials are expired:
@@ -1143,8 +1153,6 @@ export default function GuestBotManagement() {
                   </div>
                 )}
               </TabsContent>
-
-
             </Tabs>
           </>
         )}
