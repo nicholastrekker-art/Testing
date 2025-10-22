@@ -85,9 +85,19 @@ export class WhatsAppBot {
             signalIdentities: credentials.signalIdentities,
             platform: credentials.platform,
             routingInfo: credentials.routingInfo,
-            pairingEphemeralKeyPair: credentials.pairingEphemeralKeyPair
+            pairingEphemeralKeyPair: credentials.pairingEphemeralKeyPair,
+            // Include all other v7 fields
+            processedHistoryMessages: credentials.processedHistoryMessages || [],
+            nextPreKeyId: credentials.nextPreKeyId || 31,
+            firstUnuploadedPreKeyId: credentials.firstUnuploadedPreKeyId || 31,
+            accountSyncCounter: credentials.accountSyncCounter || 0,
+            accountSettings: credentials.accountSettings || { unarchiveChats: false },
+            registered: credentials.registered || false,
+            pairingCode: credentials.pairingCode,
+            lastAccountSyncTimestamp: credentials.lastAccountSyncTimestamp,
+            lastPropHash: credentials.lastPropHash
           },
-          keys: credentials.keys || {}
+          keys: {}
         };
       }
 
