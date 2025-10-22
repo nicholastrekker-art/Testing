@@ -41,6 +41,7 @@ import { CrossTenancyClient } from "./services/crossTenancyClient";
 import { z } from "zod";
 import crypto from 'crypto';
 import { createProxyMiddleware } from 'http-proxy-middleware';
+import express from 'express'; // Import express
 
 // Helper function to resolve bot location by phone number across tenancies
 async function resolveBotByPhone(phoneNumber: string): Promise<{
@@ -283,7 +284,7 @@ const upload = multer({
 export async function registerRoutes(app: Express): Server {
   const httpServer = createServer(app);
 
-  // WebSocket setup for real-time updates
+  // WebSocket server setup
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
   wss.on('connection', (ws) => {
@@ -306,40 +307,13 @@ export async function registerRoutes(app: Express): Server {
   // Set broadcast function in bot manager
   botManager.setBroadcastFunction(broadcast);
 
-  // Pairing code endpoint - forwards to pair server on port 3001
-  console.log('📡 Registering /api/pair endpoint...');
-  app.get('/api/pair', async (req, res) => {
-    try {
-      const phoneNumber = req.query.number;
-      if (!phoneNumber) {
-        return res.status(400).json({ error: 'Phone number is required' });
-      }
+  // Serve pair.html and integrate pairing router
+  const pairPublicPath = join(__dirname, '..', 'pair', 'public');
+  app.use('/pair', express.static(pairPublicPath));
 
-      console.log(`🔄 Forwarding pairing request for ${phoneNumber} to pair server...`);
-      
-      const pairServerUrl = `http://0.0.0.0:3001/code/?number=${phoneNumber}`;
-      console.log(`📞 Calling: ${pairServerUrl}`);
-      
-      const response = await fetch(pairServerUrl, { 
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
-      });
-      
-      console.log(`📥 Response status: ${response.status}`);
-      
-      if (!response.ok) {
-        throw new Error(`Pair server returned status ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log(`✅ Received pairing code from pair server:`, data);
-      
-      res.json(data);
-    } catch (error) {
-      console.error('❌ Pair server error:', error);
-      res.status(500).json({ error: 'Failed to generate pairing code. Please try again.' });
-    }
-  });
+  // Import and mount pairing routes
+  const pairRouter = await import('../pair/routers/pair.js');
+  app.use('/api/pair', pairRouter.default);
 
   // Function to resume all saved bots from database on startup
   async function resumeSavedBots() {
@@ -1557,7 +1531,7 @@ export async function registerRoutes(app: Express): Server {
       broadcast({ type: 'BOT_APPROVED', data: updatedBot });
       res.json({ message: "Bot approved successfully and starting automatically" });
     } catch (error) {
-      console.error("Bot approval error:", error);
+      console.error('Bot approval error:', error);
       res.status(500).json({ message: "Failed to approve bot" });
     }
   });

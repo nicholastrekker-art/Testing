@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
@@ -346,11 +345,11 @@
         <h1 class="brand-title">TREKKER MD</h1>
         <p class="brand-subtitle">WhatsApp Session Generator</p>
     </div>
-    
+
     <div class="container">
         <h2>TREKKER-MD Pair Code</h2>
         <p>Select Your Country & Enter your WhatsApp Number, Get Code, Link & Obtain Session Id</p>
-        
+
         <div class="input-container" id="input-section">
             <div style="position: relative;">
                 <input type="text" id="country-search" placeholder="🔍 Search country..." style="margin-bottom: 0.5rem;">
@@ -519,4 +518,189 @@
             <i class="fas fa-spinner fa-spin"></i> Processing...
         </div>
 
-  
+        <div id="pair"></div>
+        <div id="session-result">
+            <h2>Session ID</h2>
+            <div class="session-id-display" id="session-id"></div>
+            <p>Scan the QR code with your WhatsApp application.</p>
+            <div id="qr-code"></div>
+            <div class="button-group">
+                <button id="download-json" class="btn btn-secondary hidden">Download JSON</button>
+                <button id="restart-pairing" class="btn btn-secondary">Restart Pairing</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const countryCodeSelect = document.getElementById('country-code');
+        const phoneNumberInput = document.getElementById('phone-number');
+        const submitButton = document.getElementById('submit');
+        const pairDiv = document.getElementById('pair');
+        const sessionResultDiv = document.getElementById('session-result');
+        const sessionIdDisplay = document.getElementById('session-id');
+        const qrCodeDiv = document.getElementById('qr-code');
+        const downloadJsonButton = document.getElementById('download-json');
+        const restartPairingButton = document.getElementById('restart-pairing');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const countrySearchInput = document.getElementById('country-search');
+
+        let currentRequestId = null;
+        let pollInterval = null;
+
+        // Function to filter countries based on search input
+        function filterCountries() {
+            const input = countrySearchInput.value.toLowerCase();
+            const options = countryCodeSelect.getElementsByTagName('option');
+            for (let i = 0; i < options.length; i++) {
+                const option = options[i];
+                const text = option.text.toLowerCase();
+                if (text.includes(input)) {
+                    option.style.display = '';
+                } else {
+                    option.style.display = 'none';
+                }
+            }
+        }
+
+        // Event listener for country search input
+        countrySearchInput.addEventListener('input', filterCountries);
+
+
+        // Function to clean and validate phone number
+        function cleanPhoneNumber(number) {
+            return number.replace(/\D/g, '');
+        }
+
+        // Function to display status messages
+        function showStatus(message, type = 'waiting') {
+            pairDiv.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+            pairDiv.style.display = 'block';
+        }
+
+        // Function to handle QR code display
+        function displayQrCode(qrData) {
+            qrCodeDiv.innerHTML = ''; // Clear previous QR code
+            new QRCode(qrCodeDiv, {
+                text: qrData,
+                width: 200,
+                height: 200,
+                colorDark : "#6C63FF",
+                colorLight : "rgba(255,255,255,0)",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+
+        // Function to poll for session status
+        async function pollSessionStatus(requestId) {
+            try {
+                const response = await fetch(`/api/pair/status/${requestId}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    clearInterval(pollInterval);
+                    loadingSpinner.style.display = 'none';
+                    sessionResultDiv.style.display = 'block';
+                    sessionIdDisplay.textContent = data.session_id;
+                    displayQrCode(data.qr_code);
+                    downloadJsonButton.classList.remove('hidden');
+                    downloadJsonButton.onclick = () => downloadJson(data.session_id);
+                } else if (data.status === 'pending') {
+                    showStatus(`Waiting for connection... <span class="loading"></span>`);
+                } else if (data.status === 'error') {
+                    clearInterval(pollInterval);
+                    loadingSpinner.style.display = 'none';
+                    showStatus(`Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                clearInterval(pollInterval);
+                loadingSpinner.style.display = 'none';
+                showStatus(`Failed to fetch status: ${error.message}`, 'error');
+            }
+        }
+
+        // Function to start the pairing process
+        async function startPairing() {
+            const countryCode = countryCodeSelect.value;
+            const phoneNumber = phoneNumberInput.value;
+            const cleanedPhone = cleanPhoneNumber(phoneNumber);
+
+            if (!cleanedPhone) {
+                showStatus('Please enter a valid phone number.', 'error');
+                return;
+            }
+
+            const fullNumber = `${countryCode}${cleanedPhone}`;
+
+            loadingSpinner.style.display = 'inline-block';
+            submitButton.disabled = true;
+            pairDiv.style.display = 'none';
+            sessionResultDiv.style.display = 'none';
+            downloadJsonButton.classList.add('hidden');
+
+
+            try {
+                const response = await fetch(`/api/pair?number=${fullNumber}`, {
+                    method: 'GET'
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                currentRequestId = data.request_id;
+                showStatus('QR Code generated. Please scan it with your WhatsApp.', 'success');
+                pollSessionStatus(currentRequestId);
+                pollInterval = setInterval(() => pollSessionStatus(currentRequestId), 5000);
+
+            } catch (error) {
+                loadingSpinner.style.display = 'none';
+                submitButton.disabled = false;
+                showStatus(`Failed to get code: ${error.message}`, 'error');
+            }
+        }
+
+        // Function to download session ID as JSON
+        function downloadJson(sessionId) {
+            const blob = new Blob([JSON.stringify({ session_id: sessionId }, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'session.json';
+            document.body.appendChild(a);
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Event listener for submit button
+        submitButton.addEventListener('click', startPairing);
+
+        // Event listener for restart pairing button
+        restartPairingButton.addEventListener('click', () => {
+            clearInterval(pollInterval);
+            pairDiv.style.display = 'block';
+            sessionResultDiv.style.display = 'none';
+            phoneNumberInput.value = '';
+            showStatus('Enter your WhatsApp number to get started.');
+            submitButton.disabled = false;
+        });
+
+        // Initial status message
+        showStatus('Enter your WhatsApp number to get started.');
+
+        // Load QRCode library if not present
+        if (!window.QRCode) {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js';
+            script.onload = () => {
+                console.log("QRCode library loaded.");
+            };
+            script.onerror = () => {
+                console.error("Failed to load QRCode library.");
+            };
+            document.head.appendChild(script);
+        }
+    </script>
+</body>
+</html>

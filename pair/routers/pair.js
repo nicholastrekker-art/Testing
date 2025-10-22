@@ -436,3 +436,4 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
 });
 
 module.exports = router;
+module.exports.default = router;

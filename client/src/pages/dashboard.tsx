@@ -342,7 +342,7 @@ export default function Dashboard() {
                   <p className="text-gray-300 mb-5 leading-relaxed">
                     Generate your WhatsApp session credentials using our secure pairing system. Get your <span className="font-semibold text-blue-400">pairing code</span> instantly
                   </p>
-                  <Link href="/guest/whatsapp-pairing" data-testid="link-get-session">
+                  <Link href="/pairing" data-testid="link-get-session">
                     <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all" data-testid="button-get-session">
                       <i className="fas fa-key mr-2"></i>
                       Get Session
