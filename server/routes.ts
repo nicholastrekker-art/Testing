@@ -1908,7 +1908,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
       // Attempt to parse the session ID
       let credentials = null;
       try {
-        const base64Data = sessionId.trim();
+        let base64Data = sessionId.trim();
+
+        // Remove TREKKER~ prefix if present
+        if (base64Data.startsWith('TREKKER~')) {
+          console.log('🔍 Removing TREKKER~ prefix from session ID for validation');
+          base64Data = base64Data.substring(8); // Remove "TREKKER~" (8 characters)
+        }
 
         // Check Base64 size limit (5MB when decoded)
         const estimatedSize = (base64Data.length * 3) / 4;
@@ -2964,7 +2970,13 @@ Thank you for choosing TREKKER-MD! 🚀`;
       // Parse credentials from base64 encoded session ID (with TREKKER~ prefix support)
       let credentials;
       try {
-        const base64Data = sessionId.trim();
+        let base64Data = sessionId.trim();
+
+        // Remove TREKKER~ prefix if present
+        if (base64Data.startsWith('TREKKER~')) {
+          console.log('🔍 Removing TREKKER~ prefix from session ID');
+          base64Data = base64Data.substring(8); // Remove "TREKKER~" (8 characters)
+        }
 
         // Check Base64 size limit (5MB when decoded)
         const estimatedSize = (base64Data.length * 3) / 4;
@@ -2976,8 +2988,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
           });
         }
 
-        // Use credential decoder to handle TREKKER~ prefix removal
-        credentials = decodeCredentials(base64Data);
+        // Decode the base64 data
+        const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
+        credentials = JSON.parse(decoded);
 
         // Validate Baileys v7 credentials
         const validation = validateBaileysCredentials(credentials);
