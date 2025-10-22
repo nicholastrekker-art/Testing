@@ -4,6 +4,7 @@ import { promisify } from 'util';
 import { db, getServerName } from '../db';
 import { botInstances, godRegister } from '@shared/schema';
 import { eq } from 'drizzle-orm';
+import { extractPhoneNumber } from '../utils/credentials-decoder';
 
 const readFile = promisify(fs.readFile);
 
@@ -68,19 +69,28 @@ export const validateCredentialsByPhoneNumber = async (credentials: any): Promis
   alreadyRegistered?: boolean;
 }> => {
   try {
-    // Enhanced phone number extraction from credentials
-    let phoneNumber = null;
+    // Use centralized phone number extraction (supports both LID and JID)
+    let phoneNumber = extractPhoneNumber(credentials);
 
-    // Method 1: Check credentials.creds.me.id (most common)
-    if (credentials?.creds?.me?.id) {
-      const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
-      phoneNumber = phoneMatch ? phoneMatch[1] : null;
-    }
+    // Fallback to legacy extraction methods if centralized method fails
+    if (!phoneNumber) {
+      // Method 1: Check credentials.creds.me.lid (Baileys v7 LID format)
+      if (credentials?.creds?.me?.lid) {
+        const lidMatch = credentials.creds.me.lid.match(/^(\d+)[@:]/);
+        phoneNumber = lidMatch ? lidMatch[1] : null;
+      }
 
-    // Method 2: Check credentials.me.id (alternative format)
-    if (!phoneNumber && credentials?.me?.id) {
-      const phoneMatch = credentials.me.id.match(/^(\d+):/);
-      phoneNumber = phoneMatch ? phoneMatch[1] : null;
+      // Method 2: Check credentials.creds.me.id (traditional JID)
+      if (!phoneNumber && credentials?.creds?.me?.id) {
+        const phoneMatch = credentials.creds.me.id.match(/^(\d+)[@:]/);
+        phoneNumber = phoneMatch ? phoneMatch[1] : null;
+      }
+
+      // Method 3: Check credentials.me.id (alternative format)
+      if (!phoneNumber && credentials?.me?.id) {
+        const phoneMatch = credentials.me.id.match(/^(\d+)[@:]/);
+        phoneNumber = phoneMatch ? phoneMatch[1] : null;
+      }
     }
 
     // Method 3: Check for standalone phone numbers without colon

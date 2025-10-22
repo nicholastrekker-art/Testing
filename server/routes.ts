@@ -31,6 +31,7 @@ import {
   type AuthRequest,
   type GuestAuthRequest
 } from './middleware/auth';
+import { decodeCredentials, validateBaileysCredentials, extractPhoneNumber } from './utils/credentials-decoder';
 
 // Helper function to check if user is admin (for middleware-less routes)
 const isAdmin = (req: any, res: any, next: any) => {
@@ -1617,16 +1618,8 @@ export async function registerRoutes(app: Express): Server {
             });
           }
 
-          // Decode base64
-          const decodedContent = Buffer.from(base64Data, 'base64').toString('utf-8');
-          if (!decodedContent.trim()) {
-            return res.status(400).json({
-              message: "Decoded credentials are empty. Please check your base64 string."
-            });
-          }
-
-          // Parse JSON
-          credentials = JSON.parse(decodedContent);
+          // Decode credentials using utility (handles TREKKER~ prefix removal)
+          credentials = decodeCredentials(base64Data);
 
           // Validate that it's a proper WhatsApp credentials file
           if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials)) {
@@ -1641,9 +1634,17 @@ export async function registerRoutes(app: Express): Server {
               message: "Credentials are empty. Please provide valid base64-encoded credentials with session data."
             });
           }
+
+          // Validate Baileys v7 credentials
+          const validation = validateBaileysCredentials(credentials);
+          if (!validation.valid) {
+            return res.status(400).json({
+              message: `Invalid Baileys credentials: ${validation.error}`
+            });
+          }
         } catch (error) {
           return res.status(400).json({
-            message: "Invalid base64 or JSON format. Please ensure you're providing a valid base64-encoded credentials.json file."
+            message: `Invalid credentials: ${error instanceof Error ? error.message : 'Unknown error'}`
           });
         }
       } else if (req.file) {
@@ -3352,16 +3353,35 @@ Thank you for using TREKKER-MD! 🚀
       let credentials = null;
       if (credentialType === 'base64' && sessionId) {
         try {
-          credentials = JSON.parse(Buffer.from(sessionId.trim(), 'base64').toString('utf-8'));
+          // Use credential decoder to handle TREKKER~ prefix removal
+          credentials = decodeCredentials(sessionId.trim());
+          
+          // Validate Baileys v7 credentials
+          const validation = validateBaileysCredentials(credentials);
+          if (!validation.valid) {
+            return res.status(400).json({
+              success: false,
+              message: `Invalid Baileys credentials: ${validation.error}`
+            });
+          }
         } catch (error) {
           return res.status(400).json({
             success: false,
-            message: "Invalid session ID format. Please ensure you're providing valid base64-encoded credentials."
+            message: `Invalid session ID: ${error instanceof Error ? error.message : 'Unknown error'}`
           });
         }
       } else if (credentialType === 'file' && req.file) {
         try {
           credentials = JSON.parse(req.file.buffer.toString('utf-8'));
+          
+          // Validate Baileys v7 credentials
+          const validation = validateBaileysCredentials(credentials);
+          if (!validation.valid) {
+            return res.status(400).json({
+              success: false,
+              message: `Invalid Baileys credentials: ${validation.error}`
+            });
+          }
         } catch (error) {
           return res.status(400).json({
             success: false,
@@ -3376,19 +3396,8 @@ Thank you for using TREKKER-MD! 🚀
       }
 
       // Step 3: Validate credentials structure and phone number ownership
-      let credentialsPhone = null;
-
-      // Method 1: Check credentials.creds.me.id (most common)
-      if (credentials?.creds?.me?.id) {
-        const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
-        credentialsPhone = phoneMatch ? phoneMatch[1] : null;
-      }
-
-      // Method 2: Check credentials.me.id (alternative format)
-      if (!credentialsPhone && credentials?.me?.id) {
-        const phoneMatch = credentials.me.id.match(/^(\d+):/);
-        credentialsPhone = phoneMatch ? phoneMatch[1] : null;
-      }
+      // Use centralized phone extraction (supports both LID and JID)
+      const credentialsPhone = extractPhoneNumber(credentials);
 
       // Method 3: Deep search for phone numbers in credentials
       if (!credentialsPhone) {

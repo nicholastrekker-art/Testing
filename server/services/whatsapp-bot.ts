@@ -3,7 +3,9 @@ import makeWASocket, {
   ConnectionState,
   useMultiFileAuthState,
   WAMessage,
-  BaileysEventMap
+  BaileysEventMap,
+  makeCacheableSignalKeyStore,
+  fetchLatestBaileysVersion
 } from '@whiskeysockets/baileys';
 import * as Baileys from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
@@ -80,6 +82,13 @@ export class WhatsAppBot {
       fatal: () => {}
     };
     return loggerInstance;
+  }
+
+  private async getMessage(key: any) {
+    console.log(`📨 [getMessage] Retrieving message for retry: ${key.id}`);
+    return {
+      conversation: ''
+    };
   }
 
   private async setupEventHandlers() {
@@ -220,13 +229,15 @@ export class WhatsAppBot {
 ✅ Bot is ready to receive commands!`;
 
           // Get the bot's own number and send welcome message to yourself
-          const me = this.sock.user?.id;
-          if (me) {
-            // Extract just the phone number part (before the colon)
-            const phoneNumber = me.split(':')[0];
-            const jid = `${phoneNumber}@s.whatsapp.net`;
-            await this.sock.sendMessage(jid, { text: welcomeMessage });
-            console.log(`TREKKERMD LIFETIME BOT: Welcome message sent to ${jid}`);
+          // Use LID (Baileys v7) if available, fallback to traditional JID
+          const userLid = this.sock.user?.lid;
+          const userId = this.sock.user?.id;
+          const recipientId = userLid || userId;
+          
+          if (recipientId) {
+            console.log(`TREKKERMD LIFETIME BOT: Sending welcome to ${recipientId} (using ${userLid ? 'LID' : 'JID'})`);
+            await this.sock.sendMessage(recipientId, { text: welcomeMessage });
+            console.log(`TREKKERMD LIFETIME BOT: Welcome message sent successfully`);
           } else {
             console.log('TREKKERMD LIFETIME BOT READY:', welcomeMessage);
           }
@@ -1047,21 +1058,29 @@ export class WhatsAppBot {
       // Use isolated auth state for this specific bot
       const { state, saveCreds } = await useMultiFileAuthState(this.authDir);
 
-      // Create isolated socket connection with unique configuration
+      // Fetch latest Baileys version for compatibility
+      const { version, isLatest } = await fetchLatestBaileysVersion();
+      console.log(`Bot ${this.botInstance.name}: Using Baileys version ${version.join('.')}, isLatest: ${isLatest}`);
+
+      // Create isolated socket connection with Baileys v7 LID support
+      const logger = this.createLogger();
       this.sock = Baileys.makeWASocket({
-        auth: state,
-        printQRInTerminal: false, // Disable QR printing to avoid conflicts
-        logger: this.createLogger(),
-        // Use STATIC browser fingerprint for each bot to prevent auto-logout
+        version,
+        auth: {
+          creds: state.creds,
+          keys: makeCacheableSignalKeyStore(state.keys, logger)
+        },
+        printQRInTerminal: false,
+        logger,
         browser: [`TREKKERMD-${this.botInstance.id}`, 'Chrome', '110.0.0.0'],
-        // Ensure each bot has isolated connection settings
         connectTimeoutMs: 60000,
         defaultQueryTimeoutMs: 60000,
-        // Generate unique connection IDs
         generateHighQualityLinkPreview: false,
-        // Add retry configuration for stability
         retryRequestDelayMs: 250,
-        maxMsgRetryCount: 5
+        maxMsgRetryCount: 5,
+        syncFullHistory: false,
+        markOnlineOnConnect: false,
+        getMessage: this.getMessage.bind(this)
       });
 
       // Save credentials when they change (isolated per bot) with error handling
@@ -1201,7 +1220,7 @@ export class WhatsAppBot {
     this.botInstance = botInstance;
   }
 
-  // Validate credentials by checking essential fields
+  // Validate credentials by checking essential fields (supports Baileys v7 LID format)
   static validateCredentials(credentials: any): { valid: boolean; error?: string } {
     try {
       if (!credentials || typeof credentials !== 'object') {
@@ -1213,14 +1232,19 @@ export class WhatsAppBot {
         return { valid: false, error: 'Missing essential credential fields (creds.noiseKey, creds.signedIdentityKey)' };
       }
 
-      // Check if credentials have a valid user ID structure
-      if (credentials.creds.me?.id) {
-        const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
-        if (!phoneMatch) {
-          return { valid: false, error: 'Invalid phone number format in credentials' };
-        }
-      } else {
-        return { valid: false, error: 'Missing user ID in credentials' };
+      // Check if credentials have a valid user identity (LID or traditional JID)
+      const hasLID = credentials.creds.me?.lid;
+      const hasJID = credentials.creds.me?.id;
+      
+      if (!hasLID && !hasJID) {
+        return { valid: false, error: 'Missing user identity (lid or id) in credentials' };
+      }
+
+      // Validate phone number format in either LID or JID
+      const userIdentity = hasLID || hasJID;
+      const phoneMatch = userIdentity.match(/^(\d+)[@:]/);
+      if (!phoneMatch) {
+        return { valid: false, error: 'Invalid phone number format in credentials' };
       }
 
       // Check for other essential fields
