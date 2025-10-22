@@ -3,26 +3,42 @@ const express = require('express');
 const fs = require('fs');
 require('dotenv').config();
 const path = require('path');
-let router = express.Router();
 const pino = require("pino");
+const { Boom } = require('@hapi/boom');
 
+let router = express.Router();
+
+// Session storage for tracking active sessions
 const sessionStorage = new Map();
 
+// Import Baileys modules
 const {
-    default: Gifted_Tech,
+    default: makeWASocket,
     useMultiFileAuthState,
     delay,
     makeCacheableSignalKeyStore,
-    Browsers
+    Browsers,
+    DisconnectReason,
+    fetchLatestBaileysVersion
 } = require("@whiskeysockets/baileys");
 
-async function saveSessionLocallyFromPath(authDir, id) {
+// Create logger with silent level for production
+const logger = pino({ level: "silent" });
+
+/**
+ * Saves session credentials locally and returns base64 encoded session ID
+ */
+async function saveSessionLocallyFromPath(authDir) {
     const authPath = path.join(authDir, 'creds.json');
     try {
-        if (!fs.existsSync(authPath)) throw new Error(`Credentials file not found at: ${authPath}`);
+        if (!fs.existsSync(authPath)) {
+            throw new Error(`Credentials file not found at: ${authPath}`);
+        }
+
         const rawData = fs.readFileSync(authPath, 'utf8');
         const credsData = JSON.parse(rawData);
         const credsBase64 = Buffer.from(JSON.stringify(credsData)).toString('base64');
+
         const now = new Date();
         sessionStorage.set(credsBase64, {
             sessionId: credsBase64,
@@ -30,168 +46,392 @@ async function saveSessionLocallyFromPath(authDir, id) {
             createdAt: now,
             updatedAt: now
         });
+
+        console.log('✅ Session saved to storage');
         return credsBase64;
     } catch (e) {
-        console.error('saveSessionLocallyFromPath error:', e.message);
+        console.error('❌ saveSessionLocallyFromPath error:', e.message);
         return null;
     }
 }
 
-function waitForMessageAck(Gifted, messageKey, timeoutMs = 8000) {
-    return new Promise((resolve) => {
-        let resolved = false;
-        const timer = setTimeout(() => {
-            if (!resolved) {
-                resolved = true;
-                Gifted.ev.removeListener('messages.update', handler);
-                resolve(false);
+/**
+ * Cleanup function for socket and directories
+ */
+async function cleanup(sock, authDir, timers = []) {
+    try {
+        // Clear all timers
+        timers.forEach(t => clearTimeout(t));
+
+        // Remove event listeners
+        if (sock?.ev) {
+            sock.ev.removeAllListeners();
+        }
+
+        // Close WebSocket
+        if (sock?.ws) {
+            try {
+                sock.ws.close();
+            } catch (e) {
+                console.warn('WS close error:', e.message);
             }
-        }, timeoutMs);
-        const handler = (updates) => {
-            const arr = Array.isArray(updates) ? updates : [updates];
-            for (const u of arr) {
-                const key = u.key || u;
-                if (key && messageKey && key.id === messageKey.id && key.remoteJid === messageKey.remoteJid) {
-                    if (!resolved) {
-                        resolved = true;
-                        clearTimeout(timer);
-                        Gifted.ev.removeListener('messages.update', handler);
-                        resolve(true);
-                        return;
-                    }
-                }
-            }
-        };
-        Gifted.ev.on('messages.update', handler);
-    });
+        }
+
+        // Clear auth state
+        if (sock) {
+            sock.authState = null;
+        }
+
+        // Clear local session storage (but NOT sessionStatusMap - that's for frontend polling)
+        sessionStorage.clear();
+
+        // Remove temp directory
+        if (fs.existsSync(authDir)) {
+            await removeFile(authDir);
+        }
+
+        console.log('✅ Cleanup completed');
+    } catch (err) {
+        console.error('⚠️ Cleanup error:', err.message);
+    }
 }
 
+/**
+ * Session status storage for polling
+ */
+const sessionStatusMap = new Map();
+
+/**
+ * Endpoint to check session status
+ */
+router.get('/status/:requestId', (req, res) => {
+    const { requestId } = req.params;
+    const status = sessionStatusMap.get(requestId);
+    
+    if (status) {
+        res.json(status);
+        // Clean up after sending
+        if (status.success) {
+            setTimeout(() => sessionStatusMap.delete(requestId), 60000); // Keep for 1 minute
+        }
+    } else {
+        res.json({ pending: true });
+    }
+});
+
+/**
+ * Main pairing endpoint
+ */
 router.get('/', async (req, res) => {
     const id = giftedId();
     let num = req.query.number;
-    if (!num) return res.status(400).send({ error: "Phone number is required" });
 
-    async function GIFTED_PAIR_CODE() {
-        const authDir = path.join(__dirname, 'temp', id);
-        let Gifted = null;
+    if (!num) {
+        return res.status(400).json({ 
+            error: "Phone number is required",
+            usage: "?number=1234567890" 
+        });
+    }
 
-        const forceCleanupTimer = setTimeout(async () => {
-            try {
-                if (Gifted) {
-                    if (Gifted.ev) Gifted.ev.removeAllListeners();
-                    if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
-                    Gifted.authState = null;
+    // Clean old temp directories
+    const tempBaseDir = path.join(__dirname, 'temp');
+    try {
+        console.log('🧹 Cleaning old temp directories...');
+        if (fs.existsSync(tempBaseDir)) {
+            const tempDirs = fs.readdirSync(tempBaseDir);
+            for (const dir of tempDirs) {
+                const dirPath = path.join(tempBaseDir, dir);
+                try {
+                    const stat = fs.statSync(dirPath);
+                    if (stat.isDirectory()) {
+                        // Remove directories older than 1 hour
+                        const age = Date.now() - stat.mtimeMs;
+                        if (age > 3600000) {
+                            await removeFile(dirPath);
+                            console.log(`✅ Removed old directory: ${dir}`);
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`⚠️ Could not check ${dir}:`, e.message);
                 }
-                sessionStorage.clear();
-                if (fs.existsSync(authDir)) await removeFile(authDir);
-                console.log('Forced cleanup executed.');
-            } catch (err) {
-                console.error('Error during forced cleanup:', err.message);
             }
-        }, 4 * 60 * 1000);
+        }
+    } catch (e) {
+        console.warn('⚠️ Temp cleanup warning:', e.message);
+    }
 
+    const authDir = path.join(__dirname, 'temp', id);
+    let sock = null;
+    let timers = [];
+    let hasResponded = false;
+    let connectionEstablished = false;
+    let retryCount = 0;
+    const MAX_RETRIES = 2;
+
+    // Global timeout (5 minutes)
+    const globalTimeout = setTimeout(async () => {
+        if (!connectionEstablished && !hasResponded) {
+            console.log('⏱️ Global timeout reached');
+            await cleanup(sock, authDir, timers);
+            hasResponded = true;
+            res.status(408).json({ 
+                error: "Connection timeout. Please try again.",
+                timeout: "5 minutes"
+            });
+        }
+    }, 5 * 60 * 1000);
+
+    timers.push(globalTimeout);
+
+    /**
+     * Pairing code generation function
+     */
+    async function GIFTED_PAIR_CODE() {
         try {
-            if (!fs.existsSync(authDir)) fs.mkdirSync(authDir, { recursive: true });
+            // Create auth directory
+            if (!fs.existsSync(authDir)) {
+                fs.mkdirSync(authDir, { recursive: true });
+            }
 
+            // Initialize auth state
             const { state, saveCreds } = await useMultiFileAuthState(authDir);
 
-            Gifted = Gifted_Tech({
+            // Fetch latest version
+            const { version, isLatest } = await fetchLatestBaileysVersion();
+            console.log(`📡 Using WA version: ${version.join('.')}, isLatest: ${isLatest}`);
+
+            // Create socket for pairing
+            sock = makeWASocket({
+                version,
                 auth: {
                     creds: state.creds,
-                    keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
+                    keys: makeCacheableSignalKeyStore(state.keys, logger),
                 },
                 printQRInTerminal: false,
-                logger: pino({ level: "fatal" }).child({ level: "fatal" }),
-                browser: Browsers.macOS("Safari")
+                logger,
+                browser: Browsers.macOS("Safari"),
+                markOnlineOnConnect: false,
+                generateHighQualityLinkPreview: true,
+                syncFullHistory: false,
+                getMessage: async (key) => {
+                    return { conversation: '' };
+                }
             });
 
-            const getRecipientId = () => {
-                if (Gifted?.user?.id) return Gifted.user.id;
-                if (state?.creds?.me?.id) return state.creds.me.id;
-                return null;
-            };
-
-            if (!Gifted.authState.creds.registered) {
+            // FUNCTION CALL: requestPairingCode is a function on the socket
+            if (!sock.authState.creds.registered) {
                 await delay(1500);
                 num = num.replace(/[^0-9]/g, '');
-                const code = await Gifted.requestPairingCode(num);
-                if (!res.headersSent) res.send({ code });
+
+                console.log('📱 Requesting pairing code for:', num);
+                const code = await sock.requestPairingCode(num);
+                console.log('✅ Pairing code generated:', code);
+
+                if (!hasResponded) {
+                    hasResponded = true;
+                    const requestId = id; // Use the same ID for tracking
+                    sessionStatusMap.set(requestId, { pending: true });
+                    
+                    res.json({ 
+                        code,
+                        requestId,
+                        message: "Enter this code in WhatsApp (Linked Devices > Link a Device > Link with phone number instead)",
+                        number: num,
+                        expiresIn: "60 seconds"
+                    });
+                }
             }
 
-            Gifted.ev.on('creds.update', async () => {
+            // EVENT: Listen for credential updates
+            sock.ev.on('creds.update', async () => {
                 try {
-                    if (fs.existsSync(authDir)) await saveCreds();
+                    await saveCreds();
+                    console.log('💾 Credentials updated');
                 } catch (err) {
-                    console.warn('saveCreds on creds.update failed:', err.message);
+                    console.warn('Creds save warning:', err.message);
                 }
             });
 
-            Gifted.ev.on("connection.update", async (update) => {
+            // EVENT: Handle connection updates
+            sock.ev.on("connection.update", async (update) => {
                 const { connection, lastDisconnect } = update;
+                const statusCode = lastDisconnect?.error instanceof Boom
+                    ? lastDisconnect.error.output.statusCode
+                    : 500;
 
                 if (connection === "open") {
+                    connectionEstablished = true;
+                    console.log('✅ Pairing connection established');
+
                     try {
-                        const recipient = getRecipientId();
-                        console.log('Waiting 10 seconds to ensure credentials are saved...');
-                        await delay(10000);
-                        try {
-                            await saveCreds();
-                        } catch (err) {
-                            console.warn('saveCreds() failed:', err.message);
-                        }
+                        // Wait for full authentication
+                        console.log('⏳ Waiting for authentication to complete...');
+                        await delay(8000);
 
-                        const sessionId = await saveSessionLocallyFromPath(authDir, id);
+                        // Save credentials
+                        await saveCreds();
+                        console.log('💾 Final credentials saved');
+
+                        // Generate session ID
+                        const sessionId = await saveSessionLocallyFromPath(authDir);
                         if (!sessionId) {
-                            if (recipient)
-                                await Gifted.sendMessage(recipient, { text: '❌ Failed to generate session ID. Try again.' });
-                            throw new Error('Session generation failed');
+                            throw new Error('Failed to generate session ID');
                         }
 
-                        // ⚡ Send only the session ID
-                        const recipientId = getRecipientId();
-                        if (!recipientId) throw new Error('Recipient id not found to send session ID');
-
-                        const sent = await Gifted.sendMessage(recipientId, { text: sessionId });
-                        const messageKey = sent?.key || null;
-                        let acked = false;
-                        if (messageKey) acked = await waitForMessageAck(Gifted, messageKey, 5000);
-                        if (!acked) console.log('No ACK; closing immediately.');
-
-                        // 🚨 Immediately close connection and cleanup
-                        if (Gifted.ev) Gifted.ev.removeAllListeners();
-                        if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
-                        Gifted.authState = null;
-                        sessionStorage.clear();
-                        if (fs.existsSync(authDir)) await removeFile(authDir);
-                        clearTimeout(forceCleanupTimer);
-                        console.log('Connection closed immediately after sending session ID.');
-                    } catch (err) {
-                        console.error('connection.open error:', err.message);
+                        console.log('✅ Session ID generated');
+                        
+                        // Read creds.json for download
+                        const credsPath = path.join(authDir, 'creds.json');
+                        const credsData = fs.readFileSync(credsPath, 'utf8');
+                        
+                        // Send welcome message NOW while pairing connection is still active
+                        console.log('📤 Sending welcome message via active pairing connection...');
+                        
                         try {
-                            if (Gifted.ev) Gifted.ev.removeAllListeners();
-                            if (Gifted.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
-                            if (fs.existsSync(authDir)) await removeFile(authDir);
-                        } catch {}
+                            // Use LID (Linked Identity) instead of traditional JID for modern WhatsApp
+                            const recipientId = sock.user.lid || sock.user.id;
+                            const phoneNumber = (sock.user.lid || sock.user.id).split('@')[0].split(':')[0];
+                            
+                            console.log(`📱 Recipient: ${recipientId} (using ${sock.user.lid ? 'LID' : 'JID'})`);
+                            
+                            const welcomeMsg = `🎉 *GIFTED-MD CONNECTED SUCCESSFULLY!*
+
+━━━━━━━━━━━━━━━━━━━
+✨ Your WhatsApp bot is now active!
+
+📱 *Session Details:*
+• Status: ✅ Active
+• Owner: ${sock.user.name || 'User'}
+• Number: ${phoneNumber}
+• Platform: Web
+
+🔐 *Security:*
+• Session created at: ${new Date().toLocaleString()}
+• Keep your session ID secure
+• Never share credentials
+
+💡 *Next Steps:*
+• Copy your session ID from the website
+• Deploy your session ID to your bot
+• Configure your bot settings
+• Start using your bot features
+
+━━━━━━━━━━━━━━━━━━━
+_Powered by GIFTED-MD_
+_Baileys v7.0 | WhatsApp Multi-Device_`;
+
+                            const sent = await sock.sendMessage(recipientId, { 
+                                text: welcomeMsg 
+                            });
+
+                            if (sent?.key?.id) {
+                                console.log(`✅ Welcome message sent! ID: ${sent.key.id}`);
+                                
+                                // Wait for message to be processed
+                                await delay(3000);
+                                
+                                console.log(`🎉 COMPLETE SUCCESS!`);
+                                console.log(`📨 Message ID: ${sent.key.id}`);
+                                console.log(`🔑 Session ID: ${sessionId.substring(0, 30)}...`);
+                            }
+                        } catch (msgErr) {
+                            console.warn('⚠️ Welcome message failed (session still valid):', msgErr.message);
+                        }
+                        
+                        // Store session data for polling BEFORE cleanup
+                        const sessionDataForFrontend = {
+                            success: true,
+                            sessionId: `TREKKER~${sessionId}`,
+                            credsJson: credsData,
+                            message: "Session created successfully! Check your WhatsApp for confirmation.",
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        sessionStatusMap.set(id, sessionDataForFrontend);
+                        console.log(`📦 Session data stored for request ID: ${id}`);
+                        
+                        // Keep session data available for 10 minutes
+                        setTimeout(() => {
+                            sessionStatusMap.delete(id);
+                            console.log(`🧹 Cleaned up session data for: ${id}`);
+                        }, 10 * 60 * 1000);
+                        
+                        // Now close the pairing connection
+                        console.log('🔌 Closing pairing connection...');
+                        await delay(2000);
+
+                        // Final cleanup (but keep sessionStatusMap intact)
+                        await cleanup(sock, authDir, timers);
+
+                    } catch (err) {
+                        console.error('❌ Connection.open error:', err.message);
+                        await cleanup(sock, authDir, timers);
+
+                        if (!hasResponded) {
+                            hasResponded = true;
+                            res.status(500).json({ 
+                                error: "Failed to send welcome message",
+                                details: err.message,
+                                note: "Session may still be valid. Check your WhatsApp."
+                            });
+                        }
                     }
-                } else if (connection === "close" && lastDisconnect?.error?.output?.statusCode !== 401) {
-                    await delay(10000);
-                    GIFTED_PAIR_CODE().catch(err => console.error('Restart error:', err));
+
+                } else if (connection === "close") {
+                    console.log('⚠️ Pairing connection closed. Status:', statusCode);
+
+                    // Check if logged out
+                    if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
+                        console.log('⚠️ Device logged out or unauthorized');
+                        await cleanup(sock, authDir, timers);
+
+                        if (!hasResponded) {
+                            hasResponded = true;
+                            res.status(401).json({ 
+                                error: "Authentication failed",
+                                reason: "Device logged out or unauthorized"
+                            });
+                        }
+                        return;
+                    }
+
+                    // Retry logic
+                    if (!connectionEstablished && retryCount < MAX_RETRIES) {
+                        retryCount++;
+                        console.log(`🔄 Retrying (${retryCount}/${MAX_RETRIES})...`);
+                        await delay(5000);
+                        GIFTED_PAIR_CODE().catch(err => {
+                            console.error('Retry error:', err);
+                        });
+                    } else if (!connectionEstablished) {
+                        console.log('❌ Max retries reached or connection failed');
+                        await cleanup(sock, authDir, timers);
+
+                        if (!hasResponded) {
+                            hasResponded = true;
+                            res.status(500).json({ 
+                                error: "Connection failed after retries",
+                                reason: "Could not establish connection"
+                            });
+                        }
+                    }
                 }
             });
-        } catch (err) {
-            console.error('Outer error:', err.message);
-            clearTimeout(forceCleanupTimer);
-            sessionStorage.clear();
-            try {
-                if (Gifted?.ev) Gifted.ev.removeAllListeners();
-                if (Gifted?.ws && Gifted.ws.readyState === 1) await Gifted.ws.close();
-                Gifted.authState = null;
-            } catch {}
-            removeFile(authDir).catch(() => {});
-            if (!res.headersSent) res.status(500).send({ error: "Service Unavailable" });
+        } catch (error) {
+            console.error('❌ Pairing error:', error);
+            await cleanup(sock, authDir, timers);
+
+            if (!hasResponded) {
+                hasResponded = true;
+                res.status(500).json({ 
+                    error: "Pairing failed",
+                    details: error.message 
+                });
+            }
         }
     }
 
+    // Call the pairing function
     await GIFTED_PAIR_CODE();
 });
 
