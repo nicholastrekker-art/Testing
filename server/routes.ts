@@ -308,7 +308,7 @@ export async function registerRoutes(app: Express): Server {
   botManager.setBroadcastFunction(broadcast);
 
   // Serve pair.html and integrate pairing router
-  const pairPublicPath = join(__dirname, '..', 'pair', 'public');
+  const pairPublicPath = path.join(__dirname, '..', 'pair', 'public');
   app.use('/pair', express.static(pairPublicPath));
 
   // Import and mount pairing routes
