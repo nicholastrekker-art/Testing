@@ -2961,7 +2961,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
         return res.status(400).json({ message: "Session ID is required" });
       }
 
-      // Parse credentials from base64 encoded session ID
+      // Parse credentials from base64 encoded session ID (with TREKKER~ prefix support)
       let credentials;
       try {
         const base64Data = sessionId.trim();
@@ -2976,62 +2976,31 @@ Thank you for choosing TREKKER-MD! 🚀`;
           });
         }
 
-        const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
+        // Use credential decoder to handle TREKKER~ prefix removal
+        credentials = decodeCredentials(base64Data);
 
-        if (decoded.length > maxSizeBytes) {
+        // Validate Baileys v7 credentials
+        const validation = validateBaileysCredentials(credentials);
+        if (!validation.valid) {
           return res.status(400).json({
-            message: `Decoded session data too large (${(decoded.length / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.`
+            message: `Invalid Baileys credentials: ${validation.error}`
           });
         }
 
-        credentials = JSON.parse(decoded);
+        const credentialsSize = JSON.stringify(credentials).length;
+        if (credentialsSize > maxSizeBytes) {
+          return res.status(400).json({
+            message: `Decoded session data too large (${(credentialsSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.`
+          });
+        }
       } catch (error) {
-        return res.status(400).json({ message: "Invalid session ID format. Please ensure it's properly encoded WhatsApp session data." });
+        return res.status(400).json({ 
+          message: `Invalid session ID: ${error instanceof Error ? error.message : 'Unknown error'}` 
+        });
       }
 
-      // Enhanced phone number extraction with multiple fallback methods
-      let phoneNumber = null;
-
-      // Method 1: Check credentials.creds.me.id (most common)
-      if (credentials?.creds?.me?.id) {
-        const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
-        phoneNumber = phoneMatch ? phoneMatch[1] : null;
-      }
-
-      // Method 2: Check credentials.me.id (alternative format)
-      if (!phoneNumber && credentials?.me?.id) {
-        const phoneMatch = credentials.me.id.match(/^(\d+):/);
-        phoneNumber = phoneMatch ? phoneMatch[1] : null;
-      }
-
-      // Method 3: Deep search for phone numbers in credentials
-      if (!phoneNumber) {
-        const findPhoneInObject = (obj: any, depth = 0): string | null => {
-          if (depth > 5 || !obj || typeof obj !== 'object') return null;
-
-          for (const [key, value] of Object.entries(obj)) {
-            if (typeof value === 'string') {
-              // Look for patterns like "1234567890:x@s.whatsapp.net"
-              const phoneMatch = value.match(/(\d{10,15}):/);
-              if (phoneMatch) return phoneMatch[1];
-
-              // Look for standalone phone numbers in phone-related fields
-              if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number')) {
-                const cleanNumber = value.replace(/\D/g, '');
-                if (cleanNumber.length >= 10 && cleanNumber.length <= 15) {
-                  return cleanNumber;
-                }
-              }
-            } else if (typeof value === 'object') {
-              const found = findPhoneInObject(value, depth + 1);
-              if (found) return found;
-            }
-          }
-          return null;
-        };
-
-        phoneNumber = findPhoneInObject(credentials);
-      }
+      // Use centralized phone number extraction (supports both LID and JID)
+      const phoneNumber = extractPhoneNumber(credentials);
 
       if (!phoneNumber) {
         console.error('Failed to extract phone number from credentials:', {
