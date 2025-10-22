@@ -4,7 +4,16 @@
 
 This is a WhatsApp Bot Management application built as a full-stack web application for creating, managing, and monitoring WhatsApp bot instances. The system provides a comprehensive dashboard for controlling multiple bot instances, managing commands, and tracking activities in real-time. Each bot can be configured with automation features like auto-like, auto-react, and ChatGPT integration for intelligent responses.
 
-## Recent Changes (October 13, 2025)
+## Recent Changes (October 22, 2025)
+
+- **Baileys v7 Credential Format Fix**: Fixed saveCredentialsToAuthDir to properly unwrap credentials when saving to creds.json
+- **Credential Storage Compatibility**: Updated credential decoder to handle both v7 (root-level fields) and wrapped (creds object) formats
+- **Session File Format**: Baileys expects creds.json to contain unwrapped credential content, not wrapped in {creds: {...}, keys: {}}
+- **Successful End-to-End Test**: Registered and connected "test bot" (7198767878239) with v7 format credentials successfully
+- **LID Messaging Verified**: Bot correctly uses LID format (phone:device@lid) for WhatsApp communication in Baileys v7
+- **Auto-Resume Working**: Approved bots with valid credentials automatically resume on server startup
+
+## Previous Changes (October 13, 2025)
 
 - **Production Frontend Fix**: Fixed BASE_PATH in vite.config.ts to default to '/' instead of '/default/server1/rest-service/v1.0/' for proper production builds
 - **Pairing API Integration**: Integrated WhatsApp pairing service from /pair directory into main application at /api/pairing endpoint

@@ -61,48 +61,27 @@ export class WhatsAppBot {
     try {
       console.log(`Bot ${this.botInstance.name}: Saving Baileys session credentials`);
 
-      // Detect credential format and normalize for Baileys
-      let credsToSave = credentials;
+      // Detect credential format and extract the creds object for creds.json
+      let credsContent = credentials;
       
       // Check if this is v7 format (fields at root level)
-      const isV7Format = credentials.noiseKey && credentials.signedIdentityKey;
+      const isV7Format = credentials.noiseKey && credentials.signedIdentityKey && !credentials.creds;
       
-      // Check if this is legacy format (fields under creds)
-      const isLegacyFormat = credentials.creds?.noiseKey;
+      // Check if this is already in wrapped format (fields under creds)
+      const isWrappedFormat = credentials.creds?.noiseKey;
       
-      if (isV7Format && !isLegacyFormat) {
-        // V7 format - wrap in creds object for Baileys compatibility
-        console.log(`Bot ${this.botInstance.name}: Converting v7 credentials to Baileys auth format`);
-        credsToSave = {
-          creds: {
-            noiseKey: credentials.noiseKey,
-            signedIdentityKey: credentials.signedIdentityKey,
-            signedPreKey: credentials.signedPreKey,
-            registrationId: credentials.registrationId,
-            advSecretKey: credentials.advSecretKey,
-            me: credentials.me,
-            account: credentials.account,
-            signalIdentities: credentials.signalIdentities,
-            platform: credentials.platform,
-            routingInfo: credentials.routingInfo,
-            pairingEphemeralKeyPair: credentials.pairingEphemeralKeyPair,
-            // Include all other v7 fields
-            processedHistoryMessages: credentials.processedHistoryMessages || [],
-            nextPreKeyId: credentials.nextPreKeyId || 31,
-            firstUnuploadedPreKeyId: credentials.firstUnuploadedPreKeyId || 31,
-            accountSyncCounter: credentials.accountSyncCounter || 0,
-            accountSettings: credentials.accountSettings || { unarchiveChats: false },
-            registered: credentials.registered || false,
-            pairingCode: credentials.pairingCode,
-            lastAccountSyncTimestamp: credentials.lastAccountSyncTimestamp,
-            lastPropHash: credentials.lastPropHash
-          },
-          keys: {}
-        };
+      if (isWrappedFormat) {
+        // Already wrapped - extract the creds content for the file
+        credsContent = credentials.creds;
+        console.log(`Bot ${this.botInstance.name}: Extracting creds from wrapped format`);
+      } else if (isV7Format) {
+        // V7 format at root - already in correct format for creds.json
+        console.log(`Bot ${this.botInstance.name}: Using v7 credentials directly for creds.json`);
+        // credentials is already in the right format
       }
 
-      // Save the main creds.json file
-      writeFileSync(join(this.authDir, 'creds.json'), JSON.stringify(credsToSave, null, 2));
+      // Save ONLY the creds content to creds.json (Baileys expects unwrapped format)
+      writeFileSync(join(this.authDir, 'creds.json'), JSON.stringify(credsContent, null, 2));
 
       console.log(`Bot ${this.botInstance.name}: Baileys credentials saved successfully`);
     } catch (error) {

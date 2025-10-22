@@ -519,6 +519,17 @@ export async function registerRoutes(app: Express): Server {
         });
       }
 
+      // Detect and normalize v7 format (fields at root) to expected format (wrapped in creds)
+      const isV7Format = credentials.noiseKey && credentials.signedIdentityKey && !credentials.creds;
+      
+      if (isV7Format) {
+        console.log('🔧 Detected Baileys v7 format credentials, wrapping in creds object');
+        credentials = {
+          creds: credentials,
+          keys: {}
+        };
+      }
+
       // Check required fields for WhatsApp credentials
       const missingFields = [];
 
@@ -3344,7 +3355,7 @@ Thank you for using TREKKER-MD! 🚀
           // Use credential decoder to handle TREKKER~ prefix removal
           credentials = decodeCredentials(sessionId.trim());
           
-          // Validate Baileys v7 credentials
+          // Validate Baileys v7 credentials and get normalized version
           const validation = validateBaileysCredentials(credentials);
           if (!validation.valid) {
             return res.status(400).json({
@@ -3352,6 +3363,9 @@ Thank you for using TREKKER-MD! 🚀
               message: `Invalid Baileys credentials: ${validation.error}`
             });
           }
+          
+          // Use the normalized credentials (v7 format wrapped in creds object)
+          credentials = validation.normalized || credentials;
         } catch (error) {
           return res.status(400).json({
             success: false,
@@ -3362,7 +3376,7 @@ Thank you for using TREKKER-MD! 🚀
         try {
           credentials = JSON.parse(req.file.buffer.toString('utf-8'));
           
-          // Validate Baileys v7 credentials
+          // Validate Baileys v7 credentials and get normalized version
           const validation = validateBaileysCredentials(credentials);
           if (!validation.valid) {
             return res.status(400).json({
@@ -3370,6 +3384,9 @@ Thank you for using TREKKER-MD! 🚀
               message: `Invalid Baileys credentials: ${validation.error}`
             });
           }
+          
+          // Use the normalized credentials (v7 format wrapped in creds object)
+          credentials = validation.normalized || credentials;
         } catch (error) {
           return res.status(400).json({
             success: false,
