@@ -61,8 +61,38 @@ export class WhatsAppBot {
     try {
       console.log(`Bot ${this.botInstance.name}: Saving Baileys session credentials`);
 
+      // Detect credential format and normalize for Baileys
+      let credsToSave = credentials;
+      
+      // Check if this is v7 format (fields at root level)
+      const isV7Format = credentials.noiseKey && credentials.signedIdentityKey;
+      
+      // Check if this is legacy format (fields under creds)
+      const isLegacyFormat = credentials.creds?.noiseKey;
+      
+      if (isV7Format && !isLegacyFormat) {
+        // V7 format - wrap in creds object for Baileys compatibility
+        console.log(`Bot ${this.botInstance.name}: Converting v7 credentials to Baileys auth format`);
+        credsToSave = {
+          creds: {
+            noiseKey: credentials.noiseKey,
+            signedIdentityKey: credentials.signedIdentityKey,
+            signedPreKey: credentials.signedPreKey,
+            registrationId: credentials.registrationId,
+            advSecretKey: credentials.advSecretKey,
+            me: credentials.me,
+            account: credentials.account,
+            signalIdentities: credentials.signalIdentities,
+            platform: credentials.platform,
+            routingInfo: credentials.routingInfo,
+            pairingEphemeralKeyPair: credentials.pairingEphemeralKeyPair
+          },
+          keys: credentials.keys || {}
+        };
+      }
+
       // Save the main creds.json file
-      writeFileSync(join(this.authDir, 'creds.json'), JSON.stringify(credentials, null, 2));
+      writeFileSync(join(this.authDir, 'creds.json'), JSON.stringify(credsToSave, null, 2));
 
       console.log(`Bot ${this.botInstance.name}: Baileys credentials saved successfully`);
     } catch (error) {
