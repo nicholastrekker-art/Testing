@@ -103,10 +103,34 @@ export class WhatsAppBot {
       if (connection === 'close') {
         const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
         const disconnectReason = (lastDisconnect?.error as Boom)?.output?.statusCode;
+        const errorMessage = (lastDisconnect?.error as Error)?.message || 'Unknown error';
+        
         console.log(`Bot ${this.botInstance.name}: Connection closed due to`, lastDisconnect?.error, ', reconnecting:', shouldReconnect);
 
         this.isRunning = false;
-        this.stopPresenceAutoSwitch(); // Stop presence auto-switch when disconnected
+        this.stopPresenceAutoSwitch();
+
+        // Check for 405 errors (Connection Failure from WhatsApp)
+        const is405Error = disconnectReason === 405 || errorMessage.includes('405') || errorMessage.includes('Connection Failure');
+        
+        if (is405Error) {
+          console.log(`🚫 Bot ${this.botInstance.name}: WhatsApp returned 405 Connection Failure - stopping reconnection attempts`);
+          this.reconnectAttempts = 999; // Stop auto-reconnect
+          
+          await storage.updateBotInstance(this.botInstance.id, {
+            status: 'offline',
+            invalidReason: 'WhatsApp rejected connection (405). Credentials may need refresh or too many attempts detected.',
+            autoStart: false
+          });
+          
+          await storage.createActivity({
+            serverName: this.botInstance.serverName,
+            botInstanceId: this.botInstance.id,
+            type: 'error',
+            description: `WhatsApp 405 Connection Failure - bot stopped. Please refresh credentials or wait before retrying.`
+          });
+          return; // Stop here, don't attempt reconnect
+        }
 
         // If logged out (invalid credentials), mark bot as invalid
         if (disconnectReason === DisconnectReason.loggedOut) {
@@ -114,7 +138,7 @@ export class WhatsAppBot {
           await storage.updateBotInstance(this.botInstance.id, {
             status: 'offline',
             invalidReason,
-            autoStart: false // Disable auto-start for invalid bots
+            autoStart: false
           });
           await storage.createActivity({
             serverName: this.botInstance.serverName,
@@ -133,10 +157,12 @@ export class WhatsAppBot {
           });
         }
 
-        if (shouldReconnect) {
-          // Auto-reconnect with exponential backoff to prevent crash loops
-          const reconnectDelay = Math.min(5000 * (this.reconnectAttempts || 1), 30000);
+        if (shouldReconnect && this.reconnectAttempts < 5) {
+          // Auto-reconnect with exponential backoff (max 5 attempts)
+          const reconnectDelay = Math.min(10000 * Math.pow(2, this.reconnectAttempts || 0), 120000);
           this.reconnectAttempts = (this.reconnectAttempts || 0) + 1;
+          
+          console.log(`🔄 Bot ${this.botInstance.name}: Will retry connection in ${reconnectDelay/1000}s (attempt ${this.reconnectAttempts}/5)`);
 
           setTimeout(async () => {
             try {
@@ -146,10 +172,17 @@ export class WhatsAppBot {
                 serverName: this.botInstance.serverName,
                 botInstanceId: this.botInstance.id,
                 type: 'error',
-                description: `Reconnect attempt failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+                description: `Reconnect attempt ${this.reconnectAttempts} failed: ${error instanceof Error ? error.message : 'Unknown error'}`
               });
             }
           }, reconnectDelay);
+        } else if (this.reconnectAttempts >= 5) {
+          console.log(`⛔ Bot ${this.botInstance.name}: Max reconnection attempts reached, stopping bot`);
+          await storage.updateBotInstance(this.botInstance.id, {
+            status: 'offline',
+            invalidReason: 'Max reconnection attempts reached. Please check credentials and restart manually.',
+            autoStart: false
+          });
         }
       } else if (connection === 'open') {
         console.log(`Bot ${this.botInstance.name} is ready! 🎉 WELCOME TO TREKKERMD LIFETIME BOT`);
