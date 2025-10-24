@@ -287,8 +287,54 @@ export const cleanupDuplicateCreds = async (): Promise<{
   }
 };
 
+export const decodeCredentials = (base64Data: string): any => {
+  try {
+    const jsonString = Buffer.from(base64Data, 'base64').toString('utf8');
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error('Error decoding credentials:', error);
+    throw new Error('Invalid credentials format');
+  }
+};
+
+export const validateBaileysCredentials = (credentials: any): {
+  isValid: boolean;
+  message?: string;
+} => {
+  try {
+    if (!credentials || typeof credentials !== 'object') {
+      return {
+        isValid: false,
+        message: 'Credentials must be a valid object'
+      };
+    }
+
+    if (!credentials.creds && !credentials.me) {
+      return {
+        isValid: false,
+        message: 'Invalid Baileys credentials format: missing creds or me object'
+      };
+    }
+
+    return {
+      isValid: true
+    };
+  } catch (error) {
+    console.error('Error validating Baileys credentials:', error);
+    return {
+      isValid: false,
+      message: 'Failed to validate credentials'
+    };
+  }
+};
+
+export { extractPhoneNumber };
+
 export default {
   validateCredsUniqueness,
   getCredsStats,
-  cleanupDuplicateCreds
+  cleanupDuplicateCreds,
+  decodeCredentials,
+  validateBaileysCredentials,
+  extractPhoneNumber
 };
