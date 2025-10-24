@@ -322,7 +322,7 @@ export default function Dashboard() {
             </div>
 
             {/* Steps Grid */}
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-4">
               {/* Step 1: Get Session */}
               <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-blue-500/30 hover:border-blue-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/30 hover:-translate-y-1">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -352,6 +352,35 @@ export default function Dashboard() {
                 </div>
               </div>
 
+              {/* Direct Bot Registration */}
+              <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-amber-500/30 hover:border-amber-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/30 hover:-translate-y-1">
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 shadow-lg shadow-amber-500/50 group-hover:scale-110 transition-transform">
+                      <span className="text-2xl">⚡</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">Quick Register</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                        <span className="text-xs text-amber-400 font-medium">FAST TRACK</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-gray-300 mb-5 leading-relaxed">
+                    Already have session ID? Test and register your bot instantly without extra steps
+                  </p>
+                  <Link href="/guest/direct-bot-test">
+                    <Button className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold py-3 shadow-lg shadow-amber-500/30 group-hover:shadow-amber-500/50 transition-all">
+                      <i className="fas fa-bolt mr-2"></i>
+                      Direct Register
+                      <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
               {/* Step 2: Register Your Bot */}
               <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-purple-500/30 hover:border-purple-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/30 hover:-translate-y-1">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -361,15 +390,15 @@ export default function Dashboard() {
                       <span className="text-2xl font-bold text-white">2</span>
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-white">Register Your Bot</h3>
+                      <h3 className="text-xl font-bold text-white">Full Registration</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
-                        <span className="text-xs text-purple-400 font-medium">NEXT STEP</span>
+                        <span className="text-xs text-purple-400 font-medium">GUIDED</span>
                       </div>
                     </div>
                   </div>
                   <p className="text-gray-300 mb-5 leading-relaxed">
-                    Upload your session credentials and configure your bot features. Choose from <span className="font-semibold text-purple-400">auto-view, ChatGPT</span>, and more
+                    Step-by-step registration with server selection and advanced <span className="font-semibold text-purple-400">feature configuration</span>
                   </p>
                   <Link href="/guest/bot-registration">
                     <Button
@@ -396,12 +425,12 @@ export default function Dashboard() {
                       <h3 className="text-xl font-bold text-white">Manage Your Bot</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span className="text-xs text-emerald-400 font-medium">FINAL STEP</span>
+                        <span className="text-xs text-emerald-400 font-medium">CONTROL</span>
                       </div>
                     </div>
                   </div>
                   <p className="text-gray-300 mb-5 leading-relaxed">
-                    Control features, view statistics, and manage your bot settings. Access your <span className="font-semibold text-emerald-400">full dashboard</span> with real-time monitoring
+                    Control features, view statistics, and manage your bot settings with <span className="font-semibold text-emerald-400">real-time monitoring</span>
                   </p>
                   <Link href="/guest/bot-management">
                     <Button className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold py-3 shadow-lg shadow-emerald-500/30 group-hover:shadow-emerald-500/50 transition-all" data-testid="button-manage-bot">
