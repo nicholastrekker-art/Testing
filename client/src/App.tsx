@@ -14,6 +14,7 @@ import GuestBotManagement from "@/pages/guest/bot-management";
 import GuestCrossServer from "@/pages/guest/cross-server";
 import WhatsAppPairingPage from "@/pages/guest/whatsapp-pairing";
 import BotRegistrationPage from "@/pages/guest/bot-registration";
+import DirectBotTestPage from "@/pages/guest/direct-bot-test";
 import PairingPage from "@/pages/pairing-page";
 import Sidebar from "@/components/sidebar";
 import ProtectedRoute from "@/components/protected-route";
@@ -53,6 +54,7 @@ function Router() {
           <Route path="/guest/cross-server" component={GuestCrossServer} />
           <Route path="/guest/whatsapp-pairing" component={WhatsAppPairingPage} />
           <Route path="/guest/bot-registration" component={BotRegistrationPage} />
+          <Route path="/guest/direct-test" component={DirectBotTestPage} />
           <Route path="/pairing" component={PairingPage} />
           <Route component={NotFound} />
         </Switch>
