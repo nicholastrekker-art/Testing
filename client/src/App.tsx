@@ -54,7 +54,7 @@ function Router() {
           <Route path="/guest/cross-server" component={GuestCrossServer} />
           <Route path="/guest/whatsapp-pairing" component={WhatsAppPairingPage} />
           <Route path="/guest/bot-registration" component={BotRegistrationPage} />
-          <Route path="/guest/direct-test" component={DirectBotTestPage} />
+          <Route path="/guest/direct-bot-test" component={DirectBotTestPage} />
           <Route path="/pairing" component={PairingPage} />
           <Route component={NotFound} />
         </Switch>
