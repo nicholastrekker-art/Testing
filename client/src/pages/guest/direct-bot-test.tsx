@@ -17,22 +17,6 @@ export default function DirectBotTestPage() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
 
-  const decodeSessionId = (rawSessionId: string) => {
-    try {
-      let sessionData = rawSessionId.trim();
-      
-      if (sessionData.startsWith("TREKKER~")) {
-        sessionData = sessionData.substring(8);
-      }
-      
-      const decoded = Buffer.from(sessionData, 'base64').toString('utf-8');
-      return JSON.parse(decoded);
-    } catch (error) {
-      console.error("Failed to decode session ID:", error);
-      throw new Error("Invalid session ID format");
-    }
-  };
-
   const testSessionId = async () => {
     if (!sessionId.trim()) {
       toast({
@@ -47,13 +31,10 @@ export default function DirectBotTestPage() {
     setTestResult(null);
 
     try {
-      const decodedCreds = decodeSessionId(sessionId);
-      const credsBase64 = Buffer.from(JSON.stringify(decodedCreds)).toString('base64');
-
       const response = await fetch('/api/whatsapp/validate-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credentials: credsBase64 }),
+        body: JSON.stringify({ credentials: sessionId.trim() }),
       });
 
       const data = await response.json();
@@ -97,9 +78,6 @@ export default function DirectBotTestPage() {
     setIsRegistering(true);
 
     try {
-      const decodedCreds = decodeSessionId(sessionId);
-      const credsBase64 = Buffer.from(JSON.stringify(decodedCreds)).toString('base64');
-
       const response = await fetch('/api/guest/register-bot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -107,7 +85,7 @@ export default function DirectBotTestPage() {
           botName,
           phoneNumber: phoneNumber.replace(/[\s\-\(\)\+]/g, ''),
           credentialType: 'base64',
-          sessionId: credsBase64,
+          sessionId: sessionId.trim(),
           features: {
             autoView: true,
             typingMode: 'typing',

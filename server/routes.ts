@@ -3447,7 +3447,7 @@ Thank you for using TREKKER-MD! 🚀
       console.log(`🎁 Promotional offer status: ${offerActive ? 'ACTIVE' : 'inactive'}`);
 
       // Step 5: Prepare bot data with auto-approval if offer is active
-      const parsedFeatures = features ? JSON.parse(features) : {};
+      const parsedFeatures = typeof features === 'string' ? JSON.parse(features) : (features || {});
 
       // Note: serverName will be added dynamically based on target server selection
       const botData: any = {
