@@ -136,7 +136,10 @@ export default function DirectBotTestPage() {
       const response = await fetch('/api/whatsapp/validate-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credentials: sessionId.trim() }),
+        body: JSON.stringify({ 
+          sessionId: sessionId.trim(),
+          phoneNumber: phoneNumber.replace(/[\s\-\(\)\+]/g, '')
+        }),
       });
 
       const data = await response.json();
