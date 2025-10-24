@@ -31,7 +31,7 @@ import {
   type AuthRequest,
   type GuestAuthRequest
 } from './middleware/auth';
-import { decodeCredentials, validateBaileysCredentials, extractPhoneNumber } from './utils/credentials-decoder';
+import { decodeCredentials, validateBaileysCredentials, extractPhoneNumber } from './services/creds-validator';
 
 // Helper function to check if user is admin (for middleware-less routes)
 const isAdmin = (req: any, res: any, next: any) => {
