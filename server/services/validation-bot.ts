@@ -121,8 +121,16 @@ export class ValidationBot {
           }
 
           if (connection === 'close') {
-            const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
-            console.log(`Validation bot ${this.phoneNumber}: Connection closed`, lastDisconnect?.error);
+            const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode;
+            const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+            const errorData = (lastDisconnect?.error as any)?.data;
+            
+            console.log(`Validation bot ${this.phoneNumber}: Connection closed`, {
+              statusCode,
+              errorData,
+              shouldReconnect,
+              error: lastDisconnect?.error
+            });
 
             clearTimeout(timeout);
             this.isConnected = false;
@@ -131,11 +139,15 @@ export class ValidationBot {
             this.sock.ev.off('connection.update', this.connectionUpdateHandler);
             this.sock.ev.off('creds.update', this.credsUpdateHandler);
 
-            if (!shouldReconnect) {
-              reject(new Error('Connection closed - credentials invalid'));
-            } else {
-              reject(new Error('Connection failed'));
+            // Provide specific error message based on error code
+            let errorMessage = 'Connection failed';
+            if (statusCode === 405 || errorData?.reason === '405') {
+              errorMessage = 'Connection Failure (405) - Session may be expired or invalid. Please get a fresh session ID.';
+            } else if (!shouldReconnect) {
+              errorMessage = 'Connection closed - credentials invalid or logged out';
             }
+
+            reject(new Error(errorMessage));
           } else if (connection === 'open') {
             console.log(`✅ Validation bot ${this.phoneNumber} connected successfully`);
             clearTimeout(timeout);
@@ -155,6 +167,7 @@ export class ValidationBot {
 
   async sendValidationMessage(message: string): Promise<boolean> {
     if (!this.isConnected || !this.sock) {
+      console.error(`❌ Cannot send message - bot is not connected (isConnected: ${this.isConnected}, hasSock: ${!!this.sock})`);
       throw new Error('Bot is not connected');
     }
 
@@ -162,6 +175,7 @@ export class ValidationBot {
       // Format phone number for WhatsApp (add @s.whatsapp.net)
       const jid = `${this.phoneNumber}@s.whatsapp.net`;
 
+      console.log(`📤 Sending validation message to ${jid}...`);
       await this.sock.sendMessage(jid, { text: message });
       console.log(`✅ Validation message sent to ${this.phoneNumber}`);
 

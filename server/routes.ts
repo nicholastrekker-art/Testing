@@ -1981,11 +1981,12 @@ Thank you for choosing TREKKER-MD! 🚀`;
 ║ 🚀 What's Next:                           ║
 ║ • Your credentials are verified           ║
 ║ • Ready to register your bot              ║
-║ • All systems operational                 ║
+║ • Click "Register Bot" to continue        ║
 ╠══════════════════════════════════════════╣
 ║ 🔥 Thank you for choosing TREKKER-MD!     ║
 ╚══════════════════════════════════════════╝`;
 
+        console.log(`📤 Attempting to send validation message to ${cleanedPhone}...`);
         const messageSent = await sendGuestValidationMessage(
           cleanedPhone,
           JSON.stringify(credentials),
@@ -2002,23 +2003,39 @@ Thank you for choosing TREKKER-MD! 🚀`;
             messageSent: true
           });
         } else {
-          console.log(`⚠️ Session is valid but message delivery failed for ${cleanedPhone}`);
+          console.log(`⚠️ Session structure is valid but WhatsApp connection failed for ${cleanedPhone}`);
           res.json({
             valid: true,
-            message: '✅ Session is valid but unable to send confirmation message. You can proceed with registration.',
+            message: '✅ Session structure is valid. Note: WhatsApp confirmation message could not be sent (session may need refresh). You can still proceed with registration.',
             phoneNumber: cleanedPhone,
-            messageSent: false
+            messageSent: false,
+            warning: 'WhatsApp connection test failed - credentials may be expired'
           });
         }
-      } catch (messageError) {
+      } catch (messageError: any) {
         console.error('Error sending validation message:', messageError);
-        // Session is still valid even if message fails
-        res.json({
-          valid: true,
-          message: '✅ Session is valid but unable to send confirmation message. You can proceed with registration.',
-          phoneNumber: cleanedPhone,
-          messageSent: false
-        });
+        const errorMsg = messageError.message || 'Unknown error';
+        
+        // Check if it's a connection failure (405 error)
+        if (errorMsg.includes('Connection') || errorMsg.includes('405')) {
+          console.log(`⚠️ WhatsApp connection failed - credentials may be expired or session needs refresh`);
+          res.json({
+            valid: true,
+            message: '⚠️ Session structure is valid but WhatsApp connection failed. Your session may be expired. Try getting a fresh session ID or proceed with registration and update credentials later.',
+            phoneNumber: cleanedPhone,
+            messageSent: false,
+            warning: 'WhatsApp connection failed - session may be expired'
+          });
+        } else {
+          // Session structure is still valid even if message fails
+          res.json({
+            valid: true,
+            message: '✅ Session structure is valid. Confirmation message could not be sent. You can proceed with registration.',
+            phoneNumber: cleanedPhone,
+            messageSent: false,
+            warning: errorMsg
+          });
+        }
       }
 
     } catch (error) {
