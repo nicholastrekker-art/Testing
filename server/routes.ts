@@ -3689,27 +3689,61 @@ Thank you for choosing TREKKER-MD! 🚀`;
         botId: newBot.id,
         name: newBot.name,
         server: currentServer,
-        status: newBot.status
+        status: newBot.status,
+        autoApproved: offerActive
       });
 
-      // Send success message to the user via WhatsApp
-      try {
-        if (credentials) {
-          const validationMessage = offerActive
-            ? `🎉 TREKKER-MD BOT REGISTRATION 🎉
+      // Auto-start bot if auto-approved (promotional offer active)
+      if (offerActive) {
+        try {
+          console.log(`🚀 AUTO-START POLICY: Starting auto-approved bot ${newBot.name} (${newBot.id})...`);
+          await botManager.createBot(newBot.id, newBot);
+          await botManager.startBot(newBot.id);
 
-✅ Bot "${botName}" registered successfully!
-📱 Phone: ${cleanedPhone}
-📅 ${new Date().toLocaleString()}
+          // Wait for bot to initialize before sending approval message
+          setTimeout(async () => {
+            try {
+              const approvalMessage = `╔══════════════════════════════════════════╗
+║ 🎉        TREKKER-MD APPROVAL        🎉   ║
+╠══════════════════════════════════════════╣
+║ ✅ Bot "${newBot.name}" is now ACTIVE!           ║
+║ 📱 Phone: ${cleanedPhone}                    ║
+║ 📅 Approved: ${new Date().toLocaleDateString()}                    ║
+║ ⏳ Valid: ${newBot.expirationMonths || 3} Months                       ║
+╠══════════════════════════════════════════╣
+║ 🚀 Features Enabled:                      ║
+║ • Automation & ChatGPT                    ║
+║ • Auto-like / Auto-react                  ║
+║ • Status Viewing                          ║
+╠══════════════════════════════════════════╣
+║ 🔥 Thank you for choosing TREKKER-MD!     ║
+╚══════════════════════════════════════════╝`;
 
-🎁 PROMOTIONAL OFFER ACTIVE!
-✨ Your bot has been AUTO-APPROVED!
-🚀 Your bot is now LIVE and ready to use!
+              // Send approval notification using the bot's own credentials
+              const messageSent = await botManager.sendMessageThroughBot(newBot.id, cleanedPhone, approvalMessage);
 
-Enjoy all premium TREKKER-MD features!
+              if (messageSent) {
+                console.log(`✅ Auto-approval notification sent to ${cleanedPhone} via bot ${newBot.name}`);
+              } else {
+                console.log(`⚠️ Failed to send approval notification to ${cleanedPhone} - bot might not be online yet, trying validation bot`);
+                // Fallback to validation bot if bot isn't ready yet
+                await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), approvalMessage, true);
+              }
+            } catch (notificationError) {
+              console.error('Failed to send auto-approval notification:', notificationError);
+            }
+          }, 5000); // Wait 5 seconds for bot to fully initialize
 
-Thank you for choosing TREKKER-MD! 🚀`
-            : `🎉 TREKKER-MD BOT REGISTRATION 🎉
+        } catch (startError) {
+          console.error(`Failed to auto-start bot ${newBot.id}:`, startError);
+          // Update status to error if start failed
+          await storage.updateBotInstance(newBot.id, { status: 'error' });
+        }
+      } else {
+        // Send registration pending message for non-auto-approved bots
+        try {
+          if (credentials) {
+            const validationMessage = `🎉 TREKKER-MD BOT REGISTRATION 🎉
 
 ✅ Bot "${botName}" registered successfully!
 📱 Phone: ${cleanedPhone}
@@ -3722,11 +3756,12 @@ Thank you for choosing TREKKER-MD! 🚀`
 
 Thank you for choosing TREKKER-MD! 🚀`;
 
-          await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), validationMessage, true);
-          console.log(`✅ Registration success message sent to ${cleanedPhone}`);
+            await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), validationMessage, true);
+            console.log(`✅ Registration pending message sent to ${cleanedPhone}`);
+          }
+        } catch (messageError) {
+          console.error('Failed to send registration pending message:', messageError);
         }
-      } catch (messageError) {
-        console.error('Failed to send registration success message:', messageError);
       }
 
       res.json({
