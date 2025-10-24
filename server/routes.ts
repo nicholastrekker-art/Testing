@@ -1911,7 +1911,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
 
 
-  // Enhanced session validation endpoint with proper WhatsApp credentials validation
+  // Enhanced session validation endpoint - validates by sending WhatsApp message
   app.post('/api/whatsapp/validate-session', async (req, res) => {
     try {
       const { sessionId, phoneNumber } = req.body;
@@ -2011,12 +2011,60 @@ Thank you for choosing TREKKER-MD! 🚀`;
         });
       }
 
-      console.log(`✅ Session validation successful for ${cleanedPhone}`);
-      res.json({
-        valid: true,
-        message: 'Session validated successfully.',
-        jid: credentials.creds.me.id || `${cleanedPhone}@s.whatsapp.net`
-      });
+      console.log(`✅ Session validation successful for ${cleanedPhone}, now testing WhatsApp connection...`);
+
+      // Test the session by sending a validation message to WhatsApp
+      try {
+        const validationMessage = `╔══════════════════════════════════════════╗
+║ 🎉    TREKKER-MD SESSION VALIDATION  🎉   ║
+╠══════════════════════════════════════════╣
+║ ✅ Your Session ID is VALID!              ║
+║ 📱 Phone: ${cleanedPhone}                    ║
+║ 📅 Validated: ${new Date().toLocaleDateString()}                  ║
+║ ⏰ Time: ${new Date().toLocaleTimeString()}                      ║
+╠══════════════════════════════════════════╣
+║ 🚀 What's Next:                           ║
+║ • Your credentials are verified           ║
+║ • Ready to register your bot              ║
+║ • All systems operational                 ║
+╠══════════════════════════════════════════╣
+║ 🔥 Thank you for choosing TREKKER-MD!     ║
+╚══════════════════════════════════════════╝`;
+
+        const messageSent = await sendGuestValidationMessage(
+          cleanedPhone,
+          JSON.stringify(credentials),
+          validationMessage,
+          true // Preserve credentials
+        );
+
+        if (messageSent) {
+          console.log(`✅ Validation message sent successfully to ${cleanedPhone}`);
+          res.json({
+            valid: true,
+            message: '✅ Session validated successfully! Check your WhatsApp for confirmation message.',
+            phoneNumber: cleanedPhone,
+            messageSent: true
+          });
+        } else {
+          console.log(`⚠️ Session is valid but message delivery failed for ${cleanedPhone}`);
+          res.json({
+            valid: true,
+            message: '✅ Session is valid but unable to send confirmation message. You can proceed with registration.',
+            phoneNumber: cleanedPhone,
+            messageSent: false
+          });
+        }
+      } catch (messageError) {
+        console.error('Error sending validation message:', messageError);
+        // Session is still valid even if message fails
+        res.json({
+          valid: true,
+          message: '✅ Session is valid but unable to send confirmation message. You can proceed with registration.',
+          phoneNumber: cleanedPhone,
+          messageSent: false
+        });
+      }
 
     } catch (error) {
       console.error('Session validation error:', error);

@@ -145,7 +145,9 @@ export default function DirectBotTestPage() {
         setTestResult({ success: true, data });
         toast({
           title: "Session Validated!",
-          description: `Phone: ${data.phoneNumber || 'Unknown'}`,
+          description: data.messageSent 
+            ? `✅ Validation message sent to ${data.phoneNumber}! Check your WhatsApp.`
+            : `✅ Session is valid for ${data.phoneNumber}`,
         });
       } else {
         setTestResult({ success: false, error: data.error || 'Validation failed' });
@@ -393,10 +395,15 @@ export default function DirectBotTestPage() {
                     {testResult.success ? (
                       <div>
                         <p className="font-semibold">
-                          {testResult.registered ? (testResult.autoApproved ? "🎉 Bot Auto-Approved!" : "Bot Registered!") : "Session Valid!"}
+                          {testResult.registered ? (testResult.autoApproved ? "🎉 Bot Auto-Approved!" : "Bot Registered!") : "✅ Session Valid!"}
                         </p>
                         {testResult.data?.phoneNumber && (
                           <p className="text-sm mt-1">Phone: {testResult.data.phoneNumber}</p>
+                        )}
+                        {testResult.data?.messageSent && !testResult.registered && (
+                          <p className="text-sm mt-1 text-green-600">
+                            📱 Validation message sent to WhatsApp!
+                          </p>
                         )}
                         {testResult.registered && (
                           <p className="text-sm mt-1">
