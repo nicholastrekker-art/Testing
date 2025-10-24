@@ -1922,76 +1922,40 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
       const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
 
-      // Attempt to parse the session ID
+      // Use the centralized credential decoder (same as quick register)
       let credentials = null;
       try {
-        let base64Data = sessionId.trim();
-
-        // Remove TREKKER~ prefix if present
-        if (base64Data.startsWith('TREKKER~')) {
-          console.log('🔍 Removing TREKKER~ prefix from session ID for validation');
-          base64Data = base64Data.substring(8); // Remove "TREKKER~" (8 characters)
-        }
-
-        // Check Base64 size limit (5MB when decoded)
-        const estimatedSize = (base64Data.length * 3) / 4;
-        const maxSizeBytes = 5 * 1024 * 1024; // 5MB
-
-        if (estimatedSize > maxSizeBytes) {
-          return res.status(400).json({
-            message: `Session ID too large (estimated ${(estimatedSize / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.`
-          });
-        }
-
-        const decoded = Buffer.from(base64Data, 'base64').toString('utf-8');
-
-        if (decoded.length > maxSizeBytes) {
-          return res.status(400).json({
-            message: `Decoded session data too large (${(decoded.length / 1024 / 1024).toFixed(2)} MB). Maximum allowed size is 5MB.`
-          });
-        }
-
-        credentials = JSON.parse(decoded);
+        credentials = decodeCredentials(sessionId.trim());
+        console.log('✅ Session ID decoded successfully');
       } catch (error) {
-        console.error('❌ Session ID decode/parse error:', error);
-        return res.status(400).json({ valid: false, message: 'Invalid session ID format - unable to decode.' });
-      }
-
-      // Enhanced validation - check for proper WhatsApp credentials structure
-      const requiredFields = ['creds', 'keys'];
-      const missingFields = requiredFields.filter(field => !credentials[field]);
-
-      if (missingFields.length > 0) {
-        console.error('❌ Missing required fields:', missingFields);
-        return res.status(400).json({
-          valid: false,
-          message: `Invalid session structure - missing: ${missingFields.join(', ')}`
+        console.error('❌ Session ID decode error:', error);
+        return res.status(400).json({ 
+          valid: false, 
+          message: `Invalid session ID: ${error instanceof Error ? error.message : 'Unable to decode'}` 
         });
       }
 
-      // Validate creds object has essential WhatsApp fields
-      const requiredCredsFields = ['noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
-      const missingCredsFields = requiredCredsFields.filter(field => !credentials.creds[field]);
-
-      if (missingCredsFields.length > 0) {
-        console.error('❌ Missing required creds fields:', missingCredsFields);
+      // Validate using Baileys v7 credentials validator (same as quick register)
+      const validation = validateBaileysCredentials(credentials);
+      if (!validation.valid) {
+        console.error('❌ Baileys validation failed:', validation.error);
         return res.status(400).json({
           valid: false,
-          message: `Invalid credentials - missing: ${missingCredsFields.join(', ')}`
+          message: `Invalid Baileys credentials: ${validation.error}`
         });
       }
 
-      // Extract and validate phone number from credentials
-      let extractedPhoneNumber = null;
-      if (credentials?.creds?.me?.id) {
-        const phoneMatch = credentials.creds.me.id.match(/^(\d+):/);
-        extractedPhoneNumber = phoneMatch ? phoneMatch[1] : null;
-      }
+      // Use the normalized credentials (v7 format)
+      credentials = validation.normalized || credentials;
+
+      // Extract phone number using centralized utility (supports both LID and JID)
+      const extractedPhoneNumber = extractPhoneNumber(credentials);
 
       if (!extractedPhoneNumber) {
+        console.error('❌ Cannot extract phone number from credentials');
         return res.status(400).json({
           valid: false,
-          message: 'Unable to extract phone number from credentials.'
+          message: 'Unable to extract phone number from credentials. Please ensure you have valid WhatsApp session data.'
         });
       }
 
@@ -1999,15 +1963,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
         return res.status(400).json({
           valid: false,
           message: `Phone number mismatch: credentials are for ${extractedPhoneNumber}, but you provided ${cleanedPhone}.`
-        });
-      }
-
-      // Validate keys object is not empty
-      if (!credentials.keys || Object.keys(credentials.keys).length === 0) {
-        console.error('❌ Empty keys object in credentials');
-        return res.status(400).json({
-          valid: false,
-          message: 'Invalid session - keys object is empty or missing.'
         });
       }
 
