@@ -649,8 +649,50 @@
                 }
 
                 const data = await response.json();
-                currentRequestId = data.request_id;
-                showStatus('QR Code generated. Please scan it with your WhatsApp.', 'success');
+                currentRequestId = data.requestId || data.request_id;
+                
+                // Display the pairing code prominently
+                loadingSpinner.style.display = 'none';
+                if (data.code) {
+                    pairDiv.innerHTML = `
+                        <div style="background: linear-gradient(135deg, #48BB78, #38A169); padding: 2rem; border-radius: 1rem; margin: 1rem 0; box-shadow: 0 10px 25px rgba(72, 187, 120, 0.3);">
+                            <h3 style="color: white; font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">
+                                🔐 Your Pairing Code
+                            </h3>
+                            <div style="background: rgba(255,255,255,0.95); padding: 1.5rem; border-radius: 0.75rem; text-align: center;">
+                                <div style="font-size: 3rem; font-weight: 800; letter-spacing: 0.5rem; color: #2D3748; font-family: 'Courier New', monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+                                    ${data.code}
+                                </div>
+                            </div>
+                            <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 0.5rem;">
+                                <p style="color: white; margin: 0.5rem 0; font-size: 0.95rem; line-height: 1.6;">
+                                    <strong>📱 Steps to link:</strong>
+                                </p>
+                                <ol style="color: white; text-align: left; margin: 0.5rem 0 0 1.5rem; font-size: 0.9rem; line-height: 1.8;">
+                                    <li>Open WhatsApp on your phone</li>
+                                    <li>Go to <strong>Settings</strong> → <strong>Linked Devices</strong></li>
+                                    <li>Tap <strong>Link a Device</strong></li>
+                                    <li>Tap <strong>Link with phone number instead</strong></li>
+                                    <li>Enter the code above: <strong style="font-size: 1.1rem; letter-spacing: 0.2rem;">${data.code}</strong></li>
+                                </ol>
+                                <p style="color: rgba(255,255,255,0.9); margin: 1rem 0 0 0; font-size: 0.85rem; font-style: italic;">
+                                    ⏱️ Code expires in ${data.expiresIn || '60 seconds'}
+                                </p>
+                            </div>
+                            <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.15); border-radius: 0.5rem;">
+                                <div class="loading" style="margin: 0 auto; display: block;"></div>
+                                <p style="color: white; margin: 0.5rem 0 0 0; text-align: center; font-size: 0.9rem;">
+                                    Waiting for you to enter the code in WhatsApp...
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    pairDiv.style.display = 'block';
+                } else {
+                    showStatus('Code generated. Please check your WhatsApp.', 'success');
+                }
+                
+                // Start polling for session status
                 pollSessionStatus(currentRequestId);
                 pollInterval = setInterval(() => pollSessionStatus(currentRequestId), 5000);
 
