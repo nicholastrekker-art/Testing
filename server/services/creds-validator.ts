@@ -305,32 +305,70 @@ export const decodeCredentials = (base64Data: string): any => {
 };
 
 export const validateBaileysCredentials = (credentials: any): {
-  isValid: boolean;
-  message?: string;
+  valid: boolean;
+  error?: string;
+  normalized?: any;
 } => {
   try {
     if (!credentials || typeof credentials !== 'object') {
       return {
-        isValid: false,
-        message: 'Credentials must be a valid object'
+        valid: false,
+        error: 'Credentials must be a valid object'
       };
     }
 
-    if (!credentials.creds && !credentials.me) {
+    // Check if it's already wrapped in creds object
+    if (credentials.creds) {
+      // Already in expected format
+      const requiredFields = ['noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
+      const missingFields = requiredFields.filter(field => !credentials.creds[field]);
+      
+      if (missingFields.length > 0) {
+        return {
+          valid: false,
+          error: `Missing required fields in creds: ${missingFields.join(', ')}`
+        };
+      }
+
       return {
-        isValid: false,
-        message: 'Invalid Baileys credentials format: missing creds or me object'
+        valid: true,
+        normalized: credentials
+      };
+    }
+
+    // Check if it's Baileys v7 format (fields at root level)
+    const v7RequiredFields = ['noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
+    const hasV7Fields = v7RequiredFields.every(field => credentials[field]);
+
+    if (hasV7Fields) {
+      // Wrap v7 format in creds object
+      console.log('✅ Detected Baileys v7 format, wrapping in creds object');
+      return {
+        valid: true,
+        normalized: {
+          creds: credentials,
+          keys: {}
+        }
+      };
+    }
+
+    // Check for me object (alternative format)
+    if (credentials.me) {
+      return {
+        valid: true,
+        normalized: credentials
       };
     }
 
     return {
-      isValid: true
+      valid: false,
+      error: 'Invalid Baileys credentials format: missing required fields'
     };
   } catch (error) {
     console.error('Error validating Baileys credentials:', error);
     return {
-      isValid: false,
-      message: 'Failed to validate credentials'
+      valid: false,
+      error: 'Failed to validate credentials'
     };
   }
 };
