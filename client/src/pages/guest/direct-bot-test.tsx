@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle, XCircle, Bot, Gift, AlertTriangle } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, Bot, Gift, AlertTriangle, Key } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { useQuery } from "@tanstack/react-query";
 
@@ -19,6 +19,16 @@ export default function DirectBotTestPage() {
   const [isCheckingPhone, setIsCheckingPhone] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
   const [phoneCheckResult, setPhoneCheckResult] = useState<any>(null);
+  const [registrationResult, setRegistrationResult] = useState<any>(null); // State for registration outcome
+
+  // Mock features state, assuming it's defined elsewhere or defaults are handled
+  const features = {
+    autoView: true,
+    presenceMode: 'always_online',
+    intervalSeconds: 30,
+    chatGPT: false,
+    typingMode: 'typing'
+  };
 
   // Fetch promotional offer status
   const { data: offerStatus } = useQuery({
@@ -92,7 +102,7 @@ export default function DirectBotTestPage() {
       toast({
         title: "Check Failed",
         description: error.message,
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsCheckingPhone(false);
@@ -136,7 +146,7 @@ export default function DirectBotTestPage() {
       const response = await fetch('/api/whatsapp/validate-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           sessionId: sessionId.trim(),
           phoneNumber: phoneNumber.replace(/[\s\-\(\)\+]/g, '')
         }),
@@ -148,7 +158,7 @@ export default function DirectBotTestPage() {
         setTestResult({ success: true, data });
         toast({
           title: "Session Validated!",
-          description: data.messageSent 
+          description: data.messageSent
             ? `✅ Validation message sent to ${data.phoneNumber}! Check your WhatsApp.`
             : `✅ Session is valid for ${data.phoneNumber}`,
         });
@@ -173,20 +183,38 @@ export default function DirectBotTestPage() {
   };
 
   const registerBot = async () => {
-    // Check phone number first
-    if (!phoneCheckResult || phoneCheckResult.registered) {
+    // Comprehensive validation
+    if (!sessionId.trim()) {
       toast({
-        title: "Phone Check Required",
-        description: "Please verify phone number availability first",
+        title: "Session ID Required",
+        description: "Please enter your session ID to register",
         variant: "destructive",
       });
       return;
     }
 
-    if (!sessionId.trim() || !botName.trim() || !phoneNumber.trim()) {
+    if (!botName.trim()) {
       toast({
-        title: "Missing Information",
-        description: "Please fill in all fields",
+        title: "Bot Name Required",
+        description: "Please enter a name for your bot",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!phoneNumber.trim()) {
+      toast({
+        title: "Phone Number Required",
+        description: "Please enter your phone number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!phoneCheckResult || phoneCheckResult.registered) {
+      toast({
+        title: "Phone Validation Required",
+        description: "Please validate your phone number first",
         variant: "destructive",
       });
       return;
@@ -195,52 +223,82 @@ export default function DirectBotTestPage() {
     setIsRegistering(true);
 
     try {
-      const isOfferActive = (offerStatus as any)?.isActive;
-      
+      const formData = new FormData();
+      formData.append('botName', botName.trim());
+      formData.append('phoneNumber', phoneNumber.replace(/\D/g, ''));
+      formData.append('credentialType', 'base64');
+      formData.append('sessionId', sessionId.trim());
+
+      // Enhanced features configuration
+      formData.append('features', JSON.stringify({
+        autoLike: false,
+        autoReact: false,
+        autoView: features.autoView,
+        presenceMode: features.presenceMode,
+        intervalSeconds: features.intervalSeconds,
+        chatGPT: features.chatGPT,
+        typingMode: features.typingMode
+      }));
+
       const response = await fetch('/api/guest/register-bot', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          botName,
-          phoneNumber: phoneNumber.replace(/[\s\-\(\)\+]/g, ''),
-          credentialType: 'base64',
-          sessionId: sessionId.trim(),
-          features: {
-            autoView: true,
-            typingMode: 'typing',
-            presenceMode: 'always_online',
-            intervalSeconds: 30,
-            chatGPT: false
-          }
-        }),
+        body: formData,
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        const approvalMessage = isOfferActive 
-          ? `🎉 ${botName} is AUTO-APPROVED and LIVE! Promotional offer applied!`
-          : `${botName} is now registered and pending approval`;
-        
+        const isAutoApproved = (offerStatus as any)?.isActive;
+
+        // Enhanced success messaging
+        const successTitle = isAutoApproved
+          ? "🎉 Bot Auto-Approved & Live!"
+          : "✅ Bot Registered Successfully!";
+
+        const successMessage = isAutoApproved
+          ? `${botName} is now ACTIVE and ready to use! All features enabled instantly.`
+          : `${botName} registered successfully. Awaiting admin approval - you'll be notified.`;
+
         toast({
-          title: isOfferActive ? "🎁 Bot Auto-Approved!" : "Bot Registered Successfully!",
-          description: approvalMessage,
+          title: successTitle,
+          description: successMessage,
+          duration: 5000,
         });
-        setSessionId("");
-        setTestResult({ success: true, registered: true, data, autoApproved: isOfferActive });
+
+        // Clear form
+        setSessionId('');
+        setBotName('');
+        setPhoneNumber('');
+        setPhoneCheckResult(null);
+
+        setRegistrationResult({
+          success: true,
+          registered: true,
+          data,
+          autoApproved: isAutoApproved,
+          botName,
+          phoneNumber
+        });
       } else {
         toast({
           title: "Registration Failed",
-          description: data.error || 'Failed to register bot',
+          description: data.error || data.message || "Failed to register bot. Please try again.",
           variant: "destructive",
         });
-        setTestResult({ success: false, error: data.error });
+        setRegistrationResult({
+          success: false,
+          error: data.error || data.message
+        });
       }
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Connection Error",
+        description: error.message || "Unable to connect to server. Please check your connection.",
         variant: "destructive",
+      });
+      setRegistrationResult({
+        success: false,
+        error: error.message
       });
     } finally {
       setIsRegistering(false);
@@ -273,7 +331,7 @@ export default function DirectBotTestPage() {
           <Alert className="border-red-500 bg-red-50 dark:bg-red-900/20">
             <AlertTriangle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800 dark:text-red-200">
-              {phoneCheckResult.serverMismatch 
+              {phoneCheckResult.serverMismatch
                 ? `⚠️ This phone number is already registered on ${phoneCheckResult.registeredTo}. Please use a different number.`
                 : `⚠️ This phone number already has a bot registered. Please use a different number.`
               }
@@ -286,6 +344,47 @@ export default function DirectBotTestPage() {
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800 dark:text-green-200">
               ✅ Phone number is available for registration!
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Registration Result Alert */}
+        {registrationResult && registrationResult.registered && (
+          <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800 dark:text-green-200">
+              {registrationResult.autoApproved ? (
+                <div className="space-y-2">
+                  <p className="font-bold text-lg">🎉 Bot Auto-Approved & Live!</p>
+                  <p>✅ <strong>{registrationResult.botName}</strong> is now active and ready to use</p>
+                  <p>📱 Phone: {registrationResult.phoneNumber}</p>
+                  <p className="text-sm mt-2">All premium features are enabled. Your bot will start automatically.</p>
+                  <div className="mt-3 pt-3 border-t border-green-300">
+                    <Button
+                      onClick={() => window.location.href = '/'}
+                      className="w-full bg-green-600 hover:bg-green-700"
+                    >
+                      Go to Dashboard
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="font-bold">✅ Bot Registered Successfully!</p>
+                  <p><strong>{registrationResult.botName}</strong> is awaiting admin approval</p>
+                  <p>📱 Phone: {registrationResult.phoneNumber}</p>
+                  <p className="text-sm mt-2">Contact +254704897825 to activate your bot. You'll receive hourly status updates.</p>
+                  <div className="mt-3 pt-3 border-t border-green-300">
+                    <Button
+                      onClick={() => window.location.href = '/'}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Return to Dashboard
+                    </Button>
+                  </div>
+                </div>
+              )}
             </AlertDescription>
           </Alert>
         )}
@@ -332,16 +431,29 @@ export default function DirectBotTestPage() {
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="textarea-session-id" className="text-gray-200">Session ID (Base64 with TREKKER~ prefix)</Label>
+            <div>
+              <Label htmlFor="sessionId">Session ID (Base64) *</Label>
               <Textarea
-                id="textarea-session-id"
+                id="sessionId"
                 data-testid="textarea-session-id"
-                placeholder="TREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZ..."
+                placeholder="Paste your base64 session ID here... (starts with TREKKER~ or long alphanumeric string)"
                 value={sessionId}
-                onChange={(e) => setSessionId(e.target.value)}
-                className="bg-gray-700 border-gray-600 text-white min-h-[120px] font-mono text-sm"
+                onChange={(e) => {
+                  const value = e.target.value.trim();
+                  setSessionId(value);
+                }}
+                className="min-h-[120px] font-mono text-sm"
+                required
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                {sessionId.length > 0 ? (
+                  <span className="text-green-600">
+                    ✓ Session ID loaded ({sessionId.length} characters)
+                  </span>
+                ) : (
+                  "Get this from the pairing site after linking your WhatsApp"
+                )}
+              </p>
             </div>
 
             <div className="flex gap-3">
