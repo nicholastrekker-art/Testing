@@ -118,14 +118,30 @@ export default function PairingPage() {
   };
 
   const handleCopy = async () => {
-    if (sessionData?.sessionId) {
+    if (!sessionData?.sessionId) {
+      toast({
+        title: "No Session ID",
+        description: "No session data available to copy",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
       await navigator.clipboard.writeText(sessionData.sessionId);
       setCopied(true);
       toast({
-        title: "Copied!",
-        description: "Session ID copied to clipboard"
+        title: "✅ Copied Successfully!",
+        description: "Session ID copied to clipboard. You can now paste it during bot registration.",
       });
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), 3000);
+    } catch (error) {
+      console.error('Copy error:', error);
+      toast({
+        title: "Copy Failed",
+        description: "Please select and copy the session ID manually",
+        variant: "destructive"
+      });
     }
   };
 
@@ -144,32 +160,35 @@ export default function PairingPage() {
 
       // Remove TREKKER~ prefix if present
       if (sessionId.startsWith('TREKKER~')) {
+        console.log('Removing TREKKER~ prefix from session ID');
         sessionId = sessionId.substring(8);
       }
 
+      console.log('Decoding session ID...');
       const decoded = atob(sessionId);
       const credsData = JSON.parse(decoded);
 
+      console.log('Creating download file...');
       // Create blob and download
       const blob = new Blob([JSON.stringify(credsData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `creds_${sessionData.phoneNumber || 'session'}.json`;
+      link.download = `creds_${sessionData.phoneNumber || 'whatsapp_session'}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
       toast({
-        title: "Download Started",
-        description: "creds.json file has been downloaded",
+        title: "✅ Download Complete!",
+        description: `creds.json file saved successfully. Use this file to register your bot.`,
       });
     } catch (error) {
       console.error('Download error:', error);
       toast({
         title: "Download Failed",
-        description: "Failed to generate creds.json file. The session ID may be invalid.",
+        description: `Failed to generate creds.json: ${error instanceof Error ? error.message : 'Invalid session format'}`,
         variant: "destructive"
       });
     }
@@ -230,101 +249,118 @@ export default function PairingPage() {
 
       {/* Session ID Display (overlay when available) */}
       {sessionData && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-950/90 z-50 p-4">
-          <Card className="w-full max-w-2xl bg-gray-800 border-emerald-500/30">
-            <CardHeader className="border-b border-emerald-500/20">
-              <CardTitle className="text-2xl text-center text-emerald-400 flex items-center justify-center gap-2">
-                <CheckCircle className="w-8 h-8" />
-                Pairing Successful!
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-950/95 backdrop-blur-sm z-50 p-4">
+          <Card className="w-full max-w-3xl bg-gradient-to-br from-gray-800 to-gray-900 border-2 border-emerald-500/50 shadow-2xl shadow-emerald-500/20">
+            <CardHeader className="border-b border-emerald-500/30 bg-gradient-to-r from-emerald-900/30 to-green-900/30">
+              <CardTitle className="text-3xl text-center text-emerald-400 flex items-center justify-center gap-3">
+                <CheckCircle className="w-10 h-10 animate-pulse" />
+                Pairing Successful! 🎉
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6 space-y-4">
-              <div className="text-center space-y-2">
-                <p className="text-gray-300">
-                  Your Session ID is ready. Save it securely for bot registration.
+            <CardContent className="pt-8 space-y-6">
+              <div className="text-center space-y-3 bg-emerald-500/10 p-4 rounded-lg border border-emerald-500/30">
+                <p className="text-gray-200 text-lg font-medium">
+                  ✅ Your WhatsApp Session ID is ready!
+                </p>
+                <p className="text-gray-400 text-sm">
+                  Save it securely for bot registration. You can download as JSON or copy the session ID.
                 </p>
                 {sessionData.phoneNumber && (
-                  <p className="text-sm text-gray-400">
-                    Phone: <span className="text-emerald-400 font-mono">{sessionData.phoneNumber}</span>
+                  <p className="text-sm text-gray-300 mt-2">
+                    📱 Phone: <span className="text-emerald-400 font-mono font-bold">{sessionData.phoneNumber}</span>
                   </p>
                 )}
               </div>
 
-              <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-400">Session ID</span>
+              <div className="bg-gray-900/50 border-2 border-gray-700 rounded-lg p-5 shadow-inner">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-semibold text-gray-300 uppercase tracking-wide">📋 Session ID</span>
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={handleCopySessionId}
-                    className="text-emerald-400 hover:text-emerald-300"
+                    className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/20"
                   >
                     {copied ? (
                       <>
                         <CheckCircle className="w-4 h-4 mr-1" />
-                        Copied
+                        Copied!
                       </>
                     ) : (
                       <>
                         <Copy className="w-4 h-4 mr-1" />
-                        Copy
+                        Quick Copy
                       </>
                     )}
                   </Button>
                 </div>
-                <div className="bg-gray-950 border border-gray-700 rounded p-3 max-h-40 overflow-y-auto">
-                  <code className="text-xs text-emerald-400 font-mono break-all">
+                <div className="bg-gray-950 border border-emerald-500/20 rounded-md p-4 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-emerald-500 scrollbar-track-gray-800">
+                  <code className="text-xs text-emerald-400 font-mono break-all leading-relaxed">
                     {sessionData.sessionId}
                   </code>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Button
                     onClick={handleCopy}
-                    className="w-full"
+                    className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold shadow-lg shadow-emerald-500/30"
                     size="lg"
                   >
                     {copied ? (
                       <>
                         <CheckCircle className="mr-2 h-5 w-5" />
-                        Copied!
+                        Copied to Clipboard!
                       </>
                     ) : (
                       <>
                         <Copy className="mr-2 h-5 w-5" />
-                        Copy Session
+                        Copy Session ID
                       </>
                     )}
                   </Button>
                   <Button
                     onClick={handleDownloadCreds}
                     variant="outline"
-                    className="w-full"
+                    className="w-full border-2 border-emerald-500 text-emerald-400 hover:bg-emerald-500/20 font-semibold shadow-lg shadow-emerald-500/20"
                     size="lg"
                   >
                     <Download className="mr-2 h-5 w-5" />
-                    Download JSON
+                    Download creds.json
                   </Button>
                 </div>
+                
                 <Button
-                  onClick={() => setLocation('/')}
+                  onClick={() => {
+                    // Save to localStorage for auto-fill
+                    if (sessionData.sessionId && sessionData.phoneNumber) {
+                      localStorage.setItem('autoRegisterSessionId', sessionData.sessionId);
+                      localStorage.setItem('autoRegisterPhoneNumber', sessionData.phoneNumber);
+                      localStorage.setItem('autoRegisterFlow', 'true');
+                      localStorage.setItem('autoRegisterTimestamp', new Date().toISOString());
+                    }
+                    setLocation('/?openRegistration=true');
+                  }}
                   variant="default"
-                  className="w-full"
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold shadow-lg shadow-blue-500/30"
                   size="lg"
                 >
-                  Continue to Registration
+                  Continue to Bot Registration
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </div>
 
-              <div className="text-center">
+              <div className="text-center pt-4 border-t border-gray-700">
                 <Button
-                  onClick={() => setLocation("/")}
+                  onClick={() => {
+                    f(null);
+                    setLocation("/");
+                  }}
                   variant="outline"
-                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                  className="border-gray-600 text-gray-400 hover:bg-gray-700 hover:text-gray-200"
                 >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
                   Back to Dashboard
                 </Button>
               </div>
