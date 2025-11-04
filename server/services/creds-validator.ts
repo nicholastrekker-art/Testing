@@ -289,7 +289,14 @@ export const cleanupDuplicateCreds = async (): Promise<{
 
 export const decodeCredentials = (base64Data: string): any => {
   try {
-    const jsonString = Buffer.from(base64Data, 'base64').toString('utf8');
+    // Remove TREKKER~ prefix if present
+    let cleanedBase64 = base64Data.trim();
+    if (cleanedBase64.startsWith('TREKKER~')) {
+      console.log('🔧 Removing TREKKER~ prefix from credentials');
+      cleanedBase64 = cleanedBase64.substring(8); // Remove 'TREKKER~' (8 characters)
+    }
+    
+    const jsonString = Buffer.from(cleanedBase64, 'base64').toString('utf8');
     return JSON.parse(jsonString);
   } catch (error) {
     console.error('Error decoding credentials:', error);

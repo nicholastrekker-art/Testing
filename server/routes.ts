@@ -3373,8 +3373,8 @@ Thank you for using TREKKER-MD! 🚀
       if (credentialType === 'base64' && sessionId) {
         try {
           console.log(`🔍 SessionID received (length: ${sessionId?.length}):`, sessionId?.substring(0, 50) + '...');
-          // Use credential decoder to handle TREKKER~ prefix removal
-          credentials = decodeCredentials(sessionId.trim());
+          // Use centralized credential decoder (handles TREKKER~ prefix removal)
+          credentials = decodeCredentials(sessionId);
           
           // Validate Baileys v7 credentials and get normalized version
           const validation = validateBaileysCredentials(credentials);
