@@ -553,6 +553,24 @@
         let currentRequestId = null;
         let pollInterval = null;
 
+        // Function to copy pairing code to clipboard
+        function copyPairingCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                const copyBtn = document.getElementById('copy-btn-text');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                copyBtn.parentElement.style.background = 'linear-gradient(135deg, #48BB78, #38A169)';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.parentElement.style.background = 'linear-gradient(135deg, var(--primary), var(--secondary))';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy code:', err);
+                alert('Code: ' + code);
+            });
+        }
+
         // Function to filter countries based on search input
         function filterCountries() {
             const input = countrySearchInput.value.toLowerCase();
@@ -610,12 +628,22 @@
                 if (data.success === true && data.sessionId) {
                     clearInterval(pollInterval);
                     loadingSpinner.style.display = 'none';
-                    pairDiv.style.display = 'none';
+                    
+                    // Update status indicator instead of hiding pairing code
+                    const statusIndicator = document.getElementById('status-indicator');
+                    if (statusIndicator) {
+                        statusIndicator.innerHTML = `
+                            <div style="background: rgba(72, 187, 120, 0.3); padding: 1rem; border-radius: 0.5rem; border: 2px solid rgba(72, 187, 120, 0.5);">
+                                <p style="color: white; margin: 0; text-align: center; font-size: 0.9rem;">
+                                    ✅ <strong>Successfully Linked!</strong> Session ID generated.
+                                </p>
+                            </div>
+                        `;
+                    }
+                    
+                    // Show session result section
                     sessionResultDiv.style.display = 'block';
                     sessionIdDisplay.textContent = data.sessionId;
-                    
-                    // Show success message
-                    showStatus('✅ Session ID retrieved successfully! Check your WhatsApp for confirmation.', 'success');
                     
                     // Download button for session ID
                     downloadJsonButton.classList.remove('hidden');
@@ -630,16 +658,42 @@
                         URL.revokeObjectURL(url);
                     };
                 } else if (data.pending === true || !data.success) {
-                    showStatus(`Waiting for you to enter the code in WhatsApp... <span class="loading"></span>`);
+                    // Update only the status indicator, keep pairing code visible
+                    const statusIndicator = document.getElementById('status-indicator');
+                    if (statusIndicator && !statusIndicator.innerHTML.includes('Successfully Linked')) {
+                        statusIndicator.innerHTML = `
+                            <div class="loading" style="margin: 0 auto; display: block;"></div>
+                            <p style="color: white; margin: 0.5rem 0 0 0; text-align: center; font-size: 0.9rem;">
+                                Waiting for you to enter the code in WhatsApp...
+                            </p>
+                        `;
+                    }
                 } else if (data.status === 'error' || data.error) {
                     clearInterval(pollInterval);
                     loadingSpinner.style.display = 'none';
-                    showStatus(`Error: ${data.message || data.error}`, 'error');
+                    const statusIndicator = document.getElementById('status-indicator');
+                    if (statusIndicator) {
+                        statusIndicator.innerHTML = `
+                            <div style="background: rgba(255, 82, 82, 0.3); padding: 1rem; border-radius: 0.5rem; border: 2px solid rgba(255, 82, 82, 0.5);">
+                                <p style="color: white; margin: 0; text-align: center; font-size: 0.9rem;">
+                                    ❌ Error: ${data.message || data.error}
+                                </p>
+                            </div>
+                        `;
+                    }
                 }
             } catch (error) {
                 console.error('Poll error:', error);
                 // Don't stop polling on network errors - keep trying
-                showStatus(`Checking status... <span class="loading"></span>`);
+                const statusIndicator = document.getElementById('status-indicator');
+                if (statusIndicator && !statusIndicator.innerHTML.includes('Successfully Linked')) {
+                    statusIndicator.innerHTML = `
+                        <div class="loading" style="margin: 0 auto; display: block;"></div>
+                        <p style="color: white; margin: 0.5rem 0 0 0; text-align: center; font-size: 0.9rem;">
+                            Checking status...
+                        </p>
+                    `;
+                }
             }
         }
 
@@ -676,18 +730,22 @@
                 const data = await response.json();
                 currentRequestId = data.requestId || data.request_id;
                 
-                // Display the pairing code prominently
+                // Display the pairing code prominently and persistently
                 loadingSpinner.style.display = 'none';
                 if (data.code) {
                     pairDiv.innerHTML = `
-                        <div style="background: linear-gradient(135deg, #48BB78, #38A169); padding: 2rem; border-radius: 1rem; margin: 1rem 0; box-shadow: 0 10px 25px rgba(72, 187, 120, 0.3);">
+                        <div id="pairing-code-container" style="background: linear-gradient(135deg, #48BB78, #38A169); padding: 2rem; border-radius: 1rem; margin: 1rem 0; box-shadow: 0 10px 25px rgba(72, 187, 120, 0.3);">
                             <h3 style="color: white; font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">
                                 🔐 Your Pairing Code
                             </h3>
-                            <div style="background: rgba(255,255,255,0.95); padding: 1.5rem; border-radius: 0.75rem; text-align: center;">
-                                <div style="font-size: 3rem; font-weight: 800; letter-spacing: 0.5rem; color: #2D3748; font-family: 'Courier New', monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+                            <div style="background: rgba(255,255,255,0.95); padding: 1.5rem; border-radius: 0.75rem; text-align: center; position: relative;">
+                                <div id="code-display" style="font-size: 3rem; font-weight: 800; letter-spacing: 0.5rem; color: #2D3748; font-family: 'Courier New', monospace; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); margin-bottom: 1rem;">
                                     ${data.code}
                                 </div>
+                                <button id="copy-code-btn" onclick="copyPairingCode('${data.code}')" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                    <i class="fas fa-copy"></i>
+                                    <span id="copy-btn-text">Copy Code</span>
+                                </button>
                             </div>
                             <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 0.5rem;">
                                 <p style="color: white; margin: 0.5rem 0; font-size: 0.95rem; line-height: 1.6;">
@@ -704,7 +762,7 @@
                                     ⏱️ Code expires in ${data.expiresIn || '60 seconds'}
                                 </p>
                             </div>
-                            <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.15); border-radius: 0.5rem;">
+                            <div id="status-indicator" style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.15); border-radius: 0.5rem;">
                                 <div class="loading" style="margin: 0 auto; display: block;"></div>
                                 <p style="color: white; margin: 0.5rem 0 0 0; text-align: center; font-size: 0.9rem;">
                                     Waiting for you to enter the code in WhatsApp...
