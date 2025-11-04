@@ -338,6 +338,12 @@
             color: #F6AD55;
             border-left: 4px solid #F6AD55;
         }
+
+        .status-success {
+            background-color: rgba(72, 187, 120, 0.1);
+            color: #48BB78;
+            border-left: 4px solid #48BB78;
+        }
     </style>
 </head>
 <body>
@@ -573,7 +579,11 @@
 
         // Function to display status messages
         function showStatus(message, type = 'waiting') {
-            pairDiv.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.innerHTML = message;
+            pairDiv.innerHTML = '';
+            pairDiv.appendChild(statusDiv);
             pairDiv.style.display = 'block';
         }
 
@@ -596,25 +606,40 @@
                 const response = await fetch(`/api/pair/status/${requestId}`);
                 const data = await response.json();
 
-                if (data.status === 'success') {
+                // Check for success response (backend returns data.success = true)
+                if (data.success === true && data.sessionId) {
                     clearInterval(pollInterval);
                     loadingSpinner.style.display = 'none';
+                    pairDiv.style.display = 'none';
                     sessionResultDiv.style.display = 'block';
-                    sessionIdDisplay.textContent = data.session_id;
-                    displayQrCode(data.qr_code);
+                    sessionIdDisplay.textContent = data.sessionId;
+                    
+                    // Show success message
+                    showStatus('✅ Session ID retrieved successfully! Check your WhatsApp for confirmation.', 'success');
+                    
+                    // Download button for session ID
                     downloadJsonButton.classList.remove('hidden');
-                    downloadJsonButton.onclick = () => downloadJson(data.session_id);
-                } else if (data.status === 'pending') {
-                    showStatus(`Waiting for connection... <span class="loading"></span>`);
-                } else if (data.status === 'error') {
+                    downloadJsonButton.onclick = () => {
+                        const blob = new Blob([data.sessionId], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'trekker_session_id.txt';
+                        document.body.appendChild(a);
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    };
+                } else if (data.pending === true || !data.success) {
+                    showStatus(`Waiting for you to enter the code in WhatsApp... <span class="loading"></span>`);
+                } else if (data.status === 'error' || data.error) {
                     clearInterval(pollInterval);
                     loadingSpinner.style.display = 'none';
-                    showStatus(`Error: ${data.message}`, 'error');
+                    showStatus(`Error: ${data.message || data.error}`, 'error');
                 }
             } catch (error) {
-                clearInterval(pollInterval);
-                loadingSpinner.style.display = 'none';
-                showStatus(`Failed to fetch status: ${error.message}`, 'error');
+                console.error('Poll error:', error);
+                // Don't stop polling on network errors - keep trying
+                showStatus(`Checking status... <span class="loading"></span>`);
             }
         }
 
