@@ -527,7 +527,13 @@
         <div id="pair"></div>
         <div id="session-result">
             <h2>Session ID</h2>
-            <div class="session-id-display" id="session-id"></div>
+            <div style="position: relative;">
+                <div class="session-id-display" id="session-id"></div>
+                <button id="copy-session-btn" onclick="copySessionId()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 0.5rem 1rem; border: none; border-radius: 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                    <i class="fas fa-copy"></i>
+                    <span id="copy-session-text">Copy</span>
+                </button>
+            </div>
             <p>Scan the QR code with your WhatsApp application.</p>
             <div id="qr-code"></div>
             <div class="button-group">
@@ -568,6 +574,30 @@
             }).catch(err => {
                 console.error('Failed to copy code:', err);
                 alert('Code: ' + code);
+            });
+        }
+
+        // Function to copy session ID to clipboard
+        function copySessionId() {
+            const sessionId = sessionIdDisplay.textContent;
+            if (!sessionId) {
+                alert('No session ID to copy');
+                return;
+            }
+            
+            navigator.clipboard.writeText(sessionId).then(() => {
+                const copyBtn = document.getElementById('copy-session-text');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                copyBtn.parentElement.style.background = 'linear-gradient(135deg, #48BB78, #38A169)';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.parentElement.style.background = 'linear-gradient(135deg, var(--primary), var(--secondary))';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy session ID:', err);
+                alert('Session ID: ' + sessionId);
             });
         }
 
