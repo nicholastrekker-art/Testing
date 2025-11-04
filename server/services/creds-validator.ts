@@ -341,7 +341,17 @@ export const validateBaileysCredentials = (credentials: any): {
     const hasV7Fields = v7RequiredFields.every(field => credentials[field]);
 
     if (hasV7Fields) {
-      // Wrap v7 format in creds object
+      // Check if it also has 'me' field (phone number info) - this is the most common v7 format
+      if (credentials.me && (credentials.me.id || credentials.me.lid)) {
+        console.log('✅ Detected Baileys v7 format with me field - this is the standard pairing format');
+        // Keep the original structure as-is, it's already valid
+        return {
+          valid: true,
+          normalized: credentials
+        };
+      }
+      
+      // Fallback: wrap in creds object if no 'me' field
       console.log('✅ Detected Baileys v7 format, wrapping in creds object');
       return {
         valid: true,
