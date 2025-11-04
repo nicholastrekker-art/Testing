@@ -350,11 +350,14 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                         sessionStatusMap.set(id, sessionDataForFrontend);
                         console.log(`📦 Session data stored for request ID: ${id}`);
                         
-                        // Keep session data available for 10 minutes
+                        // Keep session data available for 30 minutes (extended for better UX)
                         setTimeout(() => {
-                            sessionStatusMap.delete(id);
-                            console.log(`🧹 Cleaned up session data for: ${id}`);
-                        }, 10 * 60 * 1000);
+                            const currentData = sessionStatusMap.get(id);
+                            if (currentData && currentData.success) {
+                                sessionStatusMap.delete(id);
+                                console.log(`🧹 Cleaned up session data for: ${id}`);
+                            }
+                        }, 30 * 60 * 1000);
                         
                         // Now close the pairing connection
                         console.log('🔌 Closing pairing connection...');

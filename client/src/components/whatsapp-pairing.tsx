@@ -67,19 +67,42 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
 
       const data = await response.json();
 
-      if (data.status === 'authenticated') {
-        // Authentication successful
+      // Check for successful session data
+      if (data.success && data.sessionId) {
+        // Session created successfully
         if (pollingInterval) {
           clearInterval(pollingInterval);
           setPollingInterval(null);
         }
         setIsWaitingForAuth(false);
-        setCredentials(data.sessionData || data.credentials);
-        setStep(4);
-        toast({
-          title: "Pairing Successful!",
-          description: data.message || "Your WhatsApp is now linked. Credentials sent to your WhatsApp.",
-        });
+
+        // Extract credentials from session ID
+        try {
+          let sessionId = data.sessionId;
+          // Remove TREKKER~ prefix if present
+          if (sessionId.startsWith('TREKKER~')) {
+            sessionId = sessionId.substring(8);
+          }
+          const decoded = atob(sessionId);
+          const creds = JSON.parse(decoded);
+
+          setCredentials({
+            base64: data.sessionId,
+            jid: creds?.creds?.me?.lid || creds?.creds?.me?.id || phoneNumber + '@s.whatsapp.net'
+          });
+          setStep(4);
+          toast({
+            title: "Pairing Successful!",
+            description: data.message || "Your WhatsApp is now linked. Credentials sent to your WhatsApp.",
+          });
+        } catch (error) {
+          console.error('Error parsing session data:', error);
+          toast({
+            title: "Session Retrieved",
+            description: "Session data received but parsing failed. Please try again.",
+            variant: "destructive"
+          });
+        }
       } else if (data.status === 'failed') {
         // Authentication failed
         if (pollingInterval) {
@@ -104,7 +127,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
   const generatePairingMutation = useMutation({
     mutationFn: async (data: { phoneNumber: string; selectedServer: string; botName?: string; features?: any }) => {
       const cleanedPhone = data.phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
+
       const response = await fetch(`/api/pair?number=${cleanedPhone}`, {
         method: 'GET'
       });
@@ -114,11 +137,11 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       }
 
       const result = await response.json();
-      
+
       if (!result.code) {
         throw new Error('No pairing code returned from server');
       }
-      
+
       return {
         success: true,
         pairingCode: result.code,
@@ -157,7 +180,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
   // Poll for session ID after pairing code is entered - continuous polling with validation
   const startSessionPolling = (phone: string) => {
     console.log('Starting continuous session polling for:', phone);
-    
+
     const pollInterval = setInterval(async () => {
       try {
         const response = await fetch(`/api/guest/session/${phone.replace(/[\s\-\(\)\+]/g, '')}`);
@@ -165,7 +188,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
         if (response.ok) {
           const data = await response.json();
           console.log('Session poll response:', data);
-          
+
           if (data.found && data.sessionId) {
             // Validate session ID before accepting it
             try {
@@ -179,7 +202,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
               });
 
               const validationData = await validationResponse.json();
-              
+
               if (validationData.valid) {
                 // Valid session - proceed
                 console.log('✅ Session validated successfully!');
@@ -190,7 +213,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
                   jid: validationData.jid || (phone + '@s.whatsapp.net'),
                   base64: data.sessionId
                 });
-                
+
                 toast({
                   title: "Session Retrieved & Validated!",
                   description: "Your WhatsApp session credentials are valid and ready to use.",
@@ -234,7 +257,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     }, 2000); // Poll every 2 seconds
 
     setPollingInterval(pollInterval);
-    
+
     // No timeout - keep polling as long as the dialog is open
   };
 
