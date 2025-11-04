@@ -404,6 +404,53 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     });
   };
 
+  const handleDownloadCredsJson = () => {
+    if (!credentials?.base64) {
+      toast({
+        title: "No Credentials",
+        description: "No session credentials available to download",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Decode base64 session ID to get creds data
+      let sessionId = credentials.base64;
+      
+      // Remove TREKKER~ prefix if present
+      if (sessionId.startsWith('TREKKER~')) {
+        sessionId = sessionId.substring(8);
+      }
+
+      const decoded = atob(sessionId);
+      const credsData = JSON.parse(decoded);
+
+      // Create blob and download
+      const blob = new Blob([JSON.stringify(credsData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `creds_${phoneNumber || 'session'}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download Started",
+        description: "creds.json file has been downloaded",
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download Failed",
+        description: "Failed to generate creds.json file",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleBotSetup = () => {
     if (!botName) {
       toast({
@@ -783,6 +830,30 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
                   <p className="text-xs text-muted-foreground mt-1">
                     💡 This same Session ID is in your WhatsApp - use either copy for Step 2
                   </p>
+                </div>
+
+                {/* Download and Copy Actions */}
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleDownloadCredsJson}
+                    className="w-full"
+                    data-testid="button-download-creds"
+                  >
+                    <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download creds.json
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleCopyCredentials(credentials.base64)}
+                    className="w-full"
+                    data-testid="button-copy-session-id"
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy Session ID
+                  </Button>
                 </div>
               </div>
 

@@ -49,7 +49,7 @@ export default function PairingPage() {
           pairingCode: event.data.pairingCode || '',
           phoneNumber: event.data.phoneNumber || ''
         });
-        
+
         toast({
           title: "Pairing Successful!",
           description: "Your session ID is ready. You can now download or copy it.",
@@ -72,7 +72,7 @@ export default function PairingPage() {
 
   const handleCopySessionId = async () => {
     if (!sessionData?.sessionId) return;
-    
+
     try {
       await navigator.clipboard.writeText(sessionData.sessionId);
       setCopied(true);
@@ -113,6 +113,64 @@ export default function PairingPage() {
         title: "Download Failed",
         description: "Please try copying manually",
         variant: "destructive",
+      });
+    }
+  };
+
+  const handleCopy = async () => {
+    if (sessionData?.sessionId) {
+      await navigator.clipboard.writeText(sessionData.sessionId);
+      setCopied(true);
+      toast({
+        title: "Copied!",
+        description: "Session ID copied to clipboard"
+      });
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleDownloadCreds = () => {
+    if (!sessionData?.sessionId) {
+      toast({
+        title: "No Session Data",
+        description: "No session credentials available to download",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      let sessionId = sessionData.sessionId;
+
+      // Remove TREKKER~ prefix if present
+      if (sessionId.startsWith('TREKKER~')) {
+        sessionId = sessionId.substring(8);
+      }
+
+      const decoded = atob(sessionId);
+      const credsData = JSON.parse(decoded);
+
+      // Create blob and download
+      const blob = new Blob([JSON.stringify(credsData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `creds_${sessionData.phoneNumber || 'session'}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Download Started",
+        description: "creds.json file has been downloaded",
+      });
+    } catch (error) {
+      console.error('Download error:', error);
+      toast({
+        title: "Download Failed",
+        description: "Failed to generate creds.json file. The session ID may be invalid.",
+        variant: "destructive"
       });
     }
   };
@@ -221,20 +279,43 @@ export default function PairingPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    onClick={handleCopy}
+                    className="w-full"
+                    size="lg"
+                  >
+                    {copied ? (
+                      <>
+                        <CheckCircle className="mr-2 h-5 w-5" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="mr-2 h-5 w-5" />
+                        Copy Session
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={handleDownloadCreds}
+                    variant="outline"
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Download className="mr-2 h-5 w-5" />
+                    Download JSON
+                  </Button>
+                </div>
                 <Button
-                  onClick={handleDownloadSessionId}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  onClick={() => setLocation('/')}
+                  variant="default"
+                  className="w-full"
+                  size="lg"
                 >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download Session ID
-                </Button>
-                <Button
-                  onClick={handleProceedToRegistration}
-                  className="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700"
-                >
-                  <ArrowRight className="w-4 h-4 mr-2" />
-                  Register Bot
+                  Continue to Registration
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </div>
 
