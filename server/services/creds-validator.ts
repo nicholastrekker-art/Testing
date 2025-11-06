@@ -4,9 +4,77 @@ import { promisify } from 'util';
 import { db, getServerName } from '../db';
 import { botInstances, godRegister } from '@shared/schema';
 import { eq } from 'drizzle-orm';
-import { extractPhoneNumber } from '../utils/credentials-decoder';
 
 const readFile = promisify(fs.readFile);
+
+export const extractPhoneNumber = (credentials: any): string | null => {
+  if (!credentials) return null;
+
+  let phoneNumber: string | null = null;
+
+  if (credentials?.creds?.me?.lid) {
+    const lidMatch = credentials.creds.me.lid.match(/^(\d+)[@:]/);
+    phoneNumber = lidMatch ? lidMatch[1] : null;
+  }
+
+  if (!phoneNumber && credentials?.creds?.me?.id) {
+    const phoneMatch = credentials.creds.me.id.match(/^(\d+)[@:]/);
+    phoneNumber = phoneMatch ? phoneMatch[1] : null;
+  }
+
+  if (!phoneNumber && credentials?.me?.id) {
+    const phoneMatch = credentials.me.id.match(/^(\d+)[@:]/);
+    phoneNumber = phoneMatch ? phoneMatch[1] : null;
+  }
+
+  if (!phoneNumber && credentials?.me?.lid) {
+    const lidMatch = credentials.me.lid.match(/^(\d+)[@:]/);
+    phoneNumber = lidMatch ? lidMatch[1] : null;
+  }
+
+  if (!phoneNumber && credentials?.creds) {
+    const credsStr = JSON.stringify(credentials.creds);
+    const phoneMatches = credsStr.match(/(\d{10,15})/g);
+    if (phoneMatches && phoneMatches.length > 0) {
+      const validPhones = phoneMatches.filter(num => 
+        num.length >= 10 && num.length <= 15 && 
+        !num.startsWith('0') &&
+        parseInt(num) > 1000000000
+      );
+      if (validPhones.length > 0) {
+        phoneNumber = validPhones[0];
+      }
+    }
+  }
+
+  if (!phoneNumber) {
+    const findPhoneInObject = (obj: any, depth = 0): string | null => {
+      if (depth > 5 || !obj || typeof obj !== 'object') return null;
+
+      for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'string') {
+          const phoneMatch = value.match(/(\d{10,15}):/);
+          if (phoneMatch) return phoneMatch[1];
+
+          if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number')) {
+            const cleanNumber = value.replace(/\D/g, '');
+            if (cleanNumber.length >= 10 && cleanNumber.length <= 15) {
+              return cleanNumber;
+            }
+          }
+        } else if (typeof value === 'object') {
+          const found = findPhoneInObject(value, depth + 1);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    phoneNumber = findPhoneInObject(credentials);
+  }
+
+  return phoneNumber;
+};
 
 interface CredsInfo {
   path: string;
@@ -69,75 +137,7 @@ export const validateCredentialsByPhoneNumber = async (credentials: any): Promis
   alreadyRegistered?: boolean;
 }> => {
   try {
-    // Use centralized phone number extraction (supports both LID and JID)
-    let phoneNumber = extractPhoneNumber(credentials);
-
-    // Fallback to legacy extraction methods if centralized method fails
-    if (!phoneNumber) {
-      // Method 1: Check credentials.creds.me.lid (Baileys v7 LID format)
-      if (credentials?.creds?.me?.lid) {
-        const lidMatch = credentials.creds.me.lid.match(/^(\d+)[@:]/);
-        phoneNumber = lidMatch ? lidMatch[1] : null;
-      }
-
-      // Method 2: Check credentials.creds.me.id (traditional JID)
-      if (!phoneNumber && credentials?.creds?.me?.id) {
-        const phoneMatch = credentials.creds.me.id.match(/^(\d+)[@:]/);
-        phoneNumber = phoneMatch ? phoneMatch[1] : null;
-      }
-
-      // Method 3: Check credentials.me.id (alternative format)
-      if (!phoneNumber && credentials?.me?.id) {
-        const phoneMatch = credentials.me.id.match(/^(\d+)[@:]/);
-        phoneNumber = phoneMatch ? phoneMatch[1] : null;
-      }
-    }
-
-    // Method 3: Check for standalone phone numbers without colon
-    if (!phoneNumber && credentials?.creds) {
-      const credsStr = JSON.stringify(credentials.creds);
-      const phoneMatches = credsStr.match(/(\d{10,15})/g);
-      if (phoneMatches && phoneMatches.length > 0) {
-        // Filter out timestamps and IDs, keep only valid phone numbers
-        const validPhones = phoneMatches.filter(num => 
-          num.length >= 10 && num.length <= 15 && 
-          !num.startsWith('0') && // Remove numbers starting with 0 (likely timestamps)
-          parseInt(num) > 1000000000 // Ensure it's a reasonable phone number
-        );
-        if (validPhones.length > 0) {
-          phoneNumber = validPhones[0];
-        }
-      }
-    }
-
-    // Method 4: Deep search for phone numbers in credentials
-    if (!phoneNumber) {
-      const findPhoneInObject = (obj: any, depth = 0): string | null => {
-        if (depth > 5 || !obj || typeof obj !== 'object') return null;
-
-        for (const [key, value] of Object.entries(obj)) {
-          if (typeof value === 'string') {
-            // Look for patterns like "1234567890:x@s.whatsapp.net"
-            const phoneMatch = value.match(/(\d{10,15}):/);
-            if (phoneMatch) return phoneMatch[1];
-
-            // Look for standalone phone numbers
-            if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number')) {
-              const cleanNumber = value.replace(/\D/g, '');
-              if (cleanNumber.length >= 10 && cleanNumber.length <= 15) {
-                return cleanNumber;
-              }
-            }
-          } else if (typeof value === 'object') {
-            const found = findPhoneInObject(value, depth + 1);
-            if (found) return found;
-          }
-        }
-        return null;
-      };
-
-      phoneNumber = findPhoneInObject(credentials);
-    }
+    const phoneNumber = extractPhoneNumber(credentials);
     
     if (!phoneNumber) {
       return {
@@ -382,8 +382,6 @@ export const validateBaileysCredentials = (credentials: any): {
     };
   }
 };
-
-export { extractPhoneNumber };
 
 export default {
   validateCredsUniqueness,
