@@ -127,6 +127,12 @@ export class AntideleteService {
 
   private saveAntideleteConfig(config: AntideleteConfig): void {
     try {
+      // Ensure the directory exists before writing
+      const dataDir = path.dirname(this.configPath);
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+      
       fs.writeFileSync(this.configPath, JSON.stringify(config, null, 2));
     } catch (err) {
       console.error('Config save error:', err);
@@ -151,6 +157,12 @@ export class AntideleteService {
 
   private saveMessageStore(): void {
     try {
+      // Ensure the directory exists before writing
+      const dataDir = path.dirname(this.messageStorePath);
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+      
       // Convert Map to plain object for JSON storage
       const messageObj = Object.fromEntries(this.messageStore);
       fs.writeFileSync(this.messageStorePath, JSON.stringify(messageObj, null, 2));
