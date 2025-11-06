@@ -1998,9 +1998,9 @@
     "@types/babel__core" "^7.20.5"
     react-refresh "^0.17.0"
 
-"@whiskeysockets/baileys@github:whiskeysockets/baileys#v7.0.0-rc.5":
-  version "7.0.0-rc.5"
-  resolved "https://codeload.github.com/whiskeysockets/baileys/tar.gz/a9cb308c9611719d4cea9b49e133c8f8eeeb435f"
+"@whiskeysockets/baileys@github:whiskeysockets/baileys#v7.0.0-rc.6":
+  version "7.0.0-rc.6"
+  resolved "https://codeload.github.com/whiskeysockets/baileys/tar.gz/4599ff84bbdef332c6f0a01b24376f868254ed89"
   dependencies:
     "@cacheable/node-cache" "^1.4.0"
     "@hapi/boom" "^9.1.3"
