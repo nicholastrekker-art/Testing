@@ -3072,9 +3072,7 @@ commandRegistry.register({
 
       // Step 2: Send pairing code alone
       await client.sendMessage(from, {
-        text: `╔════════════════╗
-║   ${formattedCode}   ║
-╚════════════════╝`
+        text: formattedCode
       });
 
       // Step 3: Send description separately
