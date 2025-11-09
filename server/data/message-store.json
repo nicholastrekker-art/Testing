@@ -1,51 +1,24 @@
 {
-  "3EB00E62F2EDBE2C6BF739": {
-    "id": "3EB00E62F2EDBE2C6BF739",
+  "3EB0DC7E0DC0FE34918283": {
+    "id": "3EB0DC7E0DC0FE34918283",
     "fromJid": "280234452607229:21@lid",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1762689095569,
+    "timestamp": 1762699625797,
     "originalMessage": {
       "key": {
         "remoteJid": "280234452607229:21@lid",
         "fromMe": true,
-        "id": "3EB00E62F2EDBE2C6BF739"
+        "id": "3EB0DC7E0DC0FE34918283"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": "1762689093",
+      "messageTimestamp": "1762699610",
       "status": "PENDING"
-    }
-  },
-  "3EB05588AF72C357F5AC8E": {
-    "id": "3EB05588AF72C357F5AC8E",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "254704897825@s.whatsapp.net",
-    "content": "📋 *NEW SESSION CREATED*\n\nTREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiNk1hanpEV2tWZlQyc1l0TURiN3d5ZjRLc1hGM2JJc1BVbVRyd2ZGd1hHND0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiR3RZbkpPVzVoQmhZb2V0OGNKWVNqUEs3SWVNbSsvYTBYMjNrUjVzcXZqZz0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJpQmVlOFc4NkpEOUdQa1pZcUZscHZFNXdXTm1ibENBbzdZZ0FpQmpWT0djPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJJWjJXNGxzeURNZStJVTI1KzB0aGhsMjE3WVliaGo3WXd3c1lqYkNIREFJPSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6InlGYlB0U0ZNSnpvcGd6WkxVOTg2TTRHMjh6Z0lTUU1TT0NmWndLcVk5V009In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkF4ZFRuM3g1UUplbFJ6ZFNNdUFVYVdkcHB2OStBdG91RGJrbEhpVHl6V289In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoic1A2SHJGdjZpSnUzcmE4Qkx0K1hmcTJwb0FHSjdoS3Y2VDVKZUY1Z2pVVT0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoic3hOeVVvRlg1ZlNCNlh2TitlRUtSYUZvaTU3NDdvZ1UvNll3VjA5bFVrdz0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6Iks0SnQyWVBmT0Z3NHc2UjhDbmhuaGl3YUZMWkErNWl5b2VLdEdkVjlKdzc2VnBpNTVHTm94MlFWM1ZIenNlNHlVVUMxcmcxZWVjZFNLcDE1NTNNV0FnPT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6OTMsImFkdlNlY3JldEtleSI6IlpHSmMyZHV5all6cmpmSTRjeTF0ZU83K3dtTXZFZzJ1dUNBUG9yKzlvbEk9IiwicHJvY2Vzc2VkSGlzdG9yeU1lc3NhZ2VzIjpbXSwibmV4dFByZUtleUlkIjo4MTMsImZpcnN0VW51cGxvYWRlZFByZUtleUlkIjo4MTMsImFjY291bnRTeW5jQ291bnRlciI6MCwiYWNjb3VudFNldHRpbmdzIjp7InVuYXJjaGl2ZUNoYXRzIjpmYWxzZX0sInJlZ2lzdGVyZWQiOnRydWUsInBhaXJpbmdDb2RlIjoiNUhZM0c5R0MiLCJtZSI6eyJpZCI6IjI1NDcwNDg5NzgyNToyN0BzLndoYXRzYXBwLm5ldCIsIm5hbWUiOiJUcmVra2VyIGluYyIsImxpZCI6IjcxOTg3Njc4NzgyMzk6MjdAbGlkIn0sImFjY291bnQiOnsiZGV0YWlscyI6IkNJN2V6ZDBHRU95QXdzZ0dHQ2tnQUNnQSIsImFjY291bnRTaWduYXR1cmVLZXkiOiI1dEl4dHJoZzNGQjRwUjZpZ1R4ZkxZYnhBZFNWTGF3cDJOQzdhZ1lZQ0c0PSIsImFjY291bnRTaWduYXR1cmUiOiJNRm1CNDA1N3lrVzBaNVBvK3NGV2JiWmdJS3lTLzMzMnZGYjZNUzFCakpMUzU5RWQ0LzE5eVV1YnIxRHA5aDhxYWtlYUxVa0QzLzZxaFZuR1NLcFlCQT09IiwiZGV2aWNlU2lnbmF0dXJlIjoiVnRCVWpjOGVYb3FPcUhHWmxGYzk0MUxqcUwveUJaTVFTb2F4Y2hiRGFNcTdEdUFoZythbndUbHlLTkpZVERtSFRGTTBVSDVMVzlRNXU5eTBkR0NOQmc9PSJ9LCJzaWduYWxJZGVudGl0aWVzIjpbeyJpZGVudGlmaWVyIjp7Im5hbWUiOiI3MTk4NzY3ODc4MjM5OjI3QGxpZCIsImRldmljZUlkIjowfSwiaWRlbnRpZmllcktleSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkJlYlNNYmE0WU54UWVLVWVvb0U4WHkyRzhRSFVsUzJzS2RqUXUyb0dHQWh1In19XSwicGxhdGZvcm0iOiJzbWJhIiwicm91dGluZ0luZm8iOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJDQUlJQlFnSSJ9LCJsYXN0QWNjb3VudFN5bmNUaW1lc3RhbXAiOjE3NjI2ODkxNDEsImxhc3RQcm9wSGFzaCI6IjNSOVozOSIsIm15QXBwU3RhdGVLZXlJZCI6IkFBQUFBSll1In0=\n\n👤 Owner: +254704897825:27\n⏰ Time: 11/9/2025, 11:52:54 AM",
-    "type": "extendedTextMessage",
-    "timestamp": 1762689176290,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "remoteJidAlt": "7198767878239@lid",
-        "fromMe": false,
-        "id": "3EB05588AF72C357F5AC8E",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1762689175,
-      "pushName": "Trekker inc",
-      "broadcast": false,
-      "message": {
-        "extendedTextMessage": {
-          "text": "📋 *NEW SESSION CREATED*\n\nTREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiNk1hanpEV2tWZlQyc1l0TURiN3d5ZjRLc1hGM2JJc1BVbVRyd2ZGd1hHND0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiR3RZbkpPVzVoQmhZb2V0OGNKWVNqUEs3SWVNbSsvYTBYMjNrUjVzcXZqZz0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJpQmVlOFc4NkpEOUdQa1pZcUZscHZFNXdXTm1ibENBbzdZZ0FpQmpWT0djPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJJWjJXNGxzeURNZStJVTI1KzB0aGhsMjE3WVliaGo3WXd3c1lqYkNIREFJPSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6InlGYlB0U0ZNSnpvcGd6WkxVOTg2TTRHMjh6Z0lTUU1TT0NmWndLcVk5V009In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkF4ZFRuM3g1UUplbFJ6ZFNNdUFVYVdkcHB2OStBdG91RGJrbEhpVHl6V289In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoic1A2SHJGdjZpSnUzcmE4Qkx0K1hmcTJwb0FHSjdoS3Y2VDVKZUY1Z2pVVT0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoic3hOeVVvRlg1ZlNCNlh2TitlRUtSYUZvaTU3NDdvZ1UvNll3VjA5bFVrdz0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6Iks0SnQyWVBmT0Z3NHc2UjhDbmhuaGl3YUZMWkErNWl5b2VLdEdkVjlKdzc2VnBpNTVHTm94MlFWM1ZIenNlNHlVVUMxcmcxZWVjZFNLcDE1NTNNV0FnPT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6OTMsImFkdlNlY3JldEtleSI6IlpHSmMyZHV5all6cmpmSTRjeTF0ZU83K3dtTXZFZzJ1dUNBUG9yKzlvbEk9IiwicHJvY2Vzc2VkSGlzdG9yeU1lc3NhZ2VzIjpbXSwibmV4dFByZUtleUlkIjo4MTMsImZpcnN0VW51cGxvYWRlZFByZUtleUlkIjo4MTMsImFjY291bnRTeW5jQ291bnRlciI6MCwiYWNjb3VudFNldHRpbmdzIjp7InVuYXJjaGl2ZUNoYXRzIjpmYWxzZX0sInJlZ2lzdGVyZWQiOnRydWUsInBhaXJpbmdDb2RlIjoiNUhZM0c5R0MiLCJtZSI6eyJpZCI6IjI1NDcwNDg5NzgyNToyN0BzLndoYXRzYXBwLm5ldCIsIm5hbWUiOiJUcmVra2VyIGluYyIsImxpZCI6IjcxOTg3Njc4NzgyMzk6MjdAbGlkIn0sImFjY291bnQiOnsiZGV0YWlscyI6IkNJN2V6ZDBHRU95QXdzZ0dHQ2tnQUNnQSIsImFjY291bnRTaWduYXR1cmVLZXkiOiI1dEl4dHJoZzNGQjRwUjZpZ1R4ZkxZYnhBZFNWTGF3cDJOQzdhZ1lZQ0c0PSIsImFjY291bnRTaWduYXR1cmUiOiJNRm1CNDA1N3lrVzBaNVBvK3NGV2JiWmdJS3lTLzMzMnZGYjZNUzFCakpMUzU5RWQ0LzE5eVV1YnIxRHA5aDhxYWtlYUxVa0QzLzZxaFZuR1NLcFlCQT09IiwiZGV2aWNlU2lnbmF0dXJlIjoiVnRCVWpjOGVYb3FPcUhHWmxGYzk0MUxqcUwveUJaTVFTb2F4Y2hiRGFNcTdEdUFoZythbndUbHlLTkpZVERtSFRGTTBVSDVMVzlRNXU5eTBkR0NOQmc9PSJ9LCJzaWduYWxJZGVudGl0aWVzIjpbeyJpZGVudGlmaWVyIjp7Im5hbWUiOiI3MTk4NzY3ODc4MjM5OjI3QGxpZCIsImRldmljZUlkIjowfSwiaWRlbnRpZmllcktleSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkJlYlNNYmE0WU54UWVLVWVvb0U4WHkyRzhRSFVsUzJzS2RqUXUyb0dHQWh1In19XSwicGxhdGZvcm0iOiJzbWJhIiwicm91dGluZ0luZm8iOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJDQUlJQlFnSSJ9LCJsYXN0QWNjb3VudFN5bmNUaW1lc3RhbXAiOjE3NjI2ODkxNDEsImxhc3RQcm9wSGFzaCI6IjNSOVozOSIsIm15QXBwU3RhdGVLZXlJZCI6IkFBQUFBSll1In0=\n\n👤 Owner: +254704897825:27\n⏰ Time: 11/9/2025, 11:52:54 AM"
-        }
-      },
-      "verifiedBizName": "Trekker inc"
     }
   }
 }
