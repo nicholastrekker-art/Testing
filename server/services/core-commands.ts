@@ -3070,14 +3070,16 @@ commandRegistry.register({
       // Format code nicely
       const formattedCode = code.match(/.{1,4}/g)?.join('-') || code;
 
-      // Step 2: Send pairing code to user
+      // Step 2: Send pairing code alone
+      await client.sendMessage(from, {
+        text: `╔════════════════╗
+║   ${formattedCode}   ║
+╚════════════════╝`
+      });
+
+      // Step 3: Send description separately
       await client.sendMessage(from, {
         text: `✅ *PAIRING CODE GENERATED!*
-
-🔐 *Your Pairing Code:*
-╔════════════════╗
-║   ${formattedCode}   ║
-╚════════════════╝
 
 📱 *How to Enter the Code:*
 
@@ -3086,14 +3088,14 @@ commandRegistry.register({
 3️⃣ Select "Linked Devices"
 4️⃣ Tap "Link a Device"
 5️⃣ Tap "Link with Phone Number Instead"
-6️⃣ Enter the code: *${formattedCode}*
+6️⃣ Enter the code above
 
 ⏳ *Waiting for you to enter the code...*
 ⌛ This code will expire in 60 seconds
 
 💡 *What happens next:*
 • After entering the code, your session will be created
-• Session ID will be sent to this WhatsApp automatically
+• creds.json file will be sent to this WhatsApp automatically
 • You can then use it to register your bot
 
 > 🎉 WELCOME TO TREKKER-MD LIFETIME BOT`
@@ -3118,7 +3120,7 @@ commandRegistry.register({
             
             const sessionId = statusResponse.data.sessionId;
             
-            // Send success message with session ID
+            // Send success message
             await client.sendMessage(from, {
               text: `🎉 *PAIRING SUCCESSFUL!*
 
@@ -3128,33 +3130,41 @@ commandRegistry.register({
 
 ✅ *Session Created Successfully!*
 
-📋 *Your Session ID:*
-(Use this to connect your bot)
-
-\`\`\`${sessionId.substring(0, 100)}...\`\`\`
-
-📝 *Session ID Length:* ${sessionId.length} characters
-
 ⚠️ *IMPORTANT:*
-• Keep this session ID secure
-• Don't share it with anyone
-• Use it to register your bot on the dashboard
+• Keep your credentials secure
+• Don't share them with anyone
+• Use them to register your bot on the dashboard
 
 🚀 *Next Steps:*
-1. Copy the full session ID from the file below
+1. Download the creds.json file below
 2. Go to bot registration on dashboard
-3. Paste your session ID
+3. Upload or paste your creds.json
 4. Your bot will be connected!
 
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ`
             });
 
-            // Send full session ID as a document
+            // Decode session ID to get creds.json
+            let credsJson;
+            try {
+              let decodedSession = sessionId;
+              if (sessionId.startsWith('TREKKER~')) {
+                decodedSession = sessionId.substring(8);
+              }
+              const decoded = Buffer.from(decodedSession, 'base64').toString('utf-8');
+              const credsData = JSON.parse(decoded);
+              credsJson = JSON.stringify(credsData, null, 2);
+            } catch (err) {
+              console.error('Error decoding session:', err);
+              credsJson = sessionId; // Fallback to raw session
+            }
+
+            // Send creds.json as a document
             await client.sendMessage(from, {
-              document: Buffer.from(sessionId),
-              fileName: `trekkermd_session_${phoneNumber}.txt`,
-              mimetype: 'text/plain',
-              caption: '📄 *Full Session ID*\n\nYour complete session credentials.\nKeep this file safe!'
+              document: Buffer.from(credsJson),
+              fileName: `creds.json`,
+              mimetype: 'application/json',
+              caption: '📄 *creds.json*\n\nYour WhatsApp session credentials.\n🔐 Keep this file safe and secure!'
             });
 
             console.log(`✅ Session created successfully for ${phoneNumber}`);
