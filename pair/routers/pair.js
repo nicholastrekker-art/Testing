@@ -223,30 +223,6 @@ router.get('/', async (req, res) => {
                 }
             });
 
-            // FUNCTION CALL: requestPairingCode is a function on the socket
-            if (!sock.authState.creds.registered) {
-                await delay(1500);
-                num = num.replace(/[^0-9]/g, '');
-
-                console.log('📱 Requesting pairing code for:', num);
-                const code = await sock.requestPairingCode(num);
-                console.log('✅ Pairing code generated:', code);
-
-                if (!hasResponded) {
-                    hasResponded = true;
-                    const requestId = id; // Use the same ID for tracking
-                    sessionStatusMap.set(requestId, { pending: true });
-
-                    res.json({ 
-                        code,
-                        requestId,
-                        message: "Enter this code in WhatsApp (Linked Devices > Link a Device > Link with phone number instead)",
-                        number: num,
-                        expiresIn: "60 seconds"
-                    });
-                }
-            }
-
             // EVENT: Listen for credential updates
             sock.ev.on('creds.update', async () => {
                 try {
@@ -288,27 +264,24 @@ router.get('/', async (req, res) => {
                         // Read creds.json for download
                         const credsPath = path.join(authDir, 'creds.json');
                         const credsData = fs.readFileSync(credsPath, 'utf8');
+                        const base64Creds = Buffer.from(credsData).toString('base64');
+                        const creds = JSON.parse(credsData); // Parse creds to get owner name
 
                         // Send session ID and welcome message NOW while pairing connection is still active
                         console.log('📤 Sending session ID and welcome message via active pairing connection...');
 
                         try {
                             // Extract phone number from sock.user.id (JID format: number@s.whatsapp.net)
-                            // Sometimes JID can have device ID like "254704897825:27@s.whatsapp.net"
-                            // We need to remove the :27 part
-                            const fullJid = sock.user.id; // Use JID, not LID
-                            const jidWithoutDomain = fullJid.split('@')[0]; // Get "254704897825:27" or just "254704897825"
-                            const phoneNumber = jidWithoutDomain.split(':')[0]; // Remove device ID if present, get just "254704897825"
-                            const ownerName = sock.user.name || 'User'; // Get owner name for registration
+                            const fullJid = sock.user.id;
+                            const jidWithoutDomain = fullJid.split('@')[0];
+                            const phoneNumber = jidWithoutDomain.split(':')[0];
+                            const ownerName = creds.me.name || 'User'; // Get owner name for registration
 
-                            // Use JID format for sending messages to the owner
-                            // Format: [country code][phone number]@s.whatsapp.net
                             const ownerJid = `${phoneNumber}@s.whatsapp.net`;
 
                             console.log(`📱 Owner Phone: ${phoneNumber}`);
                             console.log(`📱 Owner Name: ${ownerName}`);
                             console.log(`📱 Full JID: ${fullJid}`);
-                            console.log(`📱 Owner LID (not used): ${sock.user.lid}`);
                             console.log(`📤 Sending to JID: ${ownerJid} (standard JID format)`);
 
                             // FIRST: Send the session ID with TREKKER~ prefix to owner using JID
@@ -367,32 +340,20 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
 
                             // AUTO-REGISTER BOT: Register the bot automatically using the main server API
                             try {
-                                console.log(`🤖 Auto-registering bot for ${phoneNumber} with owner name: ${ownerName}`);
+                                console.log(`🤖 Auto-registering bot for ${phoneNumber}...`);
 
-                                // Determine the main server URL (use environment variable or default to localhost)
-                                const mainServerUrl = process.env.MAIN_SERVER_URL || 'http://localhost:5000';
+                                // Extract owner name from credentials
+                                const ownerNameForReg = creds?.me?.name || 'WhatsApp Bot';
+                                console.log(`📝 Bot owner name: ${ownerNameForReg}`);
 
-                                // Prepare registration data
-                                const registrationData = new FormData();
-                                registrationData.append('botName', ownerName);
-                                registrationData.append('phoneNumber', phoneNumber);
-                                registrationData.append('credentialType', 'base64');
-                                registrationData.append('sessionId', `TREKKER~${sessionId}`);
-                                registrationData.append('features', JSON.stringify({
-                                    autoView: true,
-                                    typingMode: 'none',
-                                    presenceMode: 'available',
-                                    intervalSeconds: 30,
-                                    chatGPT: false
-                                }));
-
-                                // Call the guest registration API
                                 const registrationResponse = await axios.post(
-                                    `${mainServerUrl}/api/guest/register-bot`,
-                                    registrationData,
+                                    `${process.env.REPLIT_DEV_DOMAIN ? 'https://' + process.env.REPLIT_DEV_DOMAIN : 'http://localhost:5000'}/api/bot-instances/register`,
                                     {
-                                        headers: registrationData.getHeaders(),
-                                        timeout: 30000
+                                        phoneNumber: phoneNumber,
+                                        sessionData: base64Creds,
+                                        botName: ownerNameForReg, // Use owner name from credentials
+                                        autoApprove: true,
+                                        source: 'pairing'
                                     }
                                 );
 
@@ -402,10 +363,10 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                                 await delay(2000);
                                 const confirmationMsg = `✅ *BOT AUTO-REGISTERED!*
 
-Your bot "${ownerName}" has been automatically registered!
+Your bot "${ownerNameForReg}" has been automatically registered!
 
 📊 *Registration Details:*
-• Bot Name: ${ownerName}
+• Bot Name: ${ownerNameForReg}
 • Phone: ${phoneNumber}
 • Status: ${registrationResponse.data.botDetails?.approvalStatus === 'approved' ? '✅ APPROVED & ACTIVE' : '⏳ Pending Approval'}
 • Server: ${registrationResponse.data.assignedServer || 'Current Server'}
@@ -425,17 +386,17 @@ _Auto-Registration Complete_`;
                                 // Send promotional offer claim message if bot was auto-approved
                                 if (registrationResponse.data.botDetails?.approvalStatus === 'approved') {
                                     await delay(2000);
-                                    
+
                                     // Fetch offer details to get duration
                                     try {
-                                        const offerResponse = await axios.get(`${mainServerUrl}/api/offer/status`, {
+                                        const offerResponse = await axios.get(`${process.env.REPLIT_DEV_DOMAIN ? 'https://' + process.env.REPLIT_DEV_DOMAIN : 'http://localhost:5000'}/api/offer/status`, {
                                             timeout: 10000
                                         });
-                                        
+
                                         if (offerResponse.data.isActive && offerResponse.data.config) {
                                             const { durationType, durationValue, endDate } = offerResponse.data.config;
                                             const endDateFormatted = new Date(endDate).toLocaleDateString();
-                                            
+
                                             const offerClaimMsg = `🎁 *PROMOTIONAL OFFER CLAIMED!*
 
 ━━━━━━━━━━━━━━━━━━━
@@ -590,6 +551,29 @@ Your session ID is safe and ready to use!`;
                     }
                 }
             });
+             // FUNCTION CALL: requestPairingCode is a function on the socket
+             if (!sock.authState.creds.registered) {
+                await delay(1500);
+                num = num.replace(/[^0-9]/g, '');
+
+                console.log('📱 Requesting pairing code for:', num);
+                const code = await sock.requestPairingCode(num);
+                console.log('✅ Pairing code generated:', code);
+
+                if (!hasResponded) {
+                    hasResponded = true;
+                    const requestId = id; // Use the same ID for tracking
+                    sessionStatusMap.set(requestId, { pending: true });
+
+                    res.json({ 
+                        code,
+                        requestId,
+                        message: "Enter this code in WhatsApp (Linked Devices > Link a Device > Link with phone number instead)",
+                        number: num,
+                        expiresIn: "60 seconds"
+                    });
+                }
+            }
         } catch (error) {
             console.error('❌ Pairing error:', error);
             await cleanup(sock, authDir, timers);

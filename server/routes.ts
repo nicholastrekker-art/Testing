@@ -1929,9 +1929,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
         console.log('✅ Session ID decoded successfully');
       } catch (error) {
         console.error('❌ Session ID decode error:', error);
-        return res.status(400).json({ 
-          valid: false, 
-          message: `Invalid session ID: ${error instanceof Error ? error.message : 'Unable to decode'}` 
+        return res.status(400).json({
+          valid: false,
+          message: `Invalid session ID: ${error instanceof Error ? error.message : 'Unable to decode'}`
         });
       }
 
@@ -2860,8 +2860,8 @@ Thank you for choosing TREKKER-MD! 🚀`;
           });
         }
       } catch (error) {
-        return res.status(400).json({ 
-          message: `Invalid session ID: ${error instanceof Error ? error.message : 'Unknown error'}` 
+        return res.status(400).json({
+          message: `Invalid session ID: ${error instanceof Error ? error.message : 'Unknown error'}`
         });
       }
 

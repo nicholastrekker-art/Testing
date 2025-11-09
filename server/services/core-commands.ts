@@ -2490,7 +2490,7 @@ commandRegistry.register({
     const { respond, message, client, from, args } = context;
 
     if (!from.endsWith('@g.us')) {
-      await respond('❌ This command can only be used in group chats!');
+      await respond('❌ This command only works in group chats!');
       return;
     }
 
@@ -2756,7 +2756,7 @@ commandRegistry.register({
     const { respond, message, client, from, args } = context;
 
     if (!from.endsWith('@g.us')) {
-      await respond('❌ This command can only be used in group chats!');
+      await respond('❌ This command only works in group chats!');
       return;
     }
 
