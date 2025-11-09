@@ -4,7 +4,18 @@
 
 This is a WhatsApp Bot Management application built as a full-stack web application for creating, managing, and monitoring WhatsApp bot instances. The system provides a comprehensive dashboard for controlling multiple bot instances, managing commands, and tracking activities in real-time. Each bot can be configured with automation features like auto-like, auto-react, and ChatGPT integration for intelligent responses.
 
-## Recent Changes (October 22, 2025)
+## Recent Changes (November 9, 2025)
+
+- **`.pair` Command Implementation**: Added WhatsApp pairing code command for direct bot onboarding
+- **Auto-Registration System**: Bots automatically register in database when pairing is successful
+- **Profile Name Extraction**: Bot name automatically set from WhatsApp profile information
+- **Promotional Offer Integration**: Bots auto-approve when promotional offers are enabled
+- **Transaction Safety**: Implemented rollback mechanism for failed registrations with proper cleanup
+- **Duplicate Prevention**: Pre-checks global registration before creating bot instances
+- **Session Credentials**: Sends base64 session ID to both user and bot owner
+- **User Experience**: Clear instructions and status messages throughout pairing process
+
+## Previous Changes (October 22, 2025)
 
 - **Baileys v7 Credential Format Fix**: Fixed saveCredentialsToAuthDir to properly unwrap credentials when saving to creds.json
 - **Credential Storage Compatibility**: Updated credential decoder to handle both v7 (root-level fields) and wrapped (creds object) formats
