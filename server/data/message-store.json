@@ -228,5 +228,188 @@
       "messageTimestamp": "1762717348",
       "status": "PENDING"
     }
+  },
+  "ACFE00F05D378540F84052A029FCB290": {
+    "id": "ACFE00F05D378540F84052A029FCB290",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".pair 254799257758",
+    "type": "conversation",
+    "timestamp": 1762717391565,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJidAlt": "280234452607229@lid",
+        "fromMe": true,
+        "id": "ACFE00F05D378540F84052A029FCB290",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762717390,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".pair 254799257758"
+      }
+    }
+  },
+  "3EB080807B4E44D0BB9098": {
+    "id": "3EB080807B4E44D0BB9098",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🔍 *Checking Phone Number...*\n\n📱 Phone: +254799257758\n⏳ Please wait...\n\n> TREKKER-MD Pairing System",
+    "type": "extendedTextMessage",
+    "timestamp": 1762717393079,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJidAlt": "280234452607229@lid",
+        "fromMe": true,
+        "id": "3EB080807B4E44D0BB9098",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762717392,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "extendedTextMessage": {
+          "text": "🔍 *Checking Phone Number...*\n\n📱 Phone: +254799257758\n⏳ Please wait...\n\n> TREKKER-MD Pairing System"
+        }
+      }
+    }
+  },
+  "3EB0487F5EA424CD884395": {
+    "id": "3EB0487F5EA424CD884395",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "⚠️ *PHONE NUMBER ALREADY REGISTERED*\n\n📱 Phone: +254799257758\n🖥️ Registered On: true\n\n✅ You already have an active bot with this number!\n\n💡 *What you can do:*\n• Use the dashboard to manage your existing bot\n• Contact support if you need to transfer or update\n\n🔗 *Dashboard:* https://your-replit-url.repl.co\n\n❌ Cannot proceed with pairing - number already in use.\n\n> TREKKER-MD Pairing System",
+    "type": "extendedTextMessage",
+    "timestamp": 1762717394031,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJidAlt": "280234452607229@lid",
+        "fromMe": true,
+        "id": "3EB0487F5EA424CD884395",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762717393,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "extendedTextMessage": {
+          "text": "⚠️ *PHONE NUMBER ALREADY REGISTERED*\n\n📱 Phone: +254799257758\n🖥️ Registered On: true\n\n✅ You already have an active bot with this number!\n\n💡 *What you can do:*\n• Use the dashboard to manage your existing bot\n• Contact support if you need to transfer or update\n\n🔗 *Dashboard:* https://your-replit-url.repl.co\n\n❌ Cannot proceed with pairing - number already in use.\n\n> TREKKER-MD Pairing System"
+        }
+      }
+    }
+  },
+  "AC28E0A8F072166B4550CFFAF970E0E3": {
+    "id": "AC28E0A8F072166B4550CFFAF970E0E3",
+    "fromJid": "254752731132@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "\"We ukona ngapi🤔\"\nnikona 1 bob",
+    "type": "extendedTextMessage",
+    "timestamp": 1762717413457,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254752731132@s.whatsapp.net",
+        "remoteJidAlt": "64643854794977@lid",
+        "fromMe": true,
+        "id": "AC28E0A8F072166B4550CFFAF970E0E3",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762717412,
+      "pushName": "_yfw_quis.ling💀☠️☠️",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "extendedTextMessage": {
+          "text": "nikona 1 bob",
+          "previewType": "NONE",
+          "contextInfo": {
+            "stanzaId": "AC93621581206250288CBE5D41B14979",
+            "participant": "254752731132@s.whatsapp.net",
+            "quotedMessage": {
+              "conversation": "We ukona ngapi🤔"
+            },
+            "expiration": 0,
+            "ephemeralSettingTimestamp": "1698645108",
+            "disappearingMode": {
+              "initiator": "CHANGED_IN_CHAT",
+              "trigger": "UNKNOWN",
+              "initiatedByMe": false
+            }
+          },
+          "inviteLinkGroupTypeV2": "DEFAULT"
+        }
+      }
+    }
+  },
+  "ACD3ED0FDA81843F6691AFC1A1DBD4A5": {
+    "id": "ACD3ED0FDA81843F6691AFC1A1DBD4A5",
+    "fromJid": "254726447753@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "\"C untumie account yake ya I.G na F.B\"\nkino ngoja ntakutumia",
+    "type": "extendedTextMessage",
+    "timestamp": 1762717432978,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254726447753@s.whatsapp.net",
+        "remoteJidAlt": "192303469748428@lid",
+        "fromMe": true,
+        "id": "ACD3ED0FDA81843F6691AFC1A1DBD4A5",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762717432,
+      "pushName": "_yfw_quis.ling💀☠️☠️",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "extendedTextMessage": {
+          "text": "kino ngoja ntakutumia",
+          "previewType": "NONE",
+          "contextInfo": {
+            "stanzaId": "A5A3A21E929C1C27FEB507CB8C95D026",
+            "participant": "254726447753@s.whatsapp.net",
+            "quotedMessage": {
+              "conversation": "C untumie account yake ya I.G na F.B"
+            }
+          },
+          "inviteLinkGroupTypeV2": "DEFAULT"
+        }
+      }
+    }
+  },
+  "ACA4B6A36EC417A8D436ED0163D24DC3": {
+    "id": "ACA4B6A36EC417A8D436ED0163D24DC3",
+    "fromJid": "254743963623@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "bae",
+    "type": "conversation",
+    "timestamp": 1762717447721,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254743963623@s.whatsapp.net",
+        "remoteJidAlt": "39943799849210@lid",
+        "fromMe": true,
+        "id": "ACA4B6A36EC417A8D436ED0163D24DC3",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762717447,
+      "pushName": "_yfw_quis.ling💀☠️☠️",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": "bae"
+      }
+    }
   }
 }
