@@ -13,6 +13,9 @@ let router = express.Router();
 // Session storage for tracking active sessions
 const sessionStorage = new Map();
 
+// Active sessions storage for tracking connected sessions
+const activeSessions = new Map();
+
 // Import Baileys modules
 const {
     default: makeWASocket,
