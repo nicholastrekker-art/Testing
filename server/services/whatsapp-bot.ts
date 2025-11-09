@@ -152,6 +152,50 @@ export class WhatsAppBot {
         this.isRunning = false;
         this.stopPresenceAutoSwitch();
 
+        // Check for 428 errors (Connection Closed / Precondition Required)
+        const is428Error = disconnectReason === 428 || errorMessage.includes('Connection Closed');
+        
+        if (is428Error) {
+          console.log(`⚠️ Bot ${this.botInstance.name}: Connection Closed (428) - implementing backoff strategy`);
+          
+          // Implement longer backoff for 428 errors
+          if (this.reconnectAttempts < 3) {
+            const backoffDelay = 30000 * Math.pow(2, this.reconnectAttempts); // 30s, 60s, 120s
+            this.reconnectAttempts++;
+            
+            console.log(`🔄 Bot ${this.botInstance.name}: Will retry in ${backoffDelay/1000}s (attempt ${this.reconnectAttempts}/3)`);
+            
+            await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
+            
+            setTimeout(async () => {
+              try {
+                await this.start();
+              } catch (error) {
+                console.error(`Bot ${this.botInstance.name}: Reconnect failed:`, error);
+              }
+            }, backoffDelay);
+            return;
+          } else {
+            // Max attempts reached for 428 errors
+            console.log(`🚫 Bot ${this.botInstance.name}: Max 428 error retries reached - stopping`);
+            this.reconnectAttempts = 999;
+            
+            await storage.updateBotInstance(this.botInstance.id, {
+              status: 'offline',
+              invalidReason: 'Connection repeatedly closed by WhatsApp. Please restart bot later.',
+              autoStart: false
+            });
+            
+            await storage.createActivity({
+              serverName: this.botInstance.serverName,
+              botInstanceId: this.botInstance.id,
+              type: 'error',
+              description: 'Connection Closed (428) - max retries reached. Bot stopped.'
+            });
+            return;
+          }
+        }
+
         // Check for 405 errors (Connection Failure from WhatsApp)
         const is405Error = disconnectReason === 405 || errorMessage.includes('405') || errorMessage.includes('Connection Failure');
         
@@ -1208,17 +1252,13 @@ export class WhatsAppBot {
           console.log(`Bot ${this.botInstance.name}: 💓 Heartbeat - connection alive, user: ${userIdentifier}`);
           await this.safeUpdateBotStatus('online', { lastActivity: new Date() });
 
-          // Send keep-alive ping to WhatsApp to prevent connection timeout
+          // Send keep-alive ping to WhatsApp (reduced frequency to avoid rate limits)
           try {
             await this.sock.sendPresenceUpdate('available');
             console.log(`Bot ${this.botInstance.name}: ✅ Keep-alive ping sent successfully`);
           } catch (pingError) {
             console.error(`Bot ${this.botInstance.name}: ❌ Keep-alive ping failed:`, pingError);
-            console.log(`Bot ${this.botInstance.name}: 🔄 Attempting reconnect...`);
-            // If ping fails, attempt to reconnect
-            if (this.isRunning) {
-              await this.restart();
-            }
+            // Don't immediately restart on ping failure - let connection handler deal with it
           }
         } else {
           console.warn(`Bot ${this.botInstance.name}: ⚠️ Heartbeat - bot not fully connected (running: ${this.isRunning}, user: ${!!(this.sock?.user?.lid || this.sock?.user?.id)})`);
@@ -1226,7 +1266,7 @@ export class WhatsAppBot {
       } catch (error) {
         console.error(`Bot ${this.botInstance.name}: Heartbeat error:`, error);
       }
-    }, 15000); // Update every 15 seconds (reduced from 30 for more frequent keep-alive)
+    }, 45000); // Update every 45 seconds to reduce WhatsApp API load
   }
 
   private stopHeartbeat() {
