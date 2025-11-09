@@ -1,43 +1,43 @@
 {
-  "3EB0FAE65CA248325E61BC": {
-    "id": "3EB0FAE65CA248325E61BC",
+  "3EB0E6DB13DA6B88E1EB0C": {
+    "id": "3EB0E6DB13DA6B88E1EB0C",
     "fromJid": "280234452607229:21@lid",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1762676717666,
+    "timestamp": 1762677144465,
     "originalMessage": {
       "key": {
         "remoteJid": "280234452607229:21@lid",
         "fromMe": true,
-        "id": "3EB0FAE65CA248325E61BC"
+        "id": "3EB0E6DB13DA6B88E1EB0C"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": "1762676716",
+      "messageTimestamp": "1762677142",
       "status": "PENDING"
     }
   },
-  "AC0CA58723ED287EE80DECB167AA8C82": {
-    "id": "AC0CA58723ED287EE80DECB167AA8C82",
-    "fromJid": "254799257758@s.whatsapp.net",
+  "ACD97B583452B6EA32D8C2485C03D1B9": {
+    "id": "ACD97B583452B6EA32D8C2485C03D1B9",
+    "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "self",
     "content": ".pair 254704897825",
     "type": "conversation",
-    "timestamp": 1762676720662,
+    "timestamp": 1762677153199,
     "originalMessage": {
       "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "remoteJidAlt": "7198767878239@lid",
         "fromMe": true,
-        "id": "AC0CA58723ED287EE80DECB167AA8C82",
+        "id": "ACD97B583452B6EA32D8C2485C03D1B9",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1762676720,
+      "messageTimestamp": 1762677152,
       "pushName": "Team Grill🙃",
       "broadcast": false,
       "status": 2,
@@ -46,250 +46,316 @@
       }
     }
   },
-  "3EB04FD3ECD19C875DA810": {
-    "id": "3EB04FD3ECD19C875DA810",
-    "fromJid": "254799257758@s.whatsapp.net",
+  "3EB04F5CEFAB75921A1A98": {
+    "id": "3EB04F5CEFAB75921A1A98",
+    "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "self",
     "content": "🔄 *Generating Pairing Code...*\n\n📱 Phone: +254704897825\n⏳ Please wait...\n\n> TREKKER-MD Pairing System",
     "type": "extendedTextMessage",
-    "timestamp": 1762676722103,
+    "timestamp": 1762677157496,
     "originalMessage": {
       "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB04FD3ECD19C875DA810"
+        "id": "3EB04F5CEFAB75921A1A98"
       },
       "message": {
         "extendedTextMessage": {
           "text": "🔄 *Generating Pairing Code...*\n\n📱 Phone: +254704897825\n⏳ Please wait...\n\n> TREKKER-MD Pairing System"
         }
       },
-      "messageTimestamp": "1762676721",
+      "messageTimestamp": "1762677155",
       "status": "PENDING"
     }
   },
-  "3EB0C809F55ED68EB5A758": {
-    "id": "3EB0C809F55ED68EB5A758",
-    "fromJid": "254799257758@s.whatsapp.net",
+  "3EB0D9700ABD725D9435D1": {
+    "id": "3EB0D9700ABD725D9435D1",
+    "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "self",
-    "content": "22EB-N5SZ",
+    "content": "HBT3-S2ZM",
     "type": "extendedTextMessage",
-    "timestamp": 1762676723767,
+    "timestamp": 1762677159818,
     "originalMessage": {
       "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0C809F55ED68EB5A758"
+        "id": "3EB0D9700ABD725D9435D1"
       },
       "message": {
         "extendedTextMessage": {
-          "text": "22EB-N5SZ"
+          "text": "HBT3-S2ZM"
         }
       },
-      "messageTimestamp": "1762676723",
+      "messageTimestamp": "1762677158",
       "status": "PENDING"
     }
   },
-  "3EB0FDA1683624BE8BA80E": {
-    "id": "3EB0FDA1683624BE8BA80E",
-    "fromJid": "254799257758@s.whatsapp.net",
+  "3EB045C794D68D8AA97780": {
+    "id": "3EB045C794D68D8AA97780",
+    "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "self",
     "content": "✅ *PAIRING CODE GENERATED!*\n\n📱 *How to Enter the Code:*\n\n1️⃣ Open WhatsApp on your phone\n2️⃣ Tap the three dots (⋮) menu\n3️⃣ Select \"Linked Devices\"\n4️⃣ Tap \"Link a Device\"\n5️⃣ Tap \"Link with Phone Number Instead\"\n6️⃣ Enter the code above\n\n⏳ *Waiting for you to enter the code...*\n⌛ This code will expire in 60 seconds\n\n💡 *What happens next:*\n• After entering the code, your session will be created\n• creds.json file will be sent to this WhatsApp automatically\n• You can then use it to register your bot\n\n> 🎉 WELCOME TO TREKKER-MD LIFETIME BOT",
     "type": "extendedTextMessage",
-    "timestamp": 1762676724189,
+    "timestamp": 1762677160570,
     "originalMessage": {
       "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0FDA1683624BE8BA80E"
+        "id": "3EB045C794D68D8AA97780"
       },
       "message": {
         "extendedTextMessage": {
           "text": "✅ *PAIRING CODE GENERATED!*\n\n📱 *How to Enter the Code:*\n\n1️⃣ Open WhatsApp on your phone\n2️⃣ Tap the three dots (⋮) menu\n3️⃣ Select \"Linked Devices\"\n4️⃣ Tap \"Link a Device\"\n5️⃣ Tap \"Link with Phone Number Instead\"\n6️⃣ Enter the code above\n\n⏳ *Waiting for you to enter the code...*\n⌛ This code will expire in 60 seconds\n\n💡 *What happens next:*\n• After entering the code, your session will be created\n• creds.json file will be sent to this WhatsApp automatically\n• You can then use it to register your bot\n\n> 🎉 WELCOME TO TREKKER-MD LIFETIME BOT"
         }
       },
-      "messageTimestamp": "1762676723",
+      "messageTimestamp": "1762677159",
       "status": "PENDING"
     }
   },
-  "3EB03DAD402D157F0EC0A1": {
-    "id": "3EB03DAD402D157F0EC0A1",
-    "fromJid": "254799257758@s.whatsapp.net",
+  "3EB090FA539CFEF4ACFAB4": {
+    "id": "3EB090FA539CFEF4ACFAB4",
+    "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "self",
     "content": "🎉 *PAIRING SUCCESSFUL!*\n\n╔═══════════════════════════════╗\n║  WELCOME TO TREKKER-MD BOT!  ║\n╚═══════════════════════════════╝\n\n✅ *Session Created Successfully!*\n\n⚠️ *IMPORTANT:*\n• Keep your credentials secure\n• Don't share them with anyone\n• Use them to register your bot on the dashboard\n\n🚀 *Next Steps:*\n1. Copy the session ID below\n2. Go to bot registration on dashboard\n3. Paste your session ID\n4. Your bot will be connected!\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ",
     "type": "extendedTextMessage",
-    "timestamp": 1762676777790,
+    "timestamp": 1762677286490,
     "originalMessage": {
       "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB03DAD402D157F0EC0A1"
+        "id": "3EB090FA539CFEF4ACFAB4"
       },
       "message": {
         "extendedTextMessage": {
           "text": "🎉 *PAIRING SUCCESSFUL!*\n\n╔═══════════════════════════════╗\n║  WELCOME TO TREKKER-MD BOT!  ║\n╚═══════════════════════════════╝\n\n✅ *Session Created Successfully!*\n\n⚠️ *IMPORTANT:*\n• Keep your credentials secure\n• Don't share them with anyone\n• Use them to register your bot on the dashboard\n\n🚀 *Next Steps:*\n1. Copy the session ID below\n2. Go to bot registration on dashboard\n3. Paste your session ID\n4. Your bot will be connected!\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ"
         }
       },
-      "messageTimestamp": "1762676777",
+      "messageTimestamp": "1762677280",
       "status": "PENDING"
     }
   },
-  "3EB0D32654CF2B738120A3": {
-    "id": "3EB0D32654CF2B738120A3",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "TREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoicUZ1blpjWEhSL2FPQVpoSmRyaFArWkEvQTlObm5OdE0vdUFyRVhMOFZYbz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiV1FaS2pJWlU3TlZCcEpUYllPMy8yVytNRVM5bjZrcXhlQUFCb25PTEZsRT0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiIyTTlwWTZGZ1Fma3F2RU1ETytIdnJHbHZNNzRZYkt2Nk5LcmcvU3Y4eldjPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCem01aDQyQXd5dVMvbzZsSGdwKzYxck5GeU5SaUlDbk1wU2ZLdUdITTA0PSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IldONjR4NklvWGxjcmJjdDhmQkk1U3hmYkZHVHNtOTh6Vjh2cm9RajNqSFU9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkoveWtIK25Za3ZSNWR2NkFVRzhucnZDaVQvL1M2Y1JhVHgzSDArN3RsV1U9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0RrN2JhNDdCS0JEa2NDRC9LVFdiK1RYenMrMmQ0a3VlUkU1elNyQ0NHaz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoicGZtdmM4a2ZrdDFMdWo1NzVTM0pRbzlLQzdySkxNdVBDMFBTcXZXWUZoST0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6InhWRWVaUlJESzAzOEdvK1Q3NC9QVDFuUXU4LzZGL1I3czNUeExXUTRkSTdkYjRMT3NnaCtaODQ4V3RZb0ZCalRWYTAwQlBMRWtQVXBpSStQVkcxakN3PT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6OTYsImFkdlNlY3JldEtleSI6IkRnZXRFTEdNaE5PdjJoVDIwOU9DQ1hVQUt6a1BockUvWGQ1RGt2MG5YNmM9IiwicHJvY2Vzc2VkSGlzdG9yeU1lc3NhZ2VzIjpbXSwibmV4dFByZUtleUlkIjo4MTMsImZpcnN0VW51cGxvYWRlZFByZUtleUlkIjo4MTMsImFjY291bnRTeW5jQ291bnRlciI6MCwiYWNjb3VudFNldHRpbmdzIjp7InVuYXJjaGl2ZUNoYXRzIjpmYWxzZX0sInJlZ2lzdGVyZWQiOnRydWUsInBhaXJpbmdDb2RlIjoiMjJFQk41U1oiLCJtZSI6eyJpZCI6IjI1NDcwNDg5NzgyNToxN0BzLndoYXRzYXBwLm5ldCIsIm5hbWUiOiJUcmVra2VyIGluYyIsImxpZCI6IjcxOTg3Njc4NzgyMzk6MTdAbGlkIn0sImFjY291bnQiOnsiZGV0YWlscyI6IkNJN2V6ZDBHRUkrZ3djZ0dHQjhnQUNnQSIsImFjY291bnRTaWduYXR1cmVLZXkiOiI1dEl4dHJoZzNGQjRwUjZpZ1R4ZkxZYnhBZFNWTGF3cDJOQzdhZ1lZQ0c0PSIsImFjY291bnRTaWduYXR1cmUiOiJ5NEJVK3ZSQVVnOU8wODJGZVF1MVFneVBNMldTbWxaMHRsY1AwTjZvK0FqdmNZbGhDekl0Z2tEd1hvK20vWnFMdk42MHp2VHNLaGZtWlZzMklBT3hCZz09IiwiZGV2aWNlU2lnbmF0dXJlIjoiTjBwNzBvSDRCVUhwSjBSNGc4UjhFZHcwdXZEK0x0NDJmV3JmMmh2ajNic0JZVlluNlVFOHhuLzFQK2VhQ2s5SHo0VEJULzQ3cGxYbkVjekdBclZmQWc9PSJ9LCJzaWduYWxJZGVudGl0aWVzIjpbeyJpZGVudGlmaWVyIjp7Im5hbWUiOiI3MTk4NzY3ODc4MjM5OjE3QGxpZCIsImRldmljZUlkIjowfSwiaWRlbnRpZmllcktleSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkJlYlNNYmE0WU54UWVLVWVvb0U4WHkyRzhRSFVsUzJzS2RqUXUyb0dHQWh1In19XSwicGxhdGZvcm0iOiJzbWJhIiwicm91dGluZ0luZm8iOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJDQUlJQlFnSSJ9LCJsYXN0QWNjb3VudFN5bmNUaW1lc3RhbXAiOjE3NjI2NzY3NjAsImxhc3RQcm9wSGFzaCI6IjNSOVozOSIsIm15QXBwU3RhdGVLZXlJZCI6IkFBQUFBSlltIn0=",
-    "type": "extendedTextMessage",
-    "timestamp": 1762676778208,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0D32654CF2B738120A3"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "TREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoicUZ1blpjWEhSL2FPQVpoSmRyaFArWkEvQTlObm5OdE0vdUFyRVhMOFZYbz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiV1FaS2pJWlU3TlZCcEpUYllPMy8yVytNRVM5bjZrcXhlQUFCb25PTEZsRT0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiIyTTlwWTZGZ1Fma3F2RU1ETytIdnJHbHZNNzRZYkt2Nk5LcmcvU3Y4eldjPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCem01aDQyQXd5dVMvbzZsSGdwKzYxck5GeU5SaUlDbk1wU2ZLdUdITTA0PSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IldONjR4NklvWGxjcmJjdDhmQkk1U3hmYkZHVHNtOTh6Vjh2cm9RajNqSFU9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkoveWtIK25Za3ZSNWR2NkFVRzhucnZDaVQvL1M2Y1JhVHgzSDArN3RsV1U9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0RrN2JhNDdCS0JEa2NDRC9LVFdiK1RYenMrMmQ0a3VlUkU1elNyQ0NHaz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoicGZtdmM4a2ZrdDFMdWo1NzVTM0pRbzlLQzdySkxNdVBDMFBTcXZXWUZoST0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6InhWRWVaUlJESzAzOEdvK1Q3NC9QVDFuUXU4LzZGL1I3czNUeExXUTRkSTdkYjRMT3NnaCtaODQ4V3RZb0ZCalRWYTAwQlBMRWtQVXBpSStQVkcxakN3PT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6OTYsImFkdlNlY3JldEtleSI6IkRnZXRFTEdNaE5PdjJoVDIwOU9DQ1hVQUt6a1BockUvWGQ1RGt2MG5YNmM9IiwicHJvY2Vzc2VkSGlzdG9yeU1lc3NhZ2VzIjpbXSwibmV4dFByZUtleUlkIjo4MTMsImZpcnN0VW51cGxvYWRlZFByZUtleUlkIjo4MTMsImFjY291bnRTeW5jQ291bnRlciI6MCwiYWNjb3VudFNldHRpbmdzIjp7InVuYXJjaGl2ZUNoYXRzIjpmYWxzZX0sInJlZ2lzdGVyZWQiOnRydWUsInBhaXJpbmdDb2RlIjoiMjJFQk41U1oiLCJtZSI6eyJpZCI6IjI1NDcwNDg5NzgyNToxN0BzLndoYXRzYXBwLm5ldCIsIm5hbWUiOiJUcmVra2VyIGluYyIsImxpZCI6IjcxOTg3Njc4NzgyMzk6MTdAbGlkIn0sImFjY291bnQiOnsiZGV0YWlscyI6IkNJN2V6ZDBHRUkrZ3djZ0dHQjhnQUNnQSIsImFjY291bnRTaWduYXR1cmVLZXkiOiI1dEl4dHJoZzNGQjRwUjZpZ1R4ZkxZYnhBZFNWTGF3cDJOQzdhZ1lZQ0c0PSIsImFjY291bnRTaWduYXR1cmUiOiJ5NEJVK3ZSQVVnOU8wODJGZVF1MVFneVBNMldTbWxaMHRsY1AwTjZvK0FqdmNZbGhDekl0Z2tEd1hvK20vWnFMdk42MHp2VHNLaGZtWlZzMklBT3hCZz09IiwiZGV2aWNlU2lnbmF0dXJlIjoiTjBwNzBvSDRCVUhwSjBSNGc4UjhFZHcwdXZEK0x0NDJmV3JmMmh2ajNic0JZVlluNlVFOHhuLzFQK2VhQ2s5SHo0VEJULzQ3cGxYbkVjekdBclZmQWc9PSJ9LCJzaWduYWxJZGVudGl0aWVzIjpbeyJpZGVudGlmaWVyIjp7Im5hbWUiOiI3MTk4NzY3ODc4MjM5OjE3QGxpZCIsImRldmljZUlkIjowfSwiaWRlbnRpZmllcktleSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkJlYlNNYmE0WU54UWVLVWVvb0U4WHkyRzhRSFVsUzJzS2RqUXUyb0dHQWh1In19XSwicGxhdGZvcm0iOiJzbWJhIiwicm91dGluZ0luZm8iOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJDQUlJQlFnSSJ9LCJsYXN0QWNjb3VudFN5bmNUaW1lc3RhbXAiOjE3NjI2NzY3NjAsImxhc3RQcm9wSGFzaCI6IjNSOVozOSIsIm15QXBwU3RhdGVLZXlJZCI6IkFBQUFBSlltIn0="
-        }
-      },
-      "messageTimestamp": "1762676777",
-      "status": "PENDING"
-    }
-  },
-  "3EB0C63A60C9928DF45FAE": {
-    "id": "3EB0C63A60C9928DF45FAE",
+  "3EB069717F35CE5CBB4510": {
+    "id": "3EB069717F35CE5CBB4510",
     "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "self",
-    "content": "🔑 *New Session ID Generated*\n\n📱 *For:* +254704897825\n\n*Session ID:*\nTREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoicUZ1blpjWEhSL2FPQVpoSmRyaFArWkEvQTlObm5OdE0vdUFyRVhMOFZYbz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiV1FaS2pJWlU3TlZCcEpUYllPMy8yVytNRVM5bjZrcXhlQUFCb25PTEZsRT0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiIyTTlwWTZGZ1Fma3F2RU1ETytIdnJHbHZNNzRZYkt2Nk5LcmcvU3Y4eldjPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCem01aDQyQXd5dVMvbzZsSGdwKzYxck5GeU5SaUlDbk1wU2ZLdUdITTA0PSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IldONjR4NklvWGxjcmJjdDhmQkk1U3hmYkZHVHNtOTh6Vjh2cm9RajNqSFU9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkoveWtIK25Za3ZSNWR2NkFVRzhucnZDaVQvL1M2Y1JhVHgzSDArN3RsV1U9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0RrN2JhNDdCS0JEa2NDRC9LVFdiK1RYenMrMmQ0a3VlUkU1elNyQ0NHaz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoicGZtdmM4a2ZrdDFMdWo1NzVTM0pRbzlLQzdySkxNdVBDMFBTcXZXWUZoST0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6InhWRWVaUlJESzAzOEdvK1Q3NC9QVDFuUXU4LzZGL1I3czNUeExXUTRkSTdkYjRMT3NnaCtaODQ4V3RZb0ZCalRWYTAwQlBMRWtQVXBpSStQVkcxakN3PT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6OTYsImFkdlNlY3JldEtleSI6IkRnZXRFTEdNaE5PdjJoVDIwOU9DQ1hVQUt6a1BockUvWGQ1RGt2MG5YNmM9IiwicHJvY2Vzc2VkSGlzdG9yeU1lc3NhZ2VzIjpbXSwibmV4dFByZUtleUlkIjo4MTMsImZpcnN0VW51cGxvYWRlZFByZUtleUlkIjo4MTMsImFjY291bnRTeW5jQ291bnRlciI6MCwiYWNjb3VudFNldHRpbmdzIjp7InVuYXJjaGl2ZUNoYXRzIjpmYWxzZX0sInJlZ2lzdGVyZWQiOnRydWUsInBhaXJpbmdDb2RlIjoiMjJFQk41U1oiLCJtZSI6eyJpZCI6IjI1NDcwNDg5NzgyNToxN0BzLndoYXRzYXBwLm5ldCIsIm5hbWUiOiJUcmVra2VyIGluYyIsImxpZCI6IjcxOTg3Njc4NzgyMzk6MTdAbGlkIn0sImFjY291bnQiOnsiZGV0YWlscyI6IkNJN2V6ZDBHRUkrZ3djZ0dHQjhnQUNnQSIsImFjY291bnRTaWduYXR1cmVLZXkiOiI1dEl4dHJoZzNGQjRwUjZpZ1R4ZkxZYnhBZFNWTGF3cDJOQzdhZ1lZQ0c0PSIsImFjY291bnRTaWduYXR1cmUiOiJ5NEJVK3ZSQVVnOU8wODJGZVF1MVFneVBNMldTbWxaMHRsY1AwTjZvK0FqdmNZbGhDekl0Z2tEd1hvK20vWnFMdk42MHp2VHNLaGZtWlZzMklBT3hCZz09IiwiZGV2aWNlU2lnbmF0dXJlIjoiTjBwNzBvSDRCVUhwSjBSNGc4UjhFZHcwdXZEK0x0NDJmV3JmMmh2ajNic0JZVlluNlVFOHhuLzFQK2VhQ2s5SHo0VEJULzQ3cGxYbkVjekdBclZmQWc9PSJ9LCJzaWduYWxJZGVudGl0aWVzIjpbeyJpZGVudGlmaWVyIjp7Im5hbWUiOiI3MTk4NzY3ODc4MjM5OjE3QGxpZCIsImRldmljZUlkIjowfSwiaWRlbnRpZmllcktleSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkJlYlNNYmE0WU54UWVLVWVvb0U4WHkyRzhRSFVsUzJzS2RqUXUyb0dHQWh1In19XSwicGxhdGZvcm0iOiJzbWJhIiwicm91dGluZ0luZm8iOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJDQUlJQlFnSSJ9LCJsYXN0QWNjb3VudFN5bmNUaW1lc3RhbXAiOjE3NjI2NzY3NjAsImxhc3RQcm9wSGFzaCI6IjNSOVozOSIsIm15QXBwU3RhdGVLZXlJZCI6IkFBQUFBSlltIn0=\n\n> Admin notification from TREKKER-MD",
+    "content": "TREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoieUpxM2hnamFpYUF5SUgrdUc0eTdTaDZKVTlxb2JPb1V1QjJGaGdwUndsYz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiY1hlNGNGSjUwSjgvWXdGWSt5WElsMUg2THhKYm9aSXNmYzZIR2hKRStUaz0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJzTmNuMlZmbDVZSlNtTjZVMjlYemQvR1hTUVFWa3hSdkRpbEFnUXdxVW4wPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJlcmtxeTFILzBub1ZsR2NtTmJWeGsvbzBLN1BkNDh5cUpDTVAvYnU2MGdBPSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IllIU0pYTDNZb0dMRWxST1VrTVZ0dTJFbEtDbUFLb2ZWSk9Tb2ttZFdUbVU9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IjYvK3pFaWJ0endGNlYwek9jalNpVWdKM2R3Nnp3ckxJN0xCVXlSd2FMa0E9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoia0tENGdWaXZ3NS9tR29FcURReHhIVGozNy9sUSs4OWZCS0R3cHFTRy9YST0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiNlFaY28rV3h2MjlXa3JZcEoxbEtreXlxOEtwU1FjeENHbzFRZ0lraHJqTT0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6Iko3czZIVU9SZW1yRnFiYUQ0TnhjMGRTLzBhdnJiTnZDKy92UitvYWkweXIyN3pseGhuUGJwTG1lck96WFUvQk9JeFRFODJRbHpnL3VEUXlrVlJUd0NBPT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6MTYwLCJhZHZTZWNyZXRLZXkiOiJyNnpNQVk3ZWVDbDFSeG5wS08rWU81OUFNQ2FRM044aXZqWnR2RFFXN0lVPSIsInByb2Nlc3NlZEhpc3RvcnlNZXNzYWdlcyI6W10sIm5leHRQcmVLZXlJZCI6ODEzLCJmaXJzdFVudXBsb2FkZWRQcmVLZXlJZCI6ODEzLCJhY2NvdW50U3luY0NvdW50ZXIiOjAsImFjY291bnRTZXR0aW5ncyI6eyJ1bmFyY2hpdmVDaGF0cyI6ZmFsc2V9LCJyZWdpc3RlcmVkIjp0cnVlLCJwYWlyaW5nQ29kZSI6IkhCVDNTMlpNIiwibWUiOnsiaWQiOiIyNTQ3MDQ4OTc4MjU6MThAcy53aGF0c2FwcC5uZXQiLCJuYW1lIjoiVHJla2tlciBpbmMiLCJsaWQiOiI3MTk4NzY3ODc4MjM5OjE4QGxpZCJ9LCJhY2NvdW50Ijp7ImRldGFpbHMiOiJDSTdlemQwR0VJZWt3Y2dHR0NBZ0FDZ0EiLCJhY2NvdW50U2lnbmF0dXJlS2V5IjoiNXRJeHRyaGczRkI0cFI2aWdUeGZMWWJ4QWRTVkxhd3AyTkM3YWdZWUNHND0iLCJhY2NvdW50U2lnbmF0dXJlIjoiYVJtd0c5ai9DOG5xTlFoUkZRbGliOVRQOVV4bzVEazJYSk1Ucm1MMXRnQjFGaTh1UHV1Q3paS3BYL1BLanJ3WHN3b1p6b0RrbzZpZlEySk5jay9oQkE9PSIsImRldmljZVNpZ25hdHVyZSI6InlPaXlLV1dILy9seVd2YS9VWWY1Z2I0dDdraWdOM2J0MzdVRDJXeUgydHc5Z3BZdW5NOUNoL3BVZ2VJSE14anpLVVhYZDJaUG9EREFVZUptbnBwRkFBPT0ifSwic2lnbmFsSWRlbnRpdGllcyI6W3siaWRlbnRpZmllciI6eyJuYW1lIjoiNzE5ODc2Nzg3ODIzOToxOEBsaWQiLCJkZXZpY2VJZCI6MH0sImlkZW50aWZpZXJLZXkiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCZWJTTWJhNFlOeFFlS1Vlb29FOFh5Mkc4UUhVbFMyc0tkalF1Mm9HR0FodSJ9fV0sInBsYXRmb3JtIjoic21iYSIsInJvdXRpbmdJbmZvIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0FJSUJRZ0kifSwibGFzdEFjY291bnRTeW5jVGltZXN0YW1wIjoxNzYyNjc3MjY2LCJsYXN0UHJvcEhhc2giOiIzUjlaMzkiLCJteUFwcFN0YXRlS2V5SWQiOiJBQUFBQUpZdCJ9",
     "type": "extendedTextMessage",
-    "timestamp": 1762676778901,
+    "timestamp": 1762677290700,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0C63A60C9928DF45FAE"
+        "id": "3EB069717F35CE5CBB4510"
       },
       "message": {
         "extendedTextMessage": {
-          "text": "🔑 *New Session ID Generated*\n\n📱 *For:* +254704897825\n\n*Session ID:*\nTREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoicUZ1blpjWEhSL2FPQVpoSmRyaFArWkEvQTlObm5OdE0vdUFyRVhMOFZYbz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiV1FaS2pJWlU3TlZCcEpUYllPMy8yVytNRVM5bjZrcXhlQUFCb25PTEZsRT0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiIyTTlwWTZGZ1Fma3F2RU1ETytIdnJHbHZNNzRZYkt2Nk5LcmcvU3Y4eldjPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCem01aDQyQXd5dVMvbzZsSGdwKzYxck5GeU5SaUlDbk1wU2ZLdUdITTA0PSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IldONjR4NklvWGxjcmJjdDhmQkk1U3hmYkZHVHNtOTh6Vjh2cm9RajNqSFU9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkoveWtIK25Za3ZSNWR2NkFVRzhucnZDaVQvL1M2Y1JhVHgzSDArN3RsV1U9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0RrN2JhNDdCS0JEa2NDRC9LVFdiK1RYenMrMmQ0a3VlUkU1elNyQ0NHaz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoicGZtdmM4a2ZrdDFMdWo1NzVTM0pRbzlLQzdySkxNdVBDMFBTcXZXWUZoST0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6InhWRWVaUlJESzAzOEdvK1Q3NC9QVDFuUXU4LzZGL1I3czNUeExXUTRkSTdkYjRMT3NnaCtaODQ4V3RZb0ZCalRWYTAwQlBMRWtQVXBpSStQVkcxakN3PT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6OTYsImFkdlNlY3JldEtleSI6IkRnZXRFTEdNaE5PdjJoVDIwOU9DQ1hVQUt6a1BockUvWGQ1RGt2MG5YNmM9IiwicHJvY2Vzc2VkSGlzdG9yeU1lc3NhZ2VzIjpbXSwibmV4dFByZUtleUlkIjo4MTMsImZpcnN0VW51cGxvYWRlZFByZUtleUlkIjo4MTMsImFjY291bnRTeW5jQ291bnRlciI6MCwiYWNjb3VudFNldHRpbmdzIjp7InVuYXJjaGl2ZUNoYXRzIjpmYWxzZX0sInJlZ2lzdGVyZWQiOnRydWUsInBhaXJpbmdDb2RlIjoiMjJFQk41U1oiLCJtZSI6eyJpZCI6IjI1NDcwNDg5NzgyNToxN0BzLndoYXRzYXBwLm5ldCIsIm5hbWUiOiJUcmVra2VyIGluYyIsImxpZCI6IjcxOTg3Njc4NzgyMzk6MTdAbGlkIn0sImFjY291bnQiOnsiZGV0YWlscyI6IkNJN2V6ZDBHRUkrZ3djZ0dHQjhnQUNnQSIsImFjY291bnRTaWduYXR1cmVLZXkiOiI1dEl4dHJoZzNGQjRwUjZpZ1R4ZkxZYnhBZFNWTGF3cDJOQzdhZ1lZQ0c0PSIsImFjY291bnRTaWduYXR1cmUiOiJ5NEJVK3ZSQVVnOU8wODJGZVF1MVFneVBNMldTbWxaMHRsY1AwTjZvK0FqdmNZbGhDekl0Z2tEd1hvK20vWnFMdk42MHp2VHNLaGZtWlZzMklBT3hCZz09IiwiZGV2aWNlU2lnbmF0dXJlIjoiTjBwNzBvSDRCVUhwSjBSNGc4UjhFZHcwdXZEK0x0NDJmV3JmMmh2ajNic0JZVlluNlVFOHhuLzFQK2VhQ2s5SHo0VEJULzQ3cGxYbkVjekdBclZmQWc9PSJ9LCJzaWduYWxJZGVudGl0aWVzIjpbeyJpZGVudGlmaWVyIjp7Im5hbWUiOiI3MTk4NzY3ODc4MjM5OjE3QGxpZCIsImRldmljZUlkIjowfSwiaWRlbnRpZmllcktleSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkJlYlNNYmE0WU54UWVLVWVvb0U4WHkyRzhRSFVsUzJzS2RqUXUyb0dHQWh1In19XSwicGxhdGZvcm0iOiJzbWJhIiwicm91dGluZ0luZm8iOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJDQUlJQlFnSSJ9LCJsYXN0QWNjb3VudFN5bmNUaW1lc3RhbXAiOjE3NjI2NzY3NjAsImxhc3RQcm9wSGFzaCI6IjNSOVozOSIsIm15QXBwU3RhdGVLZXlJZCI6IkFBQUFBSlltIn0=\n\n> Admin notification from TREKKER-MD"
+          "text": "TREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoieUpxM2hnamFpYUF5SUgrdUc0eTdTaDZKVTlxb2JPb1V1QjJGaGdwUndsYz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiY1hlNGNGSjUwSjgvWXdGWSt5WElsMUg2THhKYm9aSXNmYzZIR2hKRStUaz0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJzTmNuMlZmbDVZSlNtTjZVMjlYemQvR1hTUVFWa3hSdkRpbEFnUXdxVW4wPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJlcmtxeTFILzBub1ZsR2NtTmJWeGsvbzBLN1BkNDh5cUpDTVAvYnU2MGdBPSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IllIU0pYTDNZb0dMRWxST1VrTVZ0dTJFbEtDbUFLb2ZWSk9Tb2ttZFdUbVU9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IjYvK3pFaWJ0endGNlYwek9jalNpVWdKM2R3Nnp3ckxJN0xCVXlSd2FMa0E9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoia0tENGdWaXZ3NS9tR29FcURReHhIVGozNy9sUSs4OWZCS0R3cHFTRy9YST0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiNlFaY28rV3h2MjlXa3JZcEoxbEtreXlxOEtwU1FjeENHbzFRZ0lraHJqTT0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6Iko3czZIVU9SZW1yRnFiYUQ0TnhjMGRTLzBhdnJiTnZDKy92UitvYWkweXIyN3pseGhuUGJwTG1lck96WFUvQk9JeFRFODJRbHpnL3VEUXlrVlJUd0NBPT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6MTYwLCJhZHZTZWNyZXRLZXkiOiJyNnpNQVk3ZWVDbDFSeG5wS08rWU81OUFNQ2FRM044aXZqWnR2RFFXN0lVPSIsInByb2Nlc3NlZEhpc3RvcnlNZXNzYWdlcyI6W10sIm5leHRQcmVLZXlJZCI6ODEzLCJmaXJzdFVudXBsb2FkZWRQcmVLZXlJZCI6ODEzLCJhY2NvdW50U3luY0NvdW50ZXIiOjAsImFjY291bnRTZXR0aW5ncyI6eyJ1bmFyY2hpdmVDaGF0cyI6ZmFsc2V9LCJyZWdpc3RlcmVkIjp0cnVlLCJwYWlyaW5nQ29kZSI6IkhCVDNTMlpNIiwibWUiOnsiaWQiOiIyNTQ3MDQ4OTc4MjU6MThAcy53aGF0c2FwcC5uZXQiLCJuYW1lIjoiVHJla2tlciBpbmMiLCJsaWQiOiI3MTk4NzY3ODc4MjM5OjE4QGxpZCJ9LCJhY2NvdW50Ijp7ImRldGFpbHMiOiJDSTdlemQwR0VJZWt3Y2dHR0NBZ0FDZ0EiLCJhY2NvdW50U2lnbmF0dXJlS2V5IjoiNXRJeHRyaGczRkI0cFI2aWdUeGZMWWJ4QWRTVkxhd3AyTkM3YWdZWUNHND0iLCJhY2NvdW50U2lnbmF0dXJlIjoiYVJtd0c5ai9DOG5xTlFoUkZRbGliOVRQOVV4bzVEazJYSk1Ucm1MMXRnQjFGaTh1UHV1Q3paS3BYL1BLanJ3WHN3b1p6b0RrbzZpZlEySk5jay9oQkE9PSIsImRldmljZVNpZ25hdHVyZSI6InlPaXlLV1dILy9seVd2YS9VWWY1Z2I0dDdraWdOM2J0MzdVRDJXeUgydHc5Z3BZdW5NOUNoL3BVZ2VJSE14anpLVVhYZDJaUG9EREFVZUptbnBwRkFBPT0ifSwic2lnbmFsSWRlbnRpdGllcyI6W3siaWRlbnRpZmllciI6eyJuYW1lIjoiNzE5ODc2Nzg3ODIzOToxOEBsaWQiLCJkZXZpY2VJZCI6MH0sImlkZW50aWZpZXJLZXkiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCZWJTTWJhNFlOeFFlS1Vlb29FOFh5Mkc4UUhVbFMyc0tkalF1Mm9HR0FodSJ9fV0sInBsYXRmb3JtIjoic21iYSIsInJvdXRpbmdJbmZvIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0FJSUJRZ0kifSwibGFzdEFjY291bnRTeW5jVGltZXN0YW1wIjoxNzYyNjc3MjY2LCJsYXN0UHJvcEhhc2giOiIzUjlaMzkiLCJteUFwcFN0YXRlS2V5SWQiOiJBQUFBQUpZdCJ9"
         }
       },
-      "messageTimestamp": "1762676777",
+      "messageTimestamp": "1762677286",
       "status": "PENDING"
     }
   },
-  "3EB0E597165F919DB20C0E": {
-    "id": "3EB0E597165F919DB20C0E",
+  "3EB0B32614C01DDA17565F": {
+    "id": "3EB0B32614C01DDA17565F",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "TREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoieUpxM2hnamFpYUF5SUgrdUc0eTdTaDZKVTlxb2JPb1V1QjJGaGdwUndsYz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiY1hlNGNGSjUwSjgvWXdGWSt5WElsMUg2THhKYm9aSXNmYzZIR2hKRStUaz0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJzTmNuMlZmbDVZSlNtTjZVMjlYemQvR1hTUVFWa3hSdkRpbEFnUXdxVW4wPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJlcmtxeTFILzBub1ZsR2NtTmJWeGsvbzBLN1BkNDh5cUpDTVAvYnU2MGdBPSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IllIU0pYTDNZb0dMRWxST1VrTVZ0dTJFbEtDbUFLb2ZWSk9Tb2ttZFdUbVU9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IjYvK3pFaWJ0endGNlYwek9jalNpVWdKM2R3Nnp3ckxJN0xCVXlSd2FMa0E9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoia0tENGdWaXZ3NS9tR29FcURReHhIVGozNy9sUSs4OWZCS0R3cHFTRy9YST0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiNlFaY28rV3h2MjlXa3JZcEoxbEtreXlxOEtwU1FjeENHbzFRZ0lraHJqTT0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6Iko3czZIVU9SZW1yRnFiYUQ0TnhjMGRTLzBhdnJiTnZDKy92UitvYWkweXIyN3pseGhuUGJwTG1lck96WFUvQk9JeFRFODJRbHpnL3VEUXlrVlJUd0NBPT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6MTYwLCJhZHZTZWNyZXRLZXkiOiJyNnpNQVk3ZWVDbDFSeG5wS08rWU81OUFNQ2FRM044aXZqWnR2RFFXN0lVPSIsInByb2Nlc3NlZEhpc3RvcnlNZXNzYWdlcyI6W10sIm5leHRQcmVLZXlJZCI6ODEzLCJmaXJzdFVudXBsb2FkZWRQcmVLZXlJZCI6ODEzLCJhY2NvdW50U3luY0NvdW50ZXIiOjAsImFjY291bnRTZXR0aW5ncyI6eyJ1bmFyY2hpdmVDaGF0cyI6ZmFsc2V9LCJyZWdpc3RlcmVkIjp0cnVlLCJwYWlyaW5nQ29kZSI6IkhCVDNTMlpNIiwibWUiOnsiaWQiOiIyNTQ3MDQ4OTc4MjU6MThAcy53aGF0c2FwcC5uZXQiLCJuYW1lIjoiVHJla2tlciBpbmMiLCJsaWQiOiI3MTk4NzY3ODc4MjM5OjE4QGxpZCJ9LCJhY2NvdW50Ijp7ImRldGFpbHMiOiJDSTdlemQwR0VJZWt3Y2dHR0NBZ0FDZ0EiLCJhY2NvdW50U2lnbmF0dXJlS2V5IjoiNXRJeHRyaGczRkI0cFI2aWdUeGZMWWJ4QWRTVkxhd3AyTkM3YWdZWUNHND0iLCJhY2NvdW50U2lnbmF0dXJlIjoiYVJtd0c5ai9DOG5xTlFoUkZRbGliOVRQOVV4bzVEazJYSk1Ucm1MMXRnQjFGaTh1UHV1Q3paS3BYL1BLanJ3WHN3b1p6b0RrbzZpZlEySk5jay9oQkE9PSIsImRldmljZVNpZ25hdHVyZSI6InlPaXlLV1dILy9seVd2YS9VWWY1Z2I0dDdraWdOM2J0MzdVRDJXeUgydHc5Z3BZdW5NOUNoL3BVZ2VJSE14anpLVVhYZDJaUG9EREFVZUptbnBwRkFBPT0ifSwic2lnbmFsSWRlbnRpdGllcyI6W3siaWRlbnRpZmllciI6eyJuYW1lIjoiNzE5ODc2Nzg3ODIzOToxOEBsaWQiLCJkZXZpY2VJZCI6MH0sImlkZW50aWZpZXJLZXkiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCZWJTTWJhNFlOeFFlS1Vlb29FOFh5Mkc4UUhVbFMyc0tkalF1Mm9HR0FodSJ9fV0sInBsYXRmb3JtIjoic21iYSIsInJvdXRpbmdJbmZvIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0FJSUJRZ0kifSwibGFzdEFjY291bnRTeW5jVGltZXN0YW1wIjoxNzYyNjc3MjY2LCJsYXN0UHJvcEhhc2giOiIzUjlaMzkiLCJteUFwcFN0YXRlS2V5SWQiOiJBQUFBQUpZdCJ9",
+    "type": "extendedTextMessage",
+    "timestamp": 1762677295091,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0B32614C01DDA17565F"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "TREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoieUpxM2hnamFpYUF5SUgrdUc0eTdTaDZKVTlxb2JPb1V1QjJGaGdwUndsYz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiY1hlNGNGSjUwSjgvWXdGWSt5WElsMUg2THhKYm9aSXNmYzZIR2hKRStUaz0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJzTmNuMlZmbDVZSlNtTjZVMjlYemQvR1hTUVFWa3hSdkRpbEFnUXdxVW4wPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJlcmtxeTFILzBub1ZsR2NtTmJWeGsvbzBLN1BkNDh5cUpDTVAvYnU2MGdBPSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IllIU0pYTDNZb0dMRWxST1VrTVZ0dTJFbEtDbUFLb2ZWSk9Tb2ttZFdUbVU9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IjYvK3pFaWJ0endGNlYwek9jalNpVWdKM2R3Nnp3ckxJN0xCVXlSd2FMa0E9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoia0tENGdWaXZ3NS9tR29FcURReHhIVGozNy9sUSs4OWZCS0R3cHFTRy9YST0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiNlFaY28rV3h2MjlXa3JZcEoxbEtreXlxOEtwU1FjeENHbzFRZ0lraHJqTT0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6Iko3czZIVU9SZW1yRnFiYUQ0TnhjMGRTLzBhdnJiTnZDKy92UitvYWkweXIyN3pseGhuUGJwTG1lck96WFUvQk9JeFRFODJRbHpnL3VEUXlrVlJUd0NBPT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6MTYwLCJhZHZTZWNyZXRLZXkiOiJyNnpNQVk3ZWVDbDFSeG5wS08rWU81OUFNQ2FRM044aXZqWnR2RFFXN0lVPSIsInByb2Nlc3NlZEhpc3RvcnlNZXNzYWdlcyI6W10sIm5leHRQcmVLZXlJZCI6ODEzLCJmaXJzdFVudXBsb2FkZWRQcmVLZXlJZCI6ODEzLCJhY2NvdW50U3luY0NvdW50ZXIiOjAsImFjY291bnRTZXR0aW5ncyI6eyJ1bmFyY2hpdmVDaGF0cyI6ZmFsc2V9LCJyZWdpc3RlcmVkIjp0cnVlLCJwYWlyaW5nQ29kZSI6IkhCVDNTMlpNIiwibWUiOnsiaWQiOiIyNTQ3MDQ4OTc4MjU6MThAcy53aGF0c2FwcC5uZXQiLCJuYW1lIjoiVHJla2tlciBpbmMiLCJsaWQiOiI3MTk4NzY3ODc4MjM5OjE4QGxpZCJ9LCJhY2NvdW50Ijp7ImRldGFpbHMiOiJDSTdlemQwR0VJZWt3Y2dHR0NBZ0FDZ0EiLCJhY2NvdW50U2lnbmF0dXJlS2V5IjoiNXRJeHRyaGczRkI0cFI2aWdUeGZMWWJ4QWRTVkxhd3AyTkM3YWdZWUNHND0iLCJhY2NvdW50U2lnbmF0dXJlIjoiYVJtd0c5ai9DOG5xTlFoUkZRbGliOVRQOVV4bzVEazJYSk1Ucm1MMXRnQjFGaTh1UHV1Q3paS3BYL1BLanJ3WHN3b1p6b0RrbzZpZlEySk5jay9oQkE9PSIsImRldmljZVNpZ25hdHVyZSI6InlPaXlLV1dILy9seVd2YS9VWWY1Z2I0dDdraWdOM2J0MzdVRDJXeUgydHc5Z3BZdW5NOUNoL3BVZ2VJSE14anpLVVhYZDJaUG9EREFVZUptbnBwRkFBPT0ifSwic2lnbmFsSWRlbnRpdGllcyI6W3siaWRlbnRpZmllciI6eyJuYW1lIjoiNzE5ODc2Nzg3ODIzOToxOEBsaWQiLCJkZXZpY2VJZCI6MH0sImlkZW50aWZpZXJLZXkiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCZWJTTWJhNFlOeFFlS1Vlb29FOFh5Mkc4UUhVbFMyc0tkalF1Mm9HR0FodSJ9fV0sInBsYXRmb3JtIjoic21iYSIsInJvdXRpbmdJbmZvIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0FJSUJRZ0kifSwibGFzdEFjY291bnRTeW5jVGltZXN0YW1wIjoxNzYyNjc3MjY2LCJsYXN0UHJvcEhhc2giOiIzUjlaMzkiLCJteUFwcFN0YXRlS2V5SWQiOiJBQUFBQUpZdCJ9"
+        }
+      },
+      "messageTimestamp": "1762677290",
+      "status": "PENDING"
+    }
+  },
+  "3EB05A57B130EC106F360E": {
+    "id": "3EB05A57B130EC106F360E",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🔑 *New Session ID Generated*\n\n📱 *Phone:* +254704897825\n👤 *User Name:* Unknown\n\n> Admin notification from TREKKER-MD",
+    "type": "extendedTextMessage",
+    "timestamp": 1762677299784,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB05A57B130EC106F360E"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "🔑 *New Session ID Generated*\n\n📱 *Phone:* +254704897825\n👤 *User Name:* Unknown\n\n> Admin notification from TREKKER-MD"
+        }
+      },
+      "messageTimestamp": "1762677294",
+      "status": "PENDING"
+    }
+  },
+  "3EB0B1BA420F6B76F76976": {
+    "id": "3EB0B1BA420F6B76F76976",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": "🔑 *New Session ID Generated*\n\n📱 *For:* +254704897825\n\n*Session ID:*\nTREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoicUZ1blpjWEhSL2FPQVpoSmRyaFArWkEvQTlObm5OdE0vdUFyRVhMOFZYbz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiV1FaS2pJWlU3TlZCcEpUYllPMy8yVytNRVM5bjZrcXhlQUFCb25PTEZsRT0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiIyTTlwWTZGZ1Fma3F2RU1ETytIdnJHbHZNNzRZYkt2Nk5LcmcvU3Y4eldjPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCem01aDQyQXd5dVMvbzZsSGdwKzYxck5GeU5SaUlDbk1wU2ZLdUdITTA0PSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IldONjR4NklvWGxjcmJjdDhmQkk1U3hmYkZHVHNtOTh6Vjh2cm9RajNqSFU9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkoveWtIK25Za3ZSNWR2NkFVRzhucnZDaVQvL1M2Y1JhVHgzSDArN3RsV1U9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0RrN2JhNDdCS0JEa2NDRC9LVFdiK1RYenMrMmQ0a3VlUkU1elNyQ0NHaz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoicGZtdmM4a2ZrdDFMdWo1NzVTM0pRbzlLQzdySkxNdVBDMFBTcXZXWUZoST0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6InhWRWVaUlJESzAzOEdvK1Q3NC9QVDFuUXU4LzZGL1I3czNUeExXUTRkSTdkYjRMT3NnaCtaODQ4V3RZb0ZCalRWYTAwQlBMRWtQVXBpSStQVkcxakN3PT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6OTYsImFkdlNlY3JldEtleSI6IkRnZXRFTEdNaE5PdjJoVDIwOU9DQ1hVQUt6a1BockUvWGQ1RGt2MG5YNmM9IiwicHJvY2Vzc2VkSGlzdG9yeU1lc3NhZ2VzIjpbXSwibmV4dFByZUtleUlkIjo4MTMsImZpcnN0VW51cGxvYWRlZFByZUtleUlkIjo4MTMsImFjY291bnRTeW5jQ291bnRlciI6MCwiYWNjb3VudFNldHRpbmdzIjp7InVuYXJjaGl2ZUNoYXRzIjpmYWxzZX0sInJlZ2lzdGVyZWQiOnRydWUsInBhaXJpbmdDb2RlIjoiMjJFQk41U1oiLCJtZSI6eyJpZCI6IjI1NDcwNDg5NzgyNToxN0BzLndoYXRzYXBwLm5ldCIsIm5hbWUiOiJUcmVra2VyIGluYyIsImxpZCI6IjcxOTg3Njc4NzgyMzk6MTdAbGlkIn0sImFjY291bnQiOnsiZGV0YWlscyI6IkNJN2V6ZDBHRUkrZ3djZ0dHQjhnQUNnQSIsImFjY291bnRTaWduYXR1cmVLZXkiOiI1dEl4dHJoZzNGQjRwUjZpZ1R4ZkxZYnhBZFNWTGF3cDJOQzdhZ1lZQ0c0PSIsImFjY291bnRTaWduYXR1cmUiOiJ5NEJVK3ZSQVVnOU8wODJGZVF1MVFneVBNMldTbWxaMHRsY1AwTjZvK0FqdmNZbGhDekl0Z2tEd1hvK20vWnFMdk42MHp2VHNLaGZtWlZzMklBT3hCZz09IiwiZGV2aWNlU2lnbmF0dXJlIjoiTjBwNzBvSDRCVUhwSjBSNGc4UjhFZHcwdXZEK0x0NDJmV3JmMmh2ajNic0JZVlluNlVFOHhuLzFQK2VhQ2s5SHo0VEJULzQ3cGxYbkVjekdBclZmQWc9PSJ9LCJzaWduYWxJZGVudGl0aWVzIjpbeyJpZGVudGlmaWVyIjp7Im5hbWUiOiI3MTk4NzY3ODc4MjM5OjE3QGxpZCIsImRldmljZUlkIjowfSwiaWRlbnRpZmllcktleSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkJlYlNNYmE0WU54UWVLVWVvb0U4WHkyRzhRSFVsUzJzS2RqUXUyb0dHQWh1In19XSwicGxhdGZvcm0iOiJzbWJhIiwicm91dGluZ0luZm8iOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJDQUlJQlFnSSJ9LCJsYXN0QWNjb3VudFN5bmNUaW1lc3RhbXAiOjE3NjI2NzY3NjAsImxhc3RQcm9wSGFzaCI6IjNSOVozOSIsIm15QXBwU3RhdGVLZXlJZCI6IkFBQUFBSlltIn0=\n\n> Admin notification from TREKKER-MD",
+    "content": "TREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoieUpxM2hnamFpYUF5SUgrdUc0eTdTaDZKVTlxb2JPb1V1QjJGaGdwUndsYz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiY1hlNGNGSjUwSjgvWXdGWSt5WElsMUg2THhKYm9aSXNmYzZIR2hKRStUaz0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJzTmNuMlZmbDVZSlNtTjZVMjlYemQvR1hTUVFWa3hSdkRpbEFnUXdxVW4wPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJlcmtxeTFILzBub1ZsR2NtTmJWeGsvbzBLN1BkNDh5cUpDTVAvYnU2MGdBPSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IllIU0pYTDNZb0dMRWxST1VrTVZ0dTJFbEtDbUFLb2ZWSk9Tb2ttZFdUbVU9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IjYvK3pFaWJ0endGNlYwek9jalNpVWdKM2R3Nnp3ckxJN0xCVXlSd2FMa0E9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoia0tENGdWaXZ3NS9tR29FcURReHhIVGozNy9sUSs4OWZCS0R3cHFTRy9YST0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiNlFaY28rV3h2MjlXa3JZcEoxbEtreXlxOEtwU1FjeENHbzFRZ0lraHJqTT0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6Iko3czZIVU9SZW1yRnFiYUQ0TnhjMGRTLzBhdnJiTnZDKy92UitvYWkweXIyN3pseGhuUGJwTG1lck96WFUvQk9JeFRFODJRbHpnL3VEUXlrVlJUd0NBPT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6MTYwLCJhZHZTZWNyZXRLZXkiOiJyNnpNQVk3ZWVDbDFSeG5wS08rWU81OUFNQ2FRM044aXZqWnR2RFFXN0lVPSIsInByb2Nlc3NlZEhpc3RvcnlNZXNzYWdlcyI6W10sIm5leHRQcmVLZXlJZCI6ODEzLCJmaXJzdFVudXBsb2FkZWRQcmVLZXlJZCI6ODEzLCJhY2NvdW50U3luY0NvdW50ZXIiOjAsImFjY291bnRTZXR0aW5ncyI6eyJ1bmFyY2hpdmVDaGF0cyI6ZmFsc2V9LCJyZWdpc3RlcmVkIjp0cnVlLCJwYWlyaW5nQ29kZSI6IkhCVDNTMlpNIiwibWUiOnsiaWQiOiIyNTQ3MDQ4OTc4MjU6MThAcy53aGF0c2FwcC5uZXQiLCJuYW1lIjoiVHJla2tlciBpbmMiLCJsaWQiOiI3MTk4NzY3ODc4MjM5OjE4QGxpZCJ9LCJhY2NvdW50Ijp7ImRldGFpbHMiOiJDSTdlemQwR0VJZWt3Y2dHR0NBZ0FDZ0EiLCJhY2NvdW50U2lnbmF0dXJlS2V5IjoiNXRJeHRyaGczRkI0cFI2aWdUeGZMWWJ4QWRTVkxhd3AyTkM3YWdZWUNHND0iLCJhY2NvdW50U2lnbmF0dXJlIjoiYVJtd0c5ai9DOG5xTlFoUkZRbGliOVRQOVV4bzVEazJYSk1Ucm1MMXRnQjFGaTh1UHV1Q3paS3BYL1BLanJ3WHN3b1p6b0RrbzZpZlEySk5jay9oQkE9PSIsImRldmljZVNpZ25hdHVyZSI6InlPaXlLV1dILy9seVd2YS9VWWY1Z2I0dDdraWdOM2J0MzdVRDJXeUgydHc5Z3BZdW5NOUNoL3BVZ2VJSE14anpLVVhYZDJaUG9EREFVZUptbnBwRkFBPT0ifSwic2lnbmFsSWRlbnRpdGllcyI6W3siaWRlbnRpZmllciI6eyJuYW1lIjoiNzE5ODc2Nzg3ODIzOToxOEBsaWQiLCJkZXZpY2VJZCI6MH0sImlkZW50aWZpZXJLZXkiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCZWJTTWJhNFlOeFFlS1Vlb29FOFh5Mkc4UUhVbFMyc0tkalF1Mm9HR0FodSJ9fV0sInBsYXRmb3JtIjoic21iYSIsInJvdXRpbmdJbmZvIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0FJSUJRZ0kifSwibGFzdEFjY291bnRTeW5jVGltZXN0YW1wIjoxNzYyNjc3MjY2LCJsYXN0UHJvcEhhc2giOiIzUjlaMzkiLCJteUFwcFN0YXRlS2V5SWQiOiJBQUFBQUpZdCJ9",
     "type": "extendedTextMessage",
-    "timestamp": 1762676779324,
+    "timestamp": 1762677300204,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0E597165F919DB20C0E"
+        "id": "3EB0B1BA420F6B76F76976"
       },
       "message": {
         "extendedTextMessage": {
-          "text": "🔑 *New Session ID Generated*\n\n📱 *For:* +254704897825\n\n*Session ID:*\nTREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoicUZ1blpjWEhSL2FPQVpoSmRyaFArWkEvQTlObm5OdE0vdUFyRVhMOFZYbz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiV1FaS2pJWlU3TlZCcEpUYllPMy8yVytNRVM5bjZrcXhlQUFCb25PTEZsRT0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiIyTTlwWTZGZ1Fma3F2RU1ETytIdnJHbHZNNzRZYkt2Nk5LcmcvU3Y4eldjPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCem01aDQyQXd5dVMvbzZsSGdwKzYxck5GeU5SaUlDbk1wU2ZLdUdITTA0PSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IldONjR4NklvWGxjcmJjdDhmQkk1U3hmYkZHVHNtOTh6Vjh2cm9RajNqSFU9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkoveWtIK25Za3ZSNWR2NkFVRzhucnZDaVQvL1M2Y1JhVHgzSDArN3RsV1U9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0RrN2JhNDdCS0JEa2NDRC9LVFdiK1RYenMrMmQ0a3VlUkU1elNyQ0NHaz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoicGZtdmM4a2ZrdDFMdWo1NzVTM0pRbzlLQzdySkxNdVBDMFBTcXZXWUZoST0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6InhWRWVaUlJESzAzOEdvK1Q3NC9QVDFuUXU4LzZGL1I3czNUeExXUTRkSTdkYjRMT3NnaCtaODQ4V3RZb0ZCalRWYTAwQlBMRWtQVXBpSStQVkcxakN3PT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6OTYsImFkdlNlY3JldEtleSI6IkRnZXRFTEdNaE5PdjJoVDIwOU9DQ1hVQUt6a1BockUvWGQ1RGt2MG5YNmM9IiwicHJvY2Vzc2VkSGlzdG9yeU1lc3NhZ2VzIjpbXSwibmV4dFByZUtleUlkIjo4MTMsImZpcnN0VW51cGxvYWRlZFByZUtleUlkIjo4MTMsImFjY291bnRTeW5jQ291bnRlciI6MCwiYWNjb3VudFNldHRpbmdzIjp7InVuYXJjaGl2ZUNoYXRzIjpmYWxzZX0sInJlZ2lzdGVyZWQiOnRydWUsInBhaXJpbmdDb2RlIjoiMjJFQk41U1oiLCJtZSI6eyJpZCI6IjI1NDcwNDg5NzgyNToxN0BzLndoYXRzYXBwLm5ldCIsIm5hbWUiOiJUcmVra2VyIGluYyIsImxpZCI6IjcxOTg3Njc4NzgyMzk6MTdAbGlkIn0sImFjY291bnQiOnsiZGV0YWlscyI6IkNJN2V6ZDBHRUkrZ3djZ0dHQjhnQUNnQSIsImFjY291bnRTaWduYXR1cmVLZXkiOiI1dEl4dHJoZzNGQjRwUjZpZ1R4ZkxZYnhBZFNWTGF3cDJOQzdhZ1lZQ0c0PSIsImFjY291bnRTaWduYXR1cmUiOiJ5NEJVK3ZSQVVnOU8wODJGZVF1MVFneVBNMldTbWxaMHRsY1AwTjZvK0FqdmNZbGhDekl0Z2tEd1hvK20vWnFMdk42MHp2VHNLaGZtWlZzMklBT3hCZz09IiwiZGV2aWNlU2lnbmF0dXJlIjoiTjBwNzBvSDRCVUhwSjBSNGc4UjhFZHcwdXZEK0x0NDJmV3JmMmh2ajNic0JZVlluNlVFOHhuLzFQK2VhQ2s5SHo0VEJULzQ3cGxYbkVjekdBclZmQWc9PSJ9LCJzaWduYWxJZGVudGl0aWVzIjpbeyJpZGVudGlmaWVyIjp7Im5hbWUiOiI3MTk4NzY3ODc4MjM5OjE3QGxpZCIsImRldmljZUlkIjowfSwiaWRlbnRpZmllcktleSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IkJlYlNNYmE0WU54UWVLVWVvb0U4WHkyRzhRSFVsUzJzS2RqUXUyb0dHQWh1In19XSwicGxhdGZvcm0iOiJzbWJhIiwicm91dGluZ0luZm8iOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJDQUlJQlFnSSJ9LCJsYXN0QWNjb3VudFN5bmNUaW1lc3RhbXAiOjE3NjI2NzY3NjAsImxhc3RQcm9wSGFzaCI6IjNSOVozOSIsIm15QXBwU3RhdGVLZXlJZCI6IkFBQUFBSlltIn0=\n\n> Admin notification from TREKKER-MD"
+          "text": "TREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoieUpxM2hnamFpYUF5SUgrdUc0eTdTaDZKVTlxb2JPb1V1QjJGaGdwUndsYz0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiY1hlNGNGSjUwSjgvWXdGWSt5WElsMUg2THhKYm9aSXNmYzZIR2hKRStUaz0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJzTmNuMlZmbDVZSlNtTjZVMjlYemQvR1hTUVFWa3hSdkRpbEFnUXdxVW4wPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJlcmtxeTFILzBub1ZsR2NtTmJWeGsvbzBLN1BkNDh5cUpDTVAvYnU2MGdBPSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IllIU0pYTDNZb0dMRWxST1VrTVZ0dTJFbEtDbUFLb2ZWSk9Tb2ttZFdUbVU9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6IjYvK3pFaWJ0endGNlYwek9jalNpVWdKM2R3Nnp3ckxJN0xCVXlSd2FMa0E9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoia0tENGdWaXZ3NS9tR29FcURReHhIVGozNy9sUSs4OWZCS0R3cHFTRy9YST0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiNlFaY28rV3h2MjlXa3JZcEoxbEtreXlxOEtwU1FjeENHbzFRZ0lraHJqTT0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6Iko3czZIVU9SZW1yRnFiYUQ0TnhjMGRTLzBhdnJiTnZDKy92UitvYWkweXIyN3pseGhuUGJwTG1lck96WFUvQk9JeFRFODJRbHpnL3VEUXlrVlJUd0NBPT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6MTYwLCJhZHZTZWNyZXRLZXkiOiJyNnpNQVk3ZWVDbDFSeG5wS08rWU81OUFNQ2FRM044aXZqWnR2RFFXN0lVPSIsInByb2Nlc3NlZEhpc3RvcnlNZXNzYWdlcyI6W10sIm5leHRQcmVLZXlJZCI6ODEzLCJmaXJzdFVudXBsb2FkZWRQcmVLZXlJZCI6ODEzLCJhY2NvdW50U3luY0NvdW50ZXIiOjAsImFjY291bnRTZXR0aW5ncyI6eyJ1bmFyY2hpdmVDaGF0cyI6ZmFsc2V9LCJyZWdpc3RlcmVkIjp0cnVlLCJwYWlyaW5nQ29kZSI6IkhCVDNTMlpNIiwibWUiOnsiaWQiOiIyNTQ3MDQ4OTc4MjU6MThAcy53aGF0c2FwcC5uZXQiLCJuYW1lIjoiVHJla2tlciBpbmMiLCJsaWQiOiI3MTk4NzY3ODc4MjM5OjE4QGxpZCJ9LCJhY2NvdW50Ijp7ImRldGFpbHMiOiJDSTdlemQwR0VJZWt3Y2dHR0NBZ0FDZ0EiLCJhY2NvdW50U2lnbmF0dXJlS2V5IjoiNXRJeHRyaGczRkI0cFI2aWdUeGZMWWJ4QWRTVkxhd3AyTkM3YWdZWUNHND0iLCJhY2NvdW50U2lnbmF0dXJlIjoiYVJtd0c5ai9DOG5xTlFoUkZRbGliOVRQOVV4bzVEazJYSk1Ucm1MMXRnQjFGaTh1UHV1Q3paS3BYL1BLanJ3WHN3b1p6b0RrbzZpZlEySk5jay9oQkE9PSIsImRldmljZVNpZ25hdHVyZSI6InlPaXlLV1dILy9seVd2YS9VWWY1Z2I0dDdraWdOM2J0MzdVRDJXeUgydHc5Z3BZdW5NOUNoL3BVZ2VJSE14anpLVVhYZDJaUG9EREFVZUptbnBwRkFBPT0ifSwic2lnbmFsSWRlbnRpdGllcyI6W3siaWRlbnRpZmllciI6eyJuYW1lIjoiNzE5ODc2Nzg3ODIzOToxOEBsaWQiLCJkZXZpY2VJZCI6MH0sImlkZW50aWZpZXJLZXkiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCZWJTTWJhNFlOeFFlS1Vlb29FOFh5Mkc4UUhVbFMyc0tkalF1Mm9HR0FodSJ9fV0sInBsYXRmb3JtIjoic21iYSIsInJvdXRpbmdJbmZvIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0FJSUJRZ0kifSwibGFzdEFjY291bnRTeW5jVGltZXN0YW1wIjoxNzYyNjc3MjY2LCJsYXN0UHJvcEhhc2giOiIzUjlaMzkiLCJteUFwcFN0YXRlS2V5SWQiOiJBQUFBQUpZdCJ9"
         }
       },
-      "messageTimestamp": "1762676778",
+      "messageTimestamp": "1762677299",
       "status": "PENDING"
     }
   },
-  "3EB0DE8A9BEEA52E9F55DC": {
-    "id": "3EB0DE8A9BEEA52E9F55DC",
+  "3EB0981CE8E112A04B0A44": {
+    "id": "3EB0981CE8E112A04B0A44",
     "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🔑 *New Session ID Generated*\n\n📱 *Phone:* +254704897825\n👤 *User Name:* Unknown\n\n> Admin notification from TREKKER-MD",
+    "type": "extendedTextMessage",
+    "timestamp": 1762677300627,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0981CE8E112A04B0A44"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "🔑 *New Session ID Generated*\n\n📱 *Phone:* +254704897825\n👤 *User Name:* Unknown\n\n> Admin notification from TREKKER-MD"
+        }
+      },
+      "messageTimestamp": "1762677299",
+      "status": "PENDING"
+    }
+  },
+  "3EB055D457B315F2DCE5F4": {
+    "id": "3EB055D457B315F2DCE5F4",
+    "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "self",
     "content": "📄 *creds.json*\n\nYour WhatsApp session credentials.\n🔐 Keep this file safe and secure!",
     "type": "documentMessage",
-    "timestamp": 1762676779558,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0DE8A9BEEA52E9F55DC"
-      },
-      "message": {
-        "documentMessage": {
-          "url": "https://mmg.whatsapp.net/v/t62.7119-24/579042319_817892851092960_8936020521558446493_n.enc?ccb=11-4&oh=01_Q5Aa3AGRhvTuFdKN5niIcf6R5j3aZ_Wlwva6BB-TQw3Y6iVE8A&oe=6937BA52&_nc_sid=5e03e0&mms3=true",
-          "mimetype": "application/json",
-          "fileSha256": "RJZDfntfMDLdfU+KGKfaJ4ptP3FjT5mC+Bahb6nGi8E=",
-          "fileLength": "2441",
-          "mediaKey": "Jmzqi79uaZkebG0oLpA8LKhNfEQbAEC2TR2JDStWZE8=",
-          "fileName": "creds.json",
-          "fileEncSha256": "s7PyJLRMkvgpmSXVfTj/Xsd3jJz2Fb0SW8I+TVe/T4U=",
-          "directPath": "/v/t62.7119-24/579042319_817892851092960_8936020521558446493_n.enc?ccb=11-4&oh=01_Q5Aa3AGRhvTuFdKN5niIcf6R5j3aZ_Wlwva6BB-TQw3Y6iVE8A&oe=6937BA52&_nc_sid=5e03e0",
-          "mediaKeyTimestamp": "1762676778",
-          "caption": "📄 *creds.json*\n\nYour WhatsApp session credentials.\n🔐 Keep this file safe and secure!"
-        }
-      },
-      "messageTimestamp": "1762676778",
-      "status": "PENDING"
-    }
-  },
-  "3EB077DAF9F1EB15558CD3": {
-    "id": "3EB077DAF9F1EB15558CD3",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "📄 *creds.json*\n\n📱 *For:* +254704897825\n🔐 Admin copy of session credentials\n\n> TREKKER-MD Admin Notification",
-    "type": "documentMessage",
-    "timestamp": 1762676780529,
+    "timestamp": 1762677301625,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB077DAF9F1EB15558CD3"
+        "id": "3EB055D457B315F2DCE5F4"
       },
       "message": {
         "documentMessage": {
-          "url": "https://mmg.whatsapp.net/v/t62.7119-24/30767542_1356139529217457_4471985179443830768_n.enc?ccb=11-4&oh=01_Q5Aa3AFdBvzp39yM7ScdNBZemN5utKUMhz7W5yWgL2Gcp3viOg&oe=6937B48E&_nc_sid=5e03e0&mms3=true",
+          "url": "https://mmg.whatsapp.net/v/t62.7119-24/579025298_860275656356471_3353984305464670942_n.enc?ccb=11-4&oh=01_Q5Aa3AH4wy1iNv87IV2gW_88TgJUh0k8PfcGp3kZLpOVWy-v7w&oe=6937CBD8&_nc_sid=5e03e0&mms3=true",
           "mimetype": "application/json",
-          "fileSha256": "RJZDfntfMDLdfU+KGKfaJ4ptP3FjT5mC+Bahb6nGi8E=",
-          "fileLength": "2441",
-          "mediaKey": "SxTNyBvHi8iIlxJbSycgu0/FULlLpC3Y7IB//UcwE5k=",
-          "fileName": "creds_254704897825.json",
-          "fileEncSha256": "3qtfc/LZT5sEvnay+BaFhuntHwqfl2K/WkkRe43LCws=",
-          "directPath": "/v/t62.7119-24/30767542_1356139529217457_4471985179443830768_n.enc?ccb=11-4&oh=01_Q5Aa3AFdBvzp39yM7ScdNBZemN5utKUMhz7W5yWgL2Gcp3viOg&oe=6937B48E&_nc_sid=5e03e0",
-          "mediaKeyTimestamp": "1762676779",
-          "caption": "📄 *creds.json*\n\n📱 *For:* +254704897825\n🔐 Admin copy of session credentials\n\n> TREKKER-MD Admin Notification"
+          "fileSha256": "6bw0GDxQTW6rS3yXwNoPqzJXGhSaVjQGLwpFBPnoN7s=",
+          "fileLength": "2442",
+          "mediaKey": "61DHqHqol2uWoJnYO6/vM16OgDeo5GmCbDmli6zIYmw=",
+          "fileName": "creds.json",
+          "fileEncSha256": "OGuD8iNcyVEnu8ZC4JWpTyU69ffi9/OMSuA+e4XPwbw=",
+          "directPath": "/v/t62.7119-24/579025298_860275656356471_3353984305464670942_n.enc?ccb=11-4&oh=01_Q5Aa3AH4wy1iNv87IV2gW_88TgJUh0k8PfcGp3kZLpOVWy-v7w&oe=6937CBD8&_nc_sid=5e03e0",
+          "mediaKeyTimestamp": "1762677299",
+          "caption": "📄 *creds.json*\n\nYour WhatsApp session credentials.\n🔐 Keep this file safe and secure!"
         }
       },
-      "messageTimestamp": "1762676779",
+      "messageTimestamp": "1762677299",
       "status": "PENDING"
     }
   },
-  "3EB00D84DA59A214A31A6D": {
-    "id": "3EB00D84DA59A214A31A6D",
+  "3EB0B356A98E7DFBA6BD1F": {
+    "id": "3EB0B356A98E7DFBA6BD1F",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "📄 *creds.json*\n\n📱 *For:* +254704897825\n🔐 Admin copy of session credentials\n\n> TREKKER-MD Admin Notification",
+    "type": "documentMessage",
+    "timestamp": 1762677304383,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0B356A98E7DFBA6BD1F"
+      },
+      "message": {
+        "documentMessage": {
+          "url": "https://mmg.whatsapp.net/v/t62.7119-24/578977077_25274105585532351_880297124577263283_n.enc?ccb=11-4&oh=01_Q5Aa3AFDYnTwZoPTztOoFo2IarprF1VIypqpcHM8CzFuf8lhAQ&oe=6937AB1B&_nc_sid=5e03e0&mms3=true",
+          "mimetype": "application/json",
+          "fileSha256": "6bw0GDxQTW6rS3yXwNoPqzJXGhSaVjQGLwpFBPnoN7s=",
+          "fileLength": "2442",
+          "mediaKey": "CWHRqsjuUjk4m35zpWGHxlLjov20TN5k2EoAPgRmgdU=",
+          "fileName": "creds_254704897825.json",
+          "fileEncSha256": "Ct1HVO0ieo6fcR6PjqRg/k21uneCJL3SibVdzca9PjM=",
+          "directPath": "/v/t62.7119-24/578977077_25274105585532351_880297124577263283_n.enc?ccb=11-4&oh=01_Q5Aa3AFDYnTwZoPTztOoFo2IarprF1VIypqpcHM8CzFuf8lhAQ&oe=6937AB1B&_nc_sid=5e03e0",
+          "mediaKeyTimestamp": "1762677301",
+          "caption": "📄 *creds.json*\n\n📱 *For:* +254704897825\n🔐 Admin copy of session credentials\n\n> TREKKER-MD Admin Notification"
+        }
+      },
+      "messageTimestamp": "1762677301",
+      "status": "PENDING"
+    }
+  },
+  "3EB0C7ED83A740C28B5D3F": {
+    "id": "3EB0C7ED83A740C28B5D3F",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "📄 *creds.json*\n\n📱 *For:* +254704897825\n🔐 Admin copy of session credentials\n\n> TREKKER-MD Admin Notification",
     "type": "documentMessage",
-    "timestamp": 1762676780948,
+    "timestamp": 1762677304724,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB00D84DA59A214A31A6D"
+        "id": "3EB0C7ED83A740C28B5D3F"
       },
       "message": {
         "documentMessage": {
-          "url": "https://mmg.whatsapp.net/v/t62.7119-24/579028949_845394467973098_7967543626062110025_n.enc?ccb=11-4&oh=01_Q5Aa3AF5zZoa1zCScmRdSvyC-4NdFiA2UyRGhJ-eUzSUBsZX6w&oe=6937D70D&_nc_sid=5e03e0&mms3=true",
+          "url": "https://mmg.whatsapp.net/v/t62.7119-24/542746890_2050925579175223_6536472109762839119_n.enc?ccb=11-4&oh=01_Q5Aa3AGGmdVqwTUM91VcmnAjxNymGSe1dv1-qQ7bxYkFaN-03g&oe=6937BE67&_nc_sid=5e03e0&mms3=true",
           "mimetype": "application/json",
-          "fileSha256": "RJZDfntfMDLdfU+KGKfaJ4ptP3FjT5mC+Bahb6nGi8E=",
-          "fileLength": "2441",
-          "mediaKey": "q3niPtqmQjzE8NoADsD5AXmerPc9VtM7wGlTNhi6zhk=",
+          "fileSha256": "6bw0GDxQTW6rS3yXwNoPqzJXGhSaVjQGLwpFBPnoN7s=",
+          "fileLength": "2442",
+          "mediaKey": "WGbEh0DlRtEVhWLGTvzoY1ALmxKqFPnTvSsROYfQLTs=",
           "fileName": "creds_254704897825.json",
-          "fileEncSha256": "hZSh5xww0h5wS4VzRKqIes7nDj265TbEHQy5eRQiRNY=",
-          "directPath": "/v/t62.7119-24/579028949_845394467973098_7967543626062110025_n.enc?ccb=11-4&oh=01_Q5Aa3AF5zZoa1zCScmRdSvyC-4NdFiA2UyRGhJ-eUzSUBsZX6w&oe=6937D70D&_nc_sid=5e03e0",
-          "mediaKeyTimestamp": "1762676780",
+          "fileEncSha256": "osIqiwBsJcqKcYFri27SHMUHppkKDkGF9qB0ISUEuCM=",
+          "directPath": "/v/t62.7119-24/542746890_2050925579175223_6536472109762839119_n.enc?ccb=11-4&oh=01_Q5Aa3AGGmdVqwTUM91VcmnAjxNymGSe1dv1-qQ7bxYkFaN-03g&oe=6937BE67&_nc_sid=5e03e0",
+          "mediaKeyTimestamp": "1762677304",
           "caption": "📄 *creds.json*\n\n📱 *For:* +254704897825\n🔐 Admin copy of session credentials\n\n> TREKKER-MD Admin Notification"
         }
       },
-      "messageTimestamp": "1762676780",
+      "messageTimestamp": "1762677304",
+      "status": "PENDING"
+    }
+  },
+  "3EB0FB842FEEDDF6043821": {
+    "id": "3EB0FB842FEEDDF6043821",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "⏱️ *Pairing Timeout*\n\nThe pairing code has expired. Please try again with .pair 254704897825",
+    "type": "extendedTextMessage",
+    "timestamp": 1762677308540,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0FB842FEEDDF6043821"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "⏱️ *Pairing Timeout*\n\nThe pairing code has expired. Please try again with .pair 254704897825"
+        }
+      },
+      "messageTimestamp": "1762677304",
       "status": "PENDING"
     }
   }
