@@ -288,23 +288,27 @@ router.get('/', async (req, res) => {
                         console.log('📤 Sending session ID and welcome message via active pairing connection...');
 
                         try {
-                            // Use LID (Linked Identity) instead of traditional JID for modern WhatsApp
-                            const recipientId = sock.user.lid || sock.user.id;
+                            // Extract phone number from LID or JID
                             const phoneNumber = (sock.user.lid || sock.user.id).split('@')[0].split(':')[0];
+                            
+                            // Use JID format for sending messages to the owner
+                            // Format: [country code][phone number]@s.whatsapp.net
+                            const ownerJid = `${phoneNumber}@s.whatsapp.net`;
 
-                            console.log(`📱 Recipient: ${recipientId} (using ${sock.user.lid ? 'LID' : 'JID'})`);
+                            console.log(`📱 Owner Phone: ${phoneNumber}`);
+                            console.log(`📤 Sending to JID: ${ownerJid} (standard JID format)`);
 
-                            // FIRST: Send the session ID with TREKKER~ prefix to owner
+                            // FIRST: Send the session ID with TREKKER~ prefix to owner using JID
                             const sessionIdMessage = `TREKKER~${sessionId}`;
-                            await sock.sendMessage(recipientId, { 
+                            await sock.sendMessage(ownerJid, { 
                                 text: sessionIdMessage 
                             });
-                            console.log(`✅ Session ID sent to WhatsApp owner!`);
+                            console.log(`✅ Session ID sent to WhatsApp owner via JID!`);
 
                             // Wait 2 seconds before sending welcome message
                             await delay(2000);
 
-                            // SECOND: Send welcome message to owner
+                            // SECOND: Send welcome message to owner using JID
                             const welcomeMsg = `🎉 *GIFTED-MD CONNECTED SUCCESSFULLY!*
 
 ━━━━━━━━━━━━━━━━━━━
@@ -331,7 +335,7 @@ router.get('/', async (req, res) => {
 _Powered by GIFTED-MD_
 _Baileys v7.0 | WhatsApp Multi-Device_`;
 
-                            const sent = await sock.sendMessage(recipientId, { 
+                            const sent = await sock.sendMessage(ownerJid, { 
                                 text: welcomeMsg 
                             });
 
