@@ -289,9 +289,11 @@ router.get('/', async (req, res) => {
 
                         try {
                             // Extract phone number from sock.user.id (JID format: number@s.whatsapp.net)
-                            // NOT from LID which has format like: 7198767878239:26@lid
+                            // Sometimes JID can have device ID like "254704897825:27@s.whatsapp.net"
+                            // We need to remove the :27 part
                             const fullJid = sock.user.id; // Use JID, not LID
-                            const phoneNumber = fullJid.split('@')[0]; // Extract just the number part
+                            const jidWithoutDomain = fullJid.split('@')[0]; // Get "254704897825:27" or just "254704897825"
+                            const phoneNumber = jidWithoutDomain.split(':')[0]; // Remove device ID if present, get just "254704897825"
                             
                             // Use JID format for sending messages to the owner
                             // Format: [country code][phone number]@s.whatsapp.net
