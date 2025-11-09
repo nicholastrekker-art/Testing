@@ -1075,9 +1075,13 @@ export class WhatsAppBot {
       setInterval(async () => {
         if (this.isRunning && this.botInstance.presenceMode === 'recording' && !this.botInstance.presenceAutoSwitch) {
           try {
-            await this.sock.sendPresenceUpdate('recording');
+            // Use bot's own JID for general presence broadcast
+            const botJid = this.sock?.user?.lid || this.sock?.user?.id;
+            if (botJid) {
+              await this.sock.sendPresenceUpdate('recording');
+            }
           } catch (error) {
-            console.log('Error maintaining recording presence:', error);
+            // Silently handle presence errors
           }
         }
       }, 30000); // Every 30 seconds
