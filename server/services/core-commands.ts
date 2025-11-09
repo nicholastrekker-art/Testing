@@ -2,6 +2,7 @@ import { commandRegistry, type CommandContext } from './command-registry.js';
 import { antideleteService } from './antidelete.js';
 import { getAntiViewOnceService } from './antiviewonce.js';
 import { storage } from '../storage.js';
+import { getServerName } from '../db.js';
 import moment from 'moment-timezone';
 import os from 'os';
 import axios from 'axios';
@@ -3011,6 +3012,372 @@ commandRegistry.register({
     } catch (error) {
       console.error('Error getting groups:', error);
       await respond('❌ Failed to get group list!');
+    }
+  }
+});
+
+// Pair Command - Generate WhatsApp pairing code
+commandRegistry.register({
+  name: 'pair',
+  aliases: ['paircode', 'getcode'],
+  description: 'Generate pairing code for WhatsApp connection',
+  category: 'AUTH',
+  handler: async (context: CommandContext) => {
+    const { respond, args, client, message, from } = context;
+
+    // Step 1: Validate phone number input
+    if (!args.length) {
+      await respond(`❌ Please provide your phone number with country code
+
+*Example:* .pair 254712345678
+
+📱 *Format:*
+• Include country code (e.g., 254 for Kenya)
+• No + or - symbols
+• Only numbers
+
+> TREKKER-MD Pairing System`);
+      return;
+    }
+
+    const phoneNumber = args[0].replace(/[^0-9]/g, '');
+
+    if (phoneNumber.length < 10) {
+      await respond('❌ Invalid phone number! Please provide a valid phone number with country code.\n\n*Example:* .pair 254712345678');
+      return;
+    }
+
+    try {
+      // Send initial message
+      await respond(`🔄 *Generating Pairing Code...*
+
+📱 Phone: +${phoneNumber}
+⏳ Please wait...
+
+> TREKKER-MD Pairing System`);
+
+      // Import necessary modules
+      const makeWASocket = (await import('@whiskeysockets/baileys')).default;
+      const { useMultiFileAuthState } = await import('@whiskeysockets/baileys');
+      const { join } = await import('path');
+      const { mkdirSync, existsSync, rmSync } = await import('fs');
+
+      // Create temporary auth directory for this pairing session
+      const tempAuthDir = join(process.cwd(), 'auth', 'temp_pair', `pair_${phoneNumber}_${Date.now()}`);
+      if (!existsSync(tempAuthDir)) {
+        mkdirSync(tempAuthDir, { recursive: true });
+      }
+
+      // Create auth state
+      const { state, saveCreds } = await useMultiFileAuthState(tempAuthDir);
+
+      // Create temporary socket for pairing
+      const pairSock = makeWASocket({
+        auth: state,
+        printQRInTerminal: false,
+        logger: {
+          level: 'silent',
+          child: () => ({} as any),
+          trace: () => {},
+          debug: () => {},
+          info: () => {},
+          warn: () => {},
+          error: () => {},
+          fatal: () => {}
+        }
+      });
+
+      // Save credentials when updated
+      pairSock.ev.on('creds.update', saveCreds);
+
+      let pairingCodeSent = false;
+      let sessionCreated = false;
+
+      // Monitor connection for pairing code and session creation
+      pairSock.ev.on('connection.update', async (update) => {
+        const { connection, lastDisconnect } = update;
+
+        // Request pairing code when connecting and not yet registered
+        if (!pairingCodeSent && !state.creds.registered) {
+          try {
+            const code = await pairSock.requestPairingCode(phoneNumber);
+            pairingCodeSent = true;
+
+            // Format code nicely
+            const formattedCode = code.match(/.{1,4}/g)?.join('-') || code;
+
+            // Step 2: Send pairing code to user
+            await client.sendMessage(from, {
+              text: `✅ *PAIRING CODE GENERATED!*
+
+🔐 *Your Pairing Code:*
+╔════════════════╗
+║   ${formattedCode}   ║
+╚════════════════╝
+
+📱 *How to Enter the Code:*
+
+1️⃣ Open WhatsApp on your phone
+2️⃣ Tap the three dots (⋮) menu
+3️⃣ Select "Linked Devices"
+4️⃣ Tap "Link a Device"
+5️⃣ Tap "Link with Phone Number Instead"
+6️⃣ Enter the code: *${formattedCode}*
+
+⏳ *Waiting for you to enter the code...*
+⌛ This code will expire in 60 seconds
+
+> 🎉 WELCOME TO TREKKER-MD LIFETIME BOT`
+            });
+
+            console.log(`✅ Pairing code generated for ${phoneNumber}: ${formattedCode}`);
+
+          } catch (error) {
+            console.error('Error requesting pairing code:', error);
+            await respond('❌ Failed to generate pairing code. Please try again later.');
+            pairSock.end(undefined);
+            if (existsSync(tempAuthDir)) {
+              rmSync(tempAuthDir, { recursive: true, force: true });
+            }
+          }
+        }
+
+        // Step 3: Handle successful connection (session created)
+        if (connection === 'open' && !sessionCreated) {
+          sessionCreated = true;
+
+          try {
+            // Get credentials
+            const credentials = JSON.stringify(state, null, 2);
+            const credsBuffer = Buffer.from(credentials);
+            const sessionId = credsBuffer.toString('base64');
+
+            // Get bot owner JID and profile info
+            const botOwnerJid = pairSock.user?.id || pairSock.user?.lid;
+            const profileName = pairSock.user?.name || pairSock.user?.verifiedName || `TREKKER-MD-${phoneNumber}`;
+            
+            console.log(`📱 Profile info - Name: ${profileName}, JID: ${botOwnerJid}`);
+
+            // Step 3.5: Auto-register bot instance
+            let botInstance;
+            let autoApproved = false;
+            let createdBotId: string | undefined;
+            
+            try {
+              const currentServer = getServerName();
+              
+              // IMPORTANT: Check if phone already registered BEFORE creating bot instance
+              const existingGlobal = await storage.checkGlobalRegistration(phoneNumber);
+              if (existingGlobal) {
+                console.log(`⚠️ Phone ${phoneNumber} already registered on server ${existingGlobal.tenancyName}`);
+                await client.sendMessage(from, {
+                  text: `⚠️ *Phone Number Already Registered*\n\nThis phone number is already registered on server: ${existingGlobal.tenancyName}\n\n📄 Session ID will still be sent to you for manual use if needed.`
+                });
+                // Don't create bot instance, but continue to send credentials
+              } else {
+                // Check if promotional offer is active
+                const offerActive = await storage.isOfferActive();
+                console.log(`🎁 Promotional offer active: ${offerActive}`);
+
+                try {
+                  // Create bot instance
+                  botInstance = await storage.createBotInstanceForServer(currentServer, {
+                    name: profileName,
+                    phoneNumber: phoneNumber,
+                    credentials: state,
+                    status: 'offline',
+                    autoStart: true,
+                    approvalStatus: offerActive ? 'approved' : 'pending',
+                    approvalDate: offerActive ? new Date() : undefined,
+                    expirationMonths: offerActive ? 1 : undefined,
+                    credentialVerified: true,
+                    serverName: currentServer
+                  });
+
+                  createdBotId = botInstance.id;
+                  console.log(`✅ Bot instance created: ${botInstance.name} (ID: ${botInstance.id})`);
+
+                  try {
+                    // Add to global registration
+                    await storage.addGlobalRegistration(phoneNumber, currentServer);
+                    console.log(`✅ Global registration added for ${phoneNumber}`);
+
+                    autoApproved = offerActive;
+
+                    // Log activity
+                    await storage.createActivity({
+                      serverName: currentServer,
+                      botInstanceId: botInstance.id,
+                      type: 'bot_created',
+                      description: `Bot auto-registered via .pair command${autoApproved ? ' and auto-approved (promotional offer)' : ''}`
+                    });
+
+                    console.log(`✅ Bot auto-registered successfully: ${botInstance.name}`);
+
+                  } catch (globalRegError) {
+                    // Rollback: Delete the bot instance we just created
+                    console.error(`❌ Global registration failed, rolling back bot instance ${createdBotId}:`, globalRegError);
+                    
+                    try {
+                      await storage.deleteBotInstance(createdBotId);
+                      console.log(`✅ Rolled back bot instance ${createdBotId}`);
+                    } catch (rollbackError) {
+                      console.error(`❌ Rollback failed for bot ${createdBotId}:`, rollbackError);
+                    }
+
+                    // Clear botInstance so we don't show it to user
+                    botInstance = undefined;
+                    createdBotId = undefined;
+
+                    throw new Error(`Global registration failed: ${globalRegError instanceof Error ? globalRegError.message : 'Unknown error'}`);
+                  }
+
+                } catch (botCreateError) {
+                  console.error('❌ Bot instance creation failed:', botCreateError);
+                  throw botCreateError;
+                }
+              }
+            } catch (regError) {
+              console.error('❌ Auto-registration failed:', regError);
+              
+              // Clean up temp directory on failure
+              if (existsSync(tempAuthDir)) {
+                try {
+                  rmSync(tempAuthDir, { recursive: true, force: true });
+                  console.log(`✅ Cleaned up temp auth directory after registration failure`);
+                } catch (cleanupError) {
+                  console.error(`❌ Failed to cleanup temp directory:`, cleanupError);
+                }
+              }
+              
+              // Inform user but continue to send credentials
+              await client.sendMessage(from, {
+                text: `⚠️ *Auto-Registration Failed*\n\nError: ${regError instanceof Error ? regError.message : 'Unknown error'}\n\n📄 Session ID will still be sent to you for manual bot setup.`
+              });
+            }
+
+            // Step 4a: Send to the user who requested it
+            const successMessage = `🎉 *PAIRING SUCCESSFUL!*
+
+╔═══════════════════════════════╗
+║  WELCOME TO TREKKER-MD BOT!  ║
+╚═══════════════════════════════╝
+
+✅ *Session Created Successfully!*
+${botInstance ? `\n✅ *Bot Auto-Registered!*\n📱 *Bot Name:* ${botInstance.name}\n🆔 *Bot ID:* ${botInstance.id}` : ''}
+${autoApproved ? '\n🎁 *Auto-Approved!* (Promotional Offer Active)\n⏰ *Expires in:* 1 month' : botInstance ? '\n⏳ *Status:* Pending approval' : ''}
+
+📋 *Your Session ID:*
+(Use this to connect your bot)
+
+\`\`\`${sessionId.substring(0, 100)}...\`\`\`
+
+📝 *Session ID Length:* ${sessionId.length} characters
+
+⚠️ *IMPORTANT:*
+• Keep this session ID secure
+• Don't share it with anyone
+${botInstance ? '• Your bot is ready to use!' : '• Use it to deploy your bot'}
+
+🚀 *Next Steps:*
+${botInstance && autoApproved ? '1. Your bot is already approved and ready!\n2. Start using it immediately!\n3. Check your bot dashboard' : botInstance ? '1. Wait for admin approval\n2. You will be notified when approved\n3. Then start using your bot' : '1. Copy the full session ID\n2. Use it in your bot deployment\n3. Your bot will be connected!'}
+
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ`;
+
+            await client.sendMessage(from, { text: successMessage });
+
+            // Send full session ID as a document
+            await client.sendMessage(from, {
+              document: Buffer.from(sessionId),
+              fileName: `trekkermd_session_${phoneNumber}.txt`,
+              mimetype: 'text/plain',
+              caption: '📄 *Full Session ID*\n\nYour complete session credentials.\nKeep this file safe!'
+            });
+
+            // Step 4b: Send to bot owner as well
+            if (botOwnerJid && botOwnerJid !== from) {
+              const ownerMessage = `📢 *NEW PAIRING SESSION CREATED*
+
+👤 *User:* +${phoneNumber}
+📱 *Chat:* ${from}
+⏰ *Time:* ${new Date().toLocaleString()}
+${botInstance ? `\n🤖 *Bot Registered:* ${botInstance.name}\n🆔 *Bot ID:* ${botInstance.id}` : ''}
+${autoApproved ? '\n🎁 *Auto-Approved!* (Promotional Offer)' : botInstance ? '\n⏳ *Status:* Pending Approval' : ''}
+
+🔐 *Session ID Generated*
+
+This user has successfully paired their WhatsApp with TREKKER-MD BOT${botInstance ? ' and created a bot instance' : ''}.
+
+> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ`;
+
+              await client.sendMessage(botOwnerJid, { text: ownerMessage });
+
+              // Send session ID to owner too
+              await client.sendMessage(botOwnerJid, {
+                document: Buffer.from(sessionId),
+                fileName: `user_${phoneNumber}_session.txt`,
+                mimetype: 'text/plain',
+                caption: `📄 Session for +${phoneNumber}${botInstance ? `\nBot: ${botInstance.name}` : ''}`
+              });
+
+              console.log(`✅ Session info sent to owner: ${botOwnerJid}`);
+            }
+
+            console.log(`✅ Session created successfully for ${phoneNumber}`);
+
+          } catch (error) {
+            console.error('Error processing session:', error);
+            await respond('❌ Session created but failed to retrieve credentials. Please try again.');
+          } finally {
+            // Clean up
+            setTimeout(() => {
+              pairSock.end(undefined);
+              if (existsSync(tempAuthDir)) {
+                rmSync(tempAuthDir, { recursive: true, force: true });
+              }
+            }, 5000);
+          }
+        }
+
+        // Handle connection close
+        if (connection === 'close') {
+          if (!sessionCreated) {
+            const reason = (lastDisconnect?.error as any)?.output?.statusCode;
+            console.log(`Pairing connection closed: ${reason}`);
+
+            if (reason !== 401) {
+              await respond('⚠️ Pairing session closed. The code may have expired. Please try again with .pair command.');
+            }
+          }
+
+          // Clean up temp directory
+          setTimeout(() => {
+            if (existsSync(tempAuthDir)) {
+              rmSync(tempAuthDir, { recursive: true, force: true });
+            }
+          }, 1000);
+        }
+      });
+
+      // Set timeout for pairing process (2 minutes)
+      setTimeout(() => {
+        if (!sessionCreated) {
+          pairSock.end(undefined);
+          if (existsSync(tempAuthDir)) {
+            rmSync(tempAuthDir, { recursive: true, force: true });
+          }
+        }
+      }, 120000);
+
+    } catch (error) {
+      console.error('Error in pair command:', error);
+      await respond(`❌ *Pairing Failed*
+
+An error occurred while generating the pairing code.
+
+${error instanceof Error ? error.message : 'Unknown error'}
+
+Please try again later or contact support.`);
     }
   }
 });
