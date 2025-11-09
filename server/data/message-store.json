@@ -1,23 +1,23 @@
 {
-  "3EB0859880829C7F1BE7B6": {
-    "id": "3EB0859880829C7F1BE7B6",
+  "3EB01BBD309AC8DBE43993": {
+    "id": "3EB01BBD309AC8DBE43993",
     "fromJid": "280234452607229:21@lid",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1762687076220,
+    "timestamp": 1762687286491,
     "originalMessage": {
       "key": {
         "remoteJid": "280234452607229:21@lid",
         "fromMe": true,
-        "id": "3EB0859880829C7F1BE7B6"
+        "id": "3EB01BBD309AC8DBE43993"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": "1762687075",
+      "messageTimestamp": "1762687285",
       "status": "PENDING"
     }
   }
