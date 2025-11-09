@@ -22,6 +22,20 @@ import './core-commands.js'; // Load core commands
 import './channel-commands.js'; // Load channel commands
 import { handleChannelMessage } from './channel-commands.js';
 
+// Global message deduplication to prevent multiple bots processing same message
+const processedMessages = new Map<string, number>();
+const MESSAGE_DEDUP_TTL = 5000; // 5 seconds
+
+// Cleanup old entries every minute
+setInterval(() => {
+  const now = Date.now();
+  for (const [messageId, timestamp] of processedMessages.entries()) {
+    if (now - timestamp > MESSAGE_DEDUP_TTL) {
+      processedMessages.delete(messageId);
+    }
+  }
+}, 60000);
+
 export class WhatsAppBot {
   private sock: any;
   private botInstance: BotInstance;
@@ -651,6 +665,48 @@ export class WhatsAppBot {
       if (!message.message) {
         console.log(`Bot ${this.botInstance.name}: Skipping - no message content`);
         return;
+      }
+
+      // LAYER 1: Message deduplication - prevent multiple bots from processing same message
+      // Use composite key: messageId:remoteJid (or messageId:remoteJid:participant for groups)
+      const dedupKey = message.key.participant 
+        ? `${message.key.id}:${message.key.remoteJid}:${message.key.participant}`
+        : `${message.key.id}:${message.key.remoteJid}`;
+      
+      const now = Date.now();
+      const lastProcessed = processedMessages.get(dedupKey);
+      
+      if (lastProcessed && (now - lastProcessed < MESSAGE_DEDUP_TTL)) {
+        console.log(`Bot ${this.botInstance.name}: ⏭️ Skipping duplicate message ${message.key.id} (processed ${now - lastProcessed}ms ago)`);
+        return;
+      }
+      
+      // Mark message as processed
+      processedMessages.set(dedupKey, now);
+      console.log(`Bot ${this.botInstance.name}: ✅ Processing message ${message.key.id} (first time)`);
+
+      // LAYER 2: Bot ownership filtering - only process messages for this specific bot
+      // Skip messages that are sent to other bots (unless it's a group message or broadcast)
+      if (!message.key.fromMe && message.key.remoteJid) {
+        const myJid = this.sock.user?.id;
+        const myLid = this.sock.user?.lid;
+        const recipientJid = message.key.remoteJid;
+        
+        // For private chats: check if message is sent to THIS bot's number
+        const isPrivateChat = !recipientJid.endsWith('@g.us') && !recipientJid.endsWith('@broadcast') && !recipientJid.endsWith('@newsletter');
+        
+        if (isPrivateChat) {
+          // In private chat, message should be to/from this bot's number
+          const isForThisBot = recipientJid === myJid || recipientJid === myLid || 
+                               recipientJid.startsWith(myJid?.split('@')[0] || '') ||
+                               recipientJid.startsWith(myLid?.split('@')[0] || '' || '');
+          
+          if (!isForThisBot) {
+            console.log(`Bot ${this.botInstance.name}: ⏭️ Skipping message not for this bot (to: ${recipientJid}, my: ${myJid || myLid})`);
+            return;
+          }
+        }
+        // For group chats: all bots in the group will process (this is expected behavior)
       }
 
       // Get message text - extract directly from the message object
