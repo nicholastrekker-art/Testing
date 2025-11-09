@@ -182,49 +182,153 @@ commandRegistry.register({
  }
 });
 
+// Presence Help Command
+commandRegistry.register({
+  name: 'presencehelp',
+  aliases: ['helpresence'],
+  description: 'Show detailed help for presence modes',
+  category: 'SETTINGS',
+  handler: async (context: CommandContext) => {
+    const { respond } = context;
+
+    const helpText = `
+👁️ *PRESENCE MODE GUIDE*
+
+🎯 *What is Presence?*
+Presence shows your bot's activity status in WhatsApp (typing, recording, online, etc.)
+
+📋 *Available Modes:*
+
+1️⃣ *typing* - Always show typing indicator
+   • Updates every 10 seconds
+   • Shows "typing..." in chats
+   • Usage: .presence typing
+
+2️⃣ *recording* - Always show recording indicator  
+   • Updates every 10 seconds
+   • Shows "recording..." in chats
+   • Usage: .presence recording
+
+3️⃣ *online* - Always show online status
+   • Updates every 10 seconds
+   • Shows green "online" indicator
+   • Usage: .presence online
+
+4️⃣ *autoswitch* - Alternate typing/recording
+   • Switches every 10 seconds
+   • Creates dynamic presence effect
+   • Usage: .presence autoswitch
+
+5️⃣ *none* - Disable all presence
+   • No indicators shown
+   • Bot appears offline
+   • Usage: .presence none
+
+⚙️ *Current Settings:*
+Use .presence (no arguments) to view
+
+🔄 *Apply Changes:*
+After setting a mode, restart bot with .restart
+
+💡 *Tips:*
+• Restart bot after changing modes
+• Changes persist across restarts
+• Can change anytime
+
+> Powered by TREKKERMD LIFETIME BOT`;
+
+    await respond(helpText);
+  }
+});
+
 // Presence Mode Command
 commandRegistry.register({
- name: 'presence',
- aliases: ['presencemode', 'status'],
- description: 'Manage bot presence mode',
- category: 'SETTINGS',
- handler: async (context: CommandContext) => {
-   const { respond, message, args, botId } = context;
+  name: 'presence',
+  aliases: ['presencemode', 'setonline'],
+  description: 'Configure presence mode (typing, recording, online, auto-switch)',
+  category: 'SETTINGS',
+  handler: async (context: CommandContext) => {
+    const { respond, message, args, botId } = context;
 
-   if (!message.key.fromMe) {
-     await respond('❌ This command can only be used by the bot owner!');
-     return;
-   }
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
 
-   if (!botId) {
-     await respond('❌ Bot ID not found.');
-     return;
-   }
+    if (!botId) {
+      await respond('❌ Bot ID not found.');
+      return;
+    }
 
-   try {
-     const bot = await storage.getBotInstance(botId);
-     if (!bot) {
-       await respond('❌ Bot not found.');
-       return;
-     }
+    try {
+      const bot = await storage.getBotInstance(botId);
+      if (!bot) {
+        await respond('❌ Bot not found.');
+        return;
+      }
 
-     const mode = args[0]?.toLowerCase();
-     const validModes = ['online', 'typing', 'recording', 'none'];
+      const mode = args[0]?.toLowerCase();
 
-     if (!mode || !validModes.includes(mode)) {
-       const currentMode = bot.presenceMode || 'none';
-       await respond(`👁️ *Presence Mode*\n\n📊 Current mode: ${currentMode}\n\n*Available modes:*\n• online - Always online\n• typing - Always typing\n• recording - Always recording\n• none - No presence\n\n*Usage:* .presence <mode>`);
-       return;
-     }
+      if (!mode) {
+        const currentMode = bot.presenceMode || 'none';
+        const autoSwitch = bot.presenceAutoSwitch ? 'Enabled ✅' : 'Disabled ❌';
+        const alwaysOnline = bot.alwaysOnline ? 'Enabled ✅' : 'Disabled ❌';
 
-     await storage.updateBotInstance(botId, { presenceMode: mode });
-     await respond(`✅ *Presence Mode Updated*\n\n👁️ Mode set to: ${mode}\n\n> Bot presence updated successfully!`);
+        await respond(`👁️ *Presence Settings*\n\n📊 Current mode: ${currentMode}\n🔄 Auto-switch: ${autoSwitch}\n🟢 Always online: ${alwaysOnline}\n\n*Available modes:*\n• none - No presence indicator\n• typing - Always show typing (updates every 10s)\n• recording - Always show recording (updates every 10s)\n• online - Always show online (updates every 10s)\n• autoswitch - Switch between typing/recording (every 10s)\n\n*Usage:* .presence [mode]\n\n💡 Changes apply immediately, restart bot with .restart if needed.`);
+        return;
+      }
 
-   } catch (error) {
-     console.error('Error updating presence mode:', error);
-     await respond('❌ Failed to update presence mode.');
-   }
- }
+      const validModes = ['none', 'typing', 'recording', 'online', 'autoswitch'];
+      if (!validModes.includes(mode)) {
+        await respond('❌ Invalid mode! Use: none, typing, recording, online, or autoswitch');
+        return;
+      }
+
+      // Update presence settings based on mode
+      if (mode === 'autoswitch') {
+        await storage.updateBotInstance(botId, { 
+          presenceAutoSwitch: true,
+          presenceMode: 'none',
+          alwaysOnline: false
+        });
+        await respond('✅ *Auto-switch Enabled!*\n\n🔄 Bot will alternate between typing and recording every 10 seconds.\n⚠️ Restart bot with .restart for changes to take full effect.');
+      } else if (mode === 'online') {
+        await storage.updateBotInstance(botId, { 
+          alwaysOnline: true,
+          presenceAutoSwitch: false,
+          presenceMode: 'none'
+        });
+        await respond('✅ *Always Online Enabled!*\n\n🟢 Bot will show as online continuously (updates every 10s).\n⚠️ Restart bot with .restart for changes to take full effect.');
+      } else if (mode === 'none') {
+        await storage.updateBotInstance(botId, { 
+          presenceMode: 'none',
+          presenceAutoSwitch: false,
+          alwaysOnline: false
+        });
+        await respond('✅ *Presence Disabled!*\n\n👻 Bot will not show any presence indicator.\n⚠️ Restart bot with .restart for changes to take full effect.');
+      } else {
+        await storage.updateBotInstance(botId, { 
+          presenceMode: mode,
+          presenceAutoSwitch: false,
+          alwaysOnline: false
+        });
+        await respond(`✅ *Presence Mode Set to ${mode.toUpperCase()}!*\n\n${mode === 'typing' ? '⌨️ Bot will continuously show typing indicator (updates every 10s).' : '🎤 Bot will continuously show recording indicator (updates every 10s).'}\n\n⚠️ Restart bot with .restart for changes to take full effect.`);
+      }
+
+      // Log the activity
+      await storage.createActivity({
+        serverName: bot.serverName,
+        botInstanceId: botId,
+        type: 'settings_change',
+        description: `Presence mode changed to: ${mode}`,
+        metadata: { mode }
+      });
+
+    } catch (error) {
+      console.error('Error updating presence mode:', error);
+      await respond('❌ Failed to update presence mode.');
+    }
+  }
 });
 
 // Typing Mode Command

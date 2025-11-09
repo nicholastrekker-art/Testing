@@ -275,6 +275,13 @@ export class WhatsAppBot {
         this.isRunning = true;
         this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
 
+        // Reload bot instance from database to get latest settings
+        const freshBot = await storage.getBotInstance(this.botInstance.id);
+        if (freshBot) {
+          this.botInstance = freshBot;
+          console.log(`Bot ${this.botInstance.name}: Reloaded settings - Presence Mode: ${freshBot.presenceMode}, Auto-Switch: ${freshBot.presenceAutoSwitch}, Always Online: ${freshBot.alwaysOnline}`);
+        }
+
         await storage.updateBotInstance(this.botInstance.id, {
           status: 'online',
           lastActivity: new Date()
@@ -1063,73 +1070,87 @@ export class WhatsAppBot {
   }
 
   private startPresenceAutoSwitch() {
-    // Use new database schema fields instead of settings
-    const presenceAutoSwitch = this.botInstance.presenceAutoSwitch;
-    const alwaysOnline = this.botInstance.alwaysOnline;
-    const presenceMode = this.botInstance.presenceMode;
-    const intervalSeconds = 30; // 30 seconds as requested by user
+    // Fetch latest bot settings from database to ensure we have current values
+    storage.getBotInstance(this.botInstance.id).then(freshBot => {
+      if (!freshBot) return;
+      
+      const presenceAutoSwitch = freshBot.presenceAutoSwitch;
+      const alwaysOnline = freshBot.alwaysOnline;
+      const presenceMode = freshBot.presenceMode;
+      const intervalSeconds = 10; // 10 seconds as requested by user
 
-    // Start auto-switch if presenceAutoSwitch is enabled
-    if (presenceAutoSwitch && this.isRunning) {
-      console.log(`Bot ${this.botInstance.name}: Starting auto-switch typing/recording presence (${intervalSeconds}s intervals)`);
+      console.log(`Bot ${this.botInstance.name}: Presence settings - AutoSwitch: ${presenceAutoSwitch}, AlwaysOnline: ${alwaysOnline}, Mode: ${presenceMode}`);
 
-      this.presenceInterval = setInterval(async () => {
-        if (!this.isRunning) {
-          this.stopPresenceAutoSwitch();
-          return;
-        }
+      // Start auto-switch if presenceAutoSwitch is enabled
+      if (presenceAutoSwitch && this.isRunning) {
+        console.log(`Bot ${this.botInstance.name}: Starting auto-switch typing/recording presence (${intervalSeconds}s intervals)`);
 
-        // Switch between composing (typing) and recording every 30 seconds
-        this.currentPresenceState = this.currentPresenceState === 'composing' ? 'recording' : 'composing';
-
-        try {
-          // Update presence for active chats by broadcasting the new state
-          // For better implementation, we could track active chats, but for now update generally
-          console.log(`Bot ${this.botInstance.name}: Auto-switched presence to ${this.currentPresenceState}`);
-
-          // Force update presence for the current state
-          await this.sock.sendPresenceUpdate(this.currentPresenceState);
-        } catch (error) {
-          console.log('Error in auto-switch presence:', error);
-        }
-      }, intervalSeconds * 1000);
-    }
-
-    // Handle always online feature
-    if (alwaysOnline && this.isRunning) {
-      console.log(`Bot ${this.botInstance.name}: Always online mode activated`);
-
-      // Keep sending available presence every 60 seconds to stay online
-      setInterval(async () => {
-        if (this.isRunning && alwaysOnline) {
-          try {
-            await this.sock.sendPresenceUpdate('available');
-          } catch (error) {
-            console.log('Error maintaining online presence:', error);
+        this.presenceInterval = setInterval(async () => {
+          if (!this.isRunning) {
+            this.stopPresenceAutoSwitch();
+            return;
           }
-        }
-      }, 60000); // Every 60 seconds
-    }
 
-    // Handle auto recording feature (when presenceMode is 'recording')
-    if (presenceMode === 'recording' && this.isRunning && !presenceAutoSwitch) {
-      console.log(`Bot ${this.botInstance.name}: Auto recording mode activated`);
+          // Switch between composing (typing) and recording every 10 seconds
+          this.currentPresenceState = this.currentPresenceState === 'composing' ? 'recording' : 'composing';
 
-      // Send recording presence every 30 seconds when not auto-switching
-      setInterval(async () => {
-        if (this.isRunning && this.botInstance.presenceMode === 'recording' && !this.botInstance.presenceAutoSwitch) {
           try {
-            // Use bot's own JID for general presence broadcast
-            const botJid = this.sock?.user?.lid || this.sock?.user?.id;
-            if (botJid) {
-              await this.sock.sendPresenceUpdate('recording');
+            // Baileys requires presence updates to be sent globally
+            console.log(`Bot ${this.botInstance.name}: Auto-switched presence to ${this.currentPresenceState}`);
+
+            // Send presence update without specific JID for global effect
+            await this.sock.sendPresenceUpdate(this.currentPresenceState);
+          } catch (error) {
+            console.log('Error in auto-switch presence:', error);
+          }
+        }, intervalSeconds * 1000);
+      }
+
+      // Handle always online feature
+      if (alwaysOnline && this.isRunning) {
+        console.log(`Bot ${this.botInstance.name}: Always online mode activated`);
+
+        // Keep sending available presence every 10 seconds to maintain online status
+        setInterval(async () => {
+          // Re-check settings from database
+          const currentBot = await storage.getBotInstance(this.botInstance.id);
+          if (this.isRunning && currentBot?.alwaysOnline) {
+            try {
+              await this.sock.sendPresenceUpdate('available');
+              console.log(`Bot ${this.botInstance.name}: Maintaining online presence`);
+            } catch (error) {
+              console.log('Error maintaining online presence:', error);
             }
-          } catch (error) {
-            // Silently handle presence errors
           }
-        }
-      }, 30000); // Every 30 seconds
-    }
+        }, 10000); // Every 10 seconds
+      }
+
+      // Handle specific presence modes (typing/recording)
+      if (presenceMode && presenceMode !== 'none' && this.isRunning && !presenceAutoSwitch) {
+        console.log(`Bot ${this.botInstance.name}: Fixed presence mode activated: ${presenceMode}`);
+
+        // Map presence mode to Baileys presence type
+        const presenceType = presenceMode === 'typing' ? 'composing' : 
+                           presenceMode === 'recording' ? 'recording' : 
+                           'available';
+
+        // Send presence update every 10 seconds to maintain the mode
+        setInterval(async () => {
+          // Re-check settings from database
+          const currentBot = await storage.getBotInstance(this.botInstance.id);
+          if (this.isRunning && currentBot?.presenceMode === presenceMode && !currentBot?.presenceAutoSwitch) {
+            try {
+              await this.sock.sendPresenceUpdate(presenceType);
+              console.log(`Bot ${this.botInstance.name}: Maintaining ${presenceMode} presence`);
+            } catch (error) {
+              // Silently handle presence errors
+            }
+          }
+        }, 10000); // Every 10 seconds
+      }
+    }).catch(err => {
+      console.error(`Bot ${this.botInstance.name}: Error loading presence settings:`, err);
+    });
   }
 
   private stopPresenceAutoSwitch() {
