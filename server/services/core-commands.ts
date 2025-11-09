@@ -3063,9 +3063,19 @@ commandRegistry.register({
       const { mkdirSync, existsSync, rmSync } = await import('fs');
 
       // Create temporary auth directory for this pairing session
-      const tempAuthDir = join(process.cwd(), 'auth', 'temp_pair', `pair_${phoneNumber}_${Date.now()}`);
+      const parentDir = join(process.cwd(), 'auth', 'temp_pair');
+      const tempAuthDir = join(parentDir, `pair_${phoneNumber}_${Date.now()}`);
+      
+      // Ensure parent directory exists first
+      if (!existsSync(parentDir)) {
+        mkdirSync(parentDir, { recursive: true });
+        console.log(`✅ Created parent directory: ${parentDir}`);
+      }
+      
+      // Create session-specific directory
       if (!existsSync(tempAuthDir)) {
         mkdirSync(tempAuthDir, { recursive: true });
+        console.log(`✅ Created temp auth directory: ${tempAuthDir}`);
       }
 
       // Create auth state
@@ -3092,14 +3102,28 @@ commandRegistry.register({
 
       let pairingCodeSent = false;
       let sessionCreated = false;
+      let isConnecting = false;
 
       // Monitor connection for pairing code and session creation
       pairSock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
 
-        // Request pairing code when connecting and not yet registered
-        if (!pairingCodeSent && !state.creds.registered) {
+        console.log(`🔌 Pairing connection update: ${connection}`);
+
+        // Mark as connecting
+        if (connection === 'connecting') {
+          isConnecting = true;
+          console.log('🔌 Pairing socket is connecting...');
+        }
+
+        // Request pairing code when open/connecting and not yet registered
+        if (!pairingCodeSent && !state.creds.registered && (connection === 'open' || isConnecting)) {
           try {
+            // Wait a bit for connection to stabilize
+            console.log('⏳ Waiting for connection to stabilize...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            console.log(`📱 Requesting pairing code for ${phoneNumber}...`);
             const code = await pairSock.requestPairingCode(phoneNumber);
             pairingCodeSent = true;
 
@@ -3133,11 +3157,37 @@ commandRegistry.register({
             console.log(`✅ Pairing code generated for ${phoneNumber}: ${formattedCode}`);
 
           } catch (error) {
-            console.error('Error requesting pairing code:', error);
-            await respond('❌ Failed to generate pairing code. Please try again later.');
-            pairSock.end(undefined);
+            console.error('❌ Error requesting pairing code:', error);
+            const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+            
+            await respond(`❌ *Pairing Code Generation Failed*
+
+📱 Phone: +${phoneNumber}
+🔴 Error: ${errorMsg}
+
+💡 *Troubleshooting:*
+• Ensure your phone number is correct
+• Wait 30 seconds and try again
+• Check your internet connection
+• Contact support if issue persists
+
+> TREKKER-MD Pairing System`);
+            
+            // Cleanup
+            try {
+              pairSock.end(undefined);
+              console.log('✅ Closed pairing socket');
+            } catch (e) {
+              console.error('Error closing socket:', e);
+            }
+            
             if (existsSync(tempAuthDir)) {
-              rmSync(tempAuthDir, { recursive: true, force: true });
+              try {
+                rmSync(tempAuthDir, { recursive: true, force: true });
+                console.log(`✅ Cleaned up temp directory: ${tempAuthDir}`);
+              } catch (cleanupError) {
+                console.error('❌ Error cleaning up temp directory:', cleanupError);
+              }
             }
           }
         }
