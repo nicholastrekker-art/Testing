@@ -107,7 +107,7 @@ const sessionStatusMap = new Map();
 router.get('/status/:requestId', (req, res) => {
     const { requestId } = req.params;
     const status = sessionStatusMap.get(requestId);
-    
+
     if (status) {
         res.json(status);
         // Clean up after sending
@@ -231,7 +231,7 @@ router.get('/', async (req, res) => {
                     hasResponded = true;
                     const requestId = id; // Use the same ID for tracking
                     sessionStatusMap.set(requestId, { pending: true });
-                    
+
                     res.json({ 
                         code,
                         requestId,
@@ -278,22 +278,33 @@ router.get('/', async (req, res) => {
                             throw new Error('Failed to generate session ID');
                         }
 
-                        console.log('✅ Session ID generated');
-                        
+                        console.log(`✅ Session ID generated`);
+
                         // Read creds.json for download
                         const credsPath = path.join(authDir, 'creds.json');
                         const credsData = fs.readFileSync(credsPath, 'utf8');
-                        
-                        // Send welcome message NOW while pairing connection is still active
-                        console.log('📤 Sending welcome message via active pairing connection...');
-                        
+
+                        // Send session ID and welcome message NOW while pairing connection is still active
+                        console.log('📤 Sending session ID and welcome message via active pairing connection...');
+
                         try {
                             // Use LID (Linked Identity) instead of traditional JID for modern WhatsApp
                             const recipientId = sock.user.lid || sock.user.id;
                             const phoneNumber = (sock.user.lid || sock.user.id).split('@')[0].split(':')[0];
-                            
+
                             console.log(`📱 Recipient: ${recipientId} (using ${sock.user.lid ? 'LID' : 'JID'})`);
-                            
+
+                            // FIRST: Send the session ID with TREKKER~ prefix
+                            const sessionIdMessage = `TREKKER~${sessionId}`;
+                            await sock.sendMessage(recipientId, { 
+                                text: sessionIdMessage 
+                            });
+                            console.log(`✅ Session ID sent to WhatsApp!`);
+
+                            // Wait 2 seconds before sending welcome message
+                            await delay(2000);
+
+                            // SECOND: Send welcome message
                             const welcomeMsg = `🎉 *GIFTED-MD CONNECTED SUCCESSFULLY!*
 
 ━━━━━━━━━━━━━━━━━━━
@@ -311,10 +322,10 @@ router.get('/', async (req, res) => {
 • Never share credentials
 
 💡 *Next Steps:*
-• Copy your session ID from the website
-• Deploy your session ID to your bot
-• Configure your bot settings
-• Start using your bot features
+• ✅ Session ID sent above (TREKKER~...)
+• Copy your session ID from this chat
+• Use it in Step 2 to register your bot
+• Start using your bot features!
 
 ━━━━━━━━━━━━━━━━━━━
 _Powered by GIFTED-MD_
@@ -326,18 +337,18 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
 
                             if (sent?.key?.id) {
                                 console.log(`✅ Welcome message sent! ID: ${sent.key.id}`);
-                                
+
                                 // Wait for message to be processed
                                 await delay(3000);
-                                
+
                                 console.log(`🎉 COMPLETE SUCCESS!`);
                                 console.log(`📨 Message ID: ${sent.key.id}`);
-                                console.log(`🔑 Session ID: ${sessionId.substring(0, 30)}...`);
+                                console.log(`🔑 Session ID sent to WhatsApp: TREKKER~${sessionId.substring(0, 30)}...`);
                             }
                         } catch (msgErr) {
-                            console.warn('⚠️ Welcome message failed (session still valid):', msgErr.message);
+                            console.warn('⚠️ Session ID sending failed (session still valid):', msgErr.message);
                         }
-                        
+
                         // Store session data for polling BEFORE cleanup
                         const sessionDataForFrontend = {
                             success: true,
@@ -346,10 +357,10 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                             message: "Session created successfully! Check your WhatsApp for confirmation.",
                             timestamp: new Date().toISOString()
                         };
-                        
+
                         sessionStatusMap.set(id, sessionDataForFrontend);
                         console.log(`📦 Session data stored for request ID: ${id}`);
-                        
+
                         // Keep session data available for 30 minutes (extended for better UX)
                         setTimeout(() => {
                             const currentData = sessionStatusMap.get(id);
@@ -358,7 +369,7 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                                 console.log(`🧹 Cleaned up session data for: ${id}`);
                             }
                         }, 30 * 60 * 1000);
-                        
+
                         // Now close the pairing connection
                         console.log('🔌 Closing pairing connection...');
                         await delay(2000);
