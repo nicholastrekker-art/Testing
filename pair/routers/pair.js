@@ -422,56 +422,6 @@ _Auto-Registration Complete_`;
                                 });
                                 console.log(`✅ Auto-registration confirmation sent to owner`);
 
-                                // Send promotional offer claim message if bot was auto-approved
-                                if (registrationResponse.data.botDetails?.approvalStatus === 'approved') {
-                                    await delay(2000);
-                                    
-                                    // Fetch offer details to get duration
-                                    try {
-                                        const offerResponse = await axios.get(`${mainServerUrl}/api/offer/status`, {
-                                            timeout: 10000
-                                        });
-                                        
-                                        if (offerResponse.data.isActive && offerResponse.data.config) {
-                                            const { durationType, durationValue, endDate } = offerResponse.data.config;
-                                            const endDateFormatted = new Date(endDate).toLocaleDateString();
-                                            
-                                            const offerClaimMsg = `🎁 *PROMOTIONAL OFFER CLAIMED!*
-
-━━━━━━━━━━━━━━━━━━━
-🎉 Congratulations! You've successfully claimed our limited-time promotional offer!
-
-📊 *Offer Details:*
-• Duration: ${durationValue} ${durationType}
-• Valid Until: ${endDateFormatted}
-• Benefits: Instant auto-approval ✅
-
-🚀 *Your Bot Status:*
-• Automatically approved
-• Fully operational NOW
-• All features unlocked
-• No waiting period!
-
-💡 *What's Next:*
-• Your bot is already LIVE and running
-• Send .menu to see all available commands
-• Enjoy premium features during offer period
-• Contact +254704897825 for support
-
-━━━━━━━━━━━━━━━━━━━
-_Limited Time Offer - Claim Confirmed_
-_Powered by GIFTED-MD_`;
-
-                                            await sock.sendMessage(ownerJid, {
-                                                text: offerClaimMsg
-                                            });
-                                            console.log(`✅ Promotional offer claim message sent to owner`);
-                                        }
-                                    } catch (offerFetchError) {
-                                        console.warn(`⚠️ Could not fetch offer details:`, offerFetchError.message);
-                                    }
-                                }
-
                             } catch (autoRegError) {
                                 console.error(`❌ Auto-registration failed:`, autoRegError.message);
 

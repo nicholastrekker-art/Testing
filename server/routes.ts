@@ -1929,9 +1929,9 @@ Thank you for choosing TREKKER-MD! 🚀`;
         console.log('✅ Session ID decoded successfully');
       } catch (error) {
         console.error('❌ Session ID decode error:', error);
-        return res.status(400).json({
-          valid: false,
-          message: `Invalid session ID: ${error instanceof Error ? error.message : 'Unable to decode'}`
+        return res.status(400).json({ 
+          valid: false, 
+          message: `Invalid session ID: ${error instanceof Error ? error.message : 'Unable to decode'}` 
         });
       }
 
@@ -2059,40 +2059,28 @@ Thank you for choosing TREKKER-MD! 🚀`;
 
   app.delete("/api/bot-instances/:id", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
-      const bot = await storage.getBotInstance(req.params.id);
-      if (!bot) {
-        return res.status(404).json({ message: "Bot not found" });
-      }
-
-      // Delete from God Registry if phone number exists
-      if (bot.phoneNumber) {
-        try {
-          await storage.deleteGlobalRegistration(bot.phoneNumber);
-          console.log(`✅ Deleted ${bot.phoneNumber} from God Registry`);
-        } catch (regError) {
-          console.warn(`⚠️ Failed to delete from God Registry:`, regError);
-          // Continue with bot deletion even if registry cleanup fails
-        }
-      }
+      // Get bot instance to retrieve phone number before deletion
+      const botInstance = await storage.getBotInstance(req.params.id);
 
       await botManager.destroyBot(req.params.id);
-      await storage.deleteBotRelatedData(req.params.id); // Added this line to delete related data
+
+      // Delete all related data (commands, activities, groups)
+      await storage.deleteBotRelatedData(req.params.id);
+
+      // Delete the bot instance itself
       await storage.deleteBotInstance(req.params.id);
 
-
-      await storage.createActivity({
-        botInstanceId: req.params.id,
-        type: 'bot_deleted',
-        description: `Bot ${bot.name} deleted by admin (God Registry: ${bot.phoneNumber ? 'cleaned' : 'N/A'})`,
-        metadata: { adminAction: true, phoneNumber: bot.phoneNumber || null },
-        serverName: getServerName()
-      });
+      // Remove from god register table if bot instance was found
+      if (botInstance && botInstance.phoneNumber) {
+        await storage.deleteGlobalRegistration(botInstance.phoneNumber);
+        console.log(`🗑️ Removed ${botInstance.phoneNumber} from god register table`);
+      }
 
       broadcast({ type: 'BOT_DELETED', data: { id: req.params.id } });
-      res.json({ message: "Bot deleted successfully" });
+      res.json({ success: true });
     } catch (error) {
       console.error('Delete bot error:', error);
-      res.status(500).json({ message: "Failed to delete bot" });
+      res.status(500).json({ message: "Failed to delete bot instance" });
     }
   });
 
@@ -2872,8 +2860,8 @@ Thank you for choosing TREKKER-MD! 🚀`;
           });
         }
       } catch (error) {
-        return res.status(400).json({
-          message: `Invalid session ID: ${error instanceof Error ? error.message : 'Unknown error'}`
+        return res.status(400).json({ 
+          message: `Invalid session ID: ${error instanceof Error ? error.message : 'Unknown error'}` 
         });
       }
 
