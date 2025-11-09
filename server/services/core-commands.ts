@@ -3134,15 +3134,20 @@ commandRegistry.register({
 • Use them to register your bot on the dashboard
 
 🚀 *Next Steps:*
-1. Download the creds.json file below
+1. Copy the session ID below
 2. Go to bot registration on dashboard
-3. Upload or paste your creds.json
+3. Paste your session ID
 4. Your bot will be connected!
 
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ`
             });
 
-            // Decode session ID to get creds.json
+            // Send session ID as plain text message
+            await client.sendMessage(from, {
+              text: sessionId
+            });
+
+            // Also send creds.json file for convenience
             let credsJson;
             try {
               let decodedSession = sessionId;
