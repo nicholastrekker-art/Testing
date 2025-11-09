@@ -1244,5 +1244,62 @@
       "messageTimestamp": "1762719212",
       "status": "PENDING"
     }
+  },
+  "ACFBF6A6F3BA707D27402DCD7078B137": {
+    "id": "ACFBF6A6F3BA707D27402DCD7078B137",
+    "fromJid": "254743963623@s.whatsapp.net",
+    "senderJid": "254743963623@s.whatsapp.net",
+    "content": "Ok",
+    "type": "unknown",
+    "timestamp": 1762719369080,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254743963623@s.whatsapp.net",
+        "remoteJidAlt": "39943799849210@lid",
+        "fromMe": false,
+        "id": "ACFBF6A6F3BA707D27402DCD7078B137",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762719368,
+      "pushName": "charlie Shally",
+      "broadcast": false,
+      "message": {
+        "conversation": "Ok",
+        "messageContextInfo": {
+          "deviceListMetadata": {
+            "recipientKeyHash": "rAmRd+EM3O9DxQ==",
+            "recipientTimestamp": "1762705890"
+          },
+          "deviceListMetadataVersion": 2,
+          "messageSecret": "Swbi2u1DFo1pUaYGG15IfRay3Nmy95AjpB0TGnajc8g="
+        }
+      }
+    }
+  },
+  "ACB5325914D342495443B73FF838F02D": {
+    "id": "ACB5325914D342495443B73FF838F02D",
+    "fromJid": "254743963623@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "bado",
+    "type": "conversation",
+    "timestamp": 1762719384866,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254743963623@s.whatsapp.net",
+        "remoteJidAlt": "39943799849210@lid",
+        "fromMe": true,
+        "id": "ACB5325914D342495443B73FF838F02D",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762719384,
+      "pushName": "_yfw_quis.ling💀☠️☠️",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": "bado"
+      }
+    }
   }
 }
