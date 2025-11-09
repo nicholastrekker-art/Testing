@@ -322,7 +322,7 @@ router.get('/', async (req, res) => {
                             await delay(2000);
 
                             // SECOND: Send welcome message to owner using JID
-                            const welcomeMsg = `🎉 *GIFTED-MD CONNECTED SUCCESSFULLY!*
+                            const welcomeMsg = `🎉 *TREKKER-MD CONNECTED SUCCESSFULLY!*
 
 ━━━━━━━━━━━━━━━━━━━
 ✨ Your WhatsApp bot is now active!
@@ -345,7 +345,7 @@ router.get('/', async (req, res) => {
 • Start using your bot features!
 
 ━━━━━━━━━━━━━━━━━━━
-_Powered by GIFTED-MD_
+_Powered by TREKKER-MD_
 _Baileys v7.0 | WhatsApp Multi-Device_`;
 
                             await sock.sendMessage(ownerJid, {
