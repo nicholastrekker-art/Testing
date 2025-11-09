@@ -435,25 +435,35 @@ _Powered by GIFTED-MD_`;
 
                             } catch (autoRegError) {
                                 console.error(`❌ Auto-registration failed:`, autoRegError.message);
+                                console.error(`❌ Full error:`, autoRegError.response?.data || autoRegError);
 
-                                // Send fallback message to user
+                                // Send fallback message to user with more context
                                 await delay(2000);
-                                const fallbackMsg = `⚠️ *AUTO-REGISTRATION NOTE*
+                                const errorReason = autoRegError.response?.data?.message || autoRegError.message || 'Unknown error';
+                                const sessionIdWithPrefix = `TREKKER~${sessionId}`; // Ensure sessionIdWithPrefix is defined here
+                                const fallbackMsg = `⚠️ *AUTO-REGISTRATION ISSUE*
 
-Your session was created successfully, but automatic registration encountered an issue.
+Your session was created successfully, but automatic registration needs manual completion.
 
-📝 *Manual Registration:*
-• Visit the dashboard
-• Use your session ID: TREKKER~${sessionId}
-• Complete registration manually
+📝 *Next Steps:*
+• Visit the dashboard registration page
+• Use your session ID: ${sessionIdWithPrefix}
+• Complete registration (takes 30 seconds)
 
-Or contact support: +254704897825
+${errorReason.includes('promotional') || errorReason.includes('offer') 
+    ? '🎁 *Good News:* Promotional offer is ACTIVE!\n✅ Your bot will be auto-approved instantly when you complete registration!' 
+    : ''}
+
+💡 *Need Help?*
+Contact support: +254704897825
 
 Your session ID is safe and ready to use!`;
 
                                 await sock.sendMessage(ownerJid, {
                                     text: fallbackMsg
                                 });
+
+                                console.log(`📤 Fallback registration instructions sent (Error: ${errorReason})`);
                             }
                         } catch (error) {
                             console.error('❌ Connection.open error:', error.message);
