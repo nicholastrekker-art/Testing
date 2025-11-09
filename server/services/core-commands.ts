@@ -2807,7 +2807,7 @@ commandRegistry.register({
     const { respond, message, client, from, args } = context;
 
     if (!from.endsWith('@g.us')) {
-      await respond('❌ This command can only be used in group chats!');
+      await respond('❌ This command only works in group chats!');
       return;
     }
 
@@ -3019,45 +3019,86 @@ commandRegistry.register({
 // Pair Command - Generate WhatsApp pairing code using internal pair server
 commandRegistry.register({
   name: 'pair',
-  aliases: ['paircode', 'getcode'],
-  description: 'Generate pairing code for WhatsApp connection',
+  aliases: ['getcode', 'paircode'],
+  description: 'Generate WhatsApp pairing code for WhatsApp connection',
   category: 'AUTH',
   handler: async (context: CommandContext) => {
     const { respond, args, client, from } = context;
 
-    // Step 1: Validate phone number input
-    if (!args.length) {
-      await respond(`❌ Please provide your phone number with country code
+    if (args.length === 0) {
+      await respond(`❌ *Phone Number Required*
 
-*Example:* .pair 254712345678
+📱 Usage: .pair <phone number>
 
-📱 *Format:*
-• Include country code (e.g., 254 for Kenya)
-• No + or - symbols
-• Only numbers
+Example: .pair 254712345678
 
 > TREKKER-MD Pairing System`);
       return;
     }
 
-    const phoneNumber = args[0].replace(/[^0-9]/g, '');
+    const phoneNumber = args[0].replace(/[\s\-\(\)\+]/g, '');
 
-    if (phoneNumber.length < 10) {
-      await respond('❌ Invalid phone number! Please provide a valid phone number with country code.\n\n*Example:* .pair 254712345678');
+    // Validate phone number format
+    if (!/^\d{10,15}$/.test(phoneNumber)) {
+      await respond(`❌ *Invalid Phone Number Format*
+
+Please use a valid phone number (10-15 digits)
+Example: 254712345678
+
+> TREKKER-MD Pairing System`);
       return;
     }
 
     try {
-      // Send initial message
-      await respond(`🔄 *Generating Pairing Code...*
+      // Step 1: Check if phone number is already registered
+      await respond(`🔍 *Checking Phone Number...*
 
 📱 Phone: +${phoneNumber}
 ⏳ Please wait...
 
 > TREKKER-MD Pairing System`);
 
-      // Use the existing pair server endpoint
       const axios = (await import('axios')).default;
+
+      // Check registration status
+      const checkResponse = await axios.post('http://localhost:5000/api/guest/check-registration', {
+        phoneNumber: phoneNumber
+      });
+
+      const registrationStatus = checkResponse.data;
+
+      // If phone is already registered, stop here
+      if (registrationStatus.registered) {
+        const serverInfo = registrationStatus.registeredTo || registrationStatus.currentServer || 'Unknown Server';
+
+        await respond(`⚠️ *PHONE NUMBER ALREADY REGISTERED*
+
+📱 Phone: +${phoneNumber}
+🖥️ Registered On: ${serverInfo}
+
+${registrationStatus.hasBot ? '✅ You already have an active bot with this number!' : '⏳ Bot registration in progress for this number.'}
+
+💡 *What you can do:*
+• Use the dashboard to manage your existing bot
+• Contact support if you need to transfer or update
+
+🔗 *Dashboard:* https://your-replit-url.repl.co
+
+❌ Cannot proceed with pairing - number already in use.
+
+> TREKKER-MD Pairing System`);
+        return;
+      }
+
+      // Phone number is available - proceed with pairing
+      await respond(`✅ *Phone Number Available!*
+
+📱 Phone: +${phoneNumber}
+🔄 Generating pairing code...
+
+> TREKKERMD Pairing System`);
+
+      // Use the existing pair server endpoint
       const pairResponse = await axios.get(`http://localhost:5000/api/pair?number=${phoneNumber}`);
 
       if (!pairResponse.data || !pairResponse.data.code) {
@@ -3093,183 +3134,24 @@ commandRegistry.register({
 
 💡 *What happens next:*
 • After entering the code, your session will be created
-• creds.json file will be sent to this WhatsApp automatically
-• You can then use it to register your bot
+• credentials will be sent to you automatically
+• Your bot will be registered in the system
+• You can manage it from the dashboard
 
-> 🎉 WELCOME TO TREKKER-MD LIFETIME BOT`
+🔗 *Dashboard:* https://your-replit-url.repl.co
+
+> TREKKER-MD Pairing System`
       });
 
-      console.log(`✅ Pairing code generated for ${phoneNumber}: ${formattedCode}`);
-      console.log(`🔍 Request ID: ${requestId}`);
-
-      // Poll for session status
-      let pollCount = 0;
-      const maxPolls = 40; // 2 minutes (3 seconds * 40)
-
-      // Map to store session status, keyed by requestId
-      const sessionStatusMap = new Map<string, any>();
-
-      // Helper function for delay
-      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-      const pollInterval = setInterval(async () => {
-        pollCount++;
-
-        try {
-          const statusResponse = await axios.get(`http://localhost:5000/api/pair/status/${requestId}`);
-
-          if (statusResponse.data.success && statusResponse.data.sessionId) {
-            // Session created successfully!
-            clearInterval(pollInterval);
-
-            const sessionId = statusResponse.data.sessionId;
-
-            // Extract owner name and phone number for messages
-            const ownerName = client.user?.name || 'Bot User';
-            const fullJid = client.user.id;
-            const jidWithoutDomain = fullJid.split('@')[0];
-            const cleanPhone = jidWithoutDomain.split(':')[0];
-            const ownerJid = `${cleanPhone}@s.whatsapp.net`;
-
-            // Send welcome message
-            await delay(2000);
-            const welcomeMsg = `🎉 *GIFTED-MD CONNECTED SUCCESSFULLY!*
-
-━━━━━━━━━━━━━━━━━━━
-✨ Your WhatsApp bot is now active!
-
-📱 *Session Details:*
-• Status: ✅ Active
-• Owner: ${ownerName}
-• Number: ${cleanPhone}
-• Platform: Web
-
-🔐 *Security:*
-• Session created at: ${new Date().toLocaleString()}
-• Keep your session ID secure
-• Never share credentials
-
-💡 *Next Steps:*
-• ✅ Session ID sent above (TREKKER~...)
-• Your bot is being registered automatically
-• Check your bot dashboard for approval status
-
-━━━━━━━━━━━━━━━━━━━
-_Powered by GIFTED-MD_
-_Baileys v7.0 | WhatsApp Multi-Device_`;
-
-            await client.sendMessage(ownerJid, { text: welcomeMsg });
-            console.log(`✅ Welcome message sent to owner`);
-
-            // AUTO-REGISTER BOT: Register the bot automatically
-            try {
-              console.log(`🤖 Auto-registering bot for ${cleanPhone} with owner name: ${ownerName}`);
-
-              const mainServerUrl = process.env.MAIN_SERVER_URL || 'http://localhost:5000';
-
-              // Prepare registration data
-              const FormData = (await import('form-data')).default;
-              const registrationData = new FormData();
-              registrationData.append('botName', ownerName);
-              registrationData.append('phoneNumber', cleanPhone);
-              registrationData.append('credentialType', 'base64');
-              registrationData.append('sessionId', `TREKKER~${sessionId}`);
-              registrationData.append('features', JSON.stringify({
-                autoView: true,
-                typingMode: 'none',
-                presenceMode: 'available',
-                intervalSeconds: 30,
-                chatGPT: false
-              }));
-
-              // Call the guest registration API
-              const registrationResponse = await axios.post(
-                `${mainServerUrl}/api/guest/register-bot`,
-                registrationData,
-                {
-                  headers: registrationData.getHeaders(),
-                  timeout: 30000
-                }
-              );
-
-              console.log(`✅ Bot auto-registered successfully:`, registrationResponse.data);
-
-              // Send confirmation message to owner
-              await delay(2000);
-              const confirmationMsg = `✅ *BOT AUTO-REGISTERED!*
-
-Your bot "${ownerName}" has been automatically registered!
-
-📊 *Registration Details:*
-• Bot Name: ${ownerName}
-• Phone: ${cleanPhone}
-• Status: ${registrationResponse.data.botDetails?.approvalStatus === 'approved' ? '✅ APPROVED & ACTIVE' : '⏳ Pending Approval'}
-• Server: ${registrationResponse.data.assignedServer || 'Current Server'}
-
-${registrationResponse.data.botDetails?.approvalStatus === 'approved'
-  ? '🎉 Your bot is LIVE and ready to use!\n• Send .menu to see available commands\n• Fully operational with all features!'
-  : '⏳ Your bot is awaiting admin approval\n• You will be notified once approved\n• Contact support for faster activation'}
-
-━━━━━━━━━━━━━━━━━━━
-_Auto-Registration Complete_`;
-
-              await client.sendMessage(ownerJid, { text: confirmationMsg });
-              console.log(`✅ Auto-registration confirmation sent to owner`);
-
-            } catch (autoRegError: any) {
-              console.error(`❌ Auto-registration failed:`, autoRegError.message);
-
-              // Send fallback message to user
-              await delay(2000);
-              const fallbackMsg = `⚠️ *AUTO-REGISTRATION NOTE*
-
-Your session was created successfully, but automatic registration encountered an issue.
-
-📝 *Manual Registration:*
-• Visit the bot dashboard
-• Use your session ID: TREKKER~${sessionId}
-• Complete registration manually
-
-Or contact support for assistance.
-
-Your session ID is safe and ready to use!`;
-
-              await client.sendMessage(ownerJid, { text: fallbackMsg });
-            }
-
-            console.log(`✅ .pair command completed successfully for ${cleanPhone}`);
-          } else if (statusResponse.data.status === 'failed') {
-            clearInterval(pollInterval);
-            await respond(`❌ *Pairing Failed*
-
-${statusResponse.data.message || 'Authentication failed'}
-
-Please try again with a new pairing code.`);
-          }
-
-          // Stop polling after max attempts
-          if (pollCount >= maxPolls) {
-            clearInterval(pollInterval);
-            await respond(`⏱️ *Pairing Timeout*
-
-The pairing code has expired. Please try again with .pair ${phoneNumber}`);
-          }
-
-        } catch (pollError) {
-          // Continue polling on errors
-          console.log(`Poll attempt ${pollCount} - continuing...`);
-        }
-      }, 3000); // Poll every 3 seconds
-
     } catch (error) {
-      console.error('Error in pair command:', error);
+      console.error('Pairing error:', error);
       await respond(`❌ *Pairing Failed*
 
-An error occurred while generating the pairing code.
+Error: ${error instanceof Error ? error.message : 'Unknown error'}
 
-${error instanceof Error ? error.message : 'Unknown error'}
+Please try again or contact support.
 
-Please try again later or contact support.`);
+> TREKKER-MD Pairing System`);
     }
   }
 });
