@@ -1,409 +1,153 @@
 {
-  "3EB0318F52D10A77AFBC94": {
-    "id": "3EB0318F52D10A77AFBC94",
+  "3EB0E8F898CDA5A3D75567": {
+    "id": "3EB0E8F898CDA5A3D75567",
     "fromJid": "89013566320711:2@lid",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1762709385411,
+    "timestamp": 1762709709561,
     "originalMessage": {
       "key": {
         "remoteJid": "89013566320711:2@lid",
         "fromMe": true,
-        "id": "3EB0318F52D10A77AFBC94"
+        "id": "3EB0E8F898CDA5A3D75567"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": "1762709384",
+      "messageTimestamp": "1762709708",
       "status": "PENDING"
     }
   },
-  "3EB0A8FB059F7A8BA48E20": {
-    "id": "3EB0A8FB059F7A8BA48E20",
-    "fromJid": "280234452607229:21@lid",
+  "3EB073C432368ABF0D2A46": {
+    "id": "3EB073C432368ABF0D2A46",
+    "fromJid": "280234452607229@lid",
+    "senderJid": "self",
+    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
+    "type": "extendedTextMessage",
+    "timestamp": 1762709709981,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "280234452607229@lid",
+        "fromMe": true,
+        "id": "3EB073C432368ABF0D2A46",
+        "participant": "",
+        "addressingMode": "lid"
+      },
+      "messageTimestamp": 1762709709,
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "extendedTextMessage": {
+          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
+        }
+      }
+    }
+  },
+  "3EB06ECAA3A74672539058": {
+    "id": "3EB06ECAA3A74672539058",
+    "fromJid": "280234452607229@lid",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1762709389061,
+    "timestamp": 1762709711358,
     "originalMessage": {
       "key": {
-        "remoteJid": "280234452607229:21@lid",
+        "remoteJid": "280234452607229@lid",
         "fromMe": true,
-        "id": "3EB0A8FB059F7A8BA48E20"
+        "id": "3EB06ECAA3A74672539058",
+        "participant": "",
+        "addressingMode": "lid"
       },
+      "messageTimestamp": 1762709710,
+      "broadcast": false,
+      "status": 2,
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
-      },
-      "messageTimestamp": "1762709388",
-      "status": "PENDING"
-    }
-  },
-  "AC68E389C2921B516F57CB09667E600F": {
-    "id": "AC68E389C2921B516F57CB09667E600F",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": ".pair 254799257758",
-    "type": "conversation",
-    "timestamp": 1762709413195,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "AC68E389C2921B516F57CB09667E600F",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1762709412,
-      "pushName": "Team Grill🙃",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "conversation": ".pair 254799257758"
       }
     }
   },
-  "3EB05DED701E0EBB25BBAD": {
-    "id": "3EB05DED701E0EBB25BBAD",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "🔄 *Generating Pairing Code...*\n\n📱 Phone: +254799257758\n⏳ Please wait...\n\n> TREKKER-MD Pairing System",
-    "type": "extendedTextMessage",
-    "timestamp": 1762709414290,
+  "ACBBF6DF3586A479DC17382CFCD8FE72": {
+    "id": "ACBBF6DF3586A479DC17382CFCD8FE72",
+    "fromJid": "254743963623@s.whatsapp.net",
+    "senderJid": "254743963623@s.whatsapp.net",
+    "content": "Bae",
+    "type": "conversation",
+    "timestamp": 1762709770972,
     "originalMessage": {
       "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB05DED701E0EBB25BBAD"
+        "remoteJid": "254743963623@s.whatsapp.net",
+        "fromMe": false,
+        "id": "ACBBF6DF3586A479DC17382CFCD8FE72"
       },
       "message": {
-        "extendedTextMessage": {
-          "text": "🔄 *Generating Pairing Code...*\n\n📱 Phone: +254799257758\n⏳ Please wait...\n\n> TREKKER-MD Pairing System"
-        }
+        "conversation": "Bae"
       },
-      "messageTimestamp": "1762709413",
-      "status": "PENDING"
+      "messageTimestamp": "1762709758",
+      "messageSecret": "GWpjnAQPAB95xiIDccUR7JuIfZuQeFBJh2L1glSCAso=",
+      "reportingTokenInfo": {
+        "reportingTag": "AQx2qPfckgnKr6nvdgtkuF2XwFc="
+      },
+      "isMentionedInStatus": false
     }
   },
-  "3EB05CB92BABB9FA5E108F": {
-    "id": "3EB05CB92BABB9FA5E108F",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "D17X-NC76",
-    "type": "extendedTextMessage",
-    "timestamp": 1762709415923,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB05CB92BABB9FA5E108F"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "D17X-NC76"
-        }
-      },
-      "messageTimestamp": "1762709415",
-      "status": "PENDING"
-    }
-  },
-  "3EB0D77254BC23C002E27F": {
-    "id": "3EB0D77254BC23C002E27F",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "✅ *PAIRING CODE GENERATED!*\n\n📱 *How to Enter the Code:*\n\n1️⃣ Open WhatsApp on your phone\n2️⃣ Tap the three dots (⋮) menu\n3️⃣ Select \"Linked Devices\"\n4️⃣ Tap \"Link a Device\"\n5️⃣ Tap \"Link with Phone Number Instead\"\n6️⃣ Enter the code above\n\n⏳ *Waiting for you to enter the code...*\n⌛ This code will expire in 60 seconds\n\n💡 *What happens next:*\n• After entering the code, your session will be created\n• creds.json file will be sent to this WhatsApp automatically\n• You can then use it to register your bot\n\n> 🎉 WELCOME TO TREKKER-MD LIFETIME BOT",
-    "type": "extendedTextMessage",
-    "timestamp": 1762709416345,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0D77254BC23C002E27F"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "✅ *PAIRING CODE GENERATED!*\n\n📱 *How to Enter the Code:*\n\n1️⃣ Open WhatsApp on your phone\n2️⃣ Tap the three dots (⋮) menu\n3️⃣ Select \"Linked Devices\"\n4️⃣ Tap \"Link a Device\"\n5️⃣ Tap \"Link with Phone Number Instead\"\n6️⃣ Enter the code above\n\n⏳ *Waiting for you to enter the code...*\n⌛ This code will expire in 60 seconds\n\n💡 *What happens next:*\n• After entering the code, your session will be created\n• creds.json file will be sent to this WhatsApp automatically\n• You can then use it to register your bot\n\n> 🎉 WELCOME TO TREKKER-MD LIFETIME BOT"
-        }
-      },
-      "messageTimestamp": "1762709415",
-      "status": "PENDING"
-    }
-  },
-  "AC44D304D55C67194328BA4BA6B7EEEF": {
-    "id": "AC44D304D55C67194328BA4BA6B7EEEF",
+  "AC55F53BD8F966C87018F8480F7F35CC": {
+    "id": "AC55F53BD8F966C87018F8480F7F35CC",
     "fromJid": "254743963623@s.whatsapp.net",
     "senderJid": "self",
-    "content": "siuchukue beb ni nni",
+    "content": "yees",
     "type": "conversation",
-    "timestamp": 1762709449407,
+    "timestamp": 1762709766803,
     "originalMessage": {
       "key": {
         "remoteJid": "254743963623@s.whatsapp.net",
         "remoteJidAlt": "39943799849210@lid",
         "fromMe": true,
-        "id": "AC44D304D55C67194328BA4BA6B7EEEF",
+        "id": "AC55F53BD8F966C87018F8480F7F35CC",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1762709448,
+      "messageTimestamp": 1762709766,
       "pushName": "_yfw_quis.ling💀☠️☠️",
       "broadcast": false,
       "status": 2,
       "message": {
-        "conversation": "siuchukue beb ni nni"
+        "conversation": "yees"
       }
     }
   },
-  "3EB075BB2734CFA4FDA373": {
-    "id": "3EB075BB2734CFA4FDA373",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "TREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiS0JjZGlSblMyY1hzSFQzd0JuQVp0NHlGOHBIWktKV0lIamlXSTlqajhXMD0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoib3NQQUROWU9Fdnh3dXA1Y01qRmRmSy9XUzFIVXdtOFlSazd6WmNQcWpEWT0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJzTERNZDFlcUM5akx2YzhkeEx3MTVzSHVLeDBqSUN6ZnoxUlBYS3JoYUZzPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJXRzBTb0Y3VkpRbFVJNWIyajN4RGJUZVZ3bWhPaFI0ZnFqMi80MkJHRmdvPSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6InNHQkdSRnVORnJFaC9NL2JEZGgzc3FabzJsVkYxbmliUkh3ek5GM2UwR2M9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6Ii9QQk4ydFV5NkRSNlJMVThKb2Y0MmFneDQzem8vSjQ2RkljbkdNK3RTVkU9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQUcxUHRDU1JTZ1NFUUpLWk1RZE5VV0FOM29JKzZiTWhuSW81NEhlcEJsOD0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoib3d6SVp5NWR5NW5HbGcxQjgzYk1PTjF2Y1dDYWtoQmp6c01mdk9VNEJ6RT0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6Ik5KbVlialUvaGJOWDU1d05saXd1bzFJUHo2RW5Eb1RQdFlLY2txaE5LUFV2YjE1c2MrWGZ6c25lMERhcEFxeFBKR1lsUEd3cGM4YjQwOGsrclkrNGlBPT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6MTAsImFkdlNlY3JldEtleSI6IjZWM1JQdzFVMXJHYVVBSzRVZVlGSHVwK1Vob3FkbkxiTDBkZnRQcTAzUDg9IiwicHJvY2Vzc2VkSGlzdG9yeU1lc3NhZ2VzIjpbXSwibmV4dFByZUtleUlkIjo4MTMsImZpcnN0VW51cGxvYWRlZFByZUtleUlkIjo4MTMsImFjY291bnRTeW5jQ291bnRlciI6MCwiYWNjb3VudFNldHRpbmdzIjp7InVuYXJjaGl2ZUNoYXRzIjpmYWxzZX0sInJlZ2lzdGVyZWQiOnRydWUsInBhaXJpbmdDb2RlIjoiRDE3WE5DNzYiLCJtZSI6eyJpZCI6IjI1NDc5OTI1Nzc1ODoyM0BzLndoYXRzYXBwLm5ldCIsImxpZCI6IjI4MDIzNDQ1MjYwNzIyOToyM0BsaWQifSwiYWNjb3VudCI6eyJkZXRhaWxzIjoiQ0krazBKY0RFTldmdzhnR0dBTWdBQ2dBIiwiYWNjb3VudFNpZ25hdHVyZUtleSI6Ii9CVlpnL21Ic2NaVFMwYk1iSWpKeXhieDVRM2FEbEdRRjNYbFZyUDB4R1E9IiwiYWNjb3VudFNpZ25hdHVyZSI6IjJjQkk5MkxObGRZM3FZbnlOOFgwR3lGVjNsc056REJjd1VyUGFWVk55SXhGY2NNUFhxY0l5a05yK2VHLzd0ZmJxVDA5bHFrWEtTdnFDb1Jkb2ZoQkR3PT0iLCJkZXZpY2VTaWduYXR1cmUiOiI4bVhZVDFNUXpjQVNwTDErenF1K3VIMENzcy9jZVEwUnlmNXUvQkJCUVN1MXBERWJjWmNDcFlsU1hKbW9zYXl0ZUs2ZUNWTCtIVWtlQ0ZFV1UvWFRpdz09In0sInNpZ25hbElkZW50aXRpZXMiOlt7ImlkZW50aWZpZXIiOnsibmFtZSI6IjI4MDIzNDQ1MjYwNzIyOToyM0BsaWQiLCJkZXZpY2VJZCI6MH0sImlkZW50aWZpZXJLZXkiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCZndWV1lQNWg3SEdVMHRHekd5SXljc1c4ZVVOMmc1UmtCZDE1VmF6OU1SayJ9fV0sInBsYXRmb3JtIjoiYW5kcm9pZCIsInJvdXRpbmdJbmZvIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0FVSUFnZ0kifSwibGFzdEFjY291bnRTeW5jVGltZXN0YW1wIjoxNzYyNzA5NDcwLCJsYXN0UHJvcEhhc2giOiIyVjc3cVUiLCJteUFwcFN0YXRlS2V5SWQiOiJBQUFBQUNPbCJ9",
-    "type": "extendedTextMessage",
-    "timestamp": 1762709480139,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB075BB2734CFA4FDA373",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1762709479,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "TREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiS0JjZGlSblMyY1hzSFQzd0JuQVp0NHlGOHBIWktKV0lIamlXSTlqajhXMD0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoib3NQQUROWU9Fdnh3dXA1Y01qRmRmSy9XUzFIVXdtOFlSazd6WmNQcWpEWT0ifX0sInBhaXJpbmdFcGhlbWVyYWxLZXlQYWlyIjp7InByaXZhdGUiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJzTERNZDFlcUM5akx2YzhkeEx3MTVzSHVLeDBqSUN6ZnoxUlBYS3JoYUZzPSJ9LCJwdWJsaWMiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJXRzBTb0Y3VkpRbFVJNWIyajN4RGJUZVZ3bWhPaFI0ZnFqMi80MkJHRmdvPSJ9fSwic2lnbmVkSWRlbnRpdHlLZXkiOnsicHJpdmF0ZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6InNHQkdSRnVORnJFaC9NL2JEZGgzc3FabzJsVkYxbmliUkh3ek5GM2UwR2M9In0sInB1YmxpYyI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6Ii9QQk4ydFV5NkRSNlJMVThKb2Y0MmFneDQzem8vSjQ2RkljbkdNK3RTVkU9In19LCJzaWduZWRQcmVLZXkiOnsia2V5UGFpciI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQUcxUHRDU1JTZ1NFUUpLWk1RZE5VV0FOM29JKzZiTWhuSW81NEhlcEJsOD0ifSwicHVibGljIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoib3d6SVp5NWR5NW5HbGcxQjgzYk1PTjF2Y1dDYWtoQmp6c01mdk9VNEJ6RT0ifX0sInNpZ25hdHVyZSI6eyJ0eXBlIjoiQnVmZmVyIiwiZGF0YSI6Ik5KbVlialUvaGJOWDU1d05saXd1bzFJUHo2RW5Eb1RQdFlLY2txaE5LUFV2YjE1c2MrWGZ6c25lMERhcEFxeFBKR1lsUEd3cGM4YjQwOGsrclkrNGlBPT0ifSwia2V5SWQiOjF9LCJyZWdpc3RyYXRpb25JZCI6MTAsImFkdlNlY3JldEtleSI6IjZWM1JQdzFVMXJHYVVBSzRVZVlGSHVwK1Vob3FkbkxiTDBkZnRQcTAzUDg9IiwicHJvY2Vzc2VkSGlzdG9yeU1lc3NhZ2VzIjpbXSwibmV4dFByZUtleUlkIjo4MTMsImZpcnN0VW51cGxvYWRlZFByZUtleUlkIjo4MTMsImFjY291bnRTeW5jQ291bnRlciI6MCwiYWNjb3VudFNldHRpbmdzIjp7InVuYXJjaGl2ZUNoYXRzIjpmYWxzZX0sInJlZ2lzdGVyZWQiOnRydWUsInBhaXJpbmdDb2RlIjoiRDE3WE5DNzYiLCJtZSI6eyJpZCI6IjI1NDc5OTI1Nzc1ODoyM0BzLndoYXRzYXBwLm5ldCIsImxpZCI6IjI4MDIzNDQ1MjYwNzIyOToyM0BsaWQifSwiYWNjb3VudCI6eyJkZXRhaWxzIjoiQ0krazBKY0RFTldmdzhnR0dBTWdBQ2dBIiwiYWNjb3VudFNpZ25hdHVyZUtleSI6Ii9CVlpnL21Ic2NaVFMwYk1iSWpKeXhieDVRM2FEbEdRRjNYbFZyUDB4R1E9IiwiYWNjb3VudFNpZ25hdHVyZSI6IjJjQkk5MkxObGRZM3FZbnlOOFgwR3lGVjNsc056REJjd1VyUGFWVk55SXhGY2NNUFhxY0l5a05yK2VHLzd0ZmJxVDA5bHFrWEtTdnFDb1Jkb2ZoQkR3PT0iLCJkZXZpY2VTaWduYXR1cmUiOiI4bVhZVDFNUXpjQVNwTDErenF1K3VIMENzcy9jZVEwUnlmNXUvQkJCUVN1MXBERWJjWmNDcFlsU1hKbW9zYXl0ZUs2ZUNWTCtIVWtlQ0ZFV1UvWFRpdz09In0sInNpZ25hbElkZW50aXRpZXMiOlt7ImlkZW50aWZpZXIiOnsibmFtZSI6IjI4MDIzNDQ1MjYwNzIyOToyM0BsaWQiLCJkZXZpY2VJZCI6MH0sImlkZW50aWZpZXJLZXkiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOiJCZndWV1lQNWg3SEdVMHRHekd5SXljc1c4ZVVOMmc1UmtCZDE1VmF6OU1SayJ9fV0sInBsYXRmb3JtIjoiYW5kcm9pZCIsInJvdXRpbmdJbmZvIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoiQ0FVSUFnZ0kifSwibGFzdEFjY291bnRTeW5jVGltZXN0YW1wIjoxNzYyNzA5NDcwLCJsYXN0UHJvcEhhc2giOiIyVjc3cVUiLCJteUFwcFN0YXRlS2V5SWQiOiJBQUFBQUNPbCJ9"
-        }
-      }
-    }
-  },
-  "3EB0CFD7AD9EE6AAC88350": {
-    "id": "3EB0CFD7AD9EE6AAC88350",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "🎉 *GIFTED-MD CONNECTED SUCCESSFULLY!*\n\n━━━━━━━━━━━━━━━━━━━\n✨ Your WhatsApp bot is now active!\n\n📱 *Session Details:*\n• Status: ✅ Active\n• Owner: User\n• Number: 254799257758\n• Platform: Web\n\n🔐 *Security:*\n• Session created at: 11/9/2025, 5:31:21 PM\n• Keep your session ID secure\n• Never share credentials\n\n💡 *Next Steps:*\n• ✅ Session ID sent above (TREKKER~...)\n• Copy your session ID from this chat\n• Use it in Step 2 to register your bot\n• Start using your bot features!\n\n━━━━━━━━━━━━━━━━━━━\n_Powered by GIFTED-MD_\n_Baileys v7.0 | WhatsApp Multi-Device_",
-    "type": "extendedTextMessage",
-    "timestamp": 1762709481898,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB0CFD7AD9EE6AAC88350",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1762709481,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "🎉 *GIFTED-MD CONNECTED SUCCESSFULLY!*\n\n━━━━━━━━━━━━━━━━━━━\n✨ Your WhatsApp bot is now active!\n\n📱 *Session Details:*\n• Status: ✅ Active\n• Owner: User\n• Number: 254799257758\n• Platform: Web\n\n🔐 *Security:*\n• Session created at: 11/9/2025, 5:31:21 PM\n• Keep your session ID secure\n• Never share credentials\n\n💡 *Next Steps:*\n• ✅ Session ID sent above (TREKKER~...)\n• Copy your session ID from this chat\n• Use it in Step 2 to register your bot\n• Start using your bot features!\n\n━━━━━━━━━━━━━━━━━━━\n_Powered by GIFTED-MD_\n_Baileys v7.0 | WhatsApp Multi-Device_"
-        }
-      }
-    }
-  },
-  "3EB0D5FCEBAE941C3D4722": {
-    "id": "3EB0D5FCEBAE941C3D4722",
-    "fromJid": "280234452607229@lid",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1762709493781,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB0D5FCEBAE941C3D4722",
-        "participant": "",
-        "addressingMode": "lid"
-      },
-      "messageTimestamp": 1762709493,
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      }
-    }
-  },
-  "3EB032A7BF24B2D98F30E0": {
-    "id": "3EB032A7BF24B2D98F30E0",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════════════╗\n║ 🎉        TREKKER-MD APPROVAL        🎉   ║\n╠══════════════════════════════════════════╣\n║ ✅ Bot \"User\" is now ACTIVE!           ║\n║ 📱 Phone: 254799257758                    ║\n║ 📅 Approved: 11/9/2025                    ║\n║ ⏳ Valid: 3 Months                       ║\n╠══════════════════════════════════════════╣\n║ 🚀 Features Enabled:                      ║\n║ • Automation & ChatGPT                    ║\n║ • Auto-like / Auto-react                  ║\n║ • Status Viewing                          ║\n╠══════════════════════════════════════════╣\n║ 🔥 Thank you for choosing TREKKER-MD!     ║\n╚══════════════════════════════════════════╝",
-    "type": "extendedTextMessage",
-    "timestamp": 1762709495213,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "remoteJidAlt": "280234452607229@lid",
-        "fromMe": true,
-        "id": "3EB032A7BF24B2D98F30E0",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1762709494,
-      "pushName": "254799257758",
-      "broadcast": false,
-      "status": 2,
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════════════╗\n║ 🎉        TREKKER-MD APPROVAL        🎉   ║\n╠══════════════════════════════════════════╣\n║ ✅ Bot \"User\" is now ACTIVE!           ║\n║ 📱 Phone: 254799257758                    ║\n║ 📅 Approved: 11/9/2025                    ║\n║ ⏳ Valid: 3 Months                       ║\n╠══════════════════════════════════════════╣\n║ 🚀 Features Enabled:                      ║\n║ • Automation & ChatGPT                    ║\n║ • Auto-like / Auto-react                  ║\n║ • Status Viewing                          ║\n╠══════════════════════════════════════════╣\n║ 🔥 Thank you for choosing TREKKER-MD!     ║\n╚══════════════════════════════════════════╝"
-        }
-      }
-    }
-  },
-  "3EB01B2E20097D8149A7CB": {
-    "id": "3EB01B2E20097D8149A7CB",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "🎉 *GIFTED-MD CONNECTED SUCCESSFULLY!*\n\n━━━━━━━━━━━━━━━━━━━\n✨ Your WhatsApp bot is now active!\n\n📱 *Session Details:*\n• Status: ✅ Active\n• Owner: Bot User\n• Number: 254799257758\n• Platform: Web\n\n🔐 *Security:*\n• Session created at: 11/9/2025, 5:31:35 PM\n• Keep your session ID secure\n• Never share credentials\n\n💡 *Next Steps:*\n• ✅ Session ID sent above (TREKKER~...)\n• Your bot is being registered automatically\n• Check your bot dashboard for approval status\n\n━━━━━━━━━━━━━━━━━━━\n_Powered by GIFTED-MD_\n_Baileys v7.0 | WhatsApp Multi-Device_",
-    "type": "conversation",
-    "timestamp": 1762709505563,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB01B2E20097D8149A7CB"
-      },
-      "message": {
-        "conversation": "🎉 *GIFTED-MD CONNECTED SUCCESSFULLY!*\n\n━━━━━━━━━━━━━━━━━━━\n✨ Your WhatsApp bot is now active!\n\n📱 *Session Details:*\n• Status: ✅ Active\n• Owner: Bot User\n• Number: 254799257758\n• Platform: Web\n\n🔐 *Security:*\n• Session created at: 11/9/2025, 5:31:35 PM\n• Keep your session ID secure\n• Never share credentials\n\n💡 *Next Steps:*\n• ✅ Session ID sent above (TREKKER~...)\n• Your bot is being registered automatically\n• Check your bot dashboard for approval status\n\n━━━━━━━━━━━━━━━━━━━\n_Powered by GIFTED-MD_\n_Baileys v7.0 | WhatsApp Multi-Device_"
-      },
-      "messageTimestamp": "1762709495",
-      "status": "READ",
-      "isMentionedInStatus": false
-    }
-  },
-  "3EB0B4E059A282D24CC23E": {
-    "id": "3EB0B4E059A282D24CC23E",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "✅ *BOT AUTO-REGISTERED!*\n\nYour bot \"Bot User\" has been automatically registered!\n\n📊 *Registration Details:*\n• Bot Name: Bot User\n• Phone: 254799257758\n• Status: ✅ APPROVED & ACTIVE\n• Server: Current Server\n\n🎉 Your bot is LIVE and ready to use!\n• Send .menu to see available commands\n• Fully operational with all features!\n\n━━━━━━━━━━━━━━━━━━━\n_Auto-Registration Complete_",
-    "type": "conversation",
-    "timestamp": 1762709507986,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0B4E059A282D24CC23E"
-      },
-      "message": {
-        "conversation": "✅ *BOT AUTO-REGISTERED!*\n\nYour bot \"Bot User\" has been automatically registered!\n\n📊 *Registration Details:*\n• Bot Name: Bot User\n• Phone: 254799257758\n• Status: ✅ APPROVED & ACTIVE\n• Server: Current Server\n\n🎉 Your bot is LIVE and ready to use!\n• Send .menu to see available commands\n• Fully operational with all features!\n\n━━━━━━━━━━━━━━━━━━━\n_Auto-Registration Complete_"
-      },
-      "messageTimestamp": "1762709498",
-      "status": "READ",
-      "isMentionedInStatus": false
-    }
-  },
-  "AC44263B784EB9A08B5FE12124D96736": {
-    "id": "AC44263B784EB9A08B5FE12124D96736",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "254799257758@s.whatsapp.net",
+  "ACC3A512556912C3CFD37D21579B3889": {
+    "id": "ACC3A512556912C3CFD37D21579B3889",
+    "fromJid": "254742053765@s.whatsapp.net",
+    "senderJid": "254742053765@s.whatsapp.net",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1762709500542,
+    "timestamp": 1762709770472,
     "originalMessage": {
       "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJid": "254742053765@s.whatsapp.net",
         "fromMe": false,
-        "id": "AC44263B784EB9A08B5FE12124D96736",
+        "id": "ACC3A512556912C3CFD37D21579B3889",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1762709499,
+      "messageTimestamp": 1762709769,
       "broadcast": false,
       "message": {
         "protocolMessage": {
           "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
           "peerDataOperationRequestResponseMessage": {
             "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
-            "stanzaId": "3EB0CD6EF49CFC6CCB1257",
-            "peerDataOperationResult": [
-              {
-                "mediaUploadResult": "NOT_FOUND"
-              }
-            ]
-          }
-        }
-      }
-    }
-  },
-  "AC87CA8CE60DE5E991C31F11C687C151": {
-    "id": "AC87CA8CE60DE5E991C31F11C687C151",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "254799257758@s.whatsapp.net",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1762709504111,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": false,
-        "id": "AC87CA8CE60DE5E991C31F11C687C151",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1762709503,
-      "broadcast": false,
-      "message": {
-        "protocolMessage": {
-          "type": "HISTORY_SYNC_NOTIFICATION",
-          "historySyncNotification": {
-            "fileSha256": "qqrJ8GpZkg5+/sNPdyhaZMAJbwKBIRQk05iqv6jOZv4=",
-            "fileLength": "252533",
-            "mediaKey": "PziatLhHHn1RlZjUlO+cXU2LyQyhnoeCcqSCHtLHSE4=",
-            "fileEncSha256": "aLlzO1i1NjuBDRbiw6Q3Yc1v9b0SvntX0lwLrH1DlcM=",
-            "directPath": "/v/t62.31111-24/578999413_1925263401734344_2983400077892089823_n.enc?ccb=11-4&oh=01_Q5Aa3AF0ViW6E2d0AdRbuxR3Y7s2LTBq20P2gB7zqWgnAmeVTQ&oe=6938258C&_nc_sid=5e03e0",
-            "syncType": "RECENT",
-            "chunkOrder": 2,
-            "progress": 64,
-            "oldestMsgInChunkTimestampSec": "1758654818",
-            "encHandle": "AQLMF273FvnbiMwkkkGSZMAwojZr2qQ47HVdFi6XUJLWgCLI3ymUYi6-vwmxcaLIWArhfhef3YrC5MCuAH3HQOdKcJRj_8OqA6ATmBDHF9j6t305HzAsZwi9cgpgFr4F6uk"
-          }
-        }
-      }
-    }
-  },
-  "AC7836559B6F3D5C29A6815704DBA55A": {
-    "id": "AC7836559B6F3D5C29A6815704DBA55A",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "254799257758@s.whatsapp.net",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1762709505064,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": false,
-        "id": "AC7836559B6F3D5C29A6815704DBA55A",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1762709504,
-      "broadcast": false,
-      "message": {
-        "protocolMessage": {
-          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
-          "peerDataOperationRequestResponseMessage": {
-            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
-            "stanzaId": "3EB050F3E84893521E2C68",
+            "stanzaId": "3EB0923CB8CC6F94ED6ABA",
             "peerDataOperationResult": [
               {
                 "mediaUploadResult": "SUCCESS",
                 "placeholderMessageResendResponse": {
-                  "webMessageInfoBytes": "CjcKGzI1NDc5OTI1Nzc1OEBzLndoYXRzYXBwLm5ldBABGhYzRUIwMUIyRTIwMDk3RDgxNDlBN0NCEo8FCowF8J+OiSAqR0lGVEVELU1EIENPTk5FQ1RFRCBTVUNDRVNTRlVMTFkhKgoK4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSBCuKcqCBZb3VyIFdoYXRzQXBwIGJvdCBpcyBub3cgYWN0aXZlIQoK8J+TsSAqU2Vzc2lvbiBEZXRhaWxzOioK4oCiIFN0YXR1czog4pyFIEFjdGl2ZQrigKIgT3duZXI6IEJvdCBVc2VyCuKAoiBOdW1iZXI6IDI1NDc5OTI1Nzc1OArigKIgUGxhdGZvcm06IFdlYgoK8J+UkCAqU2VjdXJpdHk6KgrigKIgU2Vzc2lvbiBjcmVhdGVkIGF0OiAxMS85LzIwMjUsIDU6MzE6MzUgUE0K4oCiIEtlZXAgeW91ciBzZXNzaW9uIElEIHNlY3VyZQrigKIgTmV2ZXIgc2hhcmUgY3JlZGVudGlhbHMKCvCfkqEgKk5leHQgU3RlcHM6KgrigKIg4pyFIFNlc3Npb24gSUQgc2VudCBhYm92ZSAoVFJFS0tFUn4uLi4pCuKAoiBZb3VyIGJvdCBpcyBiZWluZyByZWdpc3RlcmVkIGF1dG9tYXRpY2FsbHkK4oCiIENoZWNrIHlvdXIgYm90IGRhc2hib2FyZCBmb3IgYXBwcm92YWwgc3RhdHVzCgrilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIHilIEKX1Bvd2VyZWQgYnkgR0lGVEVELU1EXwpfQmFpbGV5cyB2Ny4wIHwgV2hhdHNBcHAgTXVsdGktRGV2aWNlXxj3n8PIBiAEiAQA"
+                  "webMessageInfoBytes": "CkEKGzI1NDc0Mzk2MzYyM0BzLndoYXRzYXBwLm5ldBAAGiBBQ0JCRjZERjM1ODZBNDc5REMxNzM4MkNGQ0Q4RkU3MhIFCgNCYWUY/qHDyAaKAyAZamOcBA8AH3nGIgNxxRHsm4h9m5B4UEmHYvWCVIICyvIDFgoUAQx2qPfckgnKr6nvdgtkuF2XwFeIBAA="
                 }
               }
             ]
@@ -412,110 +156,46 @@
       }
     }
   },
-  "AC34DC267359E17C1D17F468CB62A52A": {
-    "id": "AC34DC267359E17C1D17F468CB62A52A",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "254799257758@s.whatsapp.net",
+  "ACDEFC048B641D1B6DB4C43E6D45FFED": {
+    "id": "ACDEFC048B641D1B6DB4C43E6D45FFED",
+    "fromJid": "254743963623@s.whatsapp.net",
+    "senderJid": "254743963623@s.whatsapp.net",
     "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1762709507486,
+    "type": "unknown",
+    "timestamp": 1762709866509,
     "originalMessage": {
       "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJid": "254743963623@s.whatsapp.net",
+        "remoteJidAlt": "39943799849210@lid",
         "fromMe": false,
-        "id": "AC34DC267359E17C1D17F468CB62A52A",
+        "id": "ACDEFC048B641D1B6DB4C43E6D45FFED",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1762709506,
+      "messageTimestamp": 1762709865,
+      "pushName": "charlie Shally",
       "broadcast": false,
       "message": {
-        "protocolMessage": {
-          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
-          "peerDataOperationRequestResponseMessage": {
-            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
-            "stanzaId": "3EB0BD6F5CB2073E06F3A7",
-            "peerDataOperationResult": [
-              {
-                "mediaUploadResult": "SUCCESS",
-                "placeholderMessageResendResponse": {
-                  "webMessageInfoBytes": "CjcKGzI1NDc5OTI1Nzc1OEBzLndoYXRzYXBwLm5ldBABGhYzRUIwQjRFMDU5QTI4MkQyNENDMjNFErIDCq8D4pyFICpCT1QgQVVUTy1SRUdJU1RFUkVEISoKCllvdXIgYm90ICJCb3QgVXNlciIgaGFzIGJlZW4gYXV0b21hdGljYWxseSByZWdpc3RlcmVkIQoK8J+TiiAqUmVnaXN0cmF0aW9uIERldGFpbHM6KgrigKIgQm90IE5hbWU6IEJvdCBVc2VyCuKAoiBQaG9uZTogMjU0Nzk5MjU3NzU4CuKAoiBTdGF0dXM6IOKchSBBUFBST1ZFRCAmIEFDVElWRQrigKIgU2VydmVyOiBDdXJyZW50IFNlcnZlcgoK8J+OiSBZb3VyIGJvdCBpcyBMSVZFIGFuZCByZWFkeSB0byB1c2UhCuKAoiBTZW5kIC5tZW51IHRvIHNlZSBhdmFpbGFibGUgY29tbWFuZHMK4oCiIEZ1bGx5IG9wZXJhdGlvbmFsIHdpdGggYWxsIGZlYXR1cmVzIQoK4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSB4pSBCl9BdXRvLVJlZ2lzdHJhdGlvbiBDb21wbGV0ZV8Y+p/DyAYgBIgEAA=="
-                }
-              }
-            ]
-          }
-        }
-      }
-    }
-  },
-  "AC1A3514A96AE1A4CFA0C6B3F0E8AB5A": {
-    "id": "AC1A3514A96AE1A4CFA0C6B3F0E8AB5A",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "254799257758@s.whatsapp.net",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1762709512355,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": false,
-        "id": "AC1A3514A96AE1A4CFA0C6B3F0E8AB5A",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1762709511,
-      "broadcast": false,
-      "message": {
-        "protocolMessage": {
-          "type": "HISTORY_SYNC_NOTIFICATION",
-          "historySyncNotification": {
-            "fileSha256": "+PeAfLnh4hljJ6ypyloKtoYsQFvDvhDHj7TYP7C9XvA=",
-            "fileLength": "256279",
-            "mediaKey": "7HpSJkUBTo0nrkxdqZWoFDTn8o2ARKgmAjhcc77DUlU=",
-            "fileEncSha256": "hwsHc42yj0K8kiyCRHeEjjYCTFS+UZrmqps+kxmTQsU=",
-            "directPath": "/v/t62.31111-24/541545311_1448193349970304_122832736094863737_n.enc?ccb=11-4&oh=01_Q5Aa3AH-gDQ2zww9hjQyl2Iun6UbesCeMcLStAitFWp064j0xg&oe=69385AC6&_nc_sid=5e03e0",
-            "syncType": "RECENT",
-            "chunkOrder": 3,
-            "progress": 97,
-            "oldestMsgInChunkTimestampSec": "1756284500",
-            "encHandle": "AQL5XPdnFQQBKQfXL01PjOPnblV_EfoMkc2dJkoT50ezu4hqNRTFkg-lklI-O_tUjbmC2LN6Vvlfw9wZ5CuJ1YUwNXo72XOc0XxcbfJfggjFCwZHS7ol4lYy2bocG8N_FkY"
-          }
-        }
-      }
-    }
-  },
-  "AC22DF5F3479E232B1366A7210CEAB2C": {
-    "id": "AC22DF5F3479E232B1366A7210CEAB2C",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "254799257758@s.whatsapp.net",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1762709514130,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": false,
-        "id": "AC22DF5F3479E232B1366A7210CEAB2C",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1762709513,
-      "broadcast": false,
-      "message": {
-        "protocolMessage": {
-          "type": "HISTORY_SYNC_NOTIFICATION",
-          "historySyncNotification": {
-            "fileSha256": "vow3VIuZJ30ih7S6l8tdWVh0xMGvXWbrcYt9SLzfh1A=",
-            "fileLength": "21827",
-            "mediaKey": "OLSzsNwxJm2AzkJkh4+ZIEjDN1ibeJ1CBpsVqvyhkNE=",
-            "fileEncSha256": "OXIqRW7JmTg86D4+2DlbBe0sux3512pKFSKh8YByUSs=",
-            "directPath": "/v/t62.31111-24/31795637_1391071352594776_2979191239596030849_n.enc?ccb=11-4&oh=01_Q5Aa3AEYy57Ub1xhht5B-tDOdJxPrcdqyeYXQVHsD64wzMxxqQ&oe=6938439B&_nc_sid=5e03e0",
-            "syncType": "RECENT",
-            "chunkOrder": 4,
-            "progress": 100,
-            "oldestMsgInChunkTimestampSec": "1756282859",
-            "encHandle": "AQJ3ETDyAA2Cl6uJPlh_hLy_hgZQQRSxqIVCWWFA8GhyAZzCSP1Gzc_iaLyEmWePeR2Q5GrLjZYe4g01IVQjCZuHANzbppxfBcZ8EhDUvB9mfFL2-2YfzawgvXsTnqUQlNg"
-          }
+        "audioMessage": {
+          "url": "https://mmg.whatsapp.net/v/t62.7117-24/542368300_25412066205055719_8380244411950074041_n.enc?ccb=11-4&oh=01_Q5Aa3AH-Ofko6xhZra6Sym9B9LHc1PoC6LZO9-0dyQVCb9sPmA&oe=693838F9&_nc_sid=5e03e0&mms3=true",
+          "mimetype": "audio/ogg; codecs=opus",
+          "fileSha256": "D74ZYh9ylQN1LHbjzT6u393El+9AJjr0J1s5iq0VZ7Q=",
+          "fileLength": "9506",
+          "seconds": 4,
+          "ptt": true,
+          "mediaKey": "jh6sBRAR6raQptbbVyZEW5khfwfphwvXlld7KVtHRHo=",
+          "fileEncSha256": "peO1Uv7KTvRdCuLvh0Z0CAjIS/94bN+GabK4YG/KZpI=",
+          "directPath": "/v/t62.7117-24/542368300_25412066205055719_8380244411950074041_n.enc?ccb=11-4&oh=01_Q5Aa3AH-Ofko6xhZra6Sym9B9LHc1PoC6LZO9-0dyQVCb9sPmA&oe=693838F9&_nc_sid=5e03e0",
+          "mediaKeyTimestamp": "1762709861",
+          "waveform": "AAAAABEuBgAAAAAAAAAABzIuQDY/R0YmMiIOODErKCwqJi40IEQ3JC4zKyASBQEAAAAAAAAAAAAAAAANEUYAAA=="
+        },
+        "messageContextInfo": {
+          "deviceListMetadata": {
+            "recipientKeyHash": "rAmRd+EM3O9DxQ==",
+            "recipientTimestamp": "1762705890"
+          },
+          "deviceListMetadataVersion": 2,
+          "messageSecret": "Z2ZP1G5nF7lfJ5hr2doRv1KZDWPLrVdItXZ3R1LYZOw="
         }
       }
     }
