@@ -521,7 +521,7 @@ export async function registerRoutes(app: Express): Server {
 
       // Detect and normalize v7 format (fields at root) to expected format (wrapped in creds)
       const isV7Format = credentials.noiseKey && credentials.signedIdentityKey && !credentials.creds;
-      
+
       if (isV7Format) {
         console.log('🔧 Detected Baileys v7 format credentials, wrapping in creds object');
         credentials = {
@@ -2015,7 +2015,7 @@ Thank you for choosing TREKKER-MD! 🚀`;
       } catch (messageError: any) {
         console.error('Error sending validation message:', messageError);
         const errorMsg = messageError.message || 'Unknown error';
-        
+
         // Check if it's a connection failure (405 error)
         if (errorMsg.includes('Connection') || errorMsg.includes('405')) {
           console.log(`⚠️ WhatsApp connection failed - credentials may be expired or session needs refresh`);
@@ -2158,189 +2158,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
     } catch (error) {
       console.error('Feature toggle error:', error);
       res.status(500).json({ message: "Failed to toggle feature" });
-    }
-  });
-
-  // Approve Bot
-  app.post("/api/bot-instances/:id/approve", async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { expirationMonths = 3 } = req.body;
-
-      const bot = await storage.getBotInstance(id);
-      if (!bot) {
-        return res.status(404).json({ message: "Bot not found" });
-      }
-
-      if (bot.approvalStatus !== 'pending') {
-        return res.status(400).json({ message: "Only pending bots can be approved" });
-      }
-
-      // Update bot to approved status
-      const updatedBot = await storage.updateBotInstance(id, {
-        approvalStatus: 'approved',
-        approvalDate: new Date().toISOString(),
-        expirationMonths,
-        status: 'loading' // Set to loading as we're about to start it
-      });
-
-      // Log activity
-      await storage.createActivity({
-        botInstanceId: id,
-        type: 'approval',
-        description: `Bot approved for ${expirationMonths} months`,
-        metadata: { expirationMonths },
-        serverName: getServerName()
-      });
-
-      // Automatically start the bot after approval
-      try {
-        console.log(`Auto-starting approved bot ${bot.name} (${bot.id})...`);
-        await botManager.startBot(id);
-
-        // Wait a moment for the bot to initialize before sending notification
-        setTimeout(async () => {
-          try {
-            if (bot.phoneNumber) {
-              const approvalMessage = `╔══════════════════════════════════════════╗
-║ 🎉        TREKKER-MD APPROVAL        🎉   ║
-╠══════════════════════════════════════════╣
-║ ✅ Bot "${bot.name}" is now ACTIVE!           ║
-║ 📱 Phone: ${bot.phoneNumber}                    ║
-║ 📅 Approved: ${new Date().toLocaleDateString()}                    ║
-║ ⏳ Valid: ${expirationMonths} Months                       ║
-╠══════════════════════════════════════════╣
-║ 🚀 Features Enabled:                      ║
-║ • Automation & ChatGPT                    ║
-║ • Auto-like / Auto-react                  ║
-║ • Status Viewing                          ║
-╠══════════════════════════════════════════╣
-║ 🔥 Thank you for choosing TREKKER-MD!     ║
-╚══════════════════════════════════════════╝`;
-
-              // Send notification using the bot's own credentials
-              const messageSent = await botManager.sendMessageThroughBot(id, bot.phoneNumber, approvalMessage);
-
-              if (messageSent) {
-                console.log(`✅ Approval notification sent to ${bot.phoneNumber} via bot ${bot.name}`);
-              } else {
-                console.log(`⚠️ Failed to send approval notification to ${bot.phoneNumber} - bot might not be online yet`);
-              }
-            }
-          } catch (notificationError) {
-            console.error('Failed to send approval notification:', notificationError);
-          }
-        }, 5000); // Wait 5 seconds for bot to fully initialize
-
-      } catch (startError) {
-        console.error(`Failed to auto-start bot ${bot.id}:`, startError);
-        // Update status to error if start failed
-        await storage.updateBotInstance(id, { status: 'error' });
-      }
-
-      // Broadcast update
-      broadcast({ type: 'BOT_APPROVED', data: updatedBot });
-      res.json({ message: "Bot approved successfully and starting automatically" });
-    } catch (error) {
-      console.error('Bot approval error:', error);
-      res.status(500).json({ message: "Failed to approve bot" });
-    }
-  });
-
-  // Revoke Bot Approval (change back to normal/pending status)
-  app.post("/api/bot-instances/:id/revoke", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const { id } = req.params;
-
-      // Get bot instance first
-      const botInstance = await storage.getBotInstance(id);
-      if (!botInstance) {
-        return res.status(404).json({ message: "Bot not found" });
-      }
-
-      // Stop the bot if it's running
-      await botManager.destroyBot(id);
-
-      // Update bot status to pending
-      const bot = await storage.updateBotInstance(id, {
-        approvalStatus: 'pending',
-        status: 'offline',
-        approvalDate: null,
-        expirationMonths: null,
-      });
-
-      // Log activity
-      await storage.createActivity({
-        botInstanceId: id,
-        type: 'revoke_approval',
-        description: `Bot approval revoked - returned to pending status`,
-        metadata: { previousStatus: botInstance.approvalStatus },
-        serverName: getServerName()
-      });
-
-      // Broadcast update
-      broadcast({ type: 'BOT_APPROVAL_REVOKED', data: bot });
-
-      res.json({ message: "Bot approval revoked successfully" });
-    } catch (error) {
-      console.error('Bot approval revoke error:', error);
-      res.status(500).json({ message: "Failed to revoke bot approval" });
-    }
-  });
-
-  // Bot control endpoints (restricted to admins)
-  app.post("/api/bot-instances/:id/start", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      const bot = await storage.getBotInstance(req.params.id);
-      if (!bot) {
-        return res.status(404).json({ message: "Bot instance not found" });
-      }
-
-      console.log(`Starting bot ${bot.name} (${bot.id})...`);
-      await botManager.startBot(req.params.id);
-
-      const updatedBot = await storage.updateBotInstance(req.params.id, { status: 'loading' });
-      broadcast({ type: 'BOT_STATUS_CHANGED', data: updatedBot });
-
-      res.json({
-        success: true,
-        message: `Bot ${bot.name} startup initiated - TREKKERMD LIFETIME BOT initializing...`
-      });
-    } catch (error) {
-      console.error('Bot start error:', error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to start bot";
-
-      // Update bot status to error
-      try {
-        const bot = await storage.updateBotInstance(req.params.id, { status: 'error' });
-        broadcast({ type: 'BOT_STATUS_CHANGED', data: bot });
-      } catch (updateError) {
-        console.error('Failed to update bot status:', updateError);
-      }
-
-      res.status(500).json({ message: errorMessage });
-    }
-  });
-
-  app.post("/api/bot-instances/:id/stop", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      await botManager.stopBot(req.params.id);
-      const bot = await storage.updateBotInstance(req.params.id, { status: 'offline' });
-      broadcast({ type: 'BOT_STATUS_CHANGED', data: bot });
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to stop bot" });
-    }
-  });
-
-  app.post("/api/bot-instances/:id/restart", authenticateAdmin, async (req: AuthRequest, res) => {
-    try {
-      await botManager.restartBot(req.params.id);
-      const bot = await storage.updateBotInstance(req.params.id, { status: 'loading' });
-      broadcast({ type: 'BOT_STATUS_CHANGED', data: bot });
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to restart bot" });
     }
   });
 
@@ -2912,7 +2729,6 @@ Thank you for choosing TREKKER-MD! 🚀`;
           message: "Your bot credentials need to be updated before you can authenticate.",
           botStatus: "needs_credentials",
           nextStep: "update_credentials",
-          invalidReason: reason,
           needsCredentials: true,
           canManage: false,
           credentialUploadEndpoint: "/api/guest/verify-credentials"
@@ -3304,18 +3120,11 @@ Thank you for using TREKKER-MD! 🚀
   app.post("/api/guest/register-bot", upload.single('credsFile') as any, async (req, res) => {
     try {
       console.log('🎯 Guest bot registration request received');
-      console.log('📋 Form data:', {
-        botName: req.body.botName,
-        phoneNumber: req.body.phoneNumber,
-        credentialType: req.body.credentialType,
-        hasSessionId: !!req.body.sessionId,
-        hasCredsFile: !!req.file,
-        features: req.body.features,
-        selectedServer: req.body.selectedServer // CRITICAL: Log selectedServer
-      });
+      console.log('Content-Type:', req.headers['content-type']);
+      console.log('Request body:', req.body);
+      console.log('Request files:', req.files);
 
-      const { botName, phoneNumber, credentialType, features, selectedServer } = req.body;
-      let { sessionId } = req.body;
+      const { botName, phoneNumber, credentialType, sessionId, features, selectedServer } = req.body;
 
       // Validate required fields
       if (!botName || !phoneNumber) {
@@ -3375,7 +3184,7 @@ Thank you for using TREKKER-MD! 🚀
           console.log(`🔍 SessionID received (length: ${sessionId?.length}):`, sessionId?.substring(0, 50) + '...');
           // Use centralized credential decoder (handles TREKKER~ prefix removal)
           credentials = decodeCredentials(sessionId);
-          
+
           // Validate Baileys v7 credentials and get normalized version
           const validation = validateBaileysCredentials(credentials);
           if (!validation.valid) {
@@ -3384,7 +3193,7 @@ Thank you for using TREKKER-MD! 🚀
               message: `Invalid Baileys credentials: ${validation.error}`
             });
           }
-          
+
           // Use the normalized credentials (v7 format wrapped in creds object)
           credentials = validation.normalized || credentials;
         } catch (error) {
@@ -3396,7 +3205,7 @@ Thank you for using TREKKER-MD! 🚀
       } else if (credentialType === 'file' && req.file) {
         try {
           credentials = JSON.parse(req.file.buffer.toString('utf-8'));
-          
+
           // Validate Baileys v7 credentials and get normalized version
           const validation = validateBaileysCredentials(credentials);
           if (!validation.valid) {
@@ -3405,7 +3214,7 @@ Thank you for using TREKKER-MD! 🚀
               message: `Invalid Baileys credentials: ${validation.error}`
             });
           }
-          
+
           // Use the normalized credentials (v7 format wrapped in creds object)
           credentials = validation.normalized || credentials;
         } catch (error) {
@@ -3423,7 +3232,7 @@ Thank you for using TREKKER-MD! 🚀
 
       // Step 3: Validate credentials structure and phone number ownership
       // Use centralized phone extraction (supports both LID and JID)
-      const credentialsPhone = extractPhoneNumber(credentials);
+      let credentialsPhone = extractPhoneNumber(credentials);
 
       // Method 3: Deep search for phone numbers in credentials
       if (!credentialsPhone) {

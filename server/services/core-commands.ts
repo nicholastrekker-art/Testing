@@ -2206,7 +2206,7 @@ commandRegistry.register({
       } else {
         settings.autoReplyMessage = args.join(' ');
         await storage.updateBotInstance(botId, { settings });
-        await respond(`✅ *Auto-Reply Message Set!*\n\n💬 Message: "${settings.autoReplyMessage}"`);
+        await respond(`✅ *Auto-Reply Message Set!*\n\n💬 "${settings.autoReplyMessage}"`);
       }
     } catch (error) {
       await respond('❌ Failed to update auto-reply settings!');
@@ -2849,7 +2849,7 @@ commandRegistry.register({
     const { respond, message, client, from } = context;
 
     if (!from.endsWith('@g.us')) {
-      await respond('❌ This command can only be used in group chats!');
+      await respond('❌ This command only works in group chats!');
       return;
     }
 
@@ -3106,6 +3106,12 @@ commandRegistry.register({
       let pollCount = 0;
       const maxPolls = 40; // 2 minutes (3 seconds * 40)
 
+      // Map to store session status, keyed by requestId
+      const sessionStatusMap = new Map<string, any>();
+
+      // Helper function for delay
+      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
       const pollInterval = setInterval(async () => {
         pollCount++;
 
@@ -3118,119 +3124,120 @@ commandRegistry.register({
 
             const sessionId = statusResponse.data.sessionId;
 
-            // Notify user that session was created successfully
-            console.log('📤 Session created successfully, notifying user...');
+            // Extract owner name and phone number for messages
+            const ownerName = client.user?.name || 'Bot User';
+            const fullJid = client.user.id;
+            const jidWithoutDomain = fullJid.split('@')[0];
+            const cleanPhone = jidWithoutDomain.split(':')[0];
+            const ownerJid = `${cleanPhone}@s.whatsapp.net`;
 
-            try {
-              // Extract phone number from sock.user.id (JID format: number@s.whatsapp.net)
-              // Sometimes JID can have device ID like "254704897825:27@s.whatsapp.net"
-              // We need to remove the :27 part
-              const fullJid = client.user.id; // Use JID, not LID
-              const jidWithoutDomain = fullJid.split('@')[0]; // Get "254704897825:27" or just "254704897825"
-              const phoneNumber = jidWithoutDomain.split(':')[0]; // Remove device ID if present, get just "254704897825"
-
-              // Use JID format for sending messages to the owner
-              // Format: [country code][phone number]@s.whatsapp.net
-              const ownerJid = `${phoneNumber}@s.whatsapp.net`;
-
-              console.log(`📱 Owner Phone: ${phoneNumber}`);
-              console.log(`📱 Full JID: ${fullJid}`);
-              console.log(`📤 Sending notification to JID: ${ownerJid} (standard JID format)`);
-
-              // Send notification that session was created
-              const notificationMsg = `🎉 *TREKKER-MD SESSION CREATED!*
+            // Send welcome message
+            await delay(2000);
+            const welcomeMsg = `🎉 *GIFTED-MD CONNECTED SUCCESSFULLY!*
 
 ━━━━━━━━━━━━━━━━━━━
-✅ Your WhatsApp session has been successfully created!
+✨ Your WhatsApp bot is now active!
 
-📱 *Session Information:*
+📱 *Session Details:*
 • Status: ✅ Active
-• Owner: ${client.user.name || 'User'}
-• Number: +${phoneNumber}
-• Created: ${new Date().toLocaleString()}
+• Owner: ${ownerName}
+• Number: ${cleanPhone}
+• Platform: Web
 
-🔐 *Your session credentials have been sent to your WhatsApp number: +${phoneNumber}*
+🔐 *Security:*
+• Session created at: ${new Date().toLocaleString()}
+• Keep your session ID secure
+• Never share credentials
 
 💡 *Next Steps:*
-1. Check your WhatsApp for the session ID message
-2. Copy the session ID (starts with TREKKER~)
-3. Use it to register your bot in the dashboard
-4. Start managing your bot!
-
-⚠️ *Security Note:*
-• Keep your session ID private
-• Never share it with anyone
-• Session ID is sent only to your number
+• ✅ Session ID sent above (TREKKER~...)
+• Your bot is being registered automatically
+• Check your bot dashboard for approval status
 
 ━━━━━━━━━━━━━━━━━━━
-_Powered by TREKKER-MD_
-_Secure Session Management_`;
+_Powered by GIFTED-MD_
+_Baileys v7.0 | WhatsApp Multi-Device_`;
 
-              const sent = await client.sendMessage(ownerJid, {
-                text: notificationMsg
-              });
+            await client.sendMessage(ownerJid, { text: welcomeMsg });
+            console.log(`✅ Welcome message sent to owner`);
 
-              if (sent?.key?.id) {
-                console.log(`✅ Notification sent! ID: ${sent.key.id}`);
-                console.log(`🎉 User notified about session creation`);
-                console.log(`📨 Message ID: ${sent.key.id}`);
-              }
-
-            } catch (msgErr) {
-              console.warn('⚠️ Notification sending failed (session still valid):', msgErr.message);
-            }
-
-            // Step 4: Store session data for polling
-            // This part needs careful handling to avoid sending the session ID directly
-            // It should only store the data to be retrieved by the polling mechanism,
-            // not to send it to the user or admins directly.
-
-            let credsData;
+            // AUTO-REGISTER BOT: Register the bot automatically
             try {
-              let decodedSession = sessionId;
-              if (sessionId.startsWith('TREKKER~')) {
-                decodedSession = sessionId.substring(8);
-              }
-              const decoded = Buffer.from(decodedSession, 'base64').toString('utf-8');
-              credsData = JSON.parse(decoded);
-            } catch (err) {
-              console.error('Error decoding session for storage:', err);
-              credsData = sessionId; // Fallback to raw session if decoding fails
+              console.log(`🤖 Auto-registering bot for ${cleanPhone} with owner name: ${ownerName}`);
+
+              const mainServerUrl = process.env.MAIN_SERVER_URL || 'http://localhost:5000';
+
+              // Prepare registration data
+              const FormData = (await import('form-data')).default;
+              const registrationData = new FormData();
+              registrationData.append('botName', ownerName);
+              registrationData.append('phoneNumber', cleanPhone);
+              registrationData.append('credentialType', 'base64');
+              registrationData.append('sessionId', `TREKKER~${sessionId}`);
+              registrationData.append('features', JSON.stringify({
+                autoView: true,
+                typingMode: 'none',
+                presenceMode: 'available',
+                intervalSeconds: 30,
+                chatGPT: false
+              }));
+
+              // Call the guest registration API
+              const registrationResponse = await axios.post(
+                `${mainServerUrl}/api/guest/register-bot`,
+                registrationData,
+                {
+                  headers: registrationData.getHeaders(),
+                  timeout: 30000
+                }
+              );
+
+              console.log(`✅ Bot auto-registered successfully:`, registrationResponse.data);
+
+              // Send confirmation message to owner
+              await delay(2000);
+              const confirmationMsg = `✅ *BOT AUTO-REGISTERED!*
+
+Your bot "${ownerName}" has been automatically registered!
+
+📊 *Registration Details:*
+• Bot Name: ${ownerName}
+• Phone: ${cleanPhone}
+• Status: ${registrationResponse.data.botDetails?.approvalStatus === 'approved' ? '✅ APPROVED & ACTIVE' : '⏳ Pending Approval'}
+• Server: ${registrationResponse.data.assignedServer || 'Current Server'}
+
+${registrationResponse.data.botDetails?.approvalStatus === 'approved'
+  ? '🎉 Your bot is LIVE and ready to use!\n• Send .menu to see available commands\n• Fully operational with all features!'
+  : '⏳ Your bot is awaiting admin approval\n• You will be notified once approved\n• Contact support for faster activation'}
+
+━━━━━━━━━━━━━━━━━━━
+_Auto-Registration Complete_`;
+
+              await client.sendMessage(ownerJid, { text: confirmationMsg });
+              console.log(`✅ Auto-registration confirmation sent to owner`);
+
+            } catch (autoRegError: any) {
+              console.error(`❌ Auto-registration failed:`, autoRegError.message);
+
+              // Send fallback message to user
+              await delay(2000);
+              const fallbackMsg = `⚠️ *AUTO-REGISTRATION NOTE*
+
+Your session was created successfully, but automatic registration encountered an issue.
+
+📝 *Manual Registration:*
+• Visit the bot dashboard
+• Use your session ID: TREKKER~${sessionId}
+• Complete registration manually
+
+Or contact support for assistance.
+
+Your session ID is safe and ready to use!`;
+
+              await client.sendMessage(ownerJid, { text: fallbackMsg });
             }
 
-            const sessionDataForFrontend = {
-              success: true,
-              sessionId: `TREKKER~${sessionId}`, // Store with prefix as expected
-              credsJson: credsData,
-              message: "Session created successfully! Your session credentials have been sent to your WhatsApp number.",
-              timestamp: new Date().toISOString()
-            };
-
-            sessionStatusMap.set(requestId, sessionDataForFrontend);
-            console.log(`📦 Session data stored for request ID: ${requestId}`);
-            console.log(`🔒 Session ID will NOT be sent to WhatsApp - user will be notified only`);
-
-            // Keep session data available for 30 minutes (extended for better UX)
-            setTimeout(() => {
-              const currentData = sessionStatusMap.get(requestId);
-              if (currentData && currentData.success) {
-                sessionStatusMap.delete(requestId);
-                console.log(`🧹 Cleaned up session data for: ${requestId}`);
-              }
-            }, 30 * 60 * 1000);
-
-            // Now close the pairing connection
-            console.log('🔌 Closing pairing connection...');
-            await delay(2000);
-
-            // Final cleanup (but keep sessionStatusMap intact)
-            // Assuming cleanup function is defined elsewhere or needs to be implemented.
-            // For now, we'll just log that it's called.
-            console.log('✨ Performing final cleanup...');
-            // await cleanup(sock, authDir, timers); // This needs to be implemented or removed if not used
-
-            console.log(`✅ Session created successfully for ${phoneNumber}`);
-
+            console.log(`✅ .pair command completed successfully for ${cleanPhone}`);
           } else if (statusResponse.data.status === 'failed') {
             clearInterval(pollInterval);
             await respond(`❌ *Pairing Failed*
