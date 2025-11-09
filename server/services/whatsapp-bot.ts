@@ -313,14 +313,12 @@ export class WhatsAppBot {
 ✅ Bot is ready to receive commands!`;
 
           // Get the bot's own number and send welcome message to yourself
-          // Use LID (Baileys v7) if available, fallback to traditional JID
-          const userLid = this.sock.user?.lid;
+          // Use standard JID format (same as command responses) instead of LID
           const userId = this.sock.user?.id;
-          const recipientId = userLid || userId;
           
-          if (recipientId) {
-            console.log(`TREKKERMD LIFETIME BOT: Sending welcome to ${recipientId} (using ${userLid ? 'LID' : 'JID'})`);
-            await this.sock.sendMessage(recipientId, { text: welcomeMessage });
+          if (userId) {
+            console.log(`TREKKERMD LIFETIME BOT: Sending welcome to ${userId} (using standard JID)`);
+            await this.sock.sendMessage(userId, { text: welcomeMessage });
             console.log(`TREKKERMD LIFETIME BOT: Welcome message sent successfully`);
           } else {
             console.log('TREKKERMD LIFETIME BOT READY:', welcomeMessage);
