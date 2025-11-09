@@ -1,45 +1,92 @@
 {
-  "3EB0AFFA2C13895548D3C3": {
-    "id": "3EB0AFFA2C13895548D3C3",
-    "fromJid": "280234452607229:24@lid",
+  "3EB0507769B307008340B9": {
+    "id": "3EB0507769B307008340B9",
+    "fromJid": "254799257758:24@s.whatsapp.net",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1762721490505,
+    "timestamp": 1762721686468,
     "originalMessage": {
       "key": {
-        "remoteJid": "280234452607229:24@lid",
+        "remoteJid": "254799257758:24@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0AFFA2C13895548D3C3"
+        "id": "3EB0507769B307008340B9"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": "1762721489",
+      "messageTimestamp": "1762721685",
       "status": "PENDING"
     }
   },
-  "3EB004CC9666E72BA0E11B": {
-    "id": "3EB004CC9666E72BA0E11B",
-    "fromJid": "89013566320711:2@lid",
+  "3EB071D073180A62AAFBA1": {
+    "id": "3EB071D073180A62AAFBA1",
+    "fromJid": "254742053765:2@s.whatsapp.net",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1762721495996,
+    "timestamp": 1762721690675,
     "originalMessage": {
       "key": {
-        "remoteJid": "89013566320711:2@lid",
+        "remoteJid": "254742053765:2@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB004CC9666E72BA0E11B"
+        "id": "3EB071D073180A62AAFBA1"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": "1762721494",
+      "messageTimestamp": "1762721689",
+      "status": "PENDING"
+    }
+  },
+  "AC63AFF42D78C38393FD930CB0526804": {
+    "id": "AC63AFF42D78C38393FD930CB0526804",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".ping",
+    "type": "conversation",
+    "timestamp": 1762721711569,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJidAlt": "280234452607229@lid",
+        "fromMe": true,
+        "id": "AC63AFF42D78C38393FD930CB0526804",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762721710,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".ping"
+      }
+    }
+  },
+  "3EB0397EF8F4D4039D2C61": {
+    "id": "3EB0397EF8F4D4039D2C61",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🏃‍♂️ *TREKKER-MD LIFETIME BOT*\n\n⚡ *Speed:* 0ms\n🤖 *Status:* Online\n💚 *Health:* Perfect\n\n> Ultra fast response from TREKKER-MD",
+    "type": "extendedTextMessage",
+    "timestamp": 1762721712752,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0397EF8F4D4039D2C61"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "🏃‍♂️ *TREKKER-MD LIFETIME BOT*\n\n⚡ *Speed:* 0ms\n🤖 *Status:* Online\n💚 *Health:* Perfect\n\n> Ultra fast response from TREKKER-MD"
+        }
+      },
+      "messageTimestamp": "1762721712",
       "status": "PENDING"
     }
   }
