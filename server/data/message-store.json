@@ -1,43 +1,43 @@
 {
-  "3EB02071388B35AC3EF584": {
-    "id": "3EB02071388B35AC3EF584",
+  "3EB03CF4F5551B1B45D081": {
+    "id": "3EB03CF4F5551B1B45D081",
     "fromJid": "280234452607229:21@lid",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1762675446933,
+    "timestamp": 1762675850166,
     "originalMessage": {
       "key": {
         "remoteJid": "280234452607229:21@lid",
         "fromMe": true,
-        "id": "3EB02071388B35AC3EF584"
+        "id": "3EB03CF4F5551B1B45D081"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": "1762675444",
+      "messageTimestamp": "1762675848",
       "status": "PENDING"
     }
   },
-  "ACE71799C0B17FED5CC7ECD6E469CD1C": {
-    "id": "ACE71799C0B17FED5CC7ECD6E469CD1C",
+  "AC83CEDBA7D1FB3F24ED93132839821C": {
+    "id": "AC83CEDBA7D1FB3F24ED93132839821C",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": ".pair 254704897825",
     "type": "conversation",
-    "timestamp": 1762675478283,
+    "timestamp": 1762675921729,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "remoteJidAlt": "280234452607229@lid",
         "fromMe": true,
-        "id": "ACE71799C0B17FED5CC7ECD6E469CD1C",
+        "id": "AC83CEDBA7D1FB3F24ED93132839821C",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1762675477,
+      "messageTimestamp": 1762675921,
       "pushName": "Team Grill🙃",
       "broadcast": false,
       "status": 2,
@@ -46,100 +46,91 @@
       }
     }
   },
-  "3EB096788188806781205E": {
-    "id": "3EB096788188806781205E",
+  "3EB0D7AE58D47AFF748375": {
+    "id": "3EB0D7AE58D47AFF748375",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "🔄 *Generating Pairing Code...*\n\n📱 Phone: +254704897825\n⏳ Please wait...\n\n> TREKKER-MD Pairing System",
     "type": "extendedTextMessage",
-    "timestamp": 1762675479783,
+    "timestamp": 1762675923181,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB096788188806781205E"
+        "id": "3EB0D7AE58D47AFF748375"
       },
       "message": {
         "extendedTextMessage": {
           "text": "🔄 *Generating Pairing Code...*\n\n📱 Phone: +254704897825\n⏳ Please wait...\n\n> TREKKER-MD Pairing System"
         }
       },
-      "messageTimestamp": "1762675478",
+      "messageTimestamp": "1762675922",
       "status": "PENDING"
     }
   },
-  "3EB098876E72B11129C0A2": {
-    "id": "3EB098876E72B11129C0A2",
+  "3EB0A60DF499FE7A753A17": {
+    "id": "3EB0A60DF499FE7A753A17",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": "✅ *PAIRING CODE GENERATED!*\n\n🔐 *Your Pairing Code:*\n╔════════════════╗\n║   H3CZ-9R2R   ║\n╚════════════════╝\n\n📱 *How to Enter the Code:*\n\n1️⃣ Open WhatsApp on your phone\n2️⃣ Tap the three dots (⋮) menu\n3️⃣ Select \"Linked Devices\"\n4️⃣ Tap \"Link a Device\"\n5️⃣ Tap \"Link with Phone Number Instead\"\n6️⃣ Enter the code: *H3CZ-9R2R*\n\n⏳ *Waiting for you to enter the code...*\n⌛ This code will expire in 60 seconds\n\n💡 *What happens next:*\n• After entering the code, your session will be created\n• Session ID will be sent to this WhatsApp automatically\n• You can then use it to register your bot\n\n> 🎉 WELCOME TO TREKKER-MD LIFETIME BOT",
+    "content": "╔════════════════╗\n║   1CWP-8FW6   ║\n╚════════════════╝",
     "type": "extendedTextMessage",
-    "timestamp": 1762675481458,
+    "timestamp": 1762675924892,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB098876E72B11129C0A2"
+        "id": "3EB0A60DF499FE7A753A17"
       },
       "message": {
         "extendedTextMessage": {
-          "text": "✅ *PAIRING CODE GENERATED!*\n\n🔐 *Your Pairing Code:*\n╔════════════════╗\n║   H3CZ-9R2R   ║\n╚════════════════╝\n\n📱 *How to Enter the Code:*\n\n1️⃣ Open WhatsApp on your phone\n2️⃣ Tap the three dots (⋮) menu\n3️⃣ Select \"Linked Devices\"\n4️⃣ Tap \"Link a Device\"\n5️⃣ Tap \"Link with Phone Number Instead\"\n6️⃣ Enter the code: *H3CZ-9R2R*\n\n⏳ *Waiting for you to enter the code...*\n⌛ This code will expire in 60 seconds\n\n💡 *What happens next:*\n• After entering the code, your session will be created\n• Session ID will be sent to this WhatsApp automatically\n• You can then use it to register your bot\n\n> 🎉 WELCOME TO TREKKER-MD LIFETIME BOT"
+          "text": "╔════════════════╗\n║   1CWP-8FW6   ║\n╚════════════════╝"
         }
       },
-      "messageTimestamp": "1762675480",
+      "messageTimestamp": "1762675924",
       "status": "PENDING"
     }
   },
-  "3EB0AEEF934E54319A778E": {
-    "id": "3EB0AEEF934E54319A778E",
+  "3EB0F864FB97C2766B731B": {
+    "id": "3EB0F864FB97C2766B731B",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": "🎉 *PAIRING SUCCESSFUL!*\n\n╔═══════════════════════════════╗\n║  WELCOME TO TREKKER-MD BOT!  ║\n╚═══════════════════════════════╝\n\n✅ *Session Created Successfully!*\n\n📋 *Your Session ID:*\n(Use this to connect your bot)\n\n```TREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoid0Izb0Y2UzBkS3BWSGFnb0x3OUht...```\n\n📝 *Session ID Length:* 2560 characters\n\n⚠️ *IMPORTANT:*\n• Keep this session ID secure\n• Don't share it with anyone\n• Use it to register your bot on the dashboard\n\n🚀 *Next Steps:*\n1. Copy the full session ID from the file below\n2. Go to bot registration on dashboard\n3. Paste your session ID\n4. Your bot will be connected!\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ",
+    "content": "✅ *PAIRING CODE GENERATED!*\n\n📱 *How to Enter the Code:*\n\n1️⃣ Open WhatsApp on your phone\n2️⃣ Tap the three dots (⋮) menu\n3️⃣ Select \"Linked Devices\"\n4️⃣ Tap \"Link a Device\"\n5️⃣ Tap \"Link with Phone Number Instead\"\n6️⃣ Enter the code above\n\n⏳ *Waiting for you to enter the code...*\n⌛ This code will expire in 60 seconds\n\n💡 *What happens next:*\n• After entering the code, your session will be created\n• creds.json file will be sent to this WhatsApp automatically\n• You can then use it to register your bot\n\n> 🎉 WELCOME TO TREKKER-MD LIFETIME BOT",
     "type": "extendedTextMessage",
-    "timestamp": 1762675577513,
+    "timestamp": 1762675925310,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0AEEF934E54319A778E"
+        "id": "3EB0F864FB97C2766B731B"
       },
       "message": {
         "extendedTextMessage": {
-          "text": "🎉 *PAIRING SUCCESSFUL!*\n\n╔═══════════════════════════════╗\n║  WELCOME TO TREKKER-MD BOT!  ║\n╚═══════════════════════════════╝\n\n✅ *Session Created Successfully!*\n\n📋 *Your Session ID:*\n(Use this to connect your bot)\n\n```TREKKER~eyJub2lzZUtleSI6eyJwcml2YXRlIjp7InR5cGUiOiJCdWZmZXIiLCJkYXRhIjoid0Izb0Y2UzBkS3BWSGFnb0x3OUht...```\n\n📝 *Session ID Length:* 2560 characters\n\n⚠️ *IMPORTANT:*\n• Keep this session ID secure\n• Don't share it with anyone\n• Use it to register your bot on the dashboard\n\n🚀 *Next Steps:*\n1. Copy the full session ID from the file below\n2. Go to bot registration on dashboard\n3. Paste your session ID\n4. Your bot will be connected!\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ"
+          "text": "✅ *PAIRING CODE GENERATED!*\n\n📱 *How to Enter the Code:*\n\n1️⃣ Open WhatsApp on your phone\n2️⃣ Tap the three dots (⋮) menu\n3️⃣ Select \"Linked Devices\"\n4️⃣ Tap \"Link a Device\"\n5️⃣ Tap \"Link with Phone Number Instead\"\n6️⃣ Enter the code above\n\n⏳ *Waiting for you to enter the code...*\n⌛ This code will expire in 60 seconds\n\n💡 *What happens next:*\n• After entering the code, your session will be created\n• creds.json file will be sent to this WhatsApp automatically\n• You can then use it to register your bot\n\n> 🎉 WELCOME TO TREKKER-MD LIFETIME BOT"
         }
       },
-      "messageTimestamp": "1762675576",
+      "messageTimestamp": "1762675924",
       "status": "PENDING"
     }
   },
-  "3EB0B854FE28601DEE12FA": {
-    "id": "3EB0B854FE28601DEE12FA",
+  "3EB084F5DD5E87A7966561": {
+    "id": "3EB084F5DD5E87A7966561",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": "📄 *Full Session ID*\n\nYour complete session credentials.\nKeep this file safe!",
-    "type": "documentMessage",
-    "timestamp": 1762675577860,
+    "content": "⏱️ *Pairing Timeout*\n\nThe pairing code has expired. Please try again with .pair 254704897825",
+    "type": "extendedTextMessage",
+    "timestamp": 1762676044928,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0B854FE28601DEE12FA"
+        "id": "3EB084F5DD5E87A7966561"
       },
       "message": {
-        "documentMessage": {
-          "url": "https://mmg.whatsapp.net/v/t62.7119-24/577665001_866563846125274_1192650713471463806_n.enc?ccb=11-4&oh=01_Q5Aa3AERXmG6Gzh8HH0N-wwi7T8C4jdoKcEehhf6LKaHhzwSpw&oe=6937B8DE&_nc_sid=5e03e0&mms3=true",
-          "mimetype": "text/plain",
-          "fileSha256": "MWdF9npsadS8SvB0tZHrikXud1wWjV3JWUT+fJvG5c0=",
-          "fileLength": "2560",
-          "mediaKey": "ijJRgi7dnmxvPB2Suz6kx+gTLLNLueb3RmdLQSDYP3A=",
-          "fileName": "trekkermd_session_254704897825.txt",
-          "fileEncSha256": "tLiEOQoUjjmUZdSDJr1+fGs7wbzORmga+q9NLQdwYW4=",
-          "directPath": "/v/t62.7119-24/577665001_866563846125274_1192650713471463806_n.enc?ccb=11-4&oh=01_Q5Aa3AERXmG6Gzh8HH0N-wwi7T8C4jdoKcEehhf6LKaHhzwSpw&oe=6937B8DE&_nc_sid=5e03e0",
-          "mediaKeyTimestamp": "1762675577",
-          "caption": "📄 *Full Session ID*\n\nYour complete session credentials.\nKeep this file safe!"
+        "extendedTextMessage": {
+          "text": "⏱️ *Pairing Timeout*\n\nThe pairing code has expired. Please try again with .pair 254704897825"
         }
       },
-      "messageTimestamp": "1762675577",
+      "messageTimestamp": "1762676044",
       "status": "PENDING"
     }
   }
