@@ -1,65 +1,184 @@
 {
-  "3EB06894475FF2742DF870": {
-    "id": "3EB06894475FF2742DF870",
+  "3EB00913E5BA6389C60AF9": {
+    "id": "3EB00913E5BA6389C60AF9",
     "fromJid": "280234452607229:24@lid",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1762720091905,
+    "timestamp": 1762720775516,
     "originalMessage": {
       "key": {
         "remoteJid": "280234452607229:24@lid",
         "fromMe": true,
-        "id": "3EB06894475FF2742DF870"
+        "id": "3EB00913E5BA6389C60AF9"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": "1762720090",
+      "messageTimestamp": "1762720774",
       "status": "PENDING"
     }
   },
-  "3EB0C1ADDFFE10AD20D069": {
-    "id": "3EB0C1ADDFFE10AD20D069",
+  "3EB0CDB9F63DBD1A7D38CE": {
+    "id": "3EB0CDB9F63DBD1A7D38CE",
     "fromJid": "89013566320711:2@lid",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1762720092529,
+    "timestamp": 1762720779141,
     "originalMessage": {
       "key": {
         "remoteJid": "89013566320711:2@lid",
         "fromMe": true,
-        "id": "3EB0C1ADDFFE10AD20D069"
+        "id": "3EB0CDB9F63DBD1A7D38CE"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": "1762720091",
+      "messageTimestamp": "1762720777",
       "status": "PENDING"
     }
   },
-  "AC27E16BB6821C751B1A100C03A33A94": {
-    "id": "AC27E16BB6821C751B1A100C03A33A94",
+  "AC0F4D8CF3DA61C599E914D1AB06599A": {
+    "id": "AC0F4D8CF3DA61C599E914D1AB06599A",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": ".presence recording",
+    "content": "Yowh",
     "type": "conversation",
-    "timestamp": 1762720243502,
+    "timestamp": 1762720803244,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "remoteJidAlt": "280234452607229@lid",
         "fromMe": true,
-        "id": "AC27E16BB6821C751B1A100C03A33A94",
+        "id": "AC0F4D8CF3DA61C599E914D1AB06599A",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1762720242,
+      "messageTimestamp": 1762720802,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": "Yowh"
+      }
+    }
+  },
+  "AC0BE71C38EA37C0CEC3D58B8A07D226": {
+    "id": "AC0BE71C38EA37C0CEC3D58B8A07D226",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".presencehelp",
+    "type": "conversation",
+    "timestamp": 1762720822334,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJidAlt": "280234452607229@lid",
+        "fromMe": true,
+        "id": "AC0BE71C38EA37C0CEC3D58B8A07D226",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762720821,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".presencehelp"
+      }
+    }
+  },
+  "3EB0151B384B6490EC8C92": {
+    "id": "3EB0151B384B6490EC8C92",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "\n👁️ *PRESENCE MODE GUIDE*\n\n🎯 *What is Presence?*\nPresence shows your bot's activity status in WhatsApp (typing, recording, online, etc.)\n\n📋 *Available Modes:*\n\n1️⃣ *typing* - Always show typing indicator\n   • Updates every 10 seconds\n   • Shows \"typing...\" in chats\n   • Usage: .presence typing\n\n2️⃣ *recording* - Always show recording indicator  \n   • Updates every 10 seconds\n   • Shows \"recording...\" in chats\n   • Usage: .presence recording\n\n3️⃣ *online* - Always show online status\n   • Updates every 10 seconds\n   • Shows green \"online\" indicator\n   • Usage: .presence online\n\n4️⃣ *autoswitch* - Alternate typing/recording\n   • Switches every 10 seconds\n   • Creates dynamic presence effect\n   • Usage: .presence autoswitch\n\n5️⃣ *none* - Disable all presence\n   • No indicators shown\n   • Bot appears offline\n   • Usage: .presence none\n\n⚙️ *Current Settings:*\nUse .presence (no arguments) to view\n\n🔄 *Apply Changes:*\nAfter setting a mode, restart bot with .restart\n\n💡 *Tips:*\n• Restart bot after changing modes\n• Changes persist across restarts\n• Can change anytime\n\n> Powered by TREKKERMD LIFETIME BOT",
+    "type": "extendedTextMessage",
+    "timestamp": 1762720823527,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0151B384B6490EC8C92"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "\n👁️ *PRESENCE MODE GUIDE*\n\n🎯 *What is Presence?*\nPresence shows your bot's activity status in WhatsApp (typing, recording, online, etc.)\n\n📋 *Available Modes:*\n\n1️⃣ *typing* - Always show typing indicator\n   • Updates every 10 seconds\n   • Shows \"typing...\" in chats\n   • Usage: .presence typing\n\n2️⃣ *recording* - Always show recording indicator  \n   • Updates every 10 seconds\n   • Shows \"recording...\" in chats\n   • Usage: .presence recording\n\n3️⃣ *online* - Always show online status\n   • Updates every 10 seconds\n   • Shows green \"online\" indicator\n   • Usage: .presence online\n\n4️⃣ *autoswitch* - Alternate typing/recording\n   • Switches every 10 seconds\n   • Creates dynamic presence effect\n   • Usage: .presence autoswitch\n\n5️⃣ *none* - Disable all presence\n   • No indicators shown\n   • Bot appears offline\n   • Usage: .presence none\n\n⚙️ *Current Settings:*\nUse .presence (no arguments) to view\n\n🔄 *Apply Changes:*\nAfter setting a mode, restart bot with .restart\n\n💡 *Tips:*\n• Restart bot after changing modes\n• Changes persist across restarts\n• Can change anytime\n\n> Powered by TREKKERMD LIFETIME BOT"
+        }
+      },
+      "messageTimestamp": "1762720822",
+      "status": "PENDING"
+    }
+  },
+  "AC96432F7B1826838363A5A0BEC7FA2B": {
+    "id": "AC96432F7B1826838363A5A0BEC7FA2B",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ". presence",
+    "type": "conversation",
+    "timestamp": 1762720852380,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJidAlt": "280234452607229@lid",
+        "fromMe": true,
+        "id": "AC96432F7B1826838363A5A0BEC7FA2B",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762720851,
+      "pushName": "Team Grill🙃",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ". presence"
+      }
+    }
+  },
+  "3EB0DDE56FE4922E504F2E": {
+    "id": "3EB0DDE56FE4922E504F2E",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "👁️ *Presence Settings*\n\n📊 Current mode: recording\n🔄 Auto-switch: Disabled ❌\n🟢 Always online: Disabled ❌\n\n*Available modes:*\n• none - No presence indicator\n• typing - Always show typing (updates every 10s)\n• recording - Always show recording (updates every 10s)\n• online - Always show online (updates every 10s)\n• autoswitch - Switch between typing/recording (every 10s)\n\n*Usage:* .presence [mode]\n\n💡 Changes apply immediately, restart bot with .restart if needed.",
+    "type": "extendedTextMessage",
+    "timestamp": 1762720853942,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0DDE56FE4922E504F2E"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "👁️ *Presence Settings*\n\n📊 Current mode: recording\n🔄 Auto-switch: Disabled ❌\n🟢 Always online: Disabled ❌\n\n*Available modes:*\n• none - No presence indicator\n• typing - Always show typing (updates every 10s)\n• recording - Always show recording (updates every 10s)\n• online - Always show online (updates every 10s)\n• autoswitch - Switch between typing/recording (every 10s)\n\n*Usage:* .presence [mode]\n\n💡 Changes apply immediately, restart bot with .restart if needed."
+        }
+      },
+      "messageTimestamp": "1762720853",
+      "status": "PENDING"
+    }
+  },
+  "AC7CA543F7353E478C31FB534F72EBE9": {
+    "id": "AC7CA543F7353E478C31FB534F72EBE9",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".presence recording",
+    "type": "conversation",
+    "timestamp": 1762720877854,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "remoteJidAlt": "280234452607229@lid",
+        "fromMe": true,
+        "id": "AC7CA543F7353E478C31FB534F72EBE9",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762720877,
       "pushName": "Team Grill🙃",
       "broadcast": false,
       "status": 2,
@@ -68,45 +187,45 @@
       }
     }
   },
-  "3EB0D9B6F670BF2BE9D948": {
-    "id": "3EB0D9B6F670BF2BE9D948",
+  "3EB09255C847D446EE5B58": {
+    "id": "3EB09255C847D446EE5B58",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": "✅ *Presence Mode Updated*\n\n👁️ Mode set to: recording\n\n> Bot presence updated successfully!",
+    "content": "✅ *Presence Mode Set to RECORDING!*\n\n🎤 Bot will continuously show recording indicator (updates every 10s).\n\n⚠️ Restart bot with .restart for changes to take full effect.",
     "type": "extendedTextMessage",
-    "timestamp": 1762720246063,
+    "timestamp": 1762720879887,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0D9B6F670BF2BE9D948"
+        "id": "3EB09255C847D446EE5B58"
       },
       "message": {
         "extendedTextMessage": {
-          "text": "✅ *Presence Mode Updated*\n\n👁️ Mode set to: recording\n\n> Bot presence updated successfully!"
+          "text": "✅ *Presence Mode Set to RECORDING!*\n\n🎤 Bot will continuously show recording indicator (updates every 10s).\n\n⚠️ Restart bot with .restart for changes to take full effect."
         }
       },
-      "messageTimestamp": "1762720244",
+      "messageTimestamp": "1762720879",
       "status": "PENDING"
     }
   },
-  "AC9E394D212D3BD32D546C6612C6EE15": {
-    "id": "AC9E394D212D3BD32D546C6612C6EE15",
+  "ACD3807D3BB045C82AA86F7364F1ADC3": {
+    "id": "ACD3807D3BB045C82AA86F7364F1ADC3",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": ".restart",
     "type": "conversation",
-    "timestamp": 1762720254681,
+    "timestamp": 1762720893820,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "remoteJidAlt": "280234452607229@lid",
         "fromMe": true,
-        "id": "AC9E394D212D3BD32D546C6612C6EE15",
+        "id": "ACD3807D3BB045C82AA86F7364F1ADC3",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1762720254,
+      "messageTimestamp": 1762720893,
       "pushName": "Team Grill🙃",
       "broadcast": false,
       "status": 2,
@@ -115,130 +234,179 @@
       }
     }
   },
-  "3EB0290F535C447428B563": {
-    "id": "3EB0290F535C447428B563",
+  "3EB0648A0BDE33B529038A": {
+    "id": "3EB0648A0BDE33B529038A",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "🔄 *Restarting Bot...*\n\nPlease wait while the bot restarts.",
     "type": "extendedTextMessage",
-    "timestamp": 1762720255767,
+    "timestamp": 1762720894911,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0290F535C447428B563"
+        "id": "3EB0648A0BDE33B529038A"
       },
       "message": {
         "extendedTextMessage": {
           "text": "🔄 *Restarting Bot...*\n\nPlease wait while the bot restarts."
         }
       },
-      "messageTimestamp": "1762720255",
+      "messageTimestamp": "1762720894",
       "status": "PENDING"
     }
   },
-  "3EB0E344A5A8A03D0CA09C": {
-    "id": "3EB0E344A5A8A03D0CA09C",
+  "3EB038492F5B7DD0D33681": {
+    "id": "3EB038492F5B7DD0D33681",
     "fromJid": "280234452607229:24@lid",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1762720265541,
+    "timestamp": 1762720903216,
     "originalMessage": {
       "key": {
         "remoteJid": "280234452607229:24@lid",
         "fromMe": true,
-        "id": "3EB0E344A5A8A03D0CA09C"
+        "id": "3EB038492F5B7DD0D33681"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"User\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": "1762720263",
+      "messageTimestamp": "1762720902",
       "status": "PENDING"
     }
   },
-  "AC1D42973F2E7262ABB57E9BD1D4685F": {
-    "id": "AC1D42973F2E7262ABB57E9BD1D4685F",
+  "AC64DAB3294D0CA9E298A3C414167E92": {
+    "id": "AC64DAB3294D0CA9E298A3C414167E92",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": ".menu",
+    "content": ".ping",
     "type": "conversation",
-    "timestamp": 1762720267753,
+    "timestamp": 1762720912280,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "remoteJidAlt": "280234452607229@lid",
         "fromMe": true,
-        "id": "AC1D42973F2E7262ABB57E9BD1D4685F",
+        "id": "AC64DAB3294D0CA9E298A3C414167E92",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1762720267,
+      "messageTimestamp": 1762720911,
       "pushName": "Team Grill🙃",
       "broadcast": false,
       "status": 2,
       "message": {
-        "conversation": ".menu"
+        "conversation": ".ping"
       }
     }
   },
-  "3EB0AA7F1131492C8CC7E1": {
-    "id": "3EB0AA7F1131492C8CC7E1",
+  "3EB0EC8B9FC1BEB7E6192B": {
+    "id": "3EB0EC8B9FC1BEB7E6192B",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
-    "content": "\nGood Night 🌙, *User*\n\n╭━❮ TREKKERMD LIFETIME BOT ❯━╮\n┃ *👤ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃ *🥏ᴘʀᴇғɪx:* *[ . ]*\n┃ *🕒ᴛɪᴍᴇ:* 23:31:08\n┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* 92\n┃ *📆ᴅᴀᴛᴇ:* 09/11/2025\n┃ *🧑‍💻ᴍᴏᴅᴇ:* Public\n┃ *📼ʀᴀᴍ:* 24.7GB/62.8GB\n┃ *⏳ᴜᴘᴛɪᴍᴇ:* 3 minutes, 21 seconds\n╰─────────────━┈⊷\n> *Progress, not perfection.*\n\n\n*╭━❮ 𝐀𝐃𝐌𝐈𝐍 ❯━╮*\n┃✰ ᴀᴅᴅᴄᴍᴅ\n┃✰ ᴀɴᴛɪʙᴀᴅᴡᴏʀᴅ\n┃✰ ᴀɴᴛɪᴄᴀʟʟ\n┃✰ ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n┃✰ ᴀɴᴛɪʟɪɴᴋ\n┃✰ ᴀɴᴛɪ𝚜ᴘᴀᴍ\n┃✰ ʙᴀɴᴄʜᴀᴛ\n┃✰ ʙᴀɴᴜ𝚜ᴇʀ\n┃✰ ʙʟᴏᴄᴋ\n┃✰ ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ ʀᴇ𝚜ᴇᴛᴜ𝚜ᴇʀ\n┃✰ 𝚜ᴇᴛᴅᴘ\n┃✰ ᴜɴʙʟᴏᴄᴋ\n┃✰ ᴡᴀʀɴɪɴɢ\n╰─────────────━┈⊷\n*╭━❮ 𝐀𝐔𝐓𝐇 ❯━╮*\n┃✰ ᴘᴀɪʀ\n╰─────────────━┈⊷\n*╭━❮ 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 ❯━╮*\n┃✰ ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐂𝐎𝐍𝐕𝐄𝐑𝐓 ❯━╮*\n┃✰ 𝚜ᴛɪᴄᴋᴇʀ\n┃✰ ᴛᴏɪᴍɢ\n╰─────────────━┈⊷\n*╭━❮ 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 ❯━╮*\n┃✰ ғᴀᴄᴇʙᴏᴏᴋ\n┃✰ ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n┃✰ ᴘʟᴀʏ\n┃✰ ᴛɪᴋᴛᴏᴋ\n┃✰ ᴠɪᴅᴇᴏ\n╰─────────────━┈⊷\n*╭━❮ 𝐅𝐔𝐍 ❯━╮*\n┃✰ ᴀᴅᴠɪᴄᴇ\n┃✰ ᴀɴɢʀʏ\n┃✰ ᴄᴏᴏʟ\n┃✰ ᴄʀᴀᴢʏ\n┃✰ ᴅᴀʀᴇ\n┃✰ ᴇᴍᴏᴊɪᴍɪx\n┃✰ ᴇᴠɪʟ\n┃✰ ғᴀᴄᴛ\n┃✰ ғʟᴇx\n┃✰ ғᴜᴄᴋ\n┃✰ ʜᴀᴄᴋ\n┃✰ ʜᴀᴘᴘʏ\n┃✰ ʜᴏʀɴʏ\n┃✰ ᴋɪ𝚜𝚜\n┃✰ ʟᴏᴠᴇ\n┃✰ ᴍᴏɴᴇʏ\n┃✰ ᴘᴀʀᴛʏ\n┃✰ ǫᴜᴏᴛᴇ𝚜\n┃✰ 𝚜ᴀᴅ\n┃✰ 𝚜ᴋᴜʟʟ\n┃✰ ᴛʀɪᴠɪᴀ\n┃✰ ᴛʀᴜᴛʜ\n┃✰ ᴠᴏᴍɪᴛ\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 ❯━╮*\n┃✰ ʙɪᴏ\n┃✰ ᴄʜᴀɴɴᴇʟʀᴇᴀᴄᴛ\n┃✰ ᴅᴘ\n┃✰ ғᴏʟʟᴏᴡᴄʜᴀɴɴᴇʟ\n┃✰ ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐑𝐎𝐔𝐏 ❯━╮*\n┃✰ ᴀᴅᴅᴍᴏᴅᴇ\n┃✰ ᴀɴɴᴏᴜɴᴄᴇ\n┃✰ ᴀᴘᴘʀᴏᴠᴇʀᴇǫᴜᴇ𝚜ᴛ\n┃✰ ᴄʀᴇᴀᴛᴇɢʀᴏᴜᴘ\n┃✰ ᴅᴇᴍᴏᴛᴇ\n┃✰ ᴅɪ𝚜ᴀᴘᴘᴇᴀʀ\n┃✰ ɢʀᴏᴜᴘɪɴғᴏ\n┃✰ ɢʀᴏᴜᴘɪɴᴠɪᴛᴇɪɴғᴏ\n┃✰ ɪɴᴠɪᴛᴇ\n┃✰ ᴊᴏɪɴ\n┃✰ ᴋɪᴄᴋ\n┃✰ ʟᴇᴀᴠᴇ\n┃✰ ʟᴏᴄᴋ𝚜ᴇᴛᴛɪɴɢ𝚜\n┃✰ ᴍʏɢʀᴏᴜᴘ𝚜\n┃✰ ᴘʀᴏᴍᴏᴛᴇ\n┃✰ ʀᴇᴊᴇᴄᴛʀᴇǫᴜᴇ𝚜ᴛ\n┃✰ ʀᴇǫᴜᴇ𝚜ᴛ𝚜\n┃✰ ʀᴇᴠᴏᴋᴇ\n┃✰ 𝚜ᴇᴛᴅᴇ𝚜ᴄ\n┃✰ 𝚜ᴇᴛɴᴀᴍᴇ\n┃✰ 𝚜ᴇᴛᴡᴇʟᴄᴏᴍᴇ\n┃✰ ᴛᴀɢᴀʟʟ\n╰─────────────━┈⊷\n*╭━❮ 𝐒𝐄𝐓𝐓𝐈𝐍𝐆𝐒 ❯━╮*\n┃✰ ᴀᴜᴛᴏʀᴇᴀᴅ\n┃✰ ᴀᴜᴛᴏʀᴇᴘʟʏ\n┃✰ ᴀᴜᴛᴏᴠɪᴇᴡ\n┃✰ ᴘʀᴇ𝚜ᴇɴᴄᴇ\n┃✰ ʀᴇ𝚜ᴇᴛᴘʀᴇғɪx\n┃✰ ʀᴇ𝚜ᴛᴀʀᴛ\n┃✰ 𝚜ᴇᴛᴘʀᴇғɪx\n┃✰ 𝚜ᴛᴀʀᴛ\n┃✰ ᴛʏᴘɪɴɢ\n╰─────────────━┈⊷\n*╭━❮ 𝐒𝐘𝐒𝐓𝐄𝐌 ❯━╮*\n┃✰ ᴄᴏᴍᴍᴀɴᴅ𝚜\n┃✰ ғᴇᴛᴄʜ\n┃✰ ʜᴇʟᴘ\n┃✰ ʟɪ𝚜ᴛ\n┃✰ ᴍᴇɴᴜ\n┃✰ ᴏᴡɴᴇʀ\n┃✰ ᴘɪɴɢ\n┃✰ 𝚜ᴛᴀᴛᴜ𝚜\n┃✰ ᴜᴘᴛɪᴍᴇ\n╰─────────────━┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n",
-    "type": "imageMessage",
-    "timestamp": 1762720270250,
+    "content": "🏃‍♂️ *TREKKER-MD LIFETIME BOT*\n\n⚡ *Speed:* 0ms\n🤖 *Status:* Online\n💚 *Health:* Perfect\n\n> Ultra fast response from TREKKER-MD",
+    "type": "extendedTextMessage",
+    "timestamp": 1762720913484,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0AA7F1131492C8CC7E1"
+        "id": "3EB0EC8B9FC1BEB7E6192B"
       },
       "message": {
-        "imageMessage": {
-          "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m235/AQPZ4IBrfTwfv5zJ39_5UszFUjPEJ4m9iykF2l1NQjSupUcAYUl8a-cyRXWg6EYSojTEqHMEsPTepvb9iAtj9Xd0bxUQ1GpC7IFQMgrgHQ?ccb=9-4&oh=01_Q5Aa3AFK8TeRcwcedNJcHGKldPBtgaLbIlJvAuxzg0H_Qrdtdw&oe=69385082&_nc_sid=e6ed6c&mms3=true",
-          "mimetype": "image/jpeg",
-          "caption": "\nGood Night 🌙, *User*\n\n╭━❮ TREKKERMD LIFETIME BOT ❯━╮\n┃ *👤ʙᴏᴛ ᴏᴡɴᴇʀ:* TrekkerMD\n┃ *🥏ᴘʀᴇғɪx:* *[ . ]*\n┃ *🕒ᴛɪᴍᴇ:* 23:31:08\n┃ *🛸ᴄᴏᴍᴍᴀɴᴅꜱ:* 92\n┃ *📆ᴅᴀᴛᴇ:* 09/11/2025\n┃ *🧑‍💻ᴍᴏᴅᴇ:* Public\n┃ *📼ʀᴀᴍ:* 24.7GB/62.8GB\n┃ *⏳ᴜᴘᴛɪᴍᴇ:* 3 minutes, 21 seconds\n╰─────────────━┈⊷\n> *Progress, not perfection.*\n\n\n*╭━❮ 𝐀𝐃𝐌𝐈𝐍 ❯━╮*\n┃✰ ᴀᴅᴅᴄᴍᴅ\n┃✰ ᴀɴᴛɪʙᴀᴅᴡᴏʀᴅ\n┃✰ ᴀɴᴛɪᴄᴀʟʟ\n┃✰ ᴀɴᴛɪᴅᴇʟᴇᴛᴇ\n┃✰ ᴀɴᴛɪʟɪɴᴋ\n┃✰ ᴀɴᴛɪ𝚜ᴘᴀᴍ\n┃✰ ʙᴀɴᴄʜᴀᴛ\n┃✰ ʙᴀɴᴜ𝚜ᴇʀ\n┃✰ ʙʟᴏᴄᴋ\n┃✰ ɢᴇᴛᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ ʀᴇ𝚜ᴇᴛᴜ𝚜ᴇʀ\n┃✰ 𝚜ᴇᴛᴅᴘ\n┃✰ ᴜɴʙʟᴏᴄᴋ\n┃✰ ᴡᴀʀɴɪɴɢ\n╰─────────────━┈⊷\n*╭━❮ 𝐀𝐔𝐓𝐇 ❯━╮*\n┃✰ ᴘᴀɪʀ\n╰─────────────━┈⊷\n*╭━❮ 𝐀𝐔𝐓𝐎𝐌𝐀𝐓𝐈𝐎𝐍 ❯━╮*\n┃✰ ᴀɴᴛɪᴠɪᴇᴡᴏɴᴄᴇ\n┃✰ ᴀᴜᴛᴏ𝚜ᴛᴀᴛᴜ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐂𝐎𝐍𝐕𝐄𝐑𝐓 ❯━╮*\n┃✰ 𝚜ᴛɪᴄᴋᴇʀ\n┃✰ ᴛᴏɪᴍɢ\n╰─────────────━┈⊷\n*╭━❮ 𝐃𝐎𝐖𝐍𝐋𝐎𝐀𝐃 ❯━╮*\n┃✰ ғᴀᴄᴇʙᴏᴏᴋ\n┃✰ ɪɴ𝚜ᴛᴀɢʀᴀᴍ\n┃✰ ᴘʟᴀʏ\n┃✰ ᴛɪᴋᴛᴏᴋ\n┃✰ ᴠɪᴅᴇᴏ\n╰─────────────━┈⊷\n*╭━❮ 𝐅𝐔𝐍 ❯━╮*\n┃✰ ᴀᴅᴠɪᴄᴇ\n┃✰ ᴀɴɢʀʏ\n┃✰ ᴄᴏᴏʟ\n┃✰ ᴄʀᴀᴢʏ\n┃✰ ᴅᴀʀᴇ\n┃✰ ᴇᴍᴏᴊɪᴍɪx\n┃✰ ᴇᴠɪʟ\n┃✰ ғᴀᴄᴛ\n┃✰ ғʟᴇx\n┃✰ ғᴜᴄᴋ\n┃✰ ʜᴀᴄᴋ\n┃✰ ʜᴀᴘᴘʏ\n┃✰ ʜᴏʀɴʏ\n┃✰ ᴋɪ𝚜𝚜\n┃✰ ʟᴏᴠᴇ\n┃✰ ᴍᴏɴᴇʏ\n┃✰ ᴘᴀʀᴛʏ\n┃✰ ǫᴜᴏᴛᴇ𝚜\n┃✰ 𝚜ᴀᴅ\n┃✰ 𝚜ᴋᴜʟʟ\n┃✰ ᴛʀɪᴠɪᴀ\n┃✰ ᴛʀᴜᴛʜ\n┃✰ ᴠᴏᴍɪᴛ\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐄𝐍𝐄𝐑𝐀𝐋 ❯━╮*\n┃✰ ʙɪᴏ\n┃✰ ᴄʜᴀɴɴᴇʟʀᴇᴀᴄᴛ\n┃✰ ᴅᴘ\n┃✰ ғᴏʟʟᴏᴡᴄʜᴀɴɴᴇʟ\n┃✰ ᴘᴀʀᴛɪᴄɪᴘᴀɴᴛ𝚜\n╰─────────────━┈⊷\n*╭━❮ 𝐆𝐑𝐎𝐔𝐏 ❯━╮*\n┃✰ ᴀᴅᴅᴍᴏᴅᴇ\n┃✰ ᴀɴɴᴏᴜɴᴄᴇ\n┃✰ ᴀᴘᴘʀᴏᴠᴇʀᴇǫᴜᴇ𝚜ᴛ\n┃✰ ᴄʀᴇᴀᴛᴇɢʀᴏᴜᴘ\n┃✰ ᴅᴇᴍᴏᴛᴇ\n┃✰ ᴅɪ𝚜ᴀᴘᴘᴇᴀʀ\n┃✰ ɢʀᴏᴜᴘɪɴғᴏ\n┃✰ ɢʀᴏᴜᴘɪɴᴠɪᴛᴇɪɴғᴏ\n┃✰ ɪɴᴠɪᴛᴇ\n┃✰ ᴊᴏɪɴ\n┃✰ ᴋɪᴄᴋ\n┃✰ ʟᴇᴀᴠᴇ\n┃✰ ʟᴏᴄᴋ𝚜ᴇᴛᴛɪɴɢ𝚜\n┃✰ ᴍʏɢʀᴏᴜᴘ𝚜\n┃✰ ᴘʀᴏᴍᴏᴛᴇ\n┃✰ ʀᴇᴊᴇᴄᴛʀᴇǫᴜᴇ𝚜ᴛ\n┃✰ ʀᴇǫᴜᴇ𝚜ᴛ𝚜\n┃✰ ʀᴇᴠᴏᴋᴇ\n┃✰ 𝚜ᴇᴛᴅᴇ𝚜ᴄ\n┃✰ 𝚜ᴇᴛɴᴀᴍᴇ\n┃✰ 𝚜ᴇᴛᴡᴇʟᴄᴏᴍᴇ\n┃✰ ᴛᴀɢᴀʟʟ\n╰─────────────━┈⊷\n*╭━❮ 𝐒𝐄𝐓𝐓𝐈𝐍𝐆𝐒 ❯━╮*\n┃✰ ᴀᴜᴛᴏʀᴇᴀᴅ\n┃✰ ᴀᴜᴛᴏʀᴇᴘʟʏ\n┃✰ ᴀᴜᴛᴏᴠɪᴇᴡ\n┃✰ ᴘʀᴇ𝚜ᴇɴᴄᴇ\n┃✰ ʀᴇ𝚜ᴇᴛᴘʀᴇғɪx\n┃✰ ʀᴇ𝚜ᴛᴀʀᴛ\n┃✰ 𝚜ᴇᴛᴘʀᴇғɪx\n┃✰ 𝚜ᴛᴀʀᴛ\n┃✰ ᴛʏᴘɪɴɢ\n╰─────────────━┈⊷\n*╭━❮ 𝐒𝐘𝐒𝐓𝐄𝐌 ❯━╮*\n┃✰ ᴄᴏᴍᴍᴀɴᴅ𝚜\n┃✰ ғᴇᴛᴄʜ\n┃✰ ʜᴇʟᴘ\n┃✰ ʟɪ𝚜ᴛ\n┃✰ ᴍᴇɴᴜ\n┃✰ ᴏᴡɴᴇʀ\n┃✰ ᴘɪɴɢ\n┃✰ 𝚜ᴛᴀᴛᴜ𝚜\n┃✰ ᴜᴘᴛɪᴍᴇ\n╰─────────────━┈⊷\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴛʀᴇᴋᴋᴇʀᴍᴅ ᴛᴇᴀᴍ\n",
-          "fileSha256": "UywGIBS9S5pGgbp7v1DM+sLnvkfeUFtLg4x+ZldTldE=",
-          "fileLength": "99608",
-          "height": 640,
-          "width": 640,
-          "mediaKey": "wL3a+Xwigp61XKl3bTRuj/vb0UKZuG/dte2Ikq82SD4=",
-          "fileEncSha256": "VCfTjvoZdI7/GEeSS3SEJ4pv2qwNEYb9cDhjwVxxrPU=",
-          "directPath": "/o1/v/t24/f2/m235/AQPZ4IBrfTwfv5zJ39_5UszFUjPEJ4m9iykF2l1NQjSupUcAYUl8a-cyRXWg6EYSojTEqHMEsPTepvb9iAtj9Xd0bxUQ1GpC7IFQMgrgHQ?ccb=9-4&oh=01_Q5Aa3AFK8TeRcwcedNJcHGKldPBtgaLbIlJvAuxzg0H_Qrdtdw&oe=69385082&_nc_sid=e6ed6c",
-          "mediaKeyTimestamp": "1762720269",
-          "jpegThumbnail": "/9j/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAgACADASIAAhEBAxEB/8QAGAAAAwEBAAAAAAAAAAAAAAAABAUGAgP/xAApEAACAQQBAwIGAwAAAAAAAAABAgMABAUREhMhMSJRBhQyM0FxkaHR/8QAFwEAAwEAAAAAAAAAAAAAAAAAAQIDAP/EABkRAQEBAQEBAAAAAAAAAAAAAAECABEhQf/aAAwDAQACEQMRAD8Ae/DFxCcYGMHTcsQ7RoeJI/VG20SRZC5uFPL5hgOw8aH5oLE5LDY+zjgiugvI8irbJBPn8Vq8mkiuJgqP6t8TEpO/8NJdIeYxBT7tZaVchir63RzG0R05YeRuoi5KwNx4MQewNVMP28orHmoj5cj55CuS4KK6hSZp1iUjf0A/2aeVZ65a5Nc07a6khSV+K79vFNMs0N9AZn6kh8npto1NwuQq6Oh7boyG5A2H3xI0dHvU7hUe602HzObSd7OOWxLjoSxjz317ULkb0pCVEmzr0jXb+KHmzWLMTIJrxtrxBbj2/XahLjK2dxbLbwRvzC/cfWzRiU8dqRem/9k="
+        "extendedTextMessage": {
+          "text": "🏃‍♂️ *TREKKER-MD LIFETIME BOT*\n\n⚡ *Speed:* 0ms\n🤖 *Status:* Online\n💚 *Health:* Perfect\n\n> Ultra fast response from TREKKER-MD"
         }
       },
-      "messageTimestamp": "1762720269",
+      "messageTimestamp": "1762720912",
       "status": "PENDING"
     }
   },
-  "ACBF9C5DD7CA37FC7F90438181E1D5CA": {
-    "id": "ACBF9C5DD7CA37FC7F90438181E1D5CA",
+  "AC672943ACA435B814303CB3B8378783": {
+    "id": "AC672943ACA435B814303CB3B8378783",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "self",
     "content": "Hi",
     "type": "conversation",
-    "timestamp": 1762720282136,
+    "timestamp": 1762720920962,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "remoteJidAlt": "280234452607229@lid",
         "fromMe": true,
-        "id": "ACBF9C5DD7CA37FC7F90438181E1D5CA",
+        "id": "AC672943ACA435B814303CB3B8378783",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1762720281,
+      "messageTimestamp": 1762720920,
       "pushName": "Team Grill🙃",
       "broadcast": false,
       "status": 2,
       "message": {
         "conversation": "Hi"
+      }
+    }
+  },
+  "A57FB175F1249FDCEE28EB082F5BD1C6": {
+    "id": "A57FB175F1249FDCEE28EB082F5BD1C6",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "254704897825@s.whatsapp.net",
+    "content": "Yoh",
+    "type": "conversation",
+    "timestamp": 1762720965419,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": false,
+        "id": "A57FB175F1249FDCEE28EB082F5BD1C6"
+      },
+      "message": {
+        "conversation": "Yoh"
+      },
+      "messageTimestamp": "1762720953",
+      "messageSecret": "zBv5DSbfwg6JGJaIjCporpQhySHkHetmh7V4/4dztwA=",
+      "reportingTokenInfo": {
+        "reportingTag": "AQxhgXdx2ITcmvJommkudj2M5fQ="
+      },
+      "isMentionedInStatus": false
+    }
+  },
+  "AC6F8DFC0DF754A83940D53A2CB52FBA": {
+    "id": "AC6F8DFC0DF754A83940D53A2CB52FBA",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "254799257758@s.whatsapp.net",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1762720964918,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": false,
+        "id": "AC6F8DFC0DF754A83940D53A2CB52FBA",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762720964,
+      "broadcast": false,
+      "message": {
+        "protocolMessage": {
+          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+          "peerDataOperationRequestResponseMessage": {
+            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+            "stanzaId": "3EB0A389CBE11413B5530E",
+            "peerDataOperationResult": [
+              {
+                "mediaUploadResult": "SUCCESS",
+                "placeholderMessageResendResponse": {
+                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNTdGQjE3NUYxMjQ5RkRDRUUyOEVCMDgyRjVCRDFDNhIFCgNZb2gYufnDyAaKAyDMG/kNJt/CDokYloiMKmiulCHJIeQd62aHtXj/h3O3APIDFgoUAQxhgXdx2ITcmvJommkudj2M5fSIBAA="
+                }
+              }
+            ]
+          }
+        }
       }
     }
   }
