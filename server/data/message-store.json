@@ -170,32 +170,57 @@
     "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "254704897825@s.whatsapp.net",
     "content": "Ehehsg",
-    "type": "unknown",
-    "timestamp": 1762773125926,
+    "type": "conversation",
+    "timestamp": 1762773134767,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
-        "remoteJidAlt": "7198767878239@lid",
         "fromMe": false,
-        "id": "A51F05BBFCBE49BE8686C0D020305DEC",
+        "id": "A51F05BBFCBE49BE8686C0D020305DEC"
+      },
+      "message": {
+        "conversation": "Ehehsg"
+      },
+      "messageTimestamp": "1762773124",
+      "messageSecret": "SOL1ZmRBF2KsHYQ5Xb/ERSkLxs+41pHpKmBx33jcif0=",
+      "reportingTokenInfo": {
+        "reportingTag": "AQwRtWfsV7TA1gdHI3MFcjUhBW8="
+      },
+      "isMentionedInStatus": false
+    }
+  },
+  "AC4BFE19176640EED2B9962A8CEF5E6F": {
+    "id": "AC4BFE19176640EED2B9962A8CEF5E6F",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "254799257758@s.whatsapp.net",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1762773134268,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": false,
+        "id": "AC4BFE19176640EED2B9962A8CEF5E6F",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1762773125,
-      "pushName": "Trekker inc",
+      "messageTimestamp": 1762773134,
       "broadcast": false,
-      "verifiedBizName": "Trekker inc",
       "message": {
-        "conversation": "Ehehsg",
-        "messageContextInfo": {
-          "deviceListMetadata": {
-            "senderKeyHash": "7LQUdNy5HYeizg==",
-            "senderTimestamp": "1762764850",
-            "recipientKeyHash": "nH41fwMb4KDNFg==",
-            "recipientTimestamp": "1762769340"
-          },
-          "deviceListMetadataVersion": 2,
-          "messageSecret": "SOL1ZmRBF2KsHYQ5Xb/ERSkLxs+41pHpKmBx33jcif0="
+        "protocolMessage": {
+          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+          "peerDataOperationRequestResponseMessage": {
+            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+            "stanzaId": "3EB0726DBC428ED09B9A1E",
+            "peerDataOperationResult": [
+              {
+                "mediaUploadResult": "SUCCESS",
+                "placeholderMessageResendResponse": {
+                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNTFGMDVCQkZDQkU0OUJFODY4NkMwRDAyMDMwNURFQxIICgZFaGVoc2cYhJHHyAaKAyBI4vVmZEEXYqwdhDldv8RFKQvGz7jWkekqYHHfeNyJ/fIDFgoUAQwRtWfsV7TA1gdHI3MFcjUhBW+IBAA="
+                }
+              }
+            ]
+          }
         }
       }
     }
