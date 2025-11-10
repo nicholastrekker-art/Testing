@@ -77,13 +77,13 @@ export class WhatsAppBot {
 
       // Detect credential format and extract the creds object for creds.json
       let credsContent = credentials;
-      
+
       // Check if this is v7 format (fields at root level)
       const isV7Format = credentials.noiseKey && credentials.signedIdentityKey && !credentials.creds;
-      
+
       // Check if this is already in wrapped format (fields under creds)
       const isWrappedFormat = credentials.creds?.noiseKey;
-      
+
       if (isWrappedFormat) {
         // Already wrapped - extract the creds content for the file
         credsContent = credentials.creds;
@@ -146,7 +146,7 @@ export class WhatsAppBot {
         const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
         const disconnectReason = (lastDisconnect?.error as Boom)?.output?.statusCode;
         const errorMessage = (lastDisconnect?.error as Error)?.message || 'Unknown error';
-        
+
         console.log(`Bot ${this.botInstance.name}: Connection closed due to`, lastDisconnect?.error, ', reconnecting:', shouldReconnect);
 
         this.isRunning = false;
@@ -154,19 +154,19 @@ export class WhatsAppBot {
 
         // Check for 428 errors (Connection Closed / Precondition Required)
         const is428Error = disconnectReason === 428 || errorMessage.includes('Connection Closed');
-        
+
         if (is428Error) {
           console.log(`⚠️ Bot ${this.botInstance.name}: Connection Closed (428) - implementing backoff strategy`);
-          
+
           // Implement longer backoff for 428 errors
           if (this.reconnectAttempts < 3) {
             const backoffDelay = 30000 * Math.pow(2, this.reconnectAttempts); // 30s, 60s, 120s
             this.reconnectAttempts++;
-            
+
             console.log(`🔄 Bot ${this.botInstance.name}: Will retry in ${backoffDelay/1000}s (attempt ${this.reconnectAttempts}/3)`);
-            
+
             await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
-            
+
             setTimeout(async () => {
               try {
                 await this.start();
@@ -179,13 +179,13 @@ export class WhatsAppBot {
             // Max attempts reached for 428 errors
             console.log(`🚫 Bot ${this.botInstance.name}: Max 428 error retries reached - stopping`);
             this.reconnectAttempts = 999;
-            
+
             await storage.updateBotInstance(this.botInstance.id, {
               status: 'offline',
               invalidReason: 'Connection repeatedly closed by WhatsApp. Please restart bot later.',
               autoStart: false
             });
-            
+
             await storage.createActivity({
               serverName: this.botInstance.serverName,
               botInstanceId: this.botInstance.id,
@@ -198,17 +198,17 @@ export class WhatsAppBot {
 
         // Check for 405 errors (Connection Failure from WhatsApp)
         const is405Error = disconnectReason === 405 || errorMessage.includes('405') || errorMessage.includes('Connection Failure');
-        
+
         if (is405Error) {
           console.log(`🚫 Bot ${this.botInstance.name}: WhatsApp returned 405 Connection Failure - stopping reconnection attempts`);
           this.reconnectAttempts = 999; // Stop auto-reconnect
-          
+
           await storage.updateBotInstance(this.botInstance.id, {
             status: 'offline',
             invalidReason: 'WhatsApp rejected connection (405). Credentials may need refresh or too many attempts detected.',
             autoStart: false
           });
-          
+
           await storage.createActivity({
             serverName: this.botInstance.serverName,
             botInstanceId: this.botInstance.id,
@@ -247,7 +247,7 @@ export class WhatsAppBot {
           // Auto-reconnect with exponential backoff (max 5 attempts)
           const reconnectDelay = Math.min(10000 * Math.pow(2, this.reconnectAttempts || 0), 120000);
           this.reconnectAttempts = (this.reconnectAttempts || 0) + 1;
-          
+
           console.log(`🔄 Bot ${this.botInstance.name}: Will retry connection in ${reconnectDelay/1000}s (attempt ${this.reconnectAttempts}/5)`);
 
           setTimeout(async () => {
@@ -315,18 +315,18 @@ export class WhatsAppBot {
           // Get the bot's own number - use the same JID format that works for .ping command responses
           // This ensures consistent delivery just like command responses
           const botJid = this.sock.user?.id;
-          
+
           if (botJid) {
             // Format the JID the same way commands do (ensures it's a proper WhatsApp JID)
             const formattedJid = botJid.includes('@s.whatsapp.net') ? botJid : `${botJid.split(':')[0]}@s.whatsapp.net`;
-            
+
             console.log(`🎉 TREKKERMD LIFETIME BOT: Sending welcome message to ${formattedJid}`);
             await this.sock.sendMessage(formattedJid, { 
               text: welcomeMessage,
               mentions: [] // Ensure clean message delivery
             });
             console.log(`✅ TREKKERMD LIFETIME BOT: Welcome message sent successfully!`);
-            
+
             // Log activity for tracking
             await storage.createActivity({
               serverName: this.botInstance.serverName,
@@ -679,7 +679,7 @@ export class WhatsAppBot {
     if (!messageObj) return '';
 
     // Priority order for text extraction - most specific first
-    
+
     // 1. Direct conversation (simple text message) - MOST COMMON FOR COMMANDS
     if (messageObj.conversation) {
       const text = String(messageObj.conversation).trim();
@@ -699,7 +699,7 @@ export class WhatsAppBot {
                    messageObj.videoMessage?.caption ||
                    messageObj.documentMessage?.caption ||
                    messageObj.audioMessage?.caption;
-    
+
     if (caption) {
       const text = String(caption).trim();
       console.log(`📝 Extracted from media caption: "${text}"`);
@@ -710,7 +710,7 @@ export class WhatsAppBot {
     const interactive = messageObj.buttonsResponseMessage?.selectedButtonId ||
                        messageObj.listResponseMessage?.singleSelectReply?.selectedRowId ||
                        messageObj.templateButtonReplyMessage?.selectedId;
-    
+
     if (interactive) {
       const text = String(interactive).trim();
       console.log(`📝 Extracted from interactive: "${text}"`);
@@ -723,7 +723,7 @@ export class WhatsAppBot {
                   messageObj.viewOnceMessageV2?.message ||
                   messageObj.documentWithCaptionMessage?.message ||
                   messageObj.editedMessage?.message;
-    
+
     if (inner && inner !== messageObj) {
       console.log(`🔄 Unwrapping nested message...`);
       return this.extractMessageText(inner);
@@ -751,15 +751,15 @@ export class WhatsAppBot {
       const dedupKey = message.key.participant 
         ? `${message.key.id}:${message.key.remoteJid}:${message.key.participant}`
         : `${message.key.id}:${message.key.remoteJid}`;
-      
+
       const now = Date.now();
       const lastProcessed = processedMessages.get(dedupKey);
-      
+
       if (lastProcessed && (now - lastProcessed < MESSAGE_DEDUP_TTL)) {
         console.log(`Bot ${this.botInstance.name}: ⏭️ Skipping duplicate message ${message.key.id} (processed ${now - lastProcessed}ms ago)`);
         return;
       }
-      
+
       // Mark message as processed
       processedMessages.set(dedupKey, now);
       console.log(`Bot ${this.botInstance.name}: ✅ Processing message ${message.key.id} (first time)`);
@@ -770,16 +770,16 @@ export class WhatsAppBot {
         const myJid = this.sock.user?.id;
         const myLid = this.sock.user?.lid;
         const recipientJid = message.key.remoteJid;
-        
+
         // For private chats: check if message is sent to THIS bot's number
         const isPrivateChat = !recipientJid.endsWith('@g.us') && !recipientJid.endsWith('@broadcast') && !recipientJid.endsWith('@newsletter');
-        
+
         if (isPrivateChat) {
           // In private chat, message should be to/from this bot's number
           const isForThisBot = recipientJid === myJid || recipientJid === myLid || 
-                               recipientJid.startsWith(myJid?.split('@')[0] || '') ||
-                               recipientJid.startsWith(myLid?.split('@')[0] || '' || '');
-          
+                               recipientJid.startsWith(myJid?.split(':')[0] || '') ||
+                               recipientJid.startsWith(myLid?.split(':')[0] || '');
+
           if (!isForThisBot) {
             console.log(`Bot ${this.botInstance.name}: ⏭️ Skipping message not for this bot (to: ${recipientJid}, my: ${myJid || myLid})`);
             return;
@@ -790,7 +790,7 @@ export class WhatsAppBot {
 
       // Get message text - extract directly from the message object
       const messageText = this.extractMessageText(message.message);
-      
+
       if (!messageText || messageText.length === 0) {
         console.log(`Bot ${this.botInstance.name}: ⚠️ No text content in message from ${message.key.remoteJid}`);
         console.log(`Bot ${this.botInstance.name}: 🔍 Message keys:`, Object.keys(message.message || {}));
@@ -798,7 +798,7 @@ export class WhatsAppBot {
       } else {
         console.log(`Bot ${this.botInstance.name}: 📝 Message text: "${messageText.substring(0, 50)}${messageText.length > 50 ? '...' : ''}"`);
       }
-      
+
       const commandPrefix = process.env.BOT_PREFIX || '.';
       const trimmedText = messageText.trim();
       const startsWithPrefix = trimmedText.length > 0 && trimmedText.startsWith(commandPrefix);
@@ -852,7 +852,7 @@ export class WhatsAppBot {
 
   private async handleCommand(message: WAMessage, commandText: string) {
     console.log(`Bot ${this.botInstance.name}: 🔧 handleCommand called with text: "${commandText}"`);
-    
+
     const commandPrefix = process.env.BOT_PREFIX || '.';
     const textWithoutPrefix = commandText.substring(commandPrefix.length).trim();
     const args = textWithoutPrefix.split(' ');
@@ -869,14 +869,30 @@ export class WhatsAppBot {
     // Check our command registry first
     const registeredCommand = commandRegistry.get(commandName);
     console.log(`Bot ${this.botInstance.name}: 🔍 Registry lookup for "${commandName}": ${registeredCommand ? 'FOUND' : 'NOT FOUND'}`);
-    
+
     if (registeredCommand) {
+      // Check if command is owner-only and if the user is the owner
+      const isOwner = this.botInstance.owner === message.key.remoteJid?.split(':')[0];
+      const ownerOnly = registeredCommand.ownerOnly ?? false; // Default to false if not specified
+      const isPublicCommand = registeredCommand.isPublic === true || registeredCommand.ownerOnly === false;
+
+      // Allow execution if it's a public command, or if it's owner-only and the user is the owner
+      if (!isPublicCommand && ownerOnly && !isOwner) {
+        console.log(`Bot ${this.botInstance.name}: 🚫 Access denied for command .${commandName} (Owner-only)`);
+        if (message.key.remoteJid) {
+          await this.sock.sendMessage(message.key.remoteJid, {
+            text: '🚫 Access denied. This command can only be used by the bot owner.'
+          });
+        }
+        return;
+      }
+
       // Verify bot is ready to send messages
       if (!this.sock) {
         console.error(`Bot ${this.botInstance.name}: ❌ Cannot execute command - socket not available`);
         return;
       }
-      
+
       if (!this.isRunning) {
         console.error(`Bot ${this.botInstance.name}: ❌ Cannot execute command - bot not running`);
         return;
@@ -885,18 +901,18 @@ export class WhatsAppBot {
       try {
         console.log(`Bot ${this.botInstance.name}: ▶️ Executing registered command: ${commandName}`);
         console.log(`Bot ${this.botInstance.name}: 🔌 Socket state: connected=${!!this.sock.user?.id}`);
-        
+
         const respond = async (text: string) => {
           if (!message.key.remoteJid) {
             console.error(`Bot ${this.botInstance.name}: ❌ No remoteJid available for response`);
             return;
           }
-          
+
           if (!this.sock) {
             console.error(`Bot ${this.botInstance.name}: ❌ Socket not available`);
             return;
           }
-          
+
           if (!this.isRunning) {
             console.error(`Bot ${this.botInstance.name}: ❌ Bot not running`);
             return;
@@ -904,7 +920,7 @@ export class WhatsAppBot {
 
           console.log(`Bot ${this.botInstance.name}: 💬 Attempting to send response to ${message.key.remoteJid}`);
           console.log(`Bot ${this.botInstance.name}: 📝 Message text: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
-          
+
           try {
             const sendResult = await this.sock.sendMessage(message.key.remoteJid, { text });
             console.log(`Bot ${this.botInstance.name}: ✅ Response sent successfully, result:`, sendResult?.status || 'unknown');
@@ -969,7 +985,7 @@ export class WhatsAppBot {
 
     if (command) {
       console.log(`Bot ${this.botInstance.name}: ▶️ Executing database command: ${commandName}`);
-      
+
       await storage.updateBotInstance(this.botInstance.id, {
         commandsCount: (this.botInstance.commandsCount || 0) + 1
       });
@@ -998,7 +1014,7 @@ export class WhatsAppBot {
           console.error(`Bot ${this.botInstance.name}: ❌ Failed to send database command response:`, sendError);
         }
       }
-      
+
       console.log(`Bot ${this.botInstance.name}: ✅ Database command executed`);
     } else {
       console.log(`Bot ${this.botInstance.name}: ❌ Command .${commandName} not found in registry or database`);
@@ -1106,7 +1122,7 @@ export class WhatsAppBot {
     // Fetch latest bot settings from database to ensure we have current values
     storage.getBotInstance(this.botInstance.id).then(freshBot => {
       if (!freshBot) return;
-      
+
       const presenceAutoSwitch = freshBot.presenceAutoSwitch;
       const alwaysOnline = freshBot.alwaysOnline;
       const presenceMode = freshBot.presenceMode;
@@ -1163,8 +1179,8 @@ export class WhatsAppBot {
         console.log(`Bot ${this.botInstance.name}: Fixed presence mode activated: ${presenceMode}`);
 
         // Map presence mode to Baileys presence type
-        const presenceType = presenceMode === 'typing' ? 'composing' : 
-                           presenceMode === 'recording' ? 'recording' : 
+        const presenceType = presenceMode === 'typing' ? 'composing' :
+                           presenceMode === 'recording' ? 'recording' :
                            'available';
 
         // Send presence update every 10 seconds to maintain the mode
@@ -1409,7 +1425,7 @@ export class WhatsAppBot {
       // Check if credentials have a valid user identity (LID or traditional JID)
       const hasLID = credentials.creds.me?.lid;
       const hasJID = credentials.creds.me?.id;
-      
+
       if (!hasLID && !hasJID) {
         return { valid: false, error: 'Missing user identity (lid or id) in credentials' };
       }

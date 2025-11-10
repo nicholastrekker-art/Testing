@@ -3016,14 +3016,18 @@ commandRegistry.register({
   }
 });
 
-// Pair Command - Generate WhatsApp pairing code using internal pair server (PUBLIC)
+// Pair Command - Generate WhatsApp pairing code using internal pair server (PUBLIC - NO RESTRICTIONS)
 commandRegistry.register({
   name: 'pair',
   aliases: ['getcode', 'paircode'],
-  description: 'Generate WhatsApp pairing code for WhatsApp connection (Public)',
-  category: 'AUTH',
+  description: 'Generate WhatsApp pairing code - Available to everyone',
+  category: 'PUBLIC',
+  isPublic: true, // Explicitly mark as public
+  ownerOnly: false, // Explicitly disable owner restriction
   handler: async (context: CommandContext) => {
     const { respond, args, client, from } = context;
+
+    // NO OWNER CHECKS - This command is public for everyone
 
     if (args.length === 0) {
       await respond(`❌ *Phone Number Required*
@@ -3032,7 +3036,7 @@ commandRegistry.register({
 
 Example: .pair 254712345678
 
-💡 *Note:* This command works in groups and private chats!
+💡 *Note:* This command is available to EVERYONE in groups, private chats, and public channels!
 
 > TREKKER-MD Pairing System`);
       return;

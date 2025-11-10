@@ -3,6 +3,8 @@ interface BotCommand {
   aliases?: string[];
   description: string;
   category: string;
+  isPublic?: boolean; // Mark command as publicly accessible
+  ownerOnly?: boolean; // Restrict command to owner only
   handler: (context: CommandContext) => Promise<void>;
 }
 
