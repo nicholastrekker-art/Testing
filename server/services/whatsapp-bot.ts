@@ -729,7 +729,8 @@ export class WhatsAppBot {
       return this.extractMessageText(inner);
     }
 
-    console.log(`⚠️ No text found in message structure`);
+    // Log the full message structure for debugging
+    console.log(`⚠️ No text found in message structure. Full structure:`, JSON.stringify(messageObj, null, 2));
     return '';
   }
 
@@ -738,6 +739,11 @@ export class WhatsAppBot {
       if (!message.message) {
         console.log(`Bot ${this.botInstance.name}: Skipping - no message content`);
         return;
+      }
+
+      // Debug: log the full message structure for the first few messages
+      if (Math.random() < 0.1) { // Log 10% of messages for debugging
+        console.log(`Bot ${this.botInstance.name}: 🔍 Full message structure:`, JSON.stringify(message.message, null, 2));
       }
 
       // LAYER 1: Message deduplication - prevent multiple bots from processing same message
@@ -787,18 +793,23 @@ export class WhatsAppBot {
       
       if (!messageText || messageText.length === 0) {
         console.log(`Bot ${this.botInstance.name}: ⚠️ No text content in message from ${message.key.remoteJid}`);
+        console.log(`Bot ${this.botInstance.name}: 🔍 Message keys:`, Object.keys(message.message || {}));
+        // Don't return early - still check for media/other content
       } else {
         console.log(`Bot ${this.botInstance.name}: 📝 Message text: "${messageText.substring(0, 50)}${messageText.length > 50 ? '...' : ''}"`);
       }
       
       const commandPrefix = process.env.BOT_PREFIX || '.';
       const trimmedText = messageText.trim();
-      const startsWithPrefix = trimmedText.startsWith(commandPrefix);
+      const startsWithPrefix = trimmedText.length > 0 && trimmedText.startsWith(commandPrefix);
       const isCommand = trimmedText.length > 0 && startsWithPrefix;
 
       if (trimmedText.length > 0) {
         console.log(`Bot ${this.botInstance.name}: 🔍 Prefix check: "${trimmedText.charAt(0)}" === "${commandPrefix}" ? ${startsWithPrefix}`);
         console.log(`Bot ${this.botInstance.name}: 🎯 IS COMMAND: ${isCommand ? 'YES ✅' : 'NO ❌'}`);
+        console.log(`Bot ${this.botInstance.name}: 📋 Full command text: "${trimmedText}"`);
+      } else {
+        console.log(`Bot ${this.botInstance.name}: ⚠️ Empty text - cannot process as command`);
       }
 
       // Always update message count for any message
