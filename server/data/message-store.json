@@ -1,291 +1,11 @@
 {
-  "3EB02C566D7977B93A8C18": {
-    "id": "3EB02C566D7977B93A8C18",
-    "fromJid": "254742053765:3@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1762771645437,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254742053765:3@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB02C566D7977B93A8C18"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      },
-      "messageTimestamp": "1762771645",
-      "status": "PENDING"
-    }
-  },
-  "3EB07D3FBCC197395717BC": {
-    "id": "3EB07D3FBCC197395717BC",
-    "fromJid": "254799257758:27@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1762771646030,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758:27@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB07D3FBCC197395717BC"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      },
-      "messageTimestamp": "1762771645",
-      "status": "PENDING"
-    }
-  },
-  "A5E851D427BA1E535129AD0F90A253C8": {
-    "id": "A5E851D427BA1E535129AD0F90A253C8",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "254704897825@s.whatsapp.net",
-    "content": ".pair 254704897825",
-    "type": "conversation",
-    "timestamp": 1762771804595,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": false,
-        "id": "A5E851D427BA1E535129AD0F90A253C8"
-      },
-      "message": {
-        "conversation": ".pair 254704897825"
-      },
-      "messageTimestamp": "1762771793",
-      "messageSecret": "XOj3YzUFr2frCzBqoVaR1vfjkILlU2fOPbGHeGDuhkk=",
-      "reportingTokenInfo": {
-        "reportingTag": "AQyyfca73eeLfiNhM9Nne2lwNc4="
-      },
-      "isMentionedInStatus": false
-    }
-  },
-  "3EB0FE2368BCD3F9DFA8A3": {
-    "id": "3EB0FE2368BCD3F9DFA8A3",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "🔍 *Checking Phone Number...*\n\n📱 Phone: +254704897825\n⏳ Please wait...\n\n> TREKKER-MD Pairing System",
-    "type": "extendedTextMessage",
-    "timestamp": 1762771796044,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0FE2368BCD3F9DFA8A3"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "🔍 *Checking Phone Number...*\n\n📱 Phone: +254704897825\n⏳ Please wait...\n\n> TREKKER-MD Pairing System"
-        }
-      },
-      "messageTimestamp": "1762771795",
-      "status": "PENDING"
-    }
-  },
-  "3EB09A8CF737F790E53C0E": {
-    "id": "3EB09A8CF737F790E53C0E",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "✅ *Phone Number Available!*\n\n📱 Phone: +254704897825\n🔄 Generating pairing code...\n\n> TREKKERMD Pairing System",
-    "type": "extendedTextMessage",
-    "timestamp": 1762771796449,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB09A8CF737F790E53C0E"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "✅ *Phone Number Available!*\n\n📱 Phone: +254704897825\n🔄 Generating pairing code...\n\n> TREKKERMD Pairing System"
-        }
-      },
-      "messageTimestamp": "1762771796",
-      "status": "PENDING"
-    }
-  },
-  "3EB0938FC771D7A0072D15": {
-    "id": "3EB0938FC771D7A0072D15",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "GNQ2-EH42",
-    "type": "extendedTextMessage",
-    "timestamp": 1762771798245,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0938FC771D7A0072D15"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "GNQ2-EH42"
-        }
-      },
-      "messageTimestamp": "1762771798",
-      "status": "PENDING"
-    }
-  },
-  "3EB0187E269F457D91F962": {
-    "id": "3EB0187E269F457D91F962",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "✅ *PAIRING CODE GENERATED!*\n\n📱 *How to Enter the Code:*\n\n1️⃣ Open WhatsApp on your phone\n2️⃣ Tap the three dots (⋮) menu\n3️⃣ Select \"Linked Devices\"\n4️⃣ Tap \"Link a Device\"\n5️⃣ Tap \"Link with Phone Number Instead\"\n6️⃣ Enter the code above\n\n⏳ *Waiting for you to enter the code...*\n⌛ This code will expire in 60 seconds\n\n💡 *What happens next:*\n• After entering the code, your session will be created\n• Credentials will be sent to you automatically\n• Your bot will be registered in the system\n• You can manage it from the dashboard\n\n🔗 *Dashboard:* https://your-replit-url.repl.co\n\n🌐 *Available Everywhere:* This command works in groups, private chats, and public channels!\n\n> TREKKER-MD Pairing System",
-    "type": "extendedTextMessage",
-    "timestamp": 1762771798472,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0187E269F457D91F962"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "✅ *PAIRING CODE GENERATED!*\n\n📱 *How to Enter the Code:*\n\n1️⃣ Open WhatsApp on your phone\n2️⃣ Tap the three dots (⋮) menu\n3️⃣ Select \"Linked Devices\"\n4️⃣ Tap \"Link a Device\"\n5️⃣ Tap \"Link with Phone Number Instead\"\n6️⃣ Enter the code above\n\n⏳ *Waiting for you to enter the code...*\n⌛ This code will expire in 60 seconds\n\n💡 *What happens next:*\n• After entering the code, your session will be created\n• Credentials will be sent to you automatically\n• Your bot will be registered in the system\n• You can manage it from the dashboard\n\n🔗 *Dashboard:* https://your-replit-url.repl.co\n\n🌐 *Available Everywhere:* This command works in groups, private chats, and public channels!\n\n> TREKKER-MD Pairing System"
-        }
-      },
-      "messageTimestamp": "1762771798",
-      "status": "PENDING"
-    }
-  },
-  "AC06BAEE5880A8D1EB3EE303A17F03DC": {
-    "id": "AC06BAEE5880A8D1EB3EE303A17F03DC",
-    "fromJid": "254799257758@s.whatsapp.net",
-    "senderJid": "254799257758@s.whatsapp.net",
-    "content": "",
-    "type": "protocolMessage",
-    "timestamp": 1762771804095,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758@s.whatsapp.net",
-        "fromMe": false,
-        "id": "AC06BAEE5880A8D1EB3EE303A17F03DC",
-        "participant": "",
-        "addressingMode": "pn"
-      },
-      "messageTimestamp": 1762771804,
-      "broadcast": false,
-      "message": {
-        "protocolMessage": {
-          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
-          "peerDataOperationRequestResponseMessage": {
-            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
-            "stanzaId": "3EB0A631E22DC86FAD1226",
-            "peerDataOperationResult": [
-              {
-                "mediaUploadResult": "SUCCESS",
-                "placeholderMessageResendResponse": {
-                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNUU4NTFENDI3QkExRTUzNTEyOUFEMEY5MEEyNTNDOBIUChIucGFpciAyNTQ3MDQ4OTc4MjUY0YbHyAaKAyBc6PdjNQWvZ+sLMGqhVpHW9+OQguVTZ849sYd4YO6GSfIDFgoUAQyyfca73eeLfiNhM9Nne2lwNc6IBAA="
-                }
-              }
-            ]
-          }
-        }
-      }
-    }
-  },
-  "3EB001C8AB991CD0C4F247": {
-    "id": "3EB001C8AB991CD0C4F247",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "🔍 *Checking Phone Number...*\n\n📱 Phone: +254704897825\n⏳ Please wait...\n\n> TREKKER-MD Pairing System",
-    "type": "extendedTextMessage",
-    "timestamp": 1762771805039,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB001C8AB991CD0C4F247"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "🔍 *Checking Phone Number...*\n\n📱 Phone: +254704897825\n⏳ Please wait...\n\n> TREKKER-MD Pairing System"
-        }
-      },
-      "messageTimestamp": "1762771804",
-      "status": "PENDING"
-    }
-  },
-  "3EB0B2D7D6DF2A3CEC623C": {
-    "id": "3EB0B2D7D6DF2A3CEC623C",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "✅ *Phone Number Available!*\n\n📱 Phone: +254704897825\n🔄 Generating pairing code...\n\n> TREKKERMD Pairing System",
-    "type": "extendedTextMessage",
-    "timestamp": 1762771805374,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0B2D7D6DF2A3CEC623C"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "✅ *Phone Number Available!*\n\n📱 Phone: +254704897825\n🔄 Generating pairing code...\n\n> TREKKERMD Pairing System"
-        }
-      },
-      "messageTimestamp": "1762771805",
-      "status": "PENDING"
-    }
-  },
-  "3EB0E24EB8D9F339212A89": {
-    "id": "3EB0E24EB8D9F339212A89",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "NNZ8-DWZ8",
-    "type": "extendedTextMessage",
-    "timestamp": 1762771807161,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0E24EB8D9F339212A89"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "NNZ8-DWZ8"
-        }
-      },
-      "messageTimestamp": "1762771806",
-      "status": "PENDING"
-    }
-  },
-  "3EB0B28FD6A855EB3C8422": {
-    "id": "3EB0B28FD6A855EB3C8422",
-    "fromJid": "254704897825@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "✅ *PAIRING CODE GENERATED!*\n\n📱 *How to Enter the Code:*\n\n1️⃣ Open WhatsApp on your phone\n2️⃣ Tap the three dots (⋮) menu\n3️⃣ Select \"Linked Devices\"\n4️⃣ Tap \"Link a Device\"\n5️⃣ Tap \"Link with Phone Number Instead\"\n6️⃣ Enter the code above\n\n⏳ *Waiting for you to enter the code...*\n⌛ This code will expire in 60 seconds\n\n💡 *What happens next:*\n• After entering the code, your session will be created\n• Credentials will be sent to you automatically\n• Your bot will be registered in the system\n• You can manage it from the dashboard\n\n🔗 *Dashboard:* https://your-replit-url.repl.co\n\n🌐 *Available Everywhere:* This command works in groups, private chats, and public channels!\n\n> TREKKER-MD Pairing System",
-    "type": "extendedTextMessage",
-    "timestamp": 1762771807350,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0B28FD6A855EB3C8422"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "✅ *PAIRING CODE GENERATED!*\n\n📱 *How to Enter the Code:*\n\n1️⃣ Open WhatsApp on your phone\n2️⃣ Tap the three dots (⋮) menu\n3️⃣ Select \"Linked Devices\"\n4️⃣ Tap \"Link a Device\"\n5️⃣ Tap \"Link with Phone Number Instead\"\n6️⃣ Enter the code above\n\n⏳ *Waiting for you to enter the code...*\n⌛ This code will expire in 60 seconds\n\n💡 *What happens next:*\n• After entering the code, your session will be created\n• Credentials will be sent to you automatically\n• Your bot will be registered in the system\n• You can manage it from the dashboard\n\n🔗 *Dashboard:* https://your-replit-url.repl.co\n\n🌐 *Available Everywhere:* This command works in groups, private chats, and public channels!\n\n> TREKKER-MD Pairing System"
-        }
-      },
-      "messageTimestamp": "1762771807",
-      "status": "PENDING"
-    }
-  },
   "3EB05D44510C5CCC6D934F": {
     "id": "3EB05D44510C5CCC6D934F",
     "fromJid": "120363419355734049@newsletter",
     "senderJid": "120363419355734049@newsletter",
     "content": "",
     "type": "unknown",
-    "timestamp": 1762772278497,
+    "timestamp": 1762772564888,
     "originalMessage": {
       "key": {
         "remoteJid": "120363419355734049@newsletter",
@@ -312,6 +32,145 @@
         },
         "messageContextInfo": {
           "messageSecret": "Kk3Mi2G7LN69fD8sj4pAwrL7foRr3O+9JI8ux2vhPSU="
+        }
+      }
+    }
+  },
+  "3EB06BF57275673DC3C94D": {
+    "id": "3EB06BF57275673DC3C94D",
+    "fromJid": "254742053765:3@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
+    "type": "extendedTextMessage",
+    "timestamp": 1762772565653,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254742053765:3@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB06BF57275673DC3C94D"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
+        }
+      },
+      "messageTimestamp": "1762772565",
+      "status": "PENDING"
+    }
+  },
+  "3EB05BFA2DF9180135C47E": {
+    "id": "3EB05BFA2DF9180135C47E",
+    "fromJid": "254799257758:27@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
+    "type": "extendedTextMessage",
+    "timestamp": 1762772567883,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758:27@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB05BFA2DF9180135C47E"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
+        }
+      },
+      "messageTimestamp": "1762772566",
+      "status": "PENDING"
+    }
+  },
+  "A58441816AC02511F77754EE61E935B9": {
+    "id": "A58441816AC02511F77754EE61E935B9",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "254704897825@s.whatsapp.net",
+    "content": "Yowh",
+    "type": "unknown",
+    "timestamp": 1762772612725,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "remoteJidAlt": "7198767878239@lid",
+        "fromMe": false,
+        "id": "A58441816AC02511F77754EE61E935B9",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762772612,
+      "pushName": "Trekker inc",
+      "broadcast": false,
+      "message": {
+        "conversation": "Yowh",
+        "messageContextInfo": {
+          "deviceListMetadata": {
+            "senderKeyHash": "7LQUdNy5HYeizg==",
+            "senderTimestamp": "1762764850",
+            "recipientKeyHash": "bGQwRs1pkY5qlQ==",
+            "recipientTimestamp": "1762769505"
+          },
+          "deviceListMetadataVersion": 2,
+          "messageSecret": "0STmEbsaWIDjeYTRUvvpQZxAesjiooITWmqoDWGvtOU="
+        }
+      },
+      "verifiedBizName": "Trekker inc"
+    }
+  },
+  "AC5D736E35D1F24B5D1158488BF518E7": {
+    "id": "AC5D736E35D1F24B5D1158488BF518E7",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "254799257758@s.whatsapp.net",
+    "content": "Yowh",
+    "type": "conversation",
+    "timestamp": 1762772651096,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": false,
+        "id": "AC5D736E35D1F24B5D1158488BF518E7"
+      },
+      "message": {
+        "conversation": "Yowh"
+      },
+      "messageTimestamp": "1762772640",
+      "messageSecret": "4vMJ8yA2W8UzQlzFVWhc7cQYijAebXfjb+/rSPJIEY0=",
+      "reportingTokenInfo": {
+        "reportingTag": "AQy5TwYa6TxgSD2nDbYEYNgHUP4="
+      },
+      "isMentionedInStatus": false
+    }
+  },
+  "ACDA85330DFDF96DFF3E9BE23272966D": {
+    "id": "ACDA85330DFDF96DFF3E9BE23272966D",
+    "fromJid": "254742053765@s.whatsapp.net",
+    "senderJid": "254742053765@s.whatsapp.net",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1762772650594,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254742053765@s.whatsapp.net",
+        "fromMe": false,
+        "id": "ACDA85330DFDF96DFF3E9BE23272966D",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762772650,
+      "broadcast": false,
+      "message": {
+        "protocolMessage": {
+          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+          "peerDataOperationRequestResponseMessage": {
+            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+            "stanzaId": "3EB050DC5F6BAA1D1091B9",
+            "peerDataOperationResult": [
+              {
+                "mediaUploadResult": "SUCCESS",
+                "placeholderMessageResendResponse": {
+                  "webMessageInfoBytes": "CkEKGzI1NDc5OTI1Nzc1OEBzLndoYXRzYXBwLm5ldBAAGiBBQzVENzM2RTM1RDFGMjRCNUQxMTU4NDg4QkY1MThFNxIGCgRZb3doGKCNx8gGigMg4vMJ8yA2W8UzQlzFVWhc7cQYijAebXfjb+/rSPJIEY3yAxYKFAEMuU8GGuk8YEg9pw22BGDYB1D+iAQA"
+                }
+              }
+            ]
+          }
         }
       }
     }
