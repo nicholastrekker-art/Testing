@@ -79,5 +79,125 @@
       "messageTimestamp": "1762773033",
       "status": "PENDING"
     }
+  },
+  "ACC560BF146161D07FBB61170E8B4477": {
+    "id": "ACC560BF146161D07FBB61170E8B4477",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "me3e hizi",
+    "type": "conversation",
+    "timestamp": 1762773066068,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "remoteJidAlt": "7198767878239@lid",
+        "fromMe": true,
+        "id": "ACC560BF146161D07FBB61170E8B4477",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762773065,
+      "pushName": "_yfw_quis.ling💀☠️☠️",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": "me3e hizi"
+      }
+    }
+  },
+  "A546B4344462905A91AAAA5998253647": {
+    "id": "A546B4344462905A91AAAA5998253647",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "254704897825@s.whatsapp.net",
+    "content": "Jshsur",
+    "type": "conversation",
+    "timestamp": 1762773124404,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": false,
+        "id": "A546B4344462905A91AAAA5998253647"
+      },
+      "message": {
+        "conversation": "Jshsur"
+      },
+      "messageTimestamp": "1762773114",
+      "messageSecret": "KLcmGslWdb/FZuyvIcC2Ng2tHeAvoF7yXBUyAMWHK8c=",
+      "reportingTokenInfo": {
+        "reportingTag": "AQwVDSGptCyI/Qpx3darQmIhF2E="
+      },
+      "isMentionedInStatus": false
+    }
+  },
+  "AC4046031129EED7241DB042DA324335": {
+    "id": "AC4046031129EED7241DB042DA324335",
+    "fromJid": "254742053765@s.whatsapp.net",
+    "senderJid": "254742053765@s.whatsapp.net",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1762773123901,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254742053765@s.whatsapp.net",
+        "fromMe": false,
+        "id": "AC4046031129EED7241DB042DA324335",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762773123,
+      "broadcast": false,
+      "message": {
+        "protocolMessage": {
+          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+          "peerDataOperationRequestResponseMessage": {
+            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+            "stanzaId": "3EB006C5719563B4F7EE8B",
+            "peerDataOperationResult": [
+              {
+                "mediaUploadResult": "SUCCESS",
+                "placeholderMessageResendResponse": {
+                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNTQ2QjQzNDQ0NjI5MDVBOTFBQUFBNTk5ODI1MzY0NxIICgZKc2hzdXIY+pDHyAaKAyAotyYayVZ1v8Vm7K8hwLY2Da0d4C+gXvJcFTIAxYcrx/IDFgoUAQwVDSGptCyI/Qpx3darQmIhF2GIBAA="
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "A51F05BBFCBE49BE8686C0D020305DEC": {
+    "id": "A51F05BBFCBE49BE8686C0D020305DEC",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "254704897825@s.whatsapp.net",
+    "content": "Ehehsg",
+    "type": "unknown",
+    "timestamp": 1762773125926,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "remoteJidAlt": "7198767878239@lid",
+        "fromMe": false,
+        "id": "A51F05BBFCBE49BE8686C0D020305DEC",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762773125,
+      "pushName": "Trekker inc",
+      "broadcast": false,
+      "verifiedBizName": "Trekker inc",
+      "message": {
+        "conversation": "Ehehsg",
+        "messageContextInfo": {
+          "deviceListMetadata": {
+            "senderKeyHash": "7LQUdNy5HYeizg==",
+            "senderTimestamp": "1762764850",
+            "recipientKeyHash": "nH41fwMb4KDNFg==",
+            "recipientTimestamp": "1762769340"
+          },
+          "deviceListMetadataVersion": 2,
+          "messageSecret": "SOL1ZmRBF2KsHYQ5Xb/ERSkLxs+41pHpKmBx33jcif0="
+        }
+      }
+    }
   }
 }
