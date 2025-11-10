@@ -487,7 +487,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                       ].map((item) => (
                         <div key={item.status} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
                           <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 ${item.color} rounded-full`}></div>
+                            <div className={`w-3 h-3 ${item.color} rounded-full"></div>
                             <span className="capitalize">{item.status}</span>
                           </div>
                           <span className="text-sm text-muted-foreground">{item.count}</span>

@@ -1008,18 +1008,6 @@ export async function registerRoutes(app: Express): Server {
           res.json({ success: true, bot: revokedBot });
           break;
 
-        case 'return-to-pending':
-          if (tenancy === getServerName()) {
-            await botManager.stopBot(botId);
-          }
-          const pendingBot = await storage.updateBotInstanceOnServer(botId, tenancy, {
-            approvalStatus: 'pending',
-            approvalDate: null,
-            expirationMonths: null
-          });
-          res.json({ success: true, bot: pendingBot, message: 'Bot returned to pending status' });
-          break;
-
         case 'delete':
           await storage.deleteBotCrossServer(botId, tenancy);
           res.json({ success: true, message: 'Bot deleted successfully' });
@@ -1298,18 +1286,6 @@ export async function registerRoutes(app: Express): Server {
             case 'revoke':
               await storage.updateBotInstance(botId, {
                 approvalStatus: 'dormant'
-              });
-              completedCount++;
-              break;
-
-            case 'return-to-pending':
-              if (bot.serverName === getServerName()) {
-                await botManager.stopBot(botId);
-              }
-              await storage.updateBotInstance(botId, {
-                approvalStatus: 'pending',
-                approvalDate: null,
-                expirationMonths: null
               });
               completedCount++;
               break;

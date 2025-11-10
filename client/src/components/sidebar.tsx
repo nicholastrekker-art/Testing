@@ -9,8 +9,7 @@ import {
   Server,
   Menu,
   X,
-  LogIn,
-  Shield
+  LogIn
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
@@ -46,7 +45,6 @@ export default function Sidebar() {
     { icon: Bot, label: "Bot Instances", path: "/bot-instances" },
     { icon: Terminal, label: "Commands", path: "/commands" },
     { icon: Server, label: "Cross-Server Bots", path: "/cross-server-bots" },
-    { icon: Shield, label: "Master Control", path: "/master-control" },
     { icon: Settings, label: "Admin Console", path: "/admin" },
   ] : [
     { icon: LayoutDashboard, label: "Dashboard", path: "/" },

@@ -8,7 +8,6 @@ import BotInstances from "@/pages/bot-instances";
 import Commands from "@/pages/commands";
 import AdminConsole from "@/pages/admin-console";
 import CrossServerBots from "@/pages/cross-server-bots";
-import MasterControl from "@/pages/master-control";
 import NotFound from "@/pages/not-found";
 import GuestPhoneVerification from "@/pages/guest/verification";
 import GuestBotManagement from "@/pages/guest/bot-management";
@@ -48,11 +47,6 @@ function Router() {
           <Route path="/cross-server-bots">
             <ProtectedRoute requireAdmin={true}>
               <CrossServerBots />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/master-control">
-            <ProtectedRoute requireAdmin={true}>
-              <MasterControl />
             </ProtectedRoute>
           </Route>
           <Route path="/guest/verification" component={GuestPhoneVerification} />

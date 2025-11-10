@@ -4,7 +4,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { BotFeaturesModal } from "@/components/bot-features-modal";
-import { BotLifecycleControls } from "@/components/bot-lifecycle-controls";
 import { useState } from "react";
 
 interface BotCardProps {
@@ -376,52 +375,52 @@ export default function BotCard({ bot }: BotCardProps) {
           </div>
         </div>
 
-        <div className="space-y-3">
-          {/* Bot Lifecycle Controls - Start/Stop/Return to Pending */}
+        <div className="flex space-x-2">
+          {getActionButton()}
+          
+          {/* Approval Status Management - Admin Only */}
           {isAdmin && (
-            <BotLifecycleControls
-              botId={bot.id}
-              botName={bot.name}
-              botStatus={bot.status}
-              approvalStatus={bot.approvalStatus}
-              tenancy={bot.serverName}
-              variant="compact"
-            />
+            <>
+              {/* Approve Button for pending bots */}
+              {bot.approvalStatus === 'pending' && (
+                <button
+                  onClick={() => approveBotMutation.mutate()}
+                  disabled={approveBotMutation.isPending}
+                  className="bg-green-600 text-white py-2 px-3 rounded-md text-sm hover:bg-green-700 transition-colors disabled:opacity-50"
+                  data-testid={`button-approve-${bot.id}`}
+                >
+                  {approveBotMutation.isPending ? 'Approving...' : '✓ Approve'}
+                </button>
+              )}
+              
+              {/* Revoke Approval for approved bots */}
+              {bot.approvalStatus === 'approved' && (
+                <button
+                  onClick={() => revokeApprovalMutation.mutate()}
+                  disabled={revokeApprovalMutation.isPending}
+                  className="bg-orange-600 text-white py-2 px-3 rounded-md text-sm hover:bg-orange-700 transition-colors disabled:opacity-50"
+                  data-testid={`button-revoke-${bot.id}`}
+                >
+                  {revokeApprovalMutation.isPending ? 'Revoking...' : '↓ Normal'}
+                </button>
+              )}
+            </>
           )}
-
-          <div className="flex space-x-2">
-            {/* Approval Status Management - Admin Only */}
-            {isAdmin && (
-              <>
-                {/* Approve Button for pending bots */}
-                {bot.approvalStatus === 'pending' && (
-                  <button
-                    onClick={() => approveBotMutation.mutate()}
-                    disabled={approveBotMutation.isPending}
-                    className="flex-1 bg-green-600 text-white py-2 px-3 rounded-md text-sm hover:bg-green-700 transition-colors disabled:opacity-50"
-                    data-testid={`button-approve-${bot.id}`}
-                  >
-                    {approveBotMutation.isPending ? 'Approving...' : '✓ Approve'}
-                  </button>
-                )}
-              </>
-            )}
-            
-            <button className="bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm hover:bg-muted/80 transition-colors" data-testid={`button-analytics-${bot.id}`}>
-              <i className="fas fa-chart-line"></i>
-            </button>
-            <button 
-              onClick={() => setShowFeaturesModal(true)}
-              className="bg-blue-600 text-white py-2 px-3 rounded-md text-sm hover:bg-blue-700 transition-colors" 
-              data-testid={`button-features-${bot.id}`}
-            >
-              <i className="fas fa-sliders-h mr-1"></i>
-              Features
-            </button>
-            <button className="bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm hover:bg-muted/80 transition-colors" data-testid={`button-settings-${bot.id}`}>
-              <i className="fas fa-cog"></i>
-            </button>
-          </div>
+          
+          <button className="bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm hover:bg-muted/80 transition-colors" data-testid={`button-analytics-${bot.id}`}>
+            <i className="fas fa-chart-line"></i>
+          </button>
+          <button 
+            onClick={() => setShowFeaturesModal(true)}
+            className="bg-blue-600 text-white py-2 px-3 rounded-md text-sm hover:bg-blue-700 transition-colors" 
+            data-testid={`button-features-${bot.id}`}
+          >
+            <i className="fas fa-sliders-h mr-1"></i>
+            Features
+          </button>
+          <button className="bg-muted text-muted-foreground py-2 px-3 rounded-md text-sm hover:bg-muted/80 transition-colors" data-testid={`button-settings-${bot.id}`}>
+            <i className="fas fa-cog"></i>
+          </button>
         </div>
       </CardContent>
       

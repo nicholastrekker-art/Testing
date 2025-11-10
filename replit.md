@@ -87,7 +87,6 @@ This is a WhatsApp Bot Management application built as a full-stack web applicat
 
 **CRITICAL PACKAGE MANAGER RULE FOR REPLIT AGENTS**:
 - This project EXCLUSIVELY uses YARN for all operations
-- NEVER use npm install - ALWAYS use "yarn install" (or just "yarn") to install dependencies
 - NEVER change from yarn to npm when importing from GitHub
 - ALL scripts, builds, installs, and deployments MUST use yarn commands only
 - When setting up GitHub imports, always keep existing yarn configuration
