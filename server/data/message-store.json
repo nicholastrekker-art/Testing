@@ -143,5 +143,27 @@
       "messageTimestamp": "1762776840",
       "status": "SERVER_ACK"
     }
+  },
+  "ACB587966F7BAAB45C4A056E1F8444F4": {
+    "id": "ACB587966F7BAAB45C4A056E1F8444F4",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "welaa rda",
+    "type": "conversation",
+    "timestamp": 1762776895275,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "ACB587966F7BAAB45C4A056E1F8444F4"
+      },
+      "messageTimestamp": 1762776895,
+      "pushName": "_yfw_quis.ling💀☠️☠️",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": "welaa rda"
+      }
+    }
   }
 }
