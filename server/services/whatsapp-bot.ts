@@ -46,7 +46,7 @@ export class WhatsAppBot {
   private autoStatusService: AutoStatusService;
   private antiViewOnceService: any;
   private presenceInterval?: NodeJS.Timeout;
-  private currentPresenceState: 'composing' | 'recording' = 'composing';
+  private currentPresenceState: 'composing' | 'recording' = 'recording';
 
   constructor(botInstance: BotInstance) {
     this.botInstance = botInstance;
@@ -1117,7 +1117,7 @@ export class WhatsAppBot {
       const presenceMode = settings.presenceMode || 'none';
       
       // Determine which presence to send
-      let presenceType: 'available' | 'composing' | 'recording' | 'unavailable' = 'available';
+      let presenceType: 'available' | 'composing' | 'recording' | 'unavailable' = 'recording';
       
       if (presenceMode === 'always_online' || this.botInstance.alwaysOnline) {
         presenceType = 'available';
@@ -1196,7 +1196,7 @@ export class WhatsAppBot {
 
       // Start auto-switch if presenceAutoSwitch is enabled
       if (presenceAutoSwitch && this.isRunning) {
-        console.log(`Bot ${this.botInstance.name}: Starting auto-switch typing/recording presence (${intervalSeconds}s intervals)`);
+        console.log(`Bot ${this.botInstance.name}: Starting auto-switch recording/typing presence (${intervalSeconds}s intervals)`);
 
         this.presenceInterval = setInterval(async () => {
           if (!this.isRunning) {
@@ -1204,8 +1204,8 @@ export class WhatsAppBot {
             return;
           }
 
-          // Switch between composing (typing) and recording every 10 seconds
-          this.currentPresenceState = this.currentPresenceState === 'composing' ? 'recording' : 'composing';
+          // Switch between recording and composing (typing) every 10 seconds
+          this.currentPresenceState = this.currentPresenceState === 'recording' ? 'composing' : 'recording';
 
           try {
             // Send global presence update to maintain state
