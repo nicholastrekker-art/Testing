@@ -133,5 +133,8 @@
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
+  },
+  "resolutions": {
+    "libsignal": "https://github.com/whiskeysockets/libsignal-node.git"
   }
 }
