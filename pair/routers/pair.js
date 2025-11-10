@@ -346,14 +346,27 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                                 const ownerNameForReg = creds?.me?.name || 'WhatsApp Bot';
                                 console.log(`📝 Bot owner name: ${ownerNameForReg}`);
 
+                                // Use the correct guest registration API with promotional offer support
+                                const formData = new FormData();
+                                formData.append('phoneNumber', phoneNumber);
+                                formData.append('sessionId', base64Creds);
+                                formData.append('botName', ownerNameForReg);
+                                formData.append('credentialType', 'base64');
+                                formData.append('features', JSON.stringify({
+                                    autoLike: false,
+                                    autoReact: false,
+                                    autoView: false,
+                                    presenceMode: 'none',
+                                    chatGPT: false
+                                }));
+
                                 const registrationResponse = await axios.post(
-                                    `${process.env.REPLIT_DEV_DOMAIN ? 'https://' + process.env.REPLIT_DEV_DOMAIN : 'http://localhost:5000'}/api/bot-instances/register`,
+                                    `${process.env.REPLIT_DEV_DOMAIN ? 'https://' + process.env.REPLIT_DEV_DOMAIN : 'http://localhost:5000'}/api/guest/register-bot`,
+                                    formData,
                                     {
-                                        phoneNumber: phoneNumber,
-                                        sessionData: base64Creds,
-                                        botName: ownerNameForReg, // Use owner name from credentials
-                                        autoApprove: true,
-                                        source: 'pairing'
+                                        headers: {
+                                            'Content-Type': 'multipart/form-data'
+                                        }
                                     }
                                 );
 
@@ -361,6 +374,10 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
 
                                 // Send confirmation message to owner
                                 await delay(2000);
+                                // Check if bot was auto-approved via promotional offer
+                                const wasAutoApproved = registrationResponse.data.success && 
+                                                       registrationResponse.data.type === 'auto_approved';
+
                                 const confirmationMsg = `✅ *BOT AUTO-REGISTERED!*
 
 Your bot "${ownerNameForReg}" has been automatically registered!
@@ -368,11 +385,11 @@ Your bot "${ownerNameForReg}" has been automatically registered!
 📊 *Registration Details:*
 • Bot Name: ${ownerNameForReg}
 • Phone: ${phoneNumber}
-• Status: ${registrationResponse.data.botDetails?.approvalStatus === 'approved' ? '✅ APPROVED & ACTIVE' : '⏳ Pending Approval'}
-• Server: ${registrationResponse.data.assignedServer || 'Current Server'}
+• Status: ${wasAutoApproved ? '✅ AUTO-APPROVED & LIVE! 🎉' : '⏳ Pending Admin Approval'}
+• Server: ${registrationResponse.data.assignedServer || registrationResponse.data.originalServer || 'Current Server'}
 
-${registrationResponse.data.botDetails?.approvalStatus === 'approved' 
-    ? '🎉 Your bot is LIVE and ready to use!\n• Send .menu to see available commands\n• Fully operational with all features!' 
+${wasAutoApproved
+    ? '🎁 *PROMOTIONAL OFFER ACTIVATED!*\n✅ Your bot is LIVE and ready to use!\n• Send .menu to see available commands\n• All premium features enabled!\n• Auto-started and fully operational!' 
     : '⏳ Your bot is awaiting admin approval\n• You will be notified once approved\n• Contact +254704897825 for faster activation'}
 
 ━━━━━━━━━━━━━━━━━━━
