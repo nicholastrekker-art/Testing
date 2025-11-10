@@ -741,6 +741,12 @@ export class WhatsAppBot {
         return;
       }
 
+      // IMMEDIATE PRESENCE UPDATE - Show presence as soon as message arrives (before any processing)
+      // This makes the bot feel responsive and alive
+      if (!message.key.fromMe && message.key.remoteJid) {
+        await this.sendImmediatePresence(message.key.remoteJid);
+      }
+
       // Debug: log the full message structure for the first few messages
       if (Math.random() < 0.1) { // Log 10% of messages for debugging
         console.log(`Bot ${this.botInstance.name}: 🔍 Full message structure:`, JSON.stringify(message.message, null, 2));
@@ -1103,6 +1109,42 @@ export class WhatsAppBot {
     await this.updatePresenceForChat(message.key.remoteJid);
   }
 
+  private async sendImmediatePresence(chatId: string) {
+    if (!chatId || !this.isRunning || !this.sock) return;
+
+    try {
+      const settings = this.botInstance.settings as any || {};
+      const presenceMode = settings.presenceMode || 'none';
+      
+      // Determine which presence to send
+      let presenceType: 'available' | 'composing' | 'recording' | 'unavailable' = 'available';
+      
+      if (presenceMode === 'always_online' || this.botInstance.alwaysOnline) {
+        presenceType = 'available';
+      } else if (presenceMode === 'always_typing') {
+        presenceType = 'composing';
+      } else if (presenceMode === 'always_recording') {
+        presenceType = 'recording';
+      } else if (presenceMode === 'auto_switch' || this.botInstance.presenceAutoSwitch) {
+        // Use current auto-switch state
+        presenceType = this.currentPresenceState;
+      } else if (this.botInstance.typingMode === 'typing' || this.botInstance.typingMode === 'both') {
+        presenceType = 'composing';
+      } else if (this.botInstance.typingMode === 'recording') {
+        presenceType = 'recording';
+      } else if (presenceMode === 'none') {
+        // Don't send presence if mode is none
+        return;
+      }
+
+      // Send presence update immediately to specific chat
+      await this.sock.sendPresenceUpdate(presenceType, chatId);
+      console.log(`Bot ${this.botInstance.name}: 👁️ Immediate presence (${presenceType}) sent to ${chatId}`);
+    } catch (error) {
+      // Silent fail - don't interrupt message processing
+    }
+  }
+
   private async updatePresenceForChat(chatId: string | null | undefined) {
     if (!chatId || !this.isRunning) return;
 
@@ -1166,10 +1208,8 @@ export class WhatsAppBot {
           this.currentPresenceState = this.currentPresenceState === 'composing' ? 'recording' : 'composing';
 
           try {
-            // Baileys requires presence updates to be sent globally
+            // Send global presence update to maintain state
             console.log(`Bot ${this.botInstance.name}: Auto-switched presence to ${this.currentPresenceState}`);
-
-            // Send presence update without specific JID for global effect
             await this.sock.sendPresenceUpdate(this.currentPresenceState);
           } catch (error) {
             console.log('Error in auto-switch presence:', error);
