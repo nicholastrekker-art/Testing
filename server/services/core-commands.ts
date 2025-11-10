@@ -3016,11 +3016,11 @@ commandRegistry.register({
   }
 });
 
-// Pair Command - Generate WhatsApp pairing code using internal pair server
+// Pair Command - Generate WhatsApp pairing code using internal pair server (PUBLIC)
 commandRegistry.register({
   name: 'pair',
   aliases: ['getcode', 'paircode'],
-  description: 'Generate WhatsApp pairing code for WhatsApp connection',
+  description: 'Generate WhatsApp pairing code for WhatsApp connection (Public)',
   category: 'AUTH',
   handler: async (context: CommandContext) => {
     const { respond, args, client, from } = context;
@@ -3031,6 +3031,8 @@ commandRegistry.register({
 📱 Usage: .pair <phone number>
 
 Example: .pair 254712345678
+
+💡 *Note:* This command works in groups and private chats!
 
 > TREKKER-MD Pairing System`);
       return;
@@ -3134,11 +3136,13 @@ ${registrationStatus.hasBot ? '✅ You already have an active bot with this numb
 
 💡 *What happens next:*
 • After entering the code, your session will be created
-• credentials will be sent to you automatically
+• Credentials will be sent to you automatically
 • Your bot will be registered in the system
 • You can manage it from the dashboard
 
 🔗 *Dashboard:* https://your-replit-url.repl.co
+
+🌐 *Available Everywhere:* This command works in groups, private chats, and public channels!
 
 > TREKKER-MD Pairing System`
       });
