@@ -1118,7 +1118,12 @@ export class WhatsAppBot {
   }
 
   private async sendImmediatePresence(chatId: string) {
+    // Enhanced checks to prevent presence errors
     if (!chatId || !this.isRunning || !this.sock) return;
+    
+    // Check if socket is properly connected
+    const isConnected = this.sock.user?.id || this.sock.user?.lid;
+    if (!isConnected) return;
 
     try {
       const settings = this.botInstance.settings as any || {};
@@ -1145,16 +1150,20 @@ export class WhatsAppBot {
         return;
       }
 
-      // Send presence update immediately to specific chat
+      // Send presence update immediately to specific chat with error handling
       await this.sock.sendPresenceUpdate(presenceType, chatId);
       console.log(`Bot ${this.botInstance.name}: 👁️ Immediate presence (${presenceType}) sent to ${chatId}`);
     } catch (error) {
-      // Silent fail - don't interrupt message processing
+      // Silent fail - don't interrupt message processing or log errors
     }
   }
 
   private async updatePresenceForChat(chatId: string | null | undefined) {
-    if (!chatId || !this.isRunning) return;
+    if (!chatId || !this.isRunning || !this.sock) return;
+    
+    // Check if socket is properly connected
+    const isConnected = this.sock.user?.id || this.sock.user?.lid;
+    if (!isConnected) return;
 
     try {
       const settings = this.botInstance.settings as any || {};
@@ -1186,7 +1195,7 @@ export class WhatsAppBot {
           break;
       }
     } catch (error) {
-      console.log('Error updating presence:', error);
+      // Silent fail - presence updates are non-critical
     }
   }
 
@@ -1204,11 +1213,14 @@ export class WhatsAppBot {
 
       // Send initial recording presence immediately (before any intervals start)
       if (!presenceAutoSwitch && !alwaysOnline && (!presenceMode || presenceMode === 'none')) {
-        try {
-          await this.sock.sendPresenceUpdate('recording');
-          console.log(`Bot ${this.botInstance.name}: 🎤 Initial recording presence sent immediately`);
-        } catch (error) {
-          console.log(`Bot ${this.botInstance.name}: ⚠️ Failed to send initial recording presence`);
+        // Check if socket is ready before sending presence
+        if (this.sock && this.isRunning && (this.sock.user?.id || this.sock.user?.lid)) {
+          try {
+            await this.sock.sendPresenceUpdate('recording');
+            console.log(`Bot ${this.botInstance.name}: 🎤 Initial recording presence sent immediately`);
+          } catch (error) {
+            // Silent fail - presence is non-critical
+          }
         }
       }
 
@@ -1217,20 +1229,24 @@ export class WhatsAppBot {
         console.log(`Bot ${this.botInstance.name}: Starting auto-switch recording/typing presence (${intervalSeconds}s intervals)`);
 
         this.presenceInterval = setInterval(async () => {
-          if (!this.isRunning) {
+          if (!this.isRunning || !this.sock) {
             this.stopPresenceAutoSwitch();
             return;
           }
+
+          // Check if socket is connected before sending presence
+          const isConnected = this.sock.user?.id || this.sock.user?.lid;
+          if (!isConnected) return;
 
           // Switch between recording and composing (typing) every 10 seconds
           this.currentPresenceState = this.currentPresenceState === 'recording' ? 'composing' : 'recording';
 
           try {
             // Send global presence update to maintain state
-            console.log(`Bot ${this.botInstance.name}: Auto-switched presence to ${this.currentPresenceState}`);
             await this.sock.sendPresenceUpdate(this.currentPresenceState);
+            console.log(`Bot ${this.botInstance.name}: Auto-switched presence to ${this.currentPresenceState}`);
           } catch (error) {
-            console.log('Error in auto-switch presence:', error);
+            // Silent fail - presence updates are non-critical
           }
         }, intervalSeconds * 1000);
       }
@@ -1243,12 +1259,16 @@ export class WhatsAppBot {
         setInterval(async () => {
           // Re-check settings from database
           const currentBot = await storage.getBotInstance(this.botInstance.id);
-          if (this.isRunning && currentBot?.alwaysOnline) {
+          if (this.isRunning && currentBot?.alwaysOnline && this.sock) {
+            // Check if socket is connected
+            const isConnected = this.sock.user?.id || this.sock.user?.lid;
+            if (!isConnected) return;
+
             try {
               await this.sock.sendPresenceUpdate('available');
               console.log(`Bot ${this.botInstance.name}: Maintaining online presence`);
             } catch (error) {
-              console.log('Error maintaining online presence:', error);
+              // Silent fail - presence updates are non-critical
             }
           }
         }, 10000); // Every 10 seconds
@@ -1267,12 +1287,16 @@ export class WhatsAppBot {
         setInterval(async () => {
           // Re-check settings from database
           const currentBot = await storage.getBotInstance(this.botInstance.id);
-          if (this.isRunning && currentBot?.presenceMode === presenceMode && !currentBot?.presenceAutoSwitch) {
+          if (this.isRunning && currentBot?.presenceMode === presenceMode && !currentBot?.presenceAutoSwitch && this.sock) {
+            // Check if socket is connected
+            const isConnected = this.sock.user?.id || this.sock.user?.lid;
+            if (!isConnected) return;
+
             try {
               await this.sock.sendPresenceUpdate(presenceType);
               console.log(`Bot ${this.botInstance.name}: Maintaining ${presenceMode} presence`);
             } catch (error) {
-              // Silently handle presence errors
+              // Silent fail - presence updates are non-critical
             }
           }
         }, 10000); // Every 10 seconds
