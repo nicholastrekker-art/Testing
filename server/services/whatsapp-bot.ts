@@ -357,59 +357,9 @@ export class WhatsAppBot {
         // Start presence auto-switch if configured
         this.startPresenceAutoSwitch();
 
-        // Send welcome message to the bot owner
-        try {
-          const welcomeMessage = `╔══════════════════════════════════╗
-║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║
-╠══════════════════════════════════╣
-║ 🤖  "${this.botInstance.name}" is ONLINE & READY 🚀 ║
-╚══════════════════════════════════╝
-
-💡 *Try these commands:*
-• .menu - Show all commands
-• .help - Get help
-• .ping - Test bot
-
-✅ Bot is ready to receive commands!`;
-
-          // Get the bot's own number - use the same JID format that works for .ping command responses
-          // This ensures consistent delivery just like command responses
-          const botJid = this.sock.user?.id;
-
-          if (botJid) {
-            // Format the JID the same way commands do (ensures it's a proper WhatsApp JID)
-            const formattedJid = botJid.includes('@s.whatsapp.net') ? botJid : `${botJid.split(':')[0]}@s.whatsapp.net`;
-
-            console.log(`🎉 TREKKERMD LIFETIME BOT: Sending welcome message to ${formattedJid}`);
-            await this.sock.sendMessage(formattedJid, {
-              text: welcomeMessage,
-              mentions: [] // Ensure clean message delivery
-            });
-            console.log(`✅ TREKKERMD LIFETIME BOT: Welcome message sent successfully!`);
-
-            // Log activity for tracking
-            await storage.createActivity({
-              serverName: this.botInstance.serverName,
-              botInstanceId: this.botInstance.id,
-              type: 'welcome_sent',
-              description: '🎉 Welcome message sent to bot owner',
-              metadata: { recipient: formattedJid }
-            });
-          } else {
-            console.log('⚠️ TREKKERMD LIFETIME BOT: Could not determine bot JID for welcome message');
-            console.log('📋 Bot is ready:', welcomeMessage);
-          }
-        } catch (error) {
-          console.error('❌ Welcome message error:', error);
-          // Still log that bot is ready even if welcome message fails
-          await storage.createActivity({
-            serverName: this.botInstance.serverName,
-            botInstanceId: this.botInstance.id,
-            type: 'warning',
-            description: 'Bot connected but welcome message failed to send',
-            metadata: { error: error instanceof Error ? error.message : 'Unknown error' }
-          });
-        }
+        // Log that bot is ready (welcome message removed to prevent spam)
+        console.log(`✅ TREKKERMD LIFETIME BOT: ${this.botInstance.name} is now online and ready!`);
+        console.log(`📋 Bot owner can test with: .ping command`);
 
         // Fetch existing statuses after connection is established
         const sock = this.sock; // Capture sock in a variable for the timeout
