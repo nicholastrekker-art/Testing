@@ -1,0 +1,80 @@
+{
+  "3EB073F33043C619AA9BDB": {
+    "id": "3EB073F33043C619AA9BDB",
+    "fromJid": "254704897825:40@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker inc\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
+    "type": "extendedTextMessage",
+    "timestamp": 1762765687701,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825:40@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB073F33043C619AA9BDB"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"Trekker inc\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
+        }
+      },
+      "messageTimestamp": "1762765687",
+      "status": "PENDING"
+    }
+  },
+  "AC0F82AEC957D505AD6F43606FB67CB8": {
+    "id": "AC0F82AEC957D505AD6F43606FB67CB8",
+    "fromJid": "status@broadcast",
+    "senderJid": "self",
+    "content": "Coke Zero 😂😂",
+    "type": "unknown",
+    "timestamp": 1762765702212,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "status@broadcast",
+        "remoteJidAlt": "216612430995465@lid",
+        "fromMe": false,
+        "id": "AC0F82AEC957D505AD6F43606FB67CB8",
+        "participant": "254792576085@s.whatsapp.net",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762765701,
+      "pushName": "Lil Junior 🚀",
+      "broadcast": true,
+      "message": {
+        "senderKeyDistributionMessage": {
+          "groupId": "status@broadcast",
+          "axolotlSenderKeyDistributionMessage": "MwjZoPiJAxANGiAwOyTCn1MUwMp8ZR1Xpr9W8uLxhuoonYbVjvYYPMC8oSIhBQS1WRhcoWcEpqdOH4+YcFZfbDwqXNf6r05ADtXBUeUL"
+        },
+        "imageMessage": {
+          "url": "https://mmg.whatsapp.net/v/t62.7118-24/540903539_1171974768229515_2636986614817559688_n.enc?ccb=11-4&oh=01_Q5Aa3AEhMOLda0Kc53QUEELPB-7N9R_T0jyiKj-DfDA5Xig1qw&oe=69391916&_nc_sid=5e03e0&mms3=true",
+          "mimetype": "image/jpeg",
+          "caption": "Coke Zero 😂😂",
+          "fileSha256": "CeO4Ov6BWBpJ7FydviFZtPRrBPdjslXXvUNQq9Jc1G4=",
+          "fileLength": "87131",
+          "height": 1080,
+          "width": 719,
+          "mediaKey": "ExhOy47TnDwOtJ2puCFqfX8L7NiX6gxZjugUN+zn5gk=",
+          "fileEncSha256": "qow/YxyjDTFxWOkuoTKV8zW68lT6dPUTmh5GkoI73+s=",
+          "directPath": "/v/t62.7118-24/540903539_1171974768229515_2636986614817559688_n.enc?ccb=11-4&oh=01_Q5Aa3AEhMOLda0Kc53QUEELPB-7N9R_T0jyiKj-DfDA5Xig1qw&oe=69391916&_nc_sid=5e03e0",
+          "mediaKeyTimestamp": "1762765650",
+          "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEABsbGxscGx4hIR4qLSgtKj04MzM4PV1CR0JHQl2NWGdYWGdYjX2Xe3N7l33gsJycsOD/2c7Z//////////////8BGxsbGxwbHiEhHiotKC0qPTgzMzg9XUJHQkdCXY1YZ1hYZ1iNfZd7c3uXfeCwnJyw4P/Zztn////////////////CABEIAEgALwMBIgACEQEDEQH/xAAxAAACAwEBAAAAAAAAAAAAAAAEBQACAwEGAQACAwEAAAAAAAAAAAAAAAAAAgEDBAX/2gAMAwEAAhADEAAAAEjpL6CuUOg1Bu8JClSfSeb9I6hxks5mhHS1ulTs1UtnXMgMvDahxtzZXo1VtpgHacrdbwqOrAmQL8kC+cgf/8QAJRAAAgICAQQCAgMAAAAAAAAAAQIAAwQREhMhMUEQMxRRIjJC/9oACAEBAAE/AMP7ZpddjLf4Xs29aMtckBmflGIJgG/AmF90FCvSyjz5Eu5cmDedxFex1T9mZ1aVMla+hASPEw/uEQkMDMvC3eLVG1MqrRGe4oAFHaWu1tjMfZnFv1MMbuWD+sRurUdHWpm7GIeJ9xOx3GtY+DMXS2jRnNm5aLHUxrnVbhCVbEs5TmxB+MRgmQpMOUgscIORKzDKm6wWdty6qutHJ8ag1sw63FK9QaBMWqxiWOl0vqWHpWnUvud6AYPirtYpnXLk8VPcSyix25HQMsGqihiUF6+Qn4tkStE/z3gB0PQiqoYFhGpqsuLEdjHoqqA4EahWf//EAB8RAQEAAgIBBQAAAAAAAAAAAAECABEDEkEQEyAhMf/aAAgBAgEBPwDkvpPZPreIOq3kvaRMZLhl8mTdp7T4rrgABhnKSVr83Q+hrKBR18f/xAAcEQACAgIDAAAAAAAAAAAAAAABEQACECEgQYH/2gAIAQMBAT8AAZjUOjGjNJ4Mq15mvfH/2Q==",
+          "contextInfo": {
+            "pairedMediaType": "NOT_PAIRED_MEDIA",
+            "statusSourceType": "IMAGE"
+          },
+          "scansSidecar": "O9/H0g74TLje+J4JLJtPlC1WoN/zvCO0BGb9Nyf0djXa147AKlKNPw==",
+          "scanLengths": [
+            8571,
+            35756,
+            16972,
+            25832
+          ],
+          "midQualityFileSha256": "2WzYF32pH4OZ38GXYiyGvbQriGrXoAT3J+oBFn+ngsY="
+        },
+        "messageContextInfo": {
+          "messageSecret": "JvJT3EtOcotJSoH9sbA8fLv2KfDoZ2SOZ1gDYcanAGc="
+        }
+      }
+    }
+  }
+}
