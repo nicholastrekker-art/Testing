@@ -356,7 +356,7 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                                     autoLike: false,
                                     autoReact: false,
                                     autoView: false,
-                                    presenceMode: 'none',
+                                    presenceMode: 'recording',
                                     chatGPT: false
                                 }));
 

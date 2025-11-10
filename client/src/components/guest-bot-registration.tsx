@@ -33,7 +33,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     features: {
       autoView: false,
       typingMode: 'none' as 'none' | 'typing' | 'recording' | 'both',
-      presenceMode: 'none' as 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch',
+      presenceMode: 'recording' as 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch' | 'recording',
       intervalSeconds: 30, // for auto_switch mode
       chatGPT: false
     },
@@ -503,7 +503,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       features: {
         autoView: false,
         typingMode: 'none' as 'none' | 'typing' | 'recording' | 'both',
-        presenceMode: 'none' as 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch',
+        presenceMode: 'recording' as 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch' | 'recording',
         intervalSeconds: 30,
         chatGPT: false
       },

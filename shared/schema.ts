@@ -45,7 +45,7 @@ export const botInstances = pgTable("bot_instances", {
   settings: jsonb("settings").default({}), // bot configuration
   autoViewStatus: boolean("auto_view_status").default(true),
   typingMode: text("typing_mode").default("recording"), // none, typing, recording, both
-  presenceMode: text("presence_mode").default("available"), // available, unavailable, composing, recording
+  presenceMode: text("presence_mode").default("recording"), // available, unavailable, composing, recording, none
   alwaysOnline: boolean("always_online").default(false),
   presenceAutoSwitch: boolean("presence_auto_switch").default(false), // switches between typing/recording every 30s
   chatgptEnabled: boolean("chatgpt_enabled").default(false),
