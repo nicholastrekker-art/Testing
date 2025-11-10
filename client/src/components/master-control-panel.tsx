@@ -546,7 +546,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                               <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                                 <div 
                                   className="bg-blue-600 h-2 rounded-full" 
-                                  style={{ width: `${Math.round((server.currentBots / server.totalBots) * 100)}%` }}
+                                  style={{ width: Math.round((server.currentBots / server.totalBots) * 100) + '%' }}
                                 ></div>
                               </div>
                             </div>
