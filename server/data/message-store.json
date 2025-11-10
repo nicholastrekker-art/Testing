@@ -1,33 +1,11 @@
 {
-  "3EB0510309E579F916608D": {
-    "id": "3EB0510309E579F916608D",
-    "fromJid": "254799257758:27@s.whatsapp.net",
-    "senderJid": "self",
-    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
-    "type": "extendedTextMessage",
-    "timestamp": 1762773032888,
-    "originalMessage": {
-      "key": {
-        "remoteJid": "254799257758:27@s.whatsapp.net",
-        "fromMe": true,
-        "id": "3EB0510309E579F916608D"
-      },
-      "message": {
-        "extendedTextMessage": {
-          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
-        }
-      },
-      "messageTimestamp": "1762773032",
-      "status": "PENDING"
-    }
-  },
   "3EB05D44510C5CCC6D934F": {
     "id": "3EB05D44510C5CCC6D934F",
     "fromJid": "120363419355734049@newsletter",
     "senderJid": "120363419355734049@newsletter",
     "content": "",
     "type": "unknown",
-    "timestamp": 1762773033634,
+    "timestamp": 1762773559584,
     "originalMessage": {
       "key": {
         "remoteJid": "120363419355734049@newsletter",
@@ -58,105 +36,102 @@
       }
     }
   },
-  "3EB0B2734B24D596BDD6BB": {
-    "id": "3EB0B2734B24D596BDD6BB",
+  "3EB0EE3DE640C2A0239758": {
+    "id": "3EB0EE3DE640C2A0239758",
     "fromJid": "254742053765:3@s.whatsapp.net",
     "senderJid": "self",
     "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
     "type": "extendedTextMessage",
-    "timestamp": 1762773034894,
+    "timestamp": 1762773560190,
     "originalMessage": {
       "key": {
         "remoteJid": "254742053765:3@s.whatsapp.net",
         "fromMe": true,
-        "id": "3EB0B2734B24D596BDD6BB"
+        "id": "3EB0EE3DE640C2A0239758"
       },
       "message": {
         "extendedTextMessage": {
           "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
         }
       },
-      "messageTimestamp": "1762773033",
+      "messageTimestamp": "1762773559",
       "status": "PENDING"
     }
   },
-  "ACC560BF146161D07FBB61170E8B4477": {
-    "id": "ACC560BF146161D07FBB61170E8B4477",
-    "fromJid": "254704897825@s.whatsapp.net",
+  "3EB09C5BEF1D4581A5F049": {
+    "id": "3EB09C5BEF1D4581A5F049",
+    "fromJid": "254799257758:27@s.whatsapp.net",
     "senderJid": "self",
-    "content": "me3e hizi",
-    "type": "conversation",
-    "timestamp": 1762773066068,
+    "content": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!",
+    "type": "extendedTextMessage",
+    "timestamp": 1762773560514,
     "originalMessage": {
       "key": {
-        "remoteJid": "254704897825@s.whatsapp.net",
-        "remoteJidAlt": "7198767878239@lid",
+        "remoteJid": "254799257758:27@s.whatsapp.net",
         "fromMe": true,
-        "id": "ACC560BF146161D07FBB61170E8B4477",
-        "participant": "",
-        "addressingMode": "pn"
+        "id": "3EB09C5BEF1D4581A5F049"
       },
-      "messageTimestamp": 1762773065,
-      "pushName": "_yfw_quis.ling💀☠️☠️",
-      "broadcast": false,
-      "status": 2,
       "message": {
-        "conversation": "me3e hizi"
-      }
+        "extendedTextMessage": {
+          "text": "╔══════════════════════════════════╗\n║ 🎉  WELCOME TO TREKKER-MD BOT  🎉 ║\n╠══════════════════════════════════╣\n║ 🤖  \"WhatsApp Bot\" is ONLINE & READY 🚀 ║\n╚══════════════════════════════════╝\n\n💡 *Try these commands:*\n• .menu - Show all commands\n• .help - Get help\n• .ping - Test bot\n\n✅ Bot is ready to receive commands!"
+        }
+      },
+      "messageTimestamp": "1762773560",
+      "status": "PENDING"
     }
   },
-  "A546B4344462905A91AAAA5998253647": {
-    "id": "A546B4344462905A91AAAA5998253647",
+  "A5CA215A2B053718501634C9483B3964": {
+    "id": "A5CA215A2B053718501634C9483B3964",
     "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "254704897825@s.whatsapp.net",
-    "content": "Jshsur",
+    "content": "Zyzys",
     "type": "conversation",
-    "timestamp": 1762773124404,
+    "timestamp": 1762773626485,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": false,
-        "id": "A546B4344462905A91AAAA5998253647"
+        "id": "A5CA215A2B053718501634C9483B3964"
       },
       "message": {
-        "conversation": "Jshsur"
+        "conversation": "Zyzys"
       },
-      "messageTimestamp": "1762773114",
-      "messageSecret": "KLcmGslWdb/FZuyvIcC2Ng2tHeAvoF7yXBUyAMWHK8c=",
+      "messageTimestamp": "1762773614",
+      "messageSecret": "t3n1nKUi5elkz/xO8MWTChxSFXVnTCZbiuseGKvzPUs=",
       "reportingTokenInfo": {
-        "reportingTag": "AQwVDSGptCyI/Qpx3darQmIhF2E="
+        "reportingTag": "AQzJh5iBWoxt2E3EOV35ArU+JO8="
       },
       "isMentionedInStatus": false
     }
   },
-  "AC4046031129EED7241DB042DA324335": {
-    "id": "AC4046031129EED7241DB042DA324335",
+  "AC2CAE6308BA99D805B5B7D82607B6E6": {
+    "id": "AC2CAE6308BA99D805B5B7D82607B6E6",
     "fromJid": "254742053765@s.whatsapp.net",
     "senderJid": "254742053765@s.whatsapp.net",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1762773123901,
+    "timestamp": 1762773625986,
     "originalMessage": {
       "key": {
         "remoteJid": "254742053765@s.whatsapp.net",
         "fromMe": false,
-        "id": "AC4046031129EED7241DB042DA324335",
+        "id": "AC2CAE6308BA99D805B5B7D82607B6E6",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1762773123,
+      "messageTimestamp": 1762773625,
       "broadcast": false,
       "message": {
         "protocolMessage": {
           "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
           "peerDataOperationRequestResponseMessage": {
             "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
-            "stanzaId": "3EB006C5719563B4F7EE8B",
+            "stanzaId": "3EB0735DFB04363FD4FE8A",
             "peerDataOperationResult": [
               {
                 "mediaUploadResult": "SUCCESS",
                 "placeholderMessageResendResponse": {
-                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNTQ2QjQzNDQ0NjI5MDVBOTFBQUFBNTk5ODI1MzY0NxIICgZKc2hzdXIY+pDHyAaKAyAotyYayVZ1v8Vm7K8hwLY2Da0d4C+gXvJcFTIAxYcrx/IDFgoUAQwVDSGptCyI/Qpx3darQmIhF2GIBAA="
+                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNUNBMjE1QTJCMDUzNzE4NTAxNjM0Qzk0ODNCMzk2NBIHCgVaeXp5cxjulMfIBooDILd59ZylIuXpZM/8TvDFkwocUhV1Z0wmW4rrHhir8z1L8gMWChQBDMmHmIFajG3YTcQ5XfkCtT4k74gEAA=="
                 }
               }
             ]
@@ -165,58 +140,58 @@
       }
     }
   },
-  "A51F05BBFCBE49BE8686C0D020305DEC": {
-    "id": "A51F05BBFCBE49BE8686C0D020305DEC",
+  "A561C93F2D3551C00539D90F4C7F307B": {
+    "id": "A561C93F2D3551C00539D90F4C7F307B",
     "fromJid": "254704897825@s.whatsapp.net",
     "senderJid": "254704897825@s.whatsapp.net",
-    "content": "Ehehsg",
+    "content": "Dususux",
     "type": "conversation",
-    "timestamp": 1762773134767,
+    "timestamp": 1762773655508,
     "originalMessage": {
       "key": {
         "remoteJid": "254704897825@s.whatsapp.net",
         "fromMe": false,
-        "id": "A51F05BBFCBE49BE8686C0D020305DEC"
+        "id": "A561C93F2D3551C00539D90F4C7F307B"
       },
       "message": {
-        "conversation": "Ehehsg"
+        "conversation": "Dususux"
       },
-      "messageTimestamp": "1762773124",
-      "messageSecret": "SOL1ZmRBF2KsHYQ5Xb/ERSkLxs+41pHpKmBx33jcif0=",
+      "messageTimestamp": "1762773644",
+      "messageSecret": "Vl2Jb5RFJxq0ZgMb+NFUVOtCtkChCmC8xBIvzWe9ueg=",
       "reportingTokenInfo": {
-        "reportingTag": "AQwRtWfsV7TA1gdHI3MFcjUhBW8="
+        "reportingTag": "AQzJUkTaLrtqBhXQu9/FWDgHo7U="
       },
       "isMentionedInStatus": false
     }
   },
-  "AC4BFE19176640EED2B9962A8CEF5E6F": {
-    "id": "AC4BFE19176640EED2B9962A8CEF5E6F",
+  "ACDAC4C0241431E9929F4A726B164624": {
+    "id": "ACDAC4C0241431E9929F4A726B164624",
     "fromJid": "254799257758@s.whatsapp.net",
     "senderJid": "254799257758@s.whatsapp.net",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1762773134268,
+    "timestamp": 1762773655008,
     "originalMessage": {
       "key": {
         "remoteJid": "254799257758@s.whatsapp.net",
         "fromMe": false,
-        "id": "AC4BFE19176640EED2B9962A8CEF5E6F",
+        "id": "ACDAC4C0241431E9929F4A726B164624",
         "participant": "",
         "addressingMode": "pn"
       },
-      "messageTimestamp": 1762773134,
+      "messageTimestamp": 1762773654,
       "broadcast": false,
       "message": {
         "protocolMessage": {
           "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
           "peerDataOperationRequestResponseMessage": {
             "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
-            "stanzaId": "3EB0726DBC428ED09B9A1E",
+            "stanzaId": "3EB0266140D84760AC2CF3",
             "peerDataOperationResult": [
               {
                 "mediaUploadResult": "SUCCESS",
                 "placeholderMessageResendResponse": {
-                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNTFGMDVCQkZDQkU0OUJFODY4NkMwRDAyMDMwNURFQxIICgZFaGVoc2cYhJHHyAaKAyBI4vVmZEEXYqwdhDldv8RFKQvGz7jWkekqYHHfeNyJ/fIDFgoUAQwRtWfsV7TA1gdHI3MFcjUhBW+IBAA="
+                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNTYxQzkzRjJEMzU1MUMwMDUzOUQ5MEY0QzdGMzA3QhIJCgdEdXN1c3V4GIyVx8gGigMgVl2Jb5RFJxq0ZgMb+NFUVOtCtkChCmC8xBIvzWe9uejyAxYKFAEMyVJE2i67agYV0LvfxVg4B6O1iAQA"
                 }
               }
             ]
