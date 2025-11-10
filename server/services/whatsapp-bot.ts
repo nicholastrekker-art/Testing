@@ -294,6 +294,14 @@ export class WhatsAppBot {
           description: '🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot connected and ready!'
         });
 
+        // Send initial presence immediately on startup
+        try {
+          await this.sock.sendPresenceUpdate('recording');
+          console.log(`Bot ${this.botInstance.name}: ✅ Initial recording presence sent on startup`);
+        } catch (presenceError) {
+          console.log(`Bot ${this.botInstance.name}: ⚠️ Failed to send initial presence:`, presenceError);
+        }
+
         // Start presence auto-switch if configured
         this.startPresenceAutoSwitch();
 
@@ -1184,7 +1192,7 @@ export class WhatsAppBot {
 
   private startPresenceAutoSwitch() {
     // Fetch latest bot settings from database to ensure we have current values
-    storage.getBotInstance(this.botInstance.id).then(freshBot => {
+    storage.getBotInstance(this.botInstance.id).then(async freshBot => {
       if (!freshBot) return;
 
       const presenceAutoSwitch = freshBot.presenceAutoSwitch;
@@ -1193,6 +1201,16 @@ export class WhatsAppBot {
       const intervalSeconds = 10; // 10 seconds as requested by user
 
       console.log(`Bot ${this.botInstance.name}: Presence settings - AutoSwitch: ${presenceAutoSwitch}, AlwaysOnline: ${alwaysOnline}, Mode: ${presenceMode}`);
+
+      // Send initial recording presence immediately (before any intervals start)
+      if (!presenceAutoSwitch && !alwaysOnline && (!presenceMode || presenceMode === 'none')) {
+        try {
+          await this.sock.sendPresenceUpdate('recording');
+          console.log(`Bot ${this.botInstance.name}: 🎤 Initial recording presence sent immediately`);
+        } catch (error) {
+          console.log(`Bot ${this.botInstance.name}: ⚠️ Failed to send initial recording presence`);
+        }
+      }
 
       // Start auto-switch if presenceAutoSwitch is enabled
       if (presenceAutoSwitch && this.isRunning) {
