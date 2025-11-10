@@ -158,7 +158,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
 
         toast({
           title: "Pairing Code Generated!",
-          description: "Enter this code in WhatsApp Settings → Linked Devices. Your session ID will be sent directly to your WhatsApp!",
+          description: "Enter this code in WhatsApp Settings → Linked Devices. Your session ID will be sent to your WhatsApp!",
         });
 
         // Start continuous polling for session ID
@@ -271,6 +271,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
       formData.append('sessionId', data.sessionId);
       formData.append('features', JSON.stringify(data.features));
       formData.append('selectedServer', data.selectedServer);
+      formData.append('expirationMonths', '1'); // Default 1 month approval
 
       // Include pairing session ID for temp file cleanup
       if (data.pairingSessionId) {
@@ -417,7 +418,7 @@ export default function WhatsAppPairing({ open, onClose }: WhatsAppPairingProps)
     try {
       // Decode base64 session ID to get creds data
       let sessionId = credentials.base64;
-      
+
       // Remove TREKKER~ prefix if present
       if (sessionId.startsWith('TREKKER~')) {
         sessionId = sessionId.substring(8);

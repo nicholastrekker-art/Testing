@@ -218,7 +218,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
   const registerBotMutation = useMutation({
     mutationFn: async (data: typeof formData & { selectedServer?: string }) => {
       const formDataToSend = new FormData();
-      formDataFormDataToSend.append('botName', data.botName);
+      formDataToSend.append('botName', data.botName);
       formDataToSend.append('phoneNumber', data.phoneNumber);
       formDataToSend.append('credentialType', data.credentialType);
       formDataToSend.append('features', JSON.stringify(data.features));
@@ -501,9 +501,8 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       sessionId: '',
       credsFile: null,
       features: {
-        autoLike: true,
-        autoReact: false,
-        autoView: true,
+        autoView: false,
+        typingMode: 'none' as 'none' | 'typing' | 'recording' | 'both',
         presenceMode: 'none' as 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch',
         intervalSeconds: 30,
         chatGPT: false

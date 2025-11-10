@@ -3295,7 +3295,8 @@ Thank you for using TREKKER-MD! 🚀
         credentialVerified: true,
         isGuest: true,
         messagesCount: 0,
-        commandsCount: 0
+        commandsCount: 0,
+        expirationMonths: offerActive ? 1 : undefined, // Set default to 1 month if offer active
       };
 
       console.log(`📊 Bot data prepared:`, {

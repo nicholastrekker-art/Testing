@@ -54,7 +54,7 @@ interface CrossTenancyBot {
 export default function MasterControlPanel({ open, onClose }: MasterControlPanelProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [selectedTenancy, setSelectedTenancy] = useState<string>("");
   const [tenancyCredentials, setTenancyCredentials] = useState({
     serverUrl: "",
@@ -66,8 +66,8 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
   const [credentialType, setCredentialType] = useState<"base64" | "file">("base64");
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [pendingApproval, setPendingApproval] = useState<CrossTenancyBot | null>(null);
-  const [approvalDuration, setApprovalDuration] = useState<string>("3");
-  
+  const [approvalDuration, setApprovalDuration] = useState("1"); // Default to 1 month
+
   // Enhanced filtering and search state
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -75,7 +75,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
   const [approvalFilter, setApprovalFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("name");
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  
+
   // Enhanced bot management state  
   const [selectedBots, setSelectedBots] = useState<string[]>([]);
   const [showBotMigrationModal, setShowBotMigrationModal] = useState(false);
@@ -118,11 +118,11 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
       bot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       bot.phoneNumber.includes(searchQuery) ||
       bot.tenancy.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesStatus = statusFilter === "all" || bot.status === statusFilter;
     const matchesServer = serverFilter === "all" || bot.tenancy === serverFilter;
     const matchesApproval = approvalFilter === "all" || bot.approvalStatus === approvalFilter;
-    
+
     return matchesSearch && matchesStatus && matchesServer && matchesApproval;
   }).sort((a, b) => {
     let aVal: any, bVal: any;
@@ -151,7 +151,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
         aVal = a.name;
         bVal = b.name;
     }
-    
+
     if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
     if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
     return 0;
@@ -375,7 +375,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
         });
         return;
       }
-      
+
       handleBotAction('approve', pendingApproval.id, pendingApproval.tenancy, { 
         duration: duration 
       });
@@ -393,7 +393,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
       rejected: "bg-red-500",
       dormant: "bg-purple-500"
     };
-    
+
     return (
       <Badge className={`${statusColors[status as keyof typeof statusColors] || "bg-gray-500"} text-white`}>
         {status}
@@ -451,7 +451,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                 </div>
               </div>
             </div>
-            
+
             {/* Real-time Activity Monitor */}
             <Card>
               <CardHeader>
@@ -487,7 +487,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                       ].map((item) => (
                         <div key={item.status} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
                           <div className="flex items-center gap-2">
-                            <div className={`w-3 h-3 ${item.color} rounded-full`}></div>
+                            <div className={`w-3 h-3 ${item.color} rounded-full"></div>
                             <span className="capitalize">{item.status}</span>
                           </div>
                           <span className="text-sm text-muted-foreground">{item.count}</span>
@@ -703,7 +703,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
                     <Label className="text-sm font-medium">Server Filter</Label>
                     <Select value={serverFilter} onValueChange={setServerFilter}>
@@ -718,7 +718,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
                     <Label className="text-sm font-medium">Approval Status</Label>
                     <Select value={approvalFilter} onValueChange={setApprovalFilter}>
@@ -733,7 +733,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
                     <Label className="text-sm font-medium">Sort By</Label>
                     <div className="flex gap-1">
@@ -760,7 +760,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Quick Stats */}
                 <div className="bg-muted rounded-lg p-4">
                   <div className="flex items-center gap-4 text-sm">
@@ -926,7 +926,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                               >
                                 {bot.status === 'online' ? '⏹️' : '▶️'}
                               </Button>
-                              
+
                               {/* Credential Update */}
                               <Button 
                                 size="sm" 
@@ -939,7 +939,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                               >
                                 🔐
                               </Button>
-                              
+
                               {/* Feature Toggle */}
                               <Button 
                                 size="sm" 
@@ -949,7 +949,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                               >
                                 🎛️
                               </Button>
-                              
+
                               {/* Migration */}
                               <Button 
                                 size="sm" 
@@ -964,7 +964,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                               >
                                 <ArrowRight className="h-3 w-3" />
                               </Button>
-                              
+
                               {/* Delete */}
                               <Button 
                                 size="sm" 
@@ -1127,7 +1127,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                             <Badge variant="outline">{bot.tenancy}</Badge>
                           </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
                           {[
                             { key: 'autoLike', label: 'Like', icon: '👍' },
@@ -1203,13 +1203,13 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
               </CardHeader>
               <CardContent>
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 dark:bg-yellow-900/20 dark:border-yellow-800">
-                  <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">⚠️ Credential Update Safety</h4>
+                  <h4 className="font-medium text-yellow-800 dark:text-yellow-300">⚠️ Credential Update Safety</h4>
                   <p className="text-sm text-yellow-700 dark:text-yellow-300">
                     Credential updates are performed within each bot's isolated container. 
                     Data registry entries remain unchanged to maintain system integrity.
                   </p>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {(crossTenancyBots as CrossTenancyBot[]).filter(bot => bot.approvalStatus === 'approved').map((bot) => (
                     <Card key={`cred-${bot.tenancy}-${bot.id}`} className="border-l-4 border-l-green-500">
@@ -1220,12 +1220,12 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                             <p className="text-sm text-muted-foreground">{bot.phoneNumber}</p>
                             <Badge variant="outline" className="mt-1">{bot.tenancy}</Badge>
                           </div>
-                          
+
                           <div className="flex items-center justify-between">
                             <span className="text-sm">Container Status:</span>
                             {getStatusBadge(bot.status)}
                           </div>
-                          
+
                           <Button 
                             size="sm" 
                             variant="outline"
@@ -1906,7 +1906,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card className="border-yellow-200">
                     <CardContent className="pt-4">
                       <div className="flex items-center justify-between">
@@ -1920,7 +1920,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card className="border-red-200">
                     <CardContent className="pt-4">
                       <div className="flex items-center justify-between">
@@ -1948,7 +1948,7 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                         const onlineBots = serverBots.filter(bot => bot.status === 'online').length;
                         const healthPercentage = Math.round((onlineBots / (botCount as number)) * 100) || 0;
                         const healthColor = healthPercentage >= 80 ? 'text-green-600' : healthPercentage >= 60 ? 'text-yellow-600' : 'text-red-600';
-                        
+
                         return (
                           <div key={server} className="flex items-center justify-between p-3 border rounded-lg">
                             <div className="flex items-center gap-3">
