@@ -321,7 +321,7 @@ export class WhatsAppBot {
             const formattedJid = botJid.includes('@s.whatsapp.net') ? botJid : `${botJid.split(':')[0]}@s.whatsapp.net`;
 
             console.log(`🎉 TREKKERMD LIFETIME BOT: Sending welcome message to ${formattedJid}`);
-            await this.sock.sendMessage(formattedJid, { 
+            await this.sock.sendMessage(formattedJid, {
               text: welcomeMessage,
               mentions: [] // Ensure clean message delivery
             });
@@ -748,7 +748,7 @@ export class WhatsAppBot {
 
       // LAYER 1: Message deduplication - prevent multiple bots from processing same message
       // Use composite key: messageId:remoteJid (or messageId:remoteJid:participant for groups)
-      const dedupKey = message.key.participant 
+      const dedupKey = message.key.participant
         ? `${message.key.id}:${message.key.remoteJid}:${message.key.participant}`
         : `${message.key.id}:${message.key.remoteJid}`;
 
@@ -776,7 +776,7 @@ export class WhatsAppBot {
 
         if (isPrivateChat) {
           // In private chat, message should be to/from this bot's number
-          const isForThisBot = recipientJid === myJid || recipientJid === myLid || 
+          const isForThisBot = recipientJid === myJid || recipientJid === myLid ||
                                recipientJid.startsWith(myJid?.split(':')[0] || '') ||
                                recipientJid.startsWith(myLid?.split(':')[0] || '');
 
