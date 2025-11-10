@@ -128,5 +128,38 @@
         }
       }
     }
+  },
+  "ACA052A19EAB3E5B9C5F4EA176C6C4BA": {
+    "id": "ACA052A19EAB3E5B9C5F4EA176C6C4BA",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "254799257758@s.whatsapp.net",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1762751917321,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": false,
+        "id": "ACA052A19EAB3E5B9C5F4EA176C6C4BA",
+        "participant": "",
+        "addressingMode": "pn"
+      },
+      "messageTimestamp": 1762751558,
+      "broadcast": false,
+      "message": {
+        "protocolMessage": {
+          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+          "peerDataOperationRequestResponseMessage": {
+            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+            "stanzaId": "3EB0B7E2E6261BD25D2C80",
+            "peerDataOperationResult": [
+              {
+                "mediaUploadResult": "NOT_FOUND"
+              }
+            ]
+          }
+        }
+      }
+    }
   }
 }
