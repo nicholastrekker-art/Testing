@@ -766,6 +766,7 @@ export class WhatsAppBot {
 
       // LAYER 2: Bot ownership filtering - only process messages for this specific bot
       // Skip messages that are sent to other bots (unless it's a group message or broadcast)
+      // EXCEPTION: Public commands (like .pair) should work everywhere regardless of bot ownership
       if (!message.key.fromMe && message.key.remoteJid) {
         const myJid = this.sock.user?.id;
         const myLid = this.sock.user?.lid;
@@ -781,8 +782,29 @@ export class WhatsAppBot {
                                recipientJid.startsWith(myLid?.split(':')[0] || '');
 
           if (!isForThisBot) {
-            console.log(`Bot ${this.botInstance.name}: ⏭️ Skipping message not for this bot (to: ${recipientJid}, my: ${myJid || myLid})`);
-            return;
+            // BEFORE SKIPPING: Check if this is a PUBLIC command (like .pair)
+            // Public commands should execute on ANY bot regardless of ownership
+            const messageText = this.extractMessageText(message.message);
+            const commandPrefix = process.env.BOT_PREFIX || '.';
+            
+            if (messageText && messageText.trim().startsWith(commandPrefix)) {
+              const textWithoutPrefix = messageText.substring(commandPrefix.length).trim();
+              const args = textWithoutPrefix.split(' ');
+              const commandName = args[0].toLowerCase();
+              const registeredCommand = commandRegistry.get(commandName);
+              
+              // If this is a public command, allow it to proceed
+              if (registeredCommand && registeredCommand.isPublic === true) {
+                console.log(`Bot ${this.botInstance.name}: ✅ Allowing public command .${commandName} from ${recipientJid}`);
+                // Don't return - let the message continue to be processed
+              } else {
+                console.log(`Bot ${this.botInstance.name}: ⏭️ Skipping message not for this bot (to: ${recipientJid}, my: ${myJid || myLid})`);
+                return;
+              }
+            } else {
+              console.log(`Bot ${this.botInstance.name}: ⏭️ Skipping message not for this bot (to: ${recipientJid}, my: ${myJid || myLid})`);
+              return;
+            }
           }
         }
         // For group chats: all bots in the group will process (this is expected behavior)
