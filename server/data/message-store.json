@@ -734,5 +734,134 @@
         }
       }
     }
+  },
+  "AC31C571AD7D6950F38007EE376FB503": {
+    "id": "AC31C571AD7D6950F38007EE376FB503",
+    "fromJid": "254743963623@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "\"Bae ata nafaa nikublue for a while\"\n10mins bae then i chat u",
+    "type": "extendedTextMessage",
+    "timestamp": 1762839311092,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254743963623@s.whatsapp.net",
+        "fromMe": true,
+        "id": "AC31C571AD7D6950F38007EE376FB503"
+      },
+      "messageTimestamp": 1762839310,
+      "pushName": "_yfw_quis.ling💀☠️☠️",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "extendedTextMessage": {
+          "text": "10mins bae then i chat u",
+          "previewType": "NONE",
+          "contextInfo": {
+            "stanzaId": "ACB5D5DAECA966694F2596FB502F6EBE",
+            "participant": "254743963623@s.whatsapp.net",
+            "quotedMessage": {
+              "conversation": "Bae ata nafaa nikublue for a while"
+            }
+          },
+          "inviteLinkGroupTypeV2": "DEFAULT"
+        }
+      }
+    }
+  },
+  "AC11CA2A59A55CAB285882F440ECE6B8": {
+    "id": "AC11CA2A59A55CAB285882F440ECE6B8",
+    "fromJid": "254743963623@s.whatsapp.net",
+    "senderJid": "254743963623@s.whatsapp.net",
+    "content": "\"10mins bae then i chat u\"\nSawa",
+    "type": "unknown",
+    "timestamp": 1762839330756,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254743963623@s.whatsapp.net",
+        "fromMe": false,
+        "id": "AC11CA2A59A55CAB285882F440ECE6B8",
+        "senderLid": "39943799849210@lid"
+      },
+      "messageTimestamp": 1762839330,
+      "pushName": "charlie Shally",
+      "broadcast": false,
+      "message": {
+        "extendedTextMessage": {
+          "text": "Sawa",
+          "previewType": "NONE",
+          "contextInfo": {
+            "stanzaId": "AC31C571AD7D6950F38007EE376FB503",
+            "participant": "254742053765@s.whatsapp.net",
+            "quotedMessage": {
+              "conversation": "10mins bae then i chat u"
+            }
+          },
+          "inviteLinkGroupTypeV2": "DEFAULT"
+        },
+        "messageContextInfo": {
+          "deviceListMetadata": {
+            "recipientKeyHash": "bGQwRs1pkY5qlQ==",
+            "recipientTimestamp": "1762769505"
+          },
+          "deviceListMetadataVersion": 2,
+          "messageSecret": "Klut6YKEl/oo5YkB6YVJ05QVtcx7GgkjiUEAHeZ1NVI="
+        }
+      }
+    }
+  },
+  "AC9A14DF97FBA216EABACFD09358A046": {
+    "id": "AC9A14DF97FBA216EABACFD09358A046",
+    "fromJid": "254743963623@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "\"Bae ata nafaa nikublue for a while\"\nokey if it will make u happy",
+    "type": "extendedTextMessage",
+    "timestamp": 1762839336806,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254743963623@s.whatsapp.net",
+        "fromMe": true,
+        "id": "AC9A14DF97FBA216EABACFD09358A046"
+      },
+      "messageTimestamp": 1762839336,
+      "pushName": "_yfw_quis.ling💀☠️☠️",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "extendedTextMessage": {
+          "text": "okey if it will make u happy",
+          "previewType": "NONE",
+          "contextInfo": {
+            "stanzaId": "ACB5D5DAECA966694F2596FB502F6EBE",
+            "participant": "254743963623@s.whatsapp.net",
+            "quotedMessage": {
+              "conversation": "Bae ata nafaa nikublue for a while"
+            }
+          },
+          "inviteLinkGroupTypeV2": "DEFAULT"
+        }
+      }
+    }
+  },
+  "ACD75AC315C275E8819129B817EC628E": {
+    "id": "ACD75AC315C275E8819129B817EC628E",
+    "fromJid": "254743963623@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "nisikukose then",
+    "type": "conversation",
+    "timestamp": 1762839356294,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254743963623@s.whatsapp.net",
+        "fromMe": true,
+        "id": "ACD75AC315C275E8819129B817EC628E"
+      },
+      "messageTimestamp": 1762839356,
+      "pushName": "_yfw_quis.ling💀☠️☠️",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": "nisikukose then"
+      }
+    }
   }
 }
