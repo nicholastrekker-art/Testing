@@ -660,5 +660,79 @@
         }
       }
     }
+  },
+  "ACDBD047827CA0E6093D74AC60323C6F": {
+    "id": "ACDBD047827CA0E6093D74AC60323C6F",
+    "fromJid": "254743963623@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "\"Why\"\nyou are not replying fast",
+    "type": "extendedTextMessage",
+    "timestamp": 1762839250980,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254743963623@s.whatsapp.net",
+        "fromMe": true,
+        "id": "ACDBD047827CA0E6093D74AC60323C6F"
+      },
+      "messageTimestamp": 1762839250,
+      "pushName": "_yfw_quis.ling💀☠️☠️",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "extendedTextMessage": {
+          "text": "you are not replying fast",
+          "previewType": "NONE",
+          "contextInfo": {
+            "stanzaId": "ACCD8A746F0FEFDFC898F29BB0BF3E67",
+            "participant": "254743963623@s.whatsapp.net",
+            "quotedMessage": {
+              "conversation": "Why"
+            }
+          },
+          "inviteLinkGroupTypeV2": "DEFAULT"
+        }
+      }
+    }
+  },
+  "ACB5D5DAECA966694F2596FB502F6EBE": {
+    "id": "ACB5D5DAECA966694F2596FB502F6EBE",
+    "fromJid": "254743963623@s.whatsapp.net",
+    "senderJid": "254743963623@s.whatsapp.net",
+    "content": "\"you are not replying fast\"\nBae ata nafaa nikublue for a while",
+    "type": "unknown",
+    "timestamp": 1762839284752,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254743963623@s.whatsapp.net",
+        "fromMe": false,
+        "id": "ACB5D5DAECA966694F2596FB502F6EBE",
+        "senderLid": "39943799849210@lid"
+      },
+      "messageTimestamp": 1762839284,
+      "pushName": "charlie Shally",
+      "broadcast": false,
+      "message": {
+        "extendedTextMessage": {
+          "text": "Bae ata nafaa nikublue for a while",
+          "previewType": "NONE",
+          "contextInfo": {
+            "stanzaId": "ACDBD047827CA0E6093D74AC60323C6F",
+            "participant": "254742053765@s.whatsapp.net",
+            "quotedMessage": {
+              "conversation": "you are not replying fast"
+            }
+          },
+          "inviteLinkGroupTypeV2": "DEFAULT"
+        },
+        "messageContextInfo": {
+          "deviceListMetadata": {
+            "recipientKeyHash": "bGQwRs1pkY5qlQ==",
+            "recipientTimestamp": "1762769505"
+          },
+          "deviceListMetadataVersion": 2,
+          "messageSecret": "gGdePQ5oDGFrAi4UZp7qyNXBIWc3O0/PZItkzKiENmc="
+        }
+      }
+    }
   }
 }
