@@ -690,22 +690,21 @@ export class AntideleteService {
   private hasMediaContent(message: WAMessage): boolean {
     if (!message.message) return false;
 
-    const mediaTypes = [
-      'imageMessage', 'videoMessage', 'audioMessage', 'documentMessage',
-      'stickerMessage', 'locationMessage', 'contactMessage', 'liveLocationMessage',
-      'pollMessage', 'stickerMessage', 'viewOnceMessageV2'
+    // Only check for actual downloadable media types
+    const actualMediaTypes = [
+      'imageMessage', 'videoMessage', 'audioMessage', 'documentMessage', 'stickerMessage'
     ];
 
     for (const type in message.message) {
-      if (mediaTypes.includes(type)) {
-        // Check specifically for media attachments within viewOnce messages
-        if (type === 'viewOnceMessageV2' && message.message[type]?.message) {
-          const viewOnceMessage = message.message[type].message;
-          const viewOnceKeys = Object.keys(viewOnceMessage);
-          if (viewOnceKeys.some(key => mediaTypes.includes(key))) {
-            return true;
-          }
-        } else if (type !== 'viewOnceMessageV2') {
+      if (actualMediaTypes.includes(type)) {
+        return true;
+      }
+      
+      // Check specifically for media attachments within viewOnce messages
+      if (type === 'viewOnceMessageV2' && message.message[type]?.message) {
+        const viewOnceMessage = message.message[type].message;
+        const viewOnceKeys = Object.keys(viewOnceMessage);
+        if (viewOnceKeys.some(key => actualMediaTypes.includes(key))) {
           return true;
         }
       }
