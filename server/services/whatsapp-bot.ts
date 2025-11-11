@@ -341,17 +341,19 @@ export class WhatsAppBot {
           }
           
           const initialPresence = this.resolvePresenceMode();
-          if (initialPresence) {
+          if (initialPresence && this.sock.user?.id) {
             await this.sock.sendPresenceUpdate(initialPresence);
             if (initialPresence === 'composing' || initialPresence === 'recording') {
               this.currentPresenceState = initialPresence;
             }
             console.log(`Bot ${this.botInstance.name}: ✅ Initial ${initialPresence} presence sent on startup`);
+          } else if (!this.sock.user?.id) {
+            console.log(`Bot ${this.botInstance.name}: Skipping initial presence - bot user ID not ready yet`);
           } else {
             console.log(`Bot ${this.botInstance.name}: Presence mode is 'none', skipping initial presence update`);
           }
         } catch (presenceError) {
-          console.log(`Bot ${this.botInstance.name}: ⚠️ Failed to send initial presence:`, presenceError);
+          // Silent error - presence update is not critical for bot operation
         }
 
         // Start presence auto-switch if configured
