@@ -3797,7 +3797,7 @@ keyv@^5.5.3:
   dependencies:
     "@keyv/serialize" "^1.1.1"
 
-"libsignal@git+https://github.com/whiskeysockets/libsignal-node.git", "libsignal@https://github.com/whiskeysockets/libsignal-node.git":
+"libsignal@git+https://github.com/whiskeysockets/libsignal-node", "libsignal@https://github.com/whiskeysockets/libsignal-node.git":
   version "2.0.1"
   resolved "https://github.com/whiskeysockets/libsignal-node.git#e81ecfc32eb74951d789ab37f7e341ab66d5fff1"
   dependencies:
