@@ -209,5 +209,36 @@
         }
       }
     }
+  },
+  "A5AB725639C0186D5383A8220B93D5A7": {
+    "id": "A5AB725639C0186D5383A8220B93D5A7",
+    "fromJid": "254768271223@s.whatsapp.net",
+    "senderJid": "254768271223@s.whatsapp.net",
+    "content": "No",
+    "type": "unknown",
+    "timestamp": 1762975152042,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254768271223@s.whatsapp.net",
+        "fromMe": false,
+        "id": "A5AB725639C0186D5383A8220B93D5A7",
+        "senderLid": "178374622359708@lid"
+      },
+      "messageTimestamp": 1762975151,
+      "pushName": "Shazzy",
+      "broadcast": false,
+      "message": {
+        "conversation": "No",
+        "messageContextInfo": {
+          "deviceListMetadata": {
+            "recipientKeyHash": "bGQwRs1pkY5qlQ==",
+            "recipientTimestamp": "1762769505"
+          },
+          "deviceListMetadataVersion": 2,
+          "messageSecret": "O/NDbnxEHkxnoHGj4PNak1QQgdsomEzGC8cvF2Cav7s="
+        }
+      },
+      "verifiedBizName": "Shazzy"
+    }
   }
 }
