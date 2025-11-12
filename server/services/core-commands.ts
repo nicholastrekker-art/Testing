@@ -3057,99 +3057,30 @@ Example: 254712345678
     }
 
     try {
-      // Step 1: Check if phone number is already registered
-      await respond(`🔍 *Checking Phone Number...*
+      await respond(`🔄 *Generating pairing code...*
 
 📱 Phone: +${phoneNumber}
-⏳ Please wait...
-
-> TREKKER-MD Pairing System`);
+⏳ Please wait...`);
 
       const axios = (await import('axios')).default;
 
-      // Check registration status
-      const checkResponse = await axios.post('http://localhost:5000/api/guest/check-registration', {
-        phoneNumber: phoneNumber
+      // Call the pair.js endpoint to get the pairing code
+      const pairResponse = await axios.get(`http://localhost:5000/api/pair?number=${phoneNumber}`, {
+        timeout: 90000 // 90 second timeout
       });
 
-      const registrationStatus = checkResponse.data;
-
-      // If phone is already registered, stop here
-      if (registrationStatus.registered) {
-        const serverInfo = registrationStatus.registeredTo || registrationStatus.currentServer || 'Unknown Server';
-
-        await respond(`⚠️ *PHONE NUMBER ALREADY REGISTERED*
-
-📱 Phone: +${phoneNumber}
-🖥️ Registered On: ${serverInfo}
-
-${registrationStatus.hasBot ? '✅ You already have an active bot with this number!' : '⏳ Bot registration in progress for this number.'}
-
-💡 *What you can do:*
-• Use the dashboard to manage your existing bot
-• Contact support if you need to transfer or update
-
-🔗 *Dashboard:* https://your-replit-url.repl.co
-
-❌ Cannot proceed with pairing - number already in use.
-
-> TREKKER-MD Pairing System`);
-        return;
+      if (!pairResponse.data || !pairResponse.data.code) {
+        throw new Error('Failed to generate pairing code from server');
       }
 
-      // Phone number is available - proceed with pairing
-      await respond(`✅ *Phone Number Available!*
-
-📱 Phone: +${phoneNumber}
-🔄 Generating pairing code...
-
-> TREKKERMD Pairing System`);
-
-      // Use the pairing service directly instead of HTTP endpoint
-      const pairingResult = await pairingService.generatePairingCode(phoneNumber);
-
-      if (!pairingResult.success || !pairingResult.code) {
-        throw new Error(pairingResult.error || 'Failed to generate pairing code');
-      }
-
-      const code = pairingResult.code;
-      const requestId = pairingResult.requestId;
+      const code = pairResponse.data.code;
 
       // Format code nicely
       const formattedCode = code.match(/.{1,4}/g)?.join('-') || code;
 
-      // Step 2: Send pairing code alone
+      // Send ONLY the pairing code
       await client.sendMessage(from, {
         text: formattedCode
-      });
-
-      // Step 3: Send description separately
-      await client.sendMessage(from, {
-        text: `✅ *PAIRING CODE GENERATED!*
-
-📱 *How to Enter the Code:*
-
-1️⃣ Open WhatsApp on your phone
-2️⃣ Tap the three dots (⋮) menu
-3️⃣ Select "Linked Devices"
-4️⃣ Tap "Link a Device"
-5️⃣ Tap "Link with Phone Number Instead"
-6️⃣ Enter the code above
-
-⏳ *Waiting for you to enter the code...*
-⌛ This code will expire in 60 seconds
-
-💡 *What happens next:*
-• After entering the code, your session will be created
-• Credentials will be sent to you automatically
-• Your bot will be registered in the system
-• You can manage it from the dashboard
-
-🔗 *Dashboard:* https://your-replit-url.repl.co
-
-🌐 *Available Everywhere:* This command works in groups, private chats, and public channels!
-
-> TREKKER-MD Pairing System`
       });
 
     } catch (error) {
@@ -3158,9 +3089,7 @@ ${registrationStatus.hasBot ? '✅ You already have an active bot with this numb
 
 Error: ${error instanceof Error ? error.message : 'Unknown error'}
 
-Please try again or contact support.
-
-> TREKKER-MD Pairing System`);
+Please try again.`);
     }
   }
 });
