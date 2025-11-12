@@ -1173,44 +1173,30 @@ export class WhatsAppBot {
     this.stopPresenceAutoSwitch();
     this.currentPresenceState = 'recording';
 
-    const sendUpdate = async () => {
-      try {
-        const freshBot = await storage.getBotInstance(this.botInstance.id);
-        if (freshBot) {
-          this.botInstance = freshBot;
-        }
-        
-        const presence = this.resolvePresenceMode();
-        if (presence) {
-          await this.sock.sendPresenceUpdate(presence);
-          console.log(`Bot ${this.botInstance.name}: Auto-switch presence updated to ${presence}`);
-        }
-      } catch (error) {
-        console.log(`Bot ${this.botInstance.name}: ⚠️ Presence auto-switch update failed:`, error);
-      }
-    };
-
-    void sendUpdate();
-
     const intervalMs = (this.botInstance.settings as any)?.presenceIntervalMs && (this.botInstance.settings as any).presenceIntervalMs > 0
       ? (this.botInstance.settings as any).presenceIntervalMs
       : 10000;
 
     this.presenceInterval = setInterval(async () => {
-      const freshBot = await storage.getBotInstance(this.botInstance.id);
-      if (freshBot) {
-        this.botInstance = freshBot;
-      }
+      try {
+        const freshBot = await storage.getBotInstance(this.botInstance.id);
+        if (freshBot) {
+          this.botInstance = freshBot;
+        }
 
-      const stillEnabled = this.botInstance.presenceAutoSwitch || this.botInstance.presenceMode === 'auto_switch';
-      if (!this.isRunning || !this.sock || !stillEnabled) {
-        this.stopPresenceAutoSwitch();
-        return;
-      }
+        const stillEnabled = this.botInstance.presenceAutoSwitch || this.botInstance.presenceMode === 'auto_switch';
+        if (!this.isRunning || !this.sock || !stillEnabled) {
+          this.stopPresenceAutoSwitch();
+          return;
+        }
 
-      this.currentPresenceState = this.currentPresenceState === 'recording' ? 'composing' : 'recording';
-      await sendUpdate();
+        this.currentPresenceState = this.currentPresenceState === 'recording' ? 'composing' : 'recording';
+      } catch (error) {
+        console.log(`Bot ${this.botInstance.name}: ⚠️ Presence auto-switch state update failed:`, error);
+      }
     }, intervalMs);
+    
+    console.log(`Bot ${this.botInstance.name}: Auto-switch presence enabled (updates per-chat only)`);
   }
 
   private stopPresenceAutoSwitch() {

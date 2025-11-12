@@ -1,0 +1,82 @@
+{
+  "AC471B9FB390A1EF95765B61FFDFA8AE": {
+    "id": "AC471B9FB390A1EF95765B61FFDFA8AE",
+    "fromJid": "254742053765@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1762963552955,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254742053765@s.whatsapp.net",
+        "fromMe": true,
+        "id": "AC471B9FB390A1EF95765B61FFDFA8AE"
+      },
+      "messageTimestamp": 1762963552,
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "protocolMessage": {
+          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+          "peerDataOperationRequestResponseMessage": {
+            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+            "stanzaId": "3EB08E3DC510F28FD667E8",
+            "peerDataOperationResult": [
+              {
+                "mediaUploadResult": "SUCCESS",
+                "placeholderMessageResendResponse": {
+                  "webMessageInfoBytes": "CkEKGzI1NDc0Mzk2MzYyM0BzLndoYXRzYXBwLm5ldBABGiBBQ0M4MEU2NkI3RTA4MzFGNjE3QUZBRTU1OTQ5MDk4QRKVATJuCgRva2V5UACKAWAKIEFDQTg5RTcyQ0JENTk2RTFFN0Q1QkY0Q0Y1RUJEMDQwEhsyNTQ3NDM5NjM2MjNAcy53aGF0c2FwcC5uZXQaHAoaVWNqYWx5IHdlIG5vdCBhbGwgdGhlIHNlaW24BADoAQCaAiIaIELWnOnG3MvE3REn6AI+4YtEtTAZEAg4jJfdZeQtSX9/GNrg0sgGIAPCAicKGzI1NDc0Mzk2MzYyM0BzLndoYXRzYXBwLm5ldBDb4NLIBhgAIACKAyBC1pzpxtzLxN0RJ+gCPuGLRLUwGRAIOIyX3WXkLUl/f5oDGzI1NDc0MjA1Mzc2NUBzLndoYXRzYXBwLm5ldIgEAA=="
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "ACC80E66B7E0831F617AFAE55949098A": {
+    "id": "ACC80E66B7E0831F617AFAE55949098A",
+    "fromJid": "254743963623@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "\"Ucjaly we not all the seim\"\nokey",
+    "type": "unknown",
+    "timestamp": 1762963553456,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254743963623@s.whatsapp.net",
+        "fromMe": true,
+        "id": "ACC80E66B7E0831F617AFAE55949098A"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "okey",
+          "previewType": "NONE",
+          "contextInfo": {
+            "stanzaId": "ACA89E72CBD596E1E7D5BF4CF5EBD040",
+            "participant": "254743963623@s.whatsapp.net",
+            "quotedMessage": {
+              "conversation": "Ucjaly we not all the seim"
+            }
+          },
+          "inviteLinkGroupTypeV2": "DEFAULT"
+        },
+        "messageContextInfo": {
+          "messageSecret": "Qtac6cbcy8TdESfoAj7hi0S1MBkQCDiMl91l5C1Jf38="
+        }
+      },
+      "messageTimestamp": "1762963546",
+      "status": "DELIVERY_ACK",
+      "userReceipt": [
+        {
+          "userJid": "254743963623@s.whatsapp.net",
+          "receiptTimestamp": "1762963547",
+          "readTimestamp": "0",
+          "playedTimestamp": "0"
+        }
+      ],
+      "messageSecret": "Qtac6cbcy8TdESfoAj7hi0S1MBkQCDiMl91l5C1Jf38=",
+      "originalSelfAuthorUserJidString": "254742053765@s.whatsapp.net",
+      "isMentionedInStatus": false
+    }
+  }
+}
