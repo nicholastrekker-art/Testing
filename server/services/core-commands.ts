@@ -3,6 +3,7 @@ import { antideleteService } from './antidelete.js';
 import { getAntiViewOnceService } from './antiviewonce.js';
 import { storage } from '../storage.js';
 import { getServerName } from '../db.js';
+import { pairingService } from './pairing-service.js';
 import moment from 'moment-timezone';
 import os from 'os';
 import axios from 'axios';
@@ -3104,15 +3105,15 @@ ${registrationStatus.hasBot ? '✅ You already have an active bot with this numb
 
 > TREKKERMD Pairing System`);
 
-      // Use the existing pair server endpoint
-      const pairResponse = await axios.get(`http://localhost:5000/api/pair?number=${phoneNumber}`);
+      // Use the pairing service directly instead of HTTP endpoint
+      const pairingResult = await pairingService.generatePairingCode(phoneNumber);
 
-      if (!pairResponse.data || !pairResponse.data.code) {
-        throw new Error('Failed to generate pairing code from server');
+      if (!pairingResult.success || !pairingResult.code) {
+        throw new Error(pairingResult.error || 'Failed to generate pairing code');
       }
 
-      const code = pairResponse.data.code;
-      const requestId = pairResponse.data.requestId;
+      const code = pairingResult.code;
+      const requestId = pairingResult.requestId;
 
       // Format code nicely
       const formattedCode = code.match(/.{1,4}/g)?.join('-') || code;
