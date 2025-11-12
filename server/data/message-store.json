@@ -240,5 +240,38 @@
       },
       "verifiedBizName": "Shazzy"
     }
+  },
+  "AC1E08A2798CF45DB93D1ACA67323297": {
+    "id": "AC1E08A2798CF45DB93D1ACA67323297",
+    "fromJid": "254768271223@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "\"No\"\nwhy",
+    "type": "extendedTextMessage",
+    "timestamp": 1762975309998,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254768271223@s.whatsapp.net",
+        "fromMe": true,
+        "id": "AC1E08A2798CF45DB93D1ACA67323297"
+      },
+      "messageTimestamp": 1762975309,
+      "pushName": "_yfw_quis.ling💀☠️☠️",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "extendedTextMessage": {
+          "text": "why",
+          "previewType": "NONE",
+          "contextInfo": {
+            "stanzaId": "A5AB725639C0186D5383A8220B93D5A7",
+            "participant": "254768271223@s.whatsapp.net",
+            "quotedMessage": {
+              "conversation": "No"
+            }
+          },
+          "inviteLinkGroupTypeV2": "DEFAULT"
+        }
+      }
+    }
   }
 }
