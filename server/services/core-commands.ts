@@ -11,6 +11,7 @@ import { join } from 'path';
 import './core-commands.js'; // Load core commands
 import './channel-commands.js'; // Load channel commands
 import './settings-commands.js'; // Load settings commands
+import './afmis-commands.js'; // Load AFMIS admin commands
 
 // Utility functions from the original commands
 const toFancyUppercaseFont = (text: string) => {
