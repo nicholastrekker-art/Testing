@@ -251,30 +251,43 @@ router.get('/', async (req, res) => {
 
                         // Save credentials
                         await saveCreds();
-                        console.log('💾 Final credentials saved');
+                        console.log('💾 Initial credentials saved');
 
-                        // Generate session ID
+                        // Extract phone number from sock.user.id FIRST (JID format: number@s.whatsapp.net)
+                        const fullJid = sock.user.id;
+                        const jidWithoutDomain = fullJid.split('@')[0];
+                        const phoneNumber = jidWithoutDomain.split(':')[0];
+
+                        // Read and update creds.json with phone number BEFORE generating sessionId
+                        const credsPath = path.join(authDir, 'creds.json');
+                        const credsData = fs.readFileSync(credsPath, 'utf8');
+                        const creds = JSON.parse(credsData);
+
+                        // Ensure credentials have phone number in extractable format
+                        if (!creds.me) creds.me = {};
+                        if (!creds.me.id || !creds.me.id.includes(phoneNumber)) {
+                            creds.me.id = fullJid; // Store full JID format: 254704897825:49@s.whatsapp.net
+                            console.log(`✅ Updated credentials with me.id = ${fullJid}`);
+                        }
+
+                        // Write updated credentials back to creds.json
+                        fs.writeFileSync(credsPath, JSON.stringify(creds, null, 2), 'utf8');
+                        console.log('💾 Updated credentials saved to creds.json');
+
+                        // NOW generate session ID from the updated creds.json
                         const sessionId = await saveSessionLocallyFromPath(authDir);
                         if (!sessionId) {
                             throw new Error('Failed to generate session ID');
                         }
+                        console.log(`✅ Session ID generated from updated credentials`);
 
-                        console.log(`✅ Session ID generated`);
-
-                        // Read creds.json for download
-                        const credsPath = path.join(authDir, 'creds.json');
-                        const credsData = fs.readFileSync(credsPath, 'utf8');
-                        const base64Creds = Buffer.from(credsData).toString('base64');
-                        const creds = JSON.parse(credsData); // Parse creds to get owner name
+                        // Use same updated credentials for base64 encoding
+                        const base64Creds = sessionId; // sessionId is already base64 of updated creds
 
                         // Send session ID and welcome message NOW while pairing connection is still active
                         console.log('📤 Sending session ID and welcome message via active pairing connection...');
 
                         try {
-                            // Extract phone number from sock.user.id (JID format: number@s.whatsapp.net)
-                            const fullJid = sock.user.id;
-                            const jidWithoutDomain = fullJid.split('@')[0];
-                            const phoneNumber = jidWithoutDomain.split(':')[0];
                             const ownerName = creds.me.name || 'User'; // Get owner name for registration
 
                             const ownerJid = `${phoneNumber}@s.whatsapp.net`;
