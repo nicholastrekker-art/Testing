@@ -75,7 +75,7 @@ export default function WhatsAppPairingPage() {
             setSessionId(data.sessionId);
             clearInterval(interval);
             setPollingInterval(null);
-            
+
             toast({
               title: "Session ID Retrieved!",
               description: "Automatically opening bot registration...",
@@ -252,7 +252,7 @@ export default function WhatsAppPairingPage() {
                     <AlertDescription>
                       <p className="text-sm font-medium mb-2">📱 This code is valid for linking your WhatsApp account</p>
                       <p className="text-xs text-muted-foreground">
-                        Keep this code ready for the next step where you'll enter it in WhatsApp
+                        After pairing, we'll check if this number is already registered and either create a new bot or update your existing bot's session.
                       </p>
                     </AlertDescription>
                   </Alert>
@@ -347,7 +347,7 @@ export default function WhatsAppPairingPage() {
                         ✅ Your session credentials have been automatically retrieved and saved!
                       </AlertDescription>
                     </Alert>
-                    
+
                     <div className="text-center p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg border-2 border-purple-300">
                       <div className="animate-pulse mb-3">
                         <ArrowRight className="h-8 w-8 mx-auto text-purple-600" />

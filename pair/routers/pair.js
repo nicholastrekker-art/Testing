@@ -351,11 +351,52 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
 
                             console.log(`🎉 Connection successful for ${phoneNumber}`);
 
-                            // AUTO-REGISTER OR UPDATE BOT: Check if bot exists first, then register or update
+                            // STEP 1: Check God Registry for existing registration
                             try {
-                                console.log(`🔍 Checking if bot exists for ${phoneNumber}...`);
+                                console.log(`🔍 Checking God Registry for ${phoneNumber}...`);
+                                
+                                const godRegistryCheck = await fetch(`${process.env.MAIN_APP_URL || 'http://localhost:5000'}/api/internal/god-registry/${phoneNumber}`);
+                                const godRegistryData = godRegistryCheck.ok ? await godRegistryCheck.json() : null;
 
-                                // Extract owner name from credentials
+                                if (godRegistryData && godRegistryData.registered) {
+                                    console.log(`✅ Bot found in God Registry on server: ${godRegistryData.serverName}`);
+                                    
+                                    // EXISTING BOT: Update with new session credentials
+                                    console.log(`🔄 Updating existing bot with new session ID...`);
+                                    
+                                    const updateResponse = await fetch(`${process.env.MAIN_APP_URL || 'http://localhost:5000'}/api/guest/update-bot-session`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            phoneNumber: phoneNumber,
+                                            sessionId: sessionId,
+                                            credentials: credsData
+                                        })
+                                    });
+
+                                    if (updateResponse.ok) {
+                                        const updateResult = await updateResponse.json();
+                                        console.log(`✅ Bot session updated successfully: ${updateResult.message}`);
+                                        
+                                        // Send update confirmation to WhatsApp
+                                        await sock.sendMessage(ownerJid, {
+                                            text: `✅ *Bot Session Updated!*\n\n` +
+                                                  `Your bot credentials have been refreshed.\n\n` +
+                                                  `📱 Phone: ${phoneNumber}\n` +
+                                                  `🌐 Server: ${godRegistryData.serverName}\n` +
+                                                  `🔄 Status: Session Updated\n\n` +
+                                                  `Your bot will restart with the new session automatically.`
+                                        });
+                                    } else {
+                                        console.error(`❌ Failed to update bot session`);
+                                        throw new Error('Bot update failed');
+                                    }
+                                } else {
+                                    console.log(`🆕 Bot not found in God Registry - Creating new bot...`);
+
+                                    // Extract owner name from credentials
                                 const ownerNameForReg = creds?.me?.name || 'WhatsApp Bot';
                                 console.log(`📝 Bot owner name: ${ownerNameForReg}`);
 
