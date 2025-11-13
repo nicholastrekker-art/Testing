@@ -1,1 +1,89 @@
-{}
+{
+  "AC8D0C5FFC42A0A3BA12EDA56AB4F6FE": {
+    "id": "AC8D0C5FFC42A0A3BA12EDA56AB4F6FE",
+    "fromJid": "254742053765@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1763011562615,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254742053765@s.whatsapp.net",
+        "fromMe": true,
+        "id": "AC8D0C5FFC42A0A3BA12EDA56AB4F6FE"
+      },
+      "messageTimestamp": 1763011562,
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "protocolMessage": {
+          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+          "peerDataOperationRequestResponseMessage": {
+            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+            "stanzaId": "3EB09D97E22C27784CFB4A",
+            "peerDataOperationResult": [
+              {
+                "mediaUploadResult": "SUCCESS",
+                "placeholderMessageResendResponse": {
+                  "webMessageInfoBytes": "CkEKGzI1NDc0Mzk2MzYyM0BzLndoYXRzYXBwLm5ldBABGiBBQ0M1MUY5QkQ4QzE2MkFEOUEyRTlBNjI4QzVEMzdDMhKjATJ8ChFnaGFpIHVzaWt1IHN1cmVseVAAigFhCiBBQ0I0Q0IwMTI0MTZBOUJDQzc3QkI2OTEzQzU5MjRENRIbMjU0NzQzOTYzNjIzQHMud2hhdHNhcHAubmV0Gh0KG0JhYmUgbmlsaWt1d2EgbmFvaWwgbXkgaGFpcrgEAOgBAJoCIhoglv0MP8ry2kWnIZkuCRv3NlTjIt2angGo6spwHsjiVsMYh9XVyAYgBDCI1dXIBsICHgoSMzk5NDM3OTk4NDkyMTBAbGlkEAAYjNXVyAYgAMICJwobMjU0NzQzOTYzNjIzQHMud2hhdHNhcHAubmV0EIjV1cgGGAAgAIoDIJb9DD/K8tpFpyGZLgkb9zZU4yLdmp4BqOrKcB7I4lbDmgMbMjU0NzQyMDUzNzY1QHMud2hhdHNhcHAubmV0iAQA"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "ACC51F9BD8C162AD9A2E9A628C5D37C2": {
+    "id": "ACC51F9BD8C162AD9A2E9A628C5D37C2",
+    "fromJid": "254743963623@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "\"Babe nilikuwa naoil my hair\"\nghai usiku surely",
+    "type": "unknown",
+    "timestamp": 1763011563115,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254743963623@s.whatsapp.net",
+        "fromMe": true,
+        "id": "ACC51F9BD8C162AD9A2E9A628C5D37C2"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "ghai usiku surely",
+          "previewType": "NONE",
+          "contextInfo": {
+            "stanzaId": "ACB4CB012416A9BCC77BB6913C5924D5",
+            "participant": "254743963623@s.whatsapp.net",
+            "quotedMessage": {
+              "conversation": "Babe nilikuwa naoil my hair"
+            }
+          },
+          "inviteLinkGroupTypeV2": "DEFAULT"
+        },
+        "messageContextInfo": {
+          "messageSecret": "lv0MP8ry2kWnIZkuCRv3NlTjIt2angGo6spwHsjiVsM="
+        }
+      },
+      "messageTimestamp": "1763011207",
+      "status": "READ",
+      "messageC2STimestamp": "1763011208",
+      "userReceipt": [
+        {
+          "userJid": "39943799849210@lid",
+          "receiptTimestamp": "0",
+          "readTimestamp": "1763011212",
+          "playedTimestamp": "0"
+        },
+        {
+          "userJid": "254743963623@s.whatsapp.net",
+          "receiptTimestamp": "1763011208",
+          "readTimestamp": "0",
+          "playedTimestamp": "0"
+        }
+      ],
+      "messageSecret": "lv0MP8ry2kWnIZkuCRv3NlTjIt2angGo6spwHsjiVsM=",
+      "originalSelfAuthorUserJidString": "254742053765@s.whatsapp.net",
+      "isMentionedInStatus": false
+    }
+  }
+}
