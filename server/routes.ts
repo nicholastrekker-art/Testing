@@ -3148,36 +3148,8 @@ Thank you for using TREKKER-MD! 🚀
       console.log(`📱 Processing registration for phone: ${cleanedPhone}`);
       console.log(`🎯 Target server: ${selectedServer || 'current server'}`);
 
-      // Step 1: Check if phone number already exists in God Registry
-      const existingRegistration = await storage.checkGlobalRegistration(cleanedPhone);
-      if (existingRegistration) {
-        const hostingServer = existingRegistration.tenancyName;
-        const currentServer = getServerName();
-
-        console.log(`📍 Phone ${cleanedPhone} found in God Registry on server: ${hostingServer}`);
-
-        if (hostingServer === currentServer) {
-          // Phone exists on current server - check for existing bot
-          const existingBot = await storage.getBotByPhoneNumber(cleanedPhone);
-          if (existingBot) {
-            console.log(`🤖 Existing bot found: ${existingBot.name}`);
-            return res.json({
-              success: false,
-              type: 'existing_bot_found',
-              message: `Welcome back! You already have a bot "${existingBot.name}" registered with this phone number.`,
-              botDetails: maskBotDataForGuest(existingBot, true)
-            });
-          }
-        } else {
-          // Phone exists on different server - cannot register duplicate
-          return res.status(400).json({
-            success: false,
-            message: `This phone number is already registered on ${hostingServer}. Each phone number can only be used once across all servers.`
-          });
-        }
-      }
-
-      // Step 2: Parse and validate credentials
+      // Step 1: Parse and validate credentials FIRST (moved before bot existence check)
+      // This allows us to update existing bot credentials
       let credentials = null;
       if (credentialType === 'base64' && sessionId) {
         try {
@@ -3272,7 +3244,133 @@ Thank you for using TREKKER-MD! 🚀
 
       console.log(`✅ Credentials validated for phone: ${cleanedPhone}`);
 
-      // Step 4: Check if promotional offer is active
+      // Step 2: Check if bot already exists
+      const currentServer = getServerName();
+      const existingRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      if (existingRegistration) {
+        const hostingServer = existingRegistration.tenancyName;
+
+        console.log(`📍 Phone ${cleanedPhone} found in God Registry on server: ${hostingServer}`);
+
+        // Check if trying to register on a different server than where bot exists
+        // This applies whether selectedServer is provided or not
+        if (hostingServer !== currentServer) {
+          return res.status(400).json({
+            success: false,
+            message: `This phone number is registered on ${hostingServer}. Please access ${hostingServer} to update your bot credentials.`
+          });
+        }
+
+        // Additional check: if user explicitly selected a different server, that's also an error
+        if (selectedServer && selectedServer !== hostingServer) {
+          return res.status(400).json({
+            success: false,
+            message: `This phone number is registered on ${hostingServer}. Cannot move to ${selectedServer}.`
+          });
+        }
+
+        if (hostingServer === currentServer) {
+          // Phone exists on current server - check for existing bot
+          const existingBot = await storage.getBotByPhoneNumber(cleanedPhone);
+          if (existingBot) {
+            console.log(`🔄 Existing bot found: ${existingBot.name} - UPDATING CREDENTIALS`);
+            
+            // Check if promotional offer is active (for messaging)
+            const offerActive = await storage.isOfferActive();
+            
+            // Update bot credentials (keep existing approval status and other settings)
+            const updatedBot = await storage.updateBotInstance(existingBot.id, {
+              credentials,
+              credentialVerified: true,
+              autoStart: true,
+              status: 'loading'
+            });
+
+            // Create activity log for credential update
+            await storage.createActivity({
+              botInstanceId: updatedBot.id,
+              type: 'credential_update',
+              description: `Credentials updated for bot ${updatedBot.name}`,
+              metadata: { phoneNumber: cleanedPhone, updatedAt: new Date().toISOString() },
+              serverName: currentServer
+            });
+
+            console.log(`✅ Credentials updated for existing bot ${updatedBot.name}`);
+
+            // Send WhatsApp confirmation
+            try {
+              const statusMessage = updatedBot.approvalStatus === 'approved' 
+                ? '✅ APPROVED & ACTIVE' 
+                : '⏳ Pending Admin Approval';
+                
+              const confirmationMsg = `✅ *CREDENTIALS UPDATED!*
+
+Your bot "${updatedBot.name}" credentials have been successfully updated!
+
+📊 *Bot Details:*
+• Bot Name: ${updatedBot.name}
+• Phone: ${cleanedPhone}
+• Status: ${statusMessage}
+• Server: ${currentServer}
+• Updated: ${new Date().toLocaleString()}
+
+${updatedBot.approvalStatus === 'approved'
+  ? '🎉 Your bot is APPROVED and will auto-start with new credentials!\n• Send .menu to see available commands\n• All features are active and ready to use!'
+  : '⏳ Your bot is awaiting admin approval\n• You will be notified once approved\n• Contact +254704897825 for faster activation'}
+
+━━━━━━━━━━━━━━━━━━━
+_Credentials Update Complete_`;
+
+              await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), confirmationMsg, true);
+              console.log(`✅ Credential update confirmation sent to ${cleanedPhone}`);
+            } catch (messageError) {
+              console.error('Failed to send credential update message:', messageError);
+            }
+
+            // Restart approved bots immediately with new credentials
+            if (updatedBot.approvalStatus === 'approved') {
+              console.log(`🔄 Restarting approved bot ${updatedBot.name} with new credentials...`);
+              try {
+                // Check if bot is currently running
+                const isRunning = botManager.isRunning(updatedBot.id);
+                if (isRunning) {
+                  await botManager.restartBot(updatedBot.id);
+                  console.log(`✅ Bot ${updatedBot.name} restarted successfully`);
+                } else {
+                  await botManager.startBot(updatedBot.id);
+                  console.log(`✅ Bot ${updatedBot.name} started successfully`);
+                }
+              } catch (restartError) {
+                console.error(`❌ Failed to restart bot ${updatedBot.name}:`, restartError);
+                // Return error if restart fails - bot needs to be manually restarted
+                return res.status(500).json({
+                  success: false,
+                  type: 'restart_failed',
+                  message: `Credentials updated but failed to restart bot. Please contact support or try again.`,
+                  error: restartError instanceof Error ? restartError.message : 'Unknown error'
+                });
+              }
+            } else {
+              console.log(`📝 Bot ${updatedBot.name} is pending approval - credentials updated but not started`);
+            }
+
+            return res.json({
+              success: true,
+              type: 'credentials_updated',
+              message: `Credentials updated successfully for your existing bot "${updatedBot.name}"!`,
+              botDetails: maskBotDataForGuest(updatedBot, true)
+            });
+          }
+        } else {
+          // Phone exists on different server - cannot register duplicate
+          return res.status(400).json({
+            success: false,
+            message: `This phone number is already registered on ${hostingServer}. Each phone number can only be used once across all servers.`
+          });
+        }
+      }
+
+      // Step 3: Check if promotional offer is active
       const offerActive = await storage.isOfferActive();
       console.log(`🎁 Promotional offer status: ${offerActive ? 'ACTIVE' : 'inactive'}`);
 
@@ -3309,8 +3407,6 @@ Thank you for using TREKKER-MD! 🚀
           chatGPT: botData.chatgptEnabled
         }
       });
-
-      const currentServer = getServerName();
 
       // Step 5: Handle server selection - CRITICAL FIX
       if (selectedServer && selectedServer !== currentServer) {
