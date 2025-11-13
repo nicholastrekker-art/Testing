@@ -41,8 +41,8 @@ const addDuration = (date: Date, months: number, days: number): Date => {
 
 // Approve Bot Command
 commandRegistry.register({
-  name: 'approve',
-  aliases: ['approvebot'],
+  name: 'approvebot',
+  aliases: ['afmisapprove'],
   description: 'Approve a bot with custom expiry duration (Admin only)',
   category: 'AFMIS',
   ownerOnly: false,
@@ -58,7 +58,7 @@ commandRegistry.register({
     if (args.length < 2) {
       await respond(`❌ *Invalid Usage*
 
-📋 *Usage:* .approve <phone_number> <duration>
+📋 *Usage:* .approvebot <phone_number> <duration>
 
 *Duration Format:*
 • 1m = 1 month
@@ -67,10 +67,10 @@ commandRegistry.register({
 • Can combine: 1m2w3d = 1 month, 2 weeks, 3 days
 
 *Examples:*
-.approve 254704897824 1m
-.approve 254704897824 2w
-.approve 254704897824 1m2w
-.approve 254704897824 3d
+.approvebot 254704897824 1m
+.approvebot 254704897824 2w
+.approvebot 254704897824 1m2w
+.approvebot 254704897824 3d
 
 > AFMIS Bot Approval System`);
       return;
@@ -190,8 +190,8 @@ commandRegistry.register({
       });
 
       message += `\n*Quick Approve:*\n`;
-      message += `.approve <phone> <duration>\n`;
-      message += `Example: .approve ${pendingBots[0].phoneNumber} 1m\n\n`;
+      message += `.approvebot <phone> <duration>\n`;
+      message += `Example: .approvebot ${pendingBots[0].phoneNumber} 1m\n\n`;
       message += `> AFMIS Bot Management`;
 
       await respond(message);
@@ -223,7 +223,7 @@ commandRegistry.register({
 
 📋 *Available Commands:*
 
-1️⃣ *.approve <phone> <duration>*
+1️⃣ *.approvebot <phone> <duration>*
    Approve a bot with custom expiry
    
    *Duration Format:*
@@ -233,8 +233,8 @@ commandRegistry.register({
    • Combine: 1m2w3d
    
    *Example:*
-   .approve 254704897824 1m
-   .approve 254704897824 2w5d
+   .approvebot 254704897824 1m
+   .approvebot 254704897824 2w5d
 
 2️⃣ *.pending*
    List all pending bots
