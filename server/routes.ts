@@ -3332,8 +3332,8 @@ _Credentials Update Complete_`;
               console.log(`🔄 Restarting approved bot ${updatedBot.name} with new credentials...`);
               try {
                 // Check if bot is currently running
-                const isRunning = botManager.isRunning(updatedBot.id);
-                if (isRunning) {
+                const botStatus = botManager.getBotStatus(updatedBot.id);
+                if (botStatus === 'online') {
                   await botManager.restartBot(updatedBot.id);
                   console.log(`✅ Bot ${updatedBot.name} restarted successfully`);
                 } else {
