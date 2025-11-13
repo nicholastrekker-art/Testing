@@ -1,4 +1,3 @@
-
 import { commandRegistry, type CommandContext } from './command-registry.js';
 import { storage } from '../storage.js';
 
@@ -44,14 +43,14 @@ commandRegistry.register({
   name: 'approvebot',
   aliases: ['afmisapprove'],
   description: 'Approve a bot with custom expiry duration (Admin only)',
-  category: 'AFMIS',
+  category: 'Panel Administrator',
   ownerOnly: false,
   handler: async (context: CommandContext) => {
     const { respond, message, args, sender } = context;
 
     // Check if sender is admin
     if (!isAdmin(sender)) {
-      await respond('❌ *Access Denied*\n\nThis command is restricted to AFMIS administrators only.');
+      await respond('❌ *Access Denied*\n\nThis command is restricted to Panel Administrators only.');
       return;
     }
 
@@ -159,14 +158,14 @@ commandRegistry.register({
   name: 'pending',
   aliases: ['pendingbots', 'listpending'],
   description: 'List all pending bots awaiting approval (Admin only)',
-  category: 'AFMIS',
+  category: 'Panel Administrator',
   ownerOnly: false,
   handler: async (context: CommandContext) => {
     const { respond, sender } = context;
 
     // Check if sender is admin
     if (!isAdmin(sender)) {
-      await respond('❌ *Access Denied*\n\nThis command is restricted to AFMIS administrators only.');
+      await respond('❌ *Access Denied*\n\nThis command is restricted to Panel Administrators only.');
       return;
     }
 
@@ -208,37 +207,37 @@ commandRegistry.register({
   name: 'afmis',
   aliases: ['afmishelp'],
   description: 'Show AFMIS admin commands help',
-  category: 'AFMIS',
+  category: 'Panel Administrator',
   ownerOnly: false,
   handler: async (context: CommandContext) => {
     const { respond, sender } = context;
 
     // Check if sender is admin
     if (!isAdmin(sender)) {
-      await respond('❌ *Access Denied*\n\nThis command is restricted to AFMIS administrators only.');
+      await respond('❌ *Access Denied*\n\nThis command is restricted to Panel Administrators only.');
       return;
     }
 
-    const helpMessage = `🔧 *AFMIS ADMIN COMMANDS*
+    const helpMessage = `🔧 *PANEL ADMINISTRATOR COMMANDS*
 
 📋 *Available Commands:*
 
 1️⃣ *.approvebot <phone> <duration>*
    Approve a bot with custom expiry
-   
+
    *Duration Format:*
    • 1m = 1 month
    • 1w = 1 week  
    • 1d = 1 day
    • Combine: 1m2w3d
-   
+
    *Example:*
    .approvebot 254704897824 1m
    .approvebot 254704897824 2w5d
 
 2️⃣ *.pending*
    List all pending bots
-   
+
    *Example:*
    .pending
 
@@ -249,7 +248,7 @@ commandRegistry.register({
 • +254704897825
 • +254799257758
 
-> AFMIS Bot Management System`;
+> Panel Administrator Management System`;
 
     await respond(helpMessage);
   }
