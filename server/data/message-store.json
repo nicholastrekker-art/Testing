@@ -1,0 +1,258 @@
+{
+  "AC8171260952FD3A8A52F43122223BE3": {
+    "id": "AC8171260952FD3A8A52F43122223BE3",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1763055982509,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "AC8171260952FD3A8A52F43122223BE3"
+      },
+      "messageTimestamp": 1763055970,
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "protocolMessage": {
+          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+          "peerDataOperationRequestResponseMessage": {
+            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+            "stanzaId": "3EB083D47280BB68E6E766",
+            "peerDataOperationResult": [
+              {
+                "mediaUploadResult": "SUCCESS",
+                "placeholderMessageResendResponse": {
+                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNUY2RDhBMUU5ODRDODkxREJFRjk0NDhGRDcyODQyMRIsCgUucGluZ5oCIhogfE4pACy62qXdwH7MuV8dRMkX1ojlSks+u5H9BDVYc2AYy5vYyAaKAyB8TikALLrapd3Afsy5Xx1EyRfWiOVKSz67kf0ENVhzYPIDFgoUAQylhVBB2vFFUcOp8fDyKcecrWKIBAA="
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "AC7845D68968196FAB1E7F736DF49262": {
+    "id": "AC7845D68968196FAB1E7F736DF49262",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1763055982761,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "AC7845D68968196FAB1E7F736DF49262"
+      },
+      "messageTimestamp": 1763055971,
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "protocolMessage": {
+          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+          "peerDataOperationRequestResponseMessage": {
+            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+            "stanzaId": "3EB00E56FBEFC2EB062F7C",
+            "peerDataOperationResult": [
+              {
+                "mediaUploadResult": "SUCCESS",
+                "placeholderMessageResendResponse": {
+                  "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNTVENTg5MDlFMDNDMEE4OTlCMjBFNEFDODg2MEE3NBIsCgUucGFpcpoCIhoghpi2iuLV03h/ov90GWN9LtvclcLuFbK001olc954ffcY3JvYyAaKAyCGmLaK4tXTeH+i/3QZY30u29yVwu4VsrTTWiVz3nh99/IDFgoUAQzycTVuDEdMs+E+jqJwlE1wW+aIBAA="
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "A5F6D8A1E984C891DBEF9448FD728421": {
+    "id": "A5F6D8A1E984C891DBEF9448FD728421",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "254704897825@s.whatsapp.net",
+    "content": ".ping",
+    "type": "unknown",
+    "timestamp": 1763055985644,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": false,
+        "id": "A5F6D8A1E984C891DBEF9448FD728421",
+        "senderLid": "7198767878239@lid"
+      },
+      "messageTimestamp": 1763055985,
+      "pushName": "Trekker inc",
+      "broadcast": false,
+      "verifiedBizName": "Trekker inc",
+      "message": {
+        "conversation": ".ping",
+        "messageContextInfo": {
+          "deviceListMetadata": {
+            "senderKeyHash": "xk51XoJ0fCFLbg==",
+            "senderTimestamp": "1763050340",
+            "recipientKeyHash": "MKamO2ovJMSXaQ==",
+            "recipientTimestamp": "1763048109"
+          },
+          "deviceListMetadataVersion": 2,
+          "messageSecret": "fE4pACy62qXdwH7MuV8dRMkX1ojlSks+u5H9BDVYc2A="
+        }
+      }
+    }
+  },
+  "A55D58909E03C0A899B20E4AC8860A74": {
+    "id": "A55D58909E03C0A899B20E4AC8860A74",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "254704897825@s.whatsapp.net",
+    "content": ".pair",
+    "type": "unknown",
+    "timestamp": 1763055994229,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": false,
+        "id": "A55D58909E03C0A899B20E4AC8860A74",
+        "senderLid": "7198767878239@lid"
+      },
+      "messageTimestamp": 1763055993,
+      "pushName": "Trekker inc",
+      "broadcast": false,
+      "message": {
+        "conversation": ".pair",
+        "messageContextInfo": {
+          "deviceListMetadata": {
+            "senderKeyHash": "xk51XoJ0fCFLbg==",
+            "senderTimestamp": "1763050340",
+            "recipientKeyHash": "MKamO2ovJMSXaQ==",
+            "recipientTimestamp": "1763048109"
+          },
+          "deviceListMetadataVersion": 2,
+          "messageSecret": "hpi2iuLV03h/ov90GWN9LtvclcLuFbK001olc954ffc="
+        }
+      }
+    }
+  },
+  "3EB03958F7CC32D69F0F82": {
+    "id": "3EB03958F7CC32D69F0F82",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "❌ *Phone Number Required*\n\n📱 Usage: .pair <phone number>\n\nExample: .pair 254712345678\n\n💡 *Note:* This command is available to EVERYONE in groups, private chats, and public channels!\n\n> TREKKER-MD Pairing System",
+    "type": "extendedTextMessage",
+    "timestamp": 1763055984525,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB03958F7CC32D69F0F82"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "❌ *Phone Number Required*\n\n📱 Usage: .pair <phone number>\n\nExample: .pair 254712345678\n\n💡 *Note:* This command is available to EVERYONE in groups, private chats, and public channels!\n\n> TREKKER-MD Pairing System"
+        }
+      },
+      "messageTimestamp": "1763055983",
+      "status": "SERVER_ACK"
+    }
+  },
+  "3EB0AA873AF0C644FF8762": {
+    "id": "3EB0AA873AF0C644FF8762",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "❌ *Phone Number Required*\n\n📱 Usage: .pair <phone number>\n\nExample: .pair 254712345678\n\n💡 *Note:* This command is available to EVERYONE in groups, private chats, and public channels!\n\n> TREKKER-MD Pairing System",
+    "type": "extendedTextMessage",
+    "timestamp": 1763055995329,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0AA873AF0C644FF8762"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "❌ *Phone Number Required*\n\n📱 Usage: .pair <phone number>\n\nExample: .pair 254712345678\n\n💡 *Note:* This command is available to EVERYONE in groups, private chats, and public channels!\n\n> TREKKER-MD Pairing System"
+        }
+      },
+      "messageTimestamp": "1763055994",
+      "status": "SERVER_ACK"
+    }
+  },
+  "A57DF76C65B89E8BC3986426EB4BE877": {
+    "id": "A57DF76C65B89E8BC3986426EB4BE877",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "254704897825@s.whatsapp.net",
+    "content": ".pair 254704897825",
+    "type": "unknown",
+    "timestamp": 1763056002842,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": false,
+        "id": "A57DF76C65B89E8BC3986426EB4BE877",
+        "senderLid": "7198767878239@lid"
+      },
+      "messageTimestamp": 1763056002,
+      "pushName": "Trekker inc",
+      "broadcast": false,
+      "message": {
+        "conversation": ".pair 254704897825",
+        "messageContextInfo": {
+          "deviceListMetadata": {
+            "senderKeyHash": "xk51XoJ0fCFLbg==",
+            "senderTimestamp": "1763050340",
+            "recipientKeyHash": "MKamO2ovJMSXaQ==",
+            "recipientTimestamp": "1763048109"
+          },
+          "deviceListMetadataVersion": 2,
+          "messageSecret": "Gjq0kvv8hz9p/cFQ1q7eqxLFclUfnT/bY6dm+iY+j0k="
+        }
+      },
+      "verifiedBizName": "Trekker inc"
+    }
+  },
+  "3EB0EF2DC21ED304E23361": {
+    "id": "3EB0EF2DC21ED304E23361",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🔄 *Generating pairing code...*\n\n📱 Phone: +254704897825\n⏳ Please wait...",
+    "type": "extendedTextMessage",
+    "timestamp": 1763056003742,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0EF2DC21ED304E23361"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "🔄 *Generating pairing code...*\n\n📱 Phone: +254704897825\n⏳ Please wait..."
+        }
+      },
+      "messageTimestamp": "1763056003",
+      "status": "READ"
+    }
+  },
+  "3EB070F86935130A4015A3": {
+    "id": "3EB070F86935130A4015A3",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "J6AR-ZV3G",
+    "type": "extendedTextMessage",
+    "timestamp": 1763056005190,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB070F86935130A4015A3"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "J6AR-ZV3G"
+        }
+      },
+      "messageTimestamp": "1763056004",
+      "status": "READ"
+    }
+  }
+}
