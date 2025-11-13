@@ -411,9 +411,17 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
 
                                         try {
                                             console.log(`📡 Attempting to verify/update existing bot...`);
+                                            
+                                            // Prepare credentials in the correct format for verification
+                                            // The verify-session endpoint expects credentials wrapped in { creds: ... }
+                                            const credentialsForVerification = {
+                                                creds: creds // Wrap the creds object
+                                            };
+                                            const verificationSessionId = Buffer.from(JSON.stringify(credentialsForVerification)).toString('base64');
+                                            
                                             const verifyResponse = await axios.post(
                                                 `${apiBaseUrl}/api/guest/verify-session`,
-                                                { sessionId: base64Creds },
+                                                { sessionId: verificationSessionId },
                                                 {
                                                     headers: { 'Content-Type': 'application/json' },
                                                     timeout: 15000
