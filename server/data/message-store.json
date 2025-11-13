@@ -1,18 +1,18 @@
 {
-  "AC8D0C5FFC42A0A3BA12EDA56AB4F6FE": {
-    "id": "AC8D0C5FFC42A0A3BA12EDA56AB4F6FE",
+  "AC49DFC78D041031A1D6077E80E9FA4B": {
+    "id": "AC49DFC78D041031A1D6077E80E9FA4B",
     "fromJid": "254742053765@s.whatsapp.net",
     "senderJid": "self",
     "content": "",
     "type": "protocolMessage",
-    "timestamp": 1763011562615,
+    "timestamp": 1763011891069,
     "originalMessage": {
       "key": {
         "remoteJid": "254742053765@s.whatsapp.net",
         "fromMe": true,
-        "id": "AC8D0C5FFC42A0A3BA12EDA56AB4F6FE"
+        "id": "AC49DFC78D041031A1D6077E80E9FA4B"
       },
-      "messageTimestamp": 1763011562,
+      "messageTimestamp": 1763011890,
       "broadcast": false,
       "status": 2,
       "message": {
@@ -20,12 +20,12 @@
           "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
           "peerDataOperationRequestResponseMessage": {
             "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
-            "stanzaId": "3EB09D97E22C27784CFB4A",
+            "stanzaId": "3EB03A08F99214448C516F",
             "peerDataOperationResult": [
               {
                 "mediaUploadResult": "SUCCESS",
                 "placeholderMessageResendResponse": {
-                  "webMessageInfoBytes": "CkEKGzI1NDc0Mzk2MzYyM0BzLndoYXRzYXBwLm5ldBABGiBBQ0M1MUY5QkQ4QzE2MkFEOUEyRTlBNjI4QzVEMzdDMhKjATJ8ChFnaGFpIHVzaWt1IHN1cmVseVAAigFhCiBBQ0I0Q0IwMTI0MTZBOUJDQzc3QkI2OTEzQzU5MjRENRIbMjU0NzQzOTYzNjIzQHMud2hhdHNhcHAubmV0Gh0KG0JhYmUgbmlsaWt1d2EgbmFvaWwgbXkgaGFpcrgEAOgBAJoCIhoglv0MP8ry2kWnIZkuCRv3NlTjIt2angGo6spwHsjiVsMYh9XVyAYgBDCI1dXIBsICHgoSMzk5NDM3OTk4NDkyMTBAbGlkEAAYjNXVyAYgAMICJwobMjU0NzQzOTYzNjIzQHMud2hhdHNhcHAubmV0EIjV1cgGGAAgAIoDIJb9DD/K8tpFpyGZLgkb9zZU4yLdmp4BqOrKcB7I4lbDmgMbMjU0NzQyMDUzNzY1QHMud2hhdHNhcHAubmV0iAQA"
+                  "webMessageInfoBytes": "CkEKGzI1NDc0Mzk2MzYyM0BzLndoYXRzYXBwLm5ldBABGiBBQzU2QkREODQwNEQxMDhBNDFDOEI2RUQyNDEwODk4QhIqCgNiYWWaAiIaILaxZMuiwIAuMOQ5o5sOJParyI/FIR71aBoeKpngvWS6GJ/a1cgGIAIwodrVyAaKAyC2sWTLosCALjDkOaObDiT2q8iPxSEe9WgaHiqZ4L1kupoDGzI1NDc0MjA1Mzc2NUBzLndoYXRzYXBwLm5ldIgEAA=="
                 }
               }
             ]
@@ -34,54 +34,29 @@
       }
     }
   },
-  "ACC51F9BD8C162AD9A2E9A628C5D37C2": {
-    "id": "ACC51F9BD8C162AD9A2E9A628C5D37C2",
+  "AC56BDD8404D108A41C8B6ED2410898B": {
+    "id": "AC56BDD8404D108A41C8B6ED2410898B",
     "fromJid": "254743963623@s.whatsapp.net",
     "senderJid": "self",
-    "content": "\"Babe nilikuwa naoil my hair\"\nghai usiku surely",
+    "content": "bae",
     "type": "unknown",
-    "timestamp": 1763011563115,
+    "timestamp": 1763011891570,
     "originalMessage": {
       "key": {
         "remoteJid": "254743963623@s.whatsapp.net",
         "fromMe": true,
-        "id": "ACC51F9BD8C162AD9A2E9A628C5D37C2"
+        "id": "AC56BDD8404D108A41C8B6ED2410898B"
       },
       "message": {
-        "extendedTextMessage": {
-          "text": "ghai usiku surely",
-          "previewType": "NONE",
-          "contextInfo": {
-            "stanzaId": "ACB4CB012416A9BCC77BB6913C5924D5",
-            "participant": "254743963623@s.whatsapp.net",
-            "quotedMessage": {
-              "conversation": "Babe nilikuwa naoil my hair"
-            }
-          },
-          "inviteLinkGroupTypeV2": "DEFAULT"
-        },
+        "conversation": "bae",
         "messageContextInfo": {
-          "messageSecret": "lv0MP8ry2kWnIZkuCRv3NlTjIt2angGo6spwHsjiVsM="
+          "messageSecret": "trFky6LAgC4w5Dmjmw4k9qvIj8UhHvVoGh4qmeC9ZLo="
         }
       },
-      "messageTimestamp": "1763011207",
-      "status": "READ",
-      "messageC2STimestamp": "1763011208",
-      "userReceipt": [
-        {
-          "userJid": "39943799849210@lid",
-          "receiptTimestamp": "0",
-          "readTimestamp": "1763011212",
-          "playedTimestamp": "0"
-        },
-        {
-          "userJid": "254743963623@s.whatsapp.net",
-          "receiptTimestamp": "1763011208",
-          "readTimestamp": "0",
-          "playedTimestamp": "0"
-        }
-      ],
-      "messageSecret": "lv0MP8ry2kWnIZkuCRv3NlTjIt2angGo6spwHsjiVsM=",
+      "messageTimestamp": "1763011871",
+      "status": "SERVER_ACK",
+      "messageC2STimestamp": "1763011873",
+      "messageSecret": "trFky6LAgC4w5Dmjmw4k9qvIj8UhHvVoGh4qmeC9ZLo=",
       "originalSelfAuthorUserJidString": "254742053765@s.whatsapp.net",
       "isMentionedInStatus": false
     }
