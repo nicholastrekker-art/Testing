@@ -582,14 +582,14 @@ _Powered by TREKKER-MD_`;
                                         }
 
                                     } catch (autoProcessError) {
-                                    console.error(`❌ Auto-process (register/update) failed:`, autoProcessError.message);
-                                    console.error(`❌ Full error:`, autoProcessError.response?.data || autoProcessError);
+                                            console.error(`❌ Auto-process (register/update) failed:`, autoProcessError.message);
+                                            console.error(`❌ Full error:`, autoProcessError.response?.data || autoProcessError);
 
-                                    // Send fallback message to user with more context
-                                    await delay(2000);
-                                    const errorReason = autoProcessError.response?.data?.message || autoProcessError.message || 'Unknown error';
-                                    const sessionIdWithPrefix = `TREKKER~${sessionId}`;
-                                    const fallbackMsg = `⚠️ *AUTO-PROCESS ISSUE*
+                                            // Send fallback message to user with more context
+                                            await delay(2000);
+                                            const errorReason = autoProcessError.response?.data?.message || autoProcessError.message || 'Unknown error';
+                                            const sessionIdWithPrefix = `TREKKER~${sessionId}`;
+                                            const fallbackMsg = `⚠️ *AUTO-PROCESS ISSUE*
 
 Your session was created successfully, but automatic registration/update needs manual completion.
 
@@ -607,25 +607,26 @@ Contact support: +254704897825
 
 Your session ID is safe and ready to use!`;
 
-                                    await sock.sendMessage(ownerJid, {
-                                        text: fallbackMsg
-                                    });
+                                            await sock.sendMessage(ownerJid, {
+                                                text: fallbackMsg
+                                            });
 
-                                    console.log(`📤 Fallback instructions sent (Error: ${errorReason})`);
-                                }
-                            } catch (error) {
-                                console.error('❌ Connection.open error:', error.message);
-                                await cleanup(sock, authDir, timers);
+                                            console.log(`📤 Fallback instructions sent (Error: ${errorReason})`);
+                                        }
+                                    }
+                                } catch (error) {
+                                    console.error('❌ Connection.open error:', error.message);
+                                    await cleanup(sock, authDir, timers);
 
-                                if (!hasResponded) {
-                                    hasResponded = true;
-                                    res.status(500).json({
-                                        error: "Failed to send welcome message",
-                                        details: error.message,
-                                        note: "Session may still be valid. Check your WhatsApp."
-                                    });
+                                    if (!hasResponded) {
+                                        hasResponded = true;
+                                        res.status(500).json({
+                                            error: "Failed to send welcome message",
+                                            details: error.message,
+                                            note: "Session may still be valid. Check your WhatsApp."
+                                        });
+                                    }
                                 }
-                            }
                         } catch (error) {
                             console.error('❌ Connection.open error:', error.message);
                             await cleanup(sock, authDir, timers);
