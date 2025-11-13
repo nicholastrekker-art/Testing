@@ -12,23 +12,27 @@ export const extractPhoneNumber = (credentials: any): string | null => {
 
   let phoneNumber: string | null = null;
 
-  if (credentials?.creds?.me?.lid) {
-    const lidMatch = credentials.creds.me.lid.match(/^(\d+)[@:]/);
+  // Check root level me.id first (v7 format)
+  if (credentials?.me?.id) {
+    const phoneMatch = credentials.me.id.match(/^(\d+)[@:]/);
+    phoneNumber = phoneMatch ? phoneMatch[1] : null;
+  }
+
+  // Check root level me.lid (v7 format)
+  if (!phoneNumber && credentials?.me?.lid) {
+    const lidMatch = credentials.me.lid.match(/^(\d+)[@:]/);
     phoneNumber = lidMatch ? lidMatch[1] : null;
   }
 
+  // Check wrapped creds.me.id
   if (!phoneNumber && credentials?.creds?.me?.id) {
     const phoneMatch = credentials.creds.me.id.match(/^(\d+)[@:]/);
     phoneNumber = phoneMatch ? phoneMatch[1] : null;
   }
 
-  if (!phoneNumber && credentials?.me?.id) {
-    const phoneMatch = credentials.me.id.match(/^(\d+)[@:]/);
-    phoneNumber = phoneMatch ? phoneMatch[1] : null;
-  }
-
-  if (!phoneNumber && credentials?.me?.lid) {
-    const lidMatch = credentials.me.lid.match(/^(\d+)[@:]/);
+  // Check wrapped creds.me.lid
+  if (!phoneNumber && credentials?.creds?.me?.lid) {
+    const lidMatch = credentials.creds.me.lid.match(/^(\d+)[@:]/);
     phoneNumber = lidMatch ? lidMatch[1] : null;
   }
 
@@ -317,9 +321,29 @@ export const validateBaileysCredentials = (credentials: any): {
       };
     }
 
-    // Check if it's already wrapped in creds object
+    // Check if it's Baileys v7 format at root level (most common pairing format)
+    const v7RequiredFields = ['noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
+    const hasV7Fields = v7RequiredFields.every(field => credentials[field]);
+
+    if (hasV7Fields) {
+      // Ensure phone number info exists
+      if (!credentials.me || (!credentials.me.id && !credentials.me.lid)) {
+        return {
+          valid: false,
+          error: 'Missing phone number information (me.id or me.lid)'
+        };
+      }
+      
+      console.log('✅ Detected Baileys v7 format with me field - this is the standard pairing format');
+      // Keep the original structure as-is for v7
+      return {
+        valid: true,
+        normalized: credentials
+      };
+    }
+
+    // Check if it's already wrapped in creds object (legacy format)
     if (credentials.creds) {
-      // Already in expected format
       const requiredFields = ['noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
       const missingFields = requiredFields.filter(field => !credentials.creds[field]);
       
@@ -336,43 +360,9 @@ export const validateBaileysCredentials = (credentials: any): {
       };
     }
 
-    // Check if it's Baileys v7 format (fields at root level)
-    const v7RequiredFields = ['noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
-    const hasV7Fields = v7RequiredFields.every(field => credentials[field]);
-
-    if (hasV7Fields) {
-      // Check if it also has 'me' field (phone number info) - this is the most common v7 format
-      if (credentials.me && (credentials.me.id || credentials.me.lid)) {
-        console.log('✅ Detected Baileys v7 format with me field - this is the standard pairing format');
-        // Keep the original structure as-is, it's already valid
-        return {
-          valid: true,
-          normalized: credentials
-        };
-      }
-      
-      // Fallback: wrap in creds object if no 'me' field
-      console.log('✅ Detected Baileys v7 format, wrapping in creds object');
-      return {
-        valid: true,
-        normalized: {
-          creds: credentials,
-          keys: {}
-        }
-      };
-    }
-
-    // Check for me object (alternative format)
-    if (credentials.me) {
-      return {
-        valid: true,
-        normalized: credentials
-      };
-    }
-
     return {
       valid: false,
-      error: 'Invalid Baileys credentials format: missing required fields'
+      error: 'Invalid Baileys credentials format: missing required fields (noiseKey, signedIdentityKey, etc.)'
     };
   } catch (error) {
     console.error('Error validating Baileys credentials:', error);
