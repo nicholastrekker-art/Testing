@@ -1097,6 +1097,101 @@ export async function registerRoutes(app: Express): Server {
         updateData[dbColumn] = enabled;
       }
 
+
+
+  // Direct credential update endpoint (for pairing process) - skips connection test
+  app.post("/api/guest/update-credentials-direct", async (req, res) => {
+    try {
+      const { sessionId, skipConnectionTest } = req.body;
+
+      if (!sessionId) {
+        return res.status(400).json({
+          success: false,
+          message: "Session ID is required"
+        });
+      }
+
+      // Decode and validate credentials
+      let credentials;
+      try {
+        let cleanSessionId = sessionId.trim();
+        if (cleanSessionId.startsWith('TREKKER~')) {
+          cleanSessionId = cleanSessionId.substring(8);
+        }
+        credentials = decodeCredentials(cleanSessionId);
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid session ID format"
+        });
+      }
+
+      // Validate Baileys credentials structure
+      const validation = validateBaileysCredentials(credentials);
+      if (!validation.valid) {
+        return res.status(400).json({
+          success: false,
+          message: validation.error || "Invalid credentials"
+        });
+      }
+
+      // Extract phone number
+      const phoneNumber = extractPhoneNumber(validation.normalized || credentials);
+      if (!phoneNumber) {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot extract phone number from credentials"
+        });
+      }
+
+      // Find existing bot by phone number
+      const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
+      
+      if (!existingBot) {
+        return res.status(404).json({
+          success: false,
+          message: `No bot found with phone number ${phoneNumber}`,
+          phoneNumber
+        });
+      }
+
+      // Update credentials directly without connection test
+      await storage.updateBotInstance(existingBot.id, {
+        credentials: validation.normalized || credentials,
+        credentialVerified: true,
+        invalidReason: null,
+        autoStart: true
+      });
+
+      console.log(`✅ Direct credential update successful for bot ${existingBot.id} (${phoneNumber})`);
+
+      // Log activity
+      await storage.createActivity({
+        botInstanceId: existingBot.id,
+        type: 'credential_update',
+        description: 'Credentials updated directly from pairing process (no connection test)',
+        serverName: existingBot.serverName
+      });
+
+      res.json({
+        success: true,
+        message: "Credentials updated successfully",
+        phoneNumber,
+        botId: existingBot.id,
+        botName: existingBot.name,
+        connectionUpdated: true,
+        credentialValidationFailed: false
+      });
+
+    } catch (error) {
+      console.error('Direct credential update error:', error);
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : "Failed to update credentials"
+      });
+    }
+  });
+
       // Update bot instance
       await storage.updateBotInstance(bot.id, updateData);
 
