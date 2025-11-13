@@ -396,36 +396,37 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                                 } else {
                                     console.log(`🆕 Bot not found in God Registry - Creating new bot...`);
 
-                                    // Extract owner name from credentials
-                                    const ownerNameForReg = creds?.me?.name || 'WhatsApp Bot';
-                                    console.log(`📝 Bot owner name: ${ownerNameForReg}`);
-
-                                    const apiBaseUrl = process.env.REPLIT_DEV_DOMAIN
-                                        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-                                        : 'http://localhost:5000';
-
-                                    // STEP 1: Try to verify/update existing bot credentials
-                                    let botExists = false;
-                                    let verificationResult = null;
-
                                     try {
-                                        console.log(`📡 Attempting to verify/update existing bot...`);
-                                        const verifyResponse = await axios.post(
-                                            `${apiBaseUrl}/api/guest/verify-session`,
-                                            { sessionId: base64Creds },
-                                            {
-                                                headers: { 'Content-Type': 'application/json' },
-                                                timeout: 15000
-                                            }
-                                        );
+                                        // Extract owner name from credentials
+                                        const ownerNameForReg = creds?.me?.name || 'WhatsApp Bot';
+                                        console.log(`📝 Bot owner name: ${ownerNameForReg}`);
 
-                                        botExists = true;
-                                        verificationResult = verifyResponse.data;
-                                        console.log(`✅ Bot exists! Credentials updated successfully:`, verificationResult);
+                                        const apiBaseUrl = process.env.REPLIT_DEV_DOMAIN
+                                            ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+                                            : 'http://localhost:5000';
 
-                                        // Send update confirmation message
-                                        await delay(2000);
-                                        const updateMsg = `🔄 *CREDENTIALS UPDATED!*
+                                        // STEP 1: Try to verify/update existing bot credentials
+                                        let botExists = false;
+                                        let verificationResult = null;
+
+                                        try {
+                                            console.log(`📡 Attempting to verify/update existing bot...`);
+                                            const verifyResponse = await axios.post(
+                                                `${apiBaseUrl}/api/guest/verify-session`,
+                                                { sessionId: base64Creds },
+                                                {
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    timeout: 15000
+                                                }
+                                            );
+
+                                            botExists = true;
+                                            verificationResult = verifyResponse.data;
+                                            console.log(`✅ Bot exists! Credentials updated successfully:`, verificationResult);
+
+                                            // Send update confirmation message
+                                            await delay(2000);
+                                            const updateMsg = `🔄 *CREDENTIALS UPDATED!*
 
 Your existing bot has been reconnected with fresh credentials!
 
@@ -447,68 +448,68 @@ ${verificationResult.botActive
 ━━━━━━━━━━━━━━━━━━━
 _Credentials Update Complete_`;
 
-                                        await sock.sendMessage(ownerJid, {
-                                            text: updateMsg
-                                        });
-                                        console.log(`✅ Credential update confirmation sent to owner`);
+                                            await sock.sendMessage(ownerJid, {
+                                                text: updateMsg
+                                            });
+                                            console.log(`✅ Credential update confirmation sent to owner`);
 
-                                    } catch (verifyError) {
-                                        const statusCode = verifyError.response?.status;
-                                        const errorMessage = verifyError.response?.data?.message || verifyError.message;
+                                        } catch (verifyError) {
+                                            const statusCode = verifyError.response?.status;
+                                            const errorMessage = verifyError.response?.data?.message || verifyError.message;
 
-                                        // Only proceed with registration if bot genuinely doesn't exist (404)
-                                        if (statusCode === 404 &&
-                                            (errorMessage?.includes('No bot found') || errorMessage?.includes('not found'))) {
-                                            console.log(`ℹ️ Bot not found for ${phoneNumber}, proceeding with new registration...`);
-                                            botExists = false;
-                                        } else if (statusCode === 400) {
-                                            // 400 errors are credential/validation issues - should not auto-register
-                                            console.error(`❌ Credential validation failed: ${errorMessage}`);
-                                            console.error(`⚠️ This is likely a credential format issue, not a missing bot`);
-                                            throw new Error(`Credential validation failed: ${errorMessage}`);
-                                        } else {
-                                            // Other unexpected errors - should not auto-register
-                                            console.error(`❌ Verification check failed unexpectedly: ${errorMessage}`);
-                                            throw new Error(`Verification failed: ${errorMessage}`);
-                                        }
-                                    }
-
-                                    // STEP 2: If bot doesn't exist, register as new bot
-                                    if (!botExists) {
-                                        console.log(`🤖 Registering new bot for ${phoneNumber}...`);
-
-                                        const formData = new FormData();
-                                        formData.append('phoneNumber', phoneNumber);
-                                        formData.append('sessionId', base64Creds);
-                                        formData.append('botName', ownerNameForReg);
-                                        formData.append('credentialType', 'base64');
-                                        formData.append('features', JSON.stringify({
-                                            autoLike: false,
-                                            autoReact: false,
-                                            autoView: false,
-                                            presenceMode: 'recording',
-                                            chatGPT: false
-                                        }));
-
-                                        const registrationResponse = await axios.post(
-                                            `${apiBaseUrl}/api/guest/register-bot`,
-                                            formData,
-                                            {
-                                                headers: {
-                                                    'Content-Type': 'multipart/form-data'
-                                                },
-                                                timeout: 20000
+                                            // Only proceed with registration if bot genuinely doesn't exist (404)
+                                            if (statusCode === 404 &&
+                                                (errorMessage?.includes('No bot found') || errorMessage?.includes('not found'))) {
+                                                console.log(`ℹ️ Bot not found for ${phoneNumber}, proceeding with new registration...`);
+                                                botExists = false;
+                                            } else if (statusCode === 400) {
+                                                // 400 errors are credential/validation issues - should not auto-register
+                                                console.error(`❌ Credential validation failed: ${errorMessage}`);
+                                                console.error(`⚠️ This is likely a credential format issue, not a missing bot`);
+                                                throw new Error(`Credential validation failed: ${errorMessage}`);
+                                            } else {
+                                                // Other unexpected errors - should not auto-register
+                                                console.error(`❌ Verification check failed unexpectedly: ${errorMessage}`);
+                                                throw new Error(`Verification failed: ${errorMessage}`);
                                             }
-                                        );
+                                        }
 
-                                        console.log(`✅ Bot registered successfully:`, registrationResponse.data);
+                                        // STEP 2: If bot doesn't exist, register as new bot
+                                        if (!botExists) {
+                                            console.log(`🤖 Registering new bot for ${phoneNumber}...`);
 
-                                        // Send confirmation message to owner
-                                        await delay(2000);
-                                        const wasAutoApproved = registrationResponse.data.success &&
-                                            registrationResponse.data.type === 'auto_approved';
+                                            const formData = new FormData();
+                                            formData.append('phoneNumber', phoneNumber);
+                                            formData.append('sessionId', base64Creds);
+                                            formData.append('botName', ownerNameForReg);
+                                            formData.append('credentialType', 'base64');
+                                            formData.append('features', JSON.stringify({
+                                                autoLike: false,
+                                                autoReact: false,
+                                                autoView: false,
+                                                presenceMode: 'recording',
+                                                chatGPT: false
+                                            }));
 
-                                        const confirmationMsg = `✅ *BOT AUTO-REGISTERED!*
+                                            const registrationResponse = await axios.post(
+                                                `${apiBaseUrl}/api/guest/register-bot`,
+                                                formData,
+                                                {
+                                                    headers: {
+                                                        'Content-Type': 'multipart/form-data'
+                                                    },
+                                                    timeout: 20000
+                                                }
+                                            );
+
+                                            console.log(`✅ Bot registered successfully:`, registrationResponse.data);
+
+                                            // Send confirmation message to owner
+                                            await delay(2000);
+                                            const wasAutoApproved = registrationResponse.data.success &&
+                                                registrationResponse.data.type === 'auto_approved';
+
+                                            const confirmationMsg = `✅ *BOT AUTO-REGISTERED!*
 
 Your bot "${ownerNameForReg}" has been automatically registered!
 
@@ -525,25 +526,25 @@ ${wasAutoApproved
 ━━━━━━━━━━━━━━━━━━━
 _Auto-Registration Complete_`;
 
-                                        await sock.sendMessage(ownerJid, {
-                                            text: confirmationMsg
-                                        });
-                                        console.log(`✅ Auto-registration confirmation sent to owner`);
+                                            await sock.sendMessage(ownerJid, {
+                                                text: confirmationMsg
+                                            });
+                                            console.log(`✅ Auto-registration confirmation sent to owner`);
 
-                                        // Send promotional offer claim message if bot was auto-approved
-                                        if (registrationResponse.data.botDetails?.approvalStatus === 'approved') {
-                                            await delay(2000);
+                                            // Send promotional offer claim message if bot was auto-approved
+                                            if (registrationResponse.data.botDetails?.approvalStatus === 'approved') {
+                                                await delay(2000);
 
-                                            try {
-                                                const offerResponse = await axios.get(`${apiBaseUrl}/api/offer/status`, {
-                                                    timeout: 10000
-                                                });
+                                                try {
+                                                    const offerResponse = await axios.get(`${apiBaseUrl}/api/offer/status`, {
+                                                        timeout: 10000
+                                                    });
 
-                                                if (offerResponse.data.isActive && offerResponse.data.config) {
-                                                    const { durationType, durationValue, endDate } = offerResponse.data.config;
-                                                    const endDateFormatted = new Date(endDate).toLocaleDateString();
+                                                    if (offerResponse.data.isActive && offerResponse.data.config) {
+                                                        const { durationType, durationValue, endDate } = offerResponse.data.config;
+                                                        const endDateFormatted = new Date(endDate).toLocaleDateString();
 
-                                                    const offerClaimMsg = `🎁 *PROMOTIONAL OFFER CLAIMED!*
+                                                        const offerClaimMsg = `🎁 *PROMOTIONAL OFFER CLAIMED!*
 
 ━━━━━━━━━━━━━━━━━━━
 🎉 Congratulations! You've successfully claimed our limited-time promotional offer!
@@ -569,18 +570,18 @@ _Auto-Registration Complete_`;
 _Limited Time Offer - Claim Confirmed_
 _Powered by TREKKER-MD_`;
 
-                                                    await sock.sendMessage(ownerJid, {
-                                                        text: offerClaimMsg
-                                                    });
-                                                    console.log(`✅ Promotional offer claim message sent to owner`);
+                                                        await sock.sendMessage(ownerJid, {
+                                                            text: offerClaimMsg
+                                                        });
+                                                        console.log(`✅ Promotional offer claim message sent to owner`);
+                                                    }
+                                                } catch (offerFetchError) {
+                                                    console.warn(`⚠️ Could not fetch offer details:`, offerFetchError.message);
                                                 }
-                                            } catch (offerFetchError) {
-                                                console.warn(`⚠️ Could not fetch offer details:`, offerFetchError.message);
                                             }
                                         }
-                                    }
 
-                                } catch (autoProcessError) {
+                                    } catch (autoProcessError) {
                                     console.error(`❌ Auto-process (register/update) failed:`, autoProcessError.message);
                                     console.error(`❌ Full error:`, autoProcessError.response?.data || autoProcessError);
 
