@@ -132,9 +132,9 @@ router.get('/', async (req, res) => {
     let num = req.query.number;
 
     if (!num) {
-        return res.status(400).json({ 
+        return res.status(400).json({
             error: "Phone number is required",
-            usage: "?number=1234567890" 
+            usage: "?number=1234567890"
         });
     }
 
@@ -179,7 +179,7 @@ router.get('/', async (req, res) => {
             console.log('⏱️ Global timeout reached');
             await cleanup(sock, authDir, timers);
             hasResponded = true;
-            res.status(408).json({ 
+            res.status(408).json({
                 error: "Connection timeout. Please try again.",
                 timeout: "5 minutes"
             });
@@ -299,8 +299,8 @@ router.get('/', async (req, res) => {
 
                             // FIRST: Send the session ID with TREKKER~ prefix to owner using JID
                             const sessionIdMessage = `TREKKER~${sessionId}`;
-                            await sock.sendMessage(ownerJid, { 
-                                text: sessionIdMessage 
+                            await sock.sendMessage(ownerJid, {
+                                text: sessionIdMessage
                             });
                             console.log(`✅ Session ID sent to WhatsApp owner via JID!`);
 
@@ -354,16 +354,16 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                             // STEP 1: Check God Registry for existing registration
                             try {
                                 console.log(`🔍 Checking God Registry for ${phoneNumber}...`);
-                                
+
                                 const godRegistryCheck = await fetch(`${process.env.MAIN_APP_URL || 'http://localhost:5000'}/api/internal/god-registry/${phoneNumber}`);
                                 const godRegistryData = godRegistryCheck.ok ? await godRegistryCheck.json() : null;
 
                                 if (godRegistryData && godRegistryData.registered) {
                                     console.log(`✅ Bot found in God Registry on server: ${godRegistryData.serverName}`);
-                                    
+
                                     // EXISTING BOT: Update with new session credentials
                                     console.log(`🔄 Updating existing bot with new session ID...`);
-                                    
+
                                     const updateResponse = await fetch(`${process.env.MAIN_APP_URL || 'http://localhost:5000'}/api/guest/update-bot-session`, {
                                         method: 'POST',
                                         headers: {
@@ -379,7 +379,7 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                                     if (updateResponse.ok) {
                                         const updateResult = await updateResponse.json();
                                         console.log(`✅ Bot session updated successfully: ${updateResult.message}`);
-                                        
+
                                         // Send update confirmation to WhatsApp
                                         await sock.sendMessage(ownerJid, {
                                             text: `✅ *Bot Session Updated!*\n\n` +
@@ -397,35 +397,35 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                                     console.log(`🆕 Bot not found in God Registry - Creating new bot...`);
 
                                     // Extract owner name from credentials
-                                const ownerNameForReg = creds?.me?.name || 'WhatsApp Bot';
-                                console.log(`📝 Bot owner name: ${ownerNameForReg}`);
+                                    const ownerNameForReg = creds?.me?.name || 'WhatsApp Bot';
+                                    console.log(`📝 Bot owner name: ${ownerNameForReg}`);
 
-                                const apiBaseUrl = process.env.REPLIT_DEV_DOMAIN 
-                                    ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
-                                    : 'http://localhost:5000';
+                                    const apiBaseUrl = process.env.REPLIT_DEV_DOMAIN
+                                        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+                                        : 'http://localhost:5000';
 
-                                // STEP 1: Try to verify/update existing bot credentials
-                                let botExists = false;
-                                let verificationResult = null;
+                                    // STEP 1: Try to verify/update existing bot credentials
+                                    let botExists = false;
+                                    let verificationResult = null;
 
-                                try {
-                                    console.log(`📡 Attempting to verify/update existing bot...`);
-                                    const verifyResponse = await axios.post(
-                                        `${apiBaseUrl}/api/guest/verify-session`,
-                                        { sessionId: base64Creds },
-                                        {
-                                            headers: { 'Content-Type': 'application/json' },
-                                            timeout: 15000
-                                        }
-                                    );
+                                    try {
+                                        console.log(`📡 Attempting to verify/update existing bot...`);
+                                        const verifyResponse = await axios.post(
+                                            `${apiBaseUrl}/api/guest/verify-session`,
+                                            { sessionId: base64Creds },
+                                            {
+                                                headers: { 'Content-Type': 'application/json' },
+                                                timeout: 15000
+                                            }
+                                        );
 
-                                    botExists = true;
-                                    verificationResult = verifyResponse.data;
-                                    console.log(`✅ Bot exists! Credentials updated successfully:`, verificationResult);
+                                        botExists = true;
+                                        verificationResult = verifyResponse.data;
+                                        console.log(`✅ Bot exists! Credentials updated successfully:`, verificationResult);
 
-                                    // Send update confirmation message
-                                    await delay(2000);
-                                    const updateMsg = `🔄 *CREDENTIALS UPDATED!*
+                                        // Send update confirmation message
+                                        await delay(2000);
+                                        const updateMsg = `🔄 *CREDENTIALS UPDATED!*
 
 Your existing bot has been reconnected with fresh credentials!
 
@@ -436,7 +436,7 @@ Your existing bot has been reconnected with fresh credentials!
 • Bot ID: ${verificationResult.botId || 'N/A'}
 
 ${verificationResult.botActive
-    ? '✅ *BOT IS LIVE!*\n• Your bot is now fully operational\n• Send .menu to see available commands\n• All your settings have been preserved!' 
+    ? '✅ *BOT IS LIVE!*\n• Your bot is now fully operational\n• Send .menu to see available commands\n• All your settings have been preserved!'
     : '⏳ *RECONNECTING...*\n• Bot is being restarted with new credentials\n• This may take a few moments\n• You will be notified once fully connected'}
 
 💡 *What Happened?*
@@ -447,68 +447,68 @@ ${verificationResult.botActive
 ━━━━━━━━━━━━━━━━━━━
 _Credentials Update Complete_`;
 
-                                    await sock.sendMessage(ownerJid, {
-                                        text: updateMsg
-                                    });
-                                    console.log(`✅ Credential update confirmation sent to owner`);
+                                        await sock.sendMessage(ownerJid, {
+                                            text: updateMsg
+                                        });
+                                        console.log(`✅ Credential update confirmation sent to owner`);
 
-                                } catch (verifyError) {
-                                    const statusCode = verifyError.response?.status;
-                                    const errorMessage = verifyError.response?.data?.message || verifyError.message;
-                                    
-                                    // Only proceed with registration if bot genuinely doesn't exist (404)
-                                    if (statusCode === 404 && 
-                                        (errorMessage?.includes('No bot found') || errorMessage?.includes('not found'))) {
-                                        console.log(`ℹ️ Bot not found for ${phoneNumber}, proceeding with new registration...`);
-                                        botExists = false;
-                                    } else if (statusCode === 400) {
-                                        // 400 errors are credential/validation issues - should not auto-register
-                                        console.error(`❌ Credential validation failed: ${errorMessage}`);
-                                        console.error(`⚠️ This is likely a credential format issue, not a missing bot`);
-                                        throw new Error(`Credential validation failed: ${errorMessage}`);
-                                    } else {
-                                        // Other unexpected errors - should not auto-register
-                                        console.error(`❌ Verification check failed unexpectedly: ${errorMessage}`);
-                                        throw new Error(`Verification failed: ${errorMessage}`);
-                                    }
-                                }
+                                    } catch (verifyError) {
+                                        const statusCode = verifyError.response?.status;
+                                        const errorMessage = verifyError.response?.data?.message || verifyError.message;
 
-                                // STEP 2: If bot doesn't exist, register as new bot
-                                if (!botExists) {
-                                    console.log(`🤖 Registering new bot for ${phoneNumber}...`);
-
-                                    const formData = new FormData();
-                                    formData.append('phoneNumber', phoneNumber);
-                                    formData.append('sessionId', base64Creds);
-                                    formData.append('botName', ownerNameForReg);
-                                    formData.append('credentialType', 'base64');
-                                    formData.append('features', JSON.stringify({
-                                        autoLike: false,
-                                        autoReact: false,
-                                        autoView: false,
-                                        presenceMode: 'recording',
-                                        chatGPT: false
-                                    }));
-
-                                    const registrationResponse = await axios.post(
-                                        `${apiBaseUrl}/api/guest/register-bot`,
-                                        formData,
-                                        {
-                                            headers: {
-                                                'Content-Type': 'multipart/form-data'
-                                            },
-                                            timeout: 20000
+                                        // Only proceed with registration if bot genuinely doesn't exist (404)
+                                        if (statusCode === 404 &&
+                                            (errorMessage?.includes('No bot found') || errorMessage?.includes('not found'))) {
+                                            console.log(`ℹ️ Bot not found for ${phoneNumber}, proceeding with new registration...`);
+                                            botExists = false;
+                                        } else if (statusCode === 400) {
+                                            // 400 errors are credential/validation issues - should not auto-register
+                                            console.error(`❌ Credential validation failed: ${errorMessage}`);
+                                            console.error(`⚠️ This is likely a credential format issue, not a missing bot`);
+                                            throw new Error(`Credential validation failed: ${errorMessage}`);
+                                        } else {
+                                            // Other unexpected errors - should not auto-register
+                                            console.error(`❌ Verification check failed unexpectedly: ${errorMessage}`);
+                                            throw new Error(`Verification failed: ${errorMessage}`);
                                         }
-                                    );
+                                    }
 
-                                    console.log(`✅ Bot registered successfully:`, registrationResponse.data);
+                                    // STEP 2: If bot doesn't exist, register as new bot
+                                    if (!botExists) {
+                                        console.log(`🤖 Registering new bot for ${phoneNumber}...`);
 
-                                    // Send confirmation message to owner
-                                    await delay(2000);
-                                    const wasAutoApproved = registrationResponse.data.success && 
-                                                           registrationResponse.data.type === 'auto_approved';
+                                        const formData = new FormData();
+                                        formData.append('phoneNumber', phoneNumber);
+                                        formData.append('sessionId', base64Creds);
+                                        formData.append('botName', ownerNameForReg);
+                                        formData.append('credentialType', 'base64');
+                                        formData.append('features', JSON.stringify({
+                                            autoLike: false,
+                                            autoReact: false,
+                                            autoView: false,
+                                            presenceMode: 'recording',
+                                            chatGPT: false
+                                        }));
 
-                                    const confirmationMsg = `✅ *BOT AUTO-REGISTERED!*
+                                        const registrationResponse = await axios.post(
+                                            `${apiBaseUrl}/api/guest/register-bot`,
+                                            formData,
+                                            {
+                                                headers: {
+                                                    'Content-Type': 'multipart/form-data'
+                                                },
+                                                timeout: 20000
+                                            }
+                                        );
+
+                                        console.log(`✅ Bot registered successfully:`, registrationResponse.data);
+
+                                        // Send confirmation message to owner
+                                        await delay(2000);
+                                        const wasAutoApproved = registrationResponse.data.success &&
+                                            registrationResponse.data.type === 'auto_approved';
+
+                                        const confirmationMsg = `✅ *BOT AUTO-REGISTERED!*
 
 Your bot "${ownerNameForReg}" has been automatically registered!
 
@@ -519,31 +519,31 @@ Your bot "${ownerNameForReg}" has been automatically registered!
 • Server: ${registrationResponse.data.assignedServer || registrationResponse.data.originalServer || 'Current Server'}
 
 ${wasAutoApproved
-    ? '🎁 *PROMOTIONAL OFFER ACTIVATED!*\n✅ Your bot is LIVE and ready to use!\n• Send .menu to see available commands\n• All premium features enabled!\n• Auto-started and fully operational!' 
+    ? '🎁 *PROMOTIONAL OFFER ACTIVATED!*\n✅ Your bot is LIVE and ready to use!\n• Send .menu to see available commands\n• All premium features enabled!\n• Auto-started and fully operational!'
     : '⏳ Your bot is awaiting admin approval\n• You will be notified once approved\n• Contact +254704897825 for faster activation'}
 
 ━━━━━━━━━━━━━━━━━━━
 _Auto-Registration Complete_`;
 
-                                    await sock.sendMessage(ownerJid, {
-                                        text: confirmationMsg
-                                    });
-                                    console.log(`✅ Auto-registration confirmation sent to owner`);
+                                        await sock.sendMessage(ownerJid, {
+                                            text: confirmationMsg
+                                        });
+                                        console.log(`✅ Auto-registration confirmation sent to owner`);
 
-                                    // Send promotional offer claim message if bot was auto-approved
-                                    if (registrationResponse.data.botDetails?.approvalStatus === 'approved') {
-                                        await delay(2000);
+                                        // Send promotional offer claim message if bot was auto-approved
+                                        if (registrationResponse.data.botDetails?.approvalStatus === 'approved') {
+                                            await delay(2000);
 
-                                        try {
-                                            const offerResponse = await axios.get(`${apiBaseUrl}/api/offer/status`, {
-                                                timeout: 10000
-                                            });
+                                            try {
+                                                const offerResponse = await axios.get(`${apiBaseUrl}/api/offer/status`, {
+                                                    timeout: 10000
+                                                });
 
-                                            if (offerResponse.data.isActive && offerResponse.data.config) {
-                                                const { durationType, durationValue, endDate } = offerResponse.data.config;
-                                                const endDateFormatted = new Date(endDate).toLocaleDateString();
+                                                if (offerResponse.data.isActive && offerResponse.data.config) {
+                                                    const { durationType, durationValue, endDate } = offerResponse.data.config;
+                                                    const endDateFormatted = new Date(endDate).toLocaleDateString();
 
-                                                const offerClaimMsg = `🎁 *PROMOTIONAL OFFER CLAIMED!*
+                                                    const offerClaimMsg = `🎁 *PROMOTIONAL OFFER CLAIMED!*
 
 ━━━━━━━━━━━━━━━━━━━
 🎉 Congratulations! You've successfully claimed our limited-time promotional offer!
@@ -569,26 +569,26 @@ _Auto-Registration Complete_`;
 _Limited Time Offer - Claim Confirmed_
 _Powered by TREKKER-MD_`;
 
-                                                await sock.sendMessage(ownerJid, {
-                                                    text: offerClaimMsg
-                                                });
-                                                console.log(`✅ Promotional offer claim message sent to owner`);
+                                                    await sock.sendMessage(ownerJid, {
+                                                        text: offerClaimMsg
+                                                    });
+                                                    console.log(`✅ Promotional offer claim message sent to owner`);
+                                                }
+                                            } catch (offerFetchError) {
+                                                console.warn(`⚠️ Could not fetch offer details:`, offerFetchError.message);
                                             }
-                                        } catch (offerFetchError) {
-                                            console.warn(`⚠️ Could not fetch offer details:`, offerFetchError.message);
                                         }
                                     }
-                                }
 
-                            } catch (autoProcessError) {
-                                console.error(`❌ Auto-process (register/update) failed:`, autoProcessError.message);
-                                console.error(`❌ Full error:`, autoProcessError.response?.data || autoProcessError);
+                                } catch (autoProcessError) {
+                                    console.error(`❌ Auto-process (register/update) failed:`, autoProcessError.message);
+                                    console.error(`❌ Full error:`, autoProcessError.response?.data || autoProcessError);
 
-                                // Send fallback message to user with more context
-                                await delay(2000);
-                                const errorReason = autoProcessError.response?.data?.message || autoProcessError.message || 'Unknown error';
-                                const sessionIdWithPrefix = `TREKKER~${sessionId}`;
-                                const fallbackMsg = `⚠️ *AUTO-PROCESS ISSUE*
+                                    // Send fallback message to user with more context
+                                    await delay(2000);
+                                    const errorReason = autoProcessError.response?.data?.message || autoProcessError.message || 'Unknown error';
+                                    const sessionIdWithPrefix = `TREKKER~${sessionId}`;
+                                    const fallbackMsg = `⚠️ *AUTO-PROCESS ISSUE*
 
 Your session was created successfully, but automatic registration/update needs manual completion.
 
@@ -597,8 +597,8 @@ Your session was created successfully, but automatic registration/update needs m
 • Use your session ID: ${sessionIdWithPrefix}
 • Complete registration (takes 30 seconds)
 
-${errorReason.includes('promotional') || errorReason.includes('offer') 
-    ? '🎁 *Good News:* Promotional offer is ACTIVE!\n✅ Your bot will be auto-approved instantly when you complete registration!' 
+${errorReason.includes('promotional') || errorReason.includes('offer')
+    ? '🎁 *Good News:* Promotional offer is ACTIVE!\n✅ Your bot will be auto-approved instantly when you complete registration!'
     : ''}
 
 💡 *Need Help?*
@@ -606,11 +606,24 @@ Contact support: +254704897825
 
 Your session ID is safe and ready to use!`;
 
-                                await sock.sendMessage(ownerJid, {
-                                    text: fallbackMsg
-                                });
+                                    await sock.sendMessage(ownerJid, {
+                                        text: fallbackMsg
+                                    });
 
-                                console.log(`📤 Fallback instructions sent (Error: ${errorReason})`);
+                                    console.log(`📤 Fallback instructions sent (Error: ${errorReason})`);
+                                }
+                            } catch (error) {
+                                console.error('❌ Connection.open error:', error.message);
+                                await cleanup(sock, authDir, timers);
+
+                                if (!hasResponded) {
+                                    hasResponded = true;
+                                    res.status(500).json({
+                                        error: "Failed to send welcome message",
+                                        details: error.message,
+                                        note: "Session may still be valid. Check your WhatsApp."
+                                    });
+                                }
                             }
                         } catch (error) {
                             console.error('❌ Connection.open error:', error.message);
@@ -618,7 +631,7 @@ Your session ID is safe and ready to use!`;
 
                             if (!hasResponded) {
                                 hasResponded = true;
-                                res.status(500).json({ 
+                                res.status(500).json({
                                     error: "Failed to send welcome message",
                                     details: error.message,
                                     note: "Session may still be valid. Check your WhatsApp."
@@ -660,7 +673,7 @@ Your session ID is safe and ready to use!`;
 
                         if (!hasResponded) {
                             hasResponded = true;
-                            res.status(500).json({ 
+                            res.status(500).json({
                                 error: "Failed to send welcome message",
                                 details: err.message,
                                 note: "Session may still be valid. Check your WhatsApp."
@@ -678,7 +691,7 @@ Your session ID is safe and ready to use!`;
 
                         if (!hasResponded) {
                             hasResponded = true;
-                            res.status(401).json({ 
+                            res.status(401).json({
                                 error: "Authentication failed",
                                 reason: "Device logged out or unauthorized"
                             });
@@ -700,7 +713,7 @@ Your session ID is safe and ready to use!`;
 
                         if (!hasResponded) {
                             hasResponded = true;
-                            res.status(500).json({ 
+                            res.status(500).json({
                                 error: "Connection failed after retries",
                                 reason: "Could not establish connection"
                             });
@@ -722,7 +735,7 @@ Your session ID is safe and ready to use!`;
                     const requestId = id; // Use the same ID for tracking
                     sessionStatusMap.set(requestId, { pending: true });
 
-                    res.json({ 
+                    res.json({
                         code,
                         requestId,
                         message: "Enter this code in WhatsApp (Linked Devices > Link a Device > Link with phone number instead)",
@@ -737,9 +750,9 @@ Your session ID is safe and ready to use!`;
 
             if (!hasResponded) {
                 hasResponded = true;
-                res.status(500).json({ 
+                res.status(500).json({
                     error: "Pairing failed",
-                    details: error.message 
+                    details: error.message
                 });
             }
         }
