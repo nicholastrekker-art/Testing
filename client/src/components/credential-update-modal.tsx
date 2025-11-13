@@ -38,7 +38,7 @@ export default function CredentialUpdateModal({
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const validationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
+  
   const [credentialType, setCredentialType] = useState<'base64' | 'file'>('base64');
   const [sessionId, setSessionId] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -70,10 +70,10 @@ export default function CredentialUpdateModal({
     try {
       // Check if it's valid base64
       const decoded = atob(base64Input.trim());
-
+      
       // Try to parse as JSON
       const credentials = JSON.parse(decoded);
-
+      
       // Basic validation for WhatsApp credentials structure
       if (!credentials || typeof credentials !== 'object') {
         throw new Error('Invalid credentials format');
@@ -101,7 +101,7 @@ export default function CredentialUpdateModal({
 
       setValidationState('valid');
       setValidationMessage('✅ Credentials format is valid and phone number matches');
-
+      
     } catch (error) {
       setValidationState('invalid');
       if (error instanceof Error) {
@@ -127,55 +127,48 @@ export default function CredentialUpdateModal({
     }
   };
 
-  const handleSubmit = async () => {
-    // Validation
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     if (credentialType === 'base64') {
       if (!sessionId.trim()) {
         toast({
-          title: "Missing Session ID",
-          description: "Please paste your Baileys v7 session ID (base64 credentials)",
+          title: "Missing Credentials",
+          description: "Please provide a Base64 session ID",
           variant: "destructive"
         });
         return;
       }
-
-      // Clean the session ID (remove any prefixes)
-      let cleanedSessionId = sessionId.trim();
-      if (cleanedSessionId.includes('~')) {
-        const parts = cleanedSessionId.split('~');
-        cleanedSessionId = parts[parts.length - 1].trim();
-        setSessionId(cleanedSessionId);
-      }
-
-      // Validate the session ID format
-      if (validationState === "invalid") {
+      
+      // Enhanced validation for base64 credentials
+      if (validationState === 'invalid') {
         toast({
-          title: "Invalid Baileys v7 Credentials",
+          title: "Invalid Credentials",
           description: "Please fix the credential validation errors before submitting",
           variant: "destructive"
         });
         return;
       }
-
-      if (validationState === "validating") {
+      
+      if (validationState === 'validating') {
         toast({
           title: "Validation in Progress",
-          description: "Please wait for Baileys v7 credential validation to complete",
+          description: "Please wait for credential validation to complete",
           variant: "destructive"
         });
         return;
       }
-
-      if (validationState !== "valid" && cleanedSessionId.trim()) {
+      
+      if (validationState !== 'valid' && sessionId.trim()) {
         toast({
           title: "Unvalidated Credentials",
-          description: "Please wait for Baileys v7 credential validation to complete",
+          description: "Please wait for credential validation to complete",
           variant: "destructive"
         });
         return;
       }
     }
-
+    
     if (credentialType === 'file' && !selectedFile) {
       toast({
         title: "Missing File", 
@@ -184,7 +177,7 @@ export default function CredentialUpdateModal({
       });
       return;
     }
-
+    
     // Additional security check for guest token if required
     if (!crossTenancyMode && !guestToken) {
       toast({
@@ -196,23 +189,23 @@ export default function CredentialUpdateModal({
     }
 
     setIsLoading(true);
-
+    
     try {
       const formData = new FormData();
       formData.append('phoneNumber', phoneNumber);
       formData.append('action', 'update_credentials');
       formData.append('credentialType', credentialType);
-
+      
       // Add botId only for same-server operations
       if (!crossTenancyMode) {
         formData.append('botId', botId);
       }
-
+      
       // Add target server for cross-tenancy operations
       if (crossTenancyMode && targetServer) {
         formData.append('targetServer', targetServer);
       }
-
+      
       if (credentialType === 'base64') {
         formData.append('sessionId', sessionId);
       } else if (selectedFile) {
@@ -221,13 +214,13 @@ export default function CredentialUpdateModal({
 
       // Use cross-tenancy endpoint if in cross-tenancy mode
       const endpoint = crossTenancyMode ? '/api/guest/cross-tenancy-manage' : '/api/guest/manage-bot';
-
+      
       // Prepare request headers with guest token authentication if available
       const headers: Record<string, string> = {};
       if (guestToken) {
         headers['Authorization'] = `Bearer ${guestToken}`;
       }
-
+      
       const response = await fetch(endpoint, {
         method: 'POST',
         headers,
@@ -249,14 +242,14 @@ export default function CredentialUpdateModal({
             title: "Success!",
             description: data.message
           });
-
+          
           // Reset form for regular updates
           setSessionId('');
           setSelectedFile(null);
           if (fileInputRef.current) {
             fileInputRef.current.value = '';
           }
-
+          
           onSuccess?.();
           onClose();
         }
@@ -423,7 +416,7 @@ export default function CredentialUpdateModal({
                 }`}
                 required
               />
-
+              
               {/* Enhanced validation feedback */}
               {validationMessage && (
                 <div className={`text-xs mt-2 p-2 rounded border ${
@@ -435,7 +428,7 @@ export default function CredentialUpdateModal({
                   {validationMessage}
                 </div>
               )}
-
+              
               <p className="text-xs text-muted-foreground mt-1">
                 Get this from your WhatsApp session backup. The system will validate the format and phone number match in real-time.
               </p>

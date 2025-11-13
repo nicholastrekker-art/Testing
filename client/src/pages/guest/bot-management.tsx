@@ -59,38 +59,21 @@ export default function GuestBotManagement() {
   // Step 1: Session ID verification - Extract phone number and check bot status
   const verifySessionMutation = useMutation({
     mutationFn: async (sessionId: string) => {
-      // Clean and validate the session ID
-      let cleanSessionId = sessionId.trim();
-      
-      // Remove any prefix (TREKKER~, etc.) if present
-      if (cleanSessionId.includes('~')) {
-        const parts = cleanSessionId.split('~');
-        cleanSessionId = parts[parts.length - 1].trim();
-      }
-      
-      // Validate base64 format
+      // Validate base64 format before sending to server
       try {
+        const cleanSessionId = sessionId.trim();
+        // Test if it's valid base64 by attempting to decode it
         const decoded = atob(cleanSessionId);
-        const parsed = JSON.parse(decoded);
-        
-        // Validate it has required v7 credential fields
-        const hasRequiredFields = parsed.noiseKey && parsed.signedIdentityKey;
-        const hasV7Format = parsed.me && (parsed.me.id || parsed.me.lid);
-        
-        if (!hasRequiredFields && !hasV7Format) {
-          throw new Error('Missing required credential fields. Please use valid Baileys v7 session data.');
-        }
+        // Test if decoded content is valid JSON
+        JSON.parse(decoded);
       } catch (error) {
-        if (error instanceof Error && error.message.includes('Missing required')) {
-          throw error;
-        }
-        throw new Error('Invalid session ID format. Please ensure you\'re providing valid base64-encoded Baileys v7 credentials.');
+        throw new Error('Invalid session ID format. Please ensure you\'re providing valid base64-encoded credentials.');
       }
 
       const response = await fetch('/api/guest/verify-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: cleanSessionId }),
+        body: JSON.stringify({ sessionId: sessionId.trim() }),
       });
 
       if (!response.ok) {
@@ -153,13 +136,11 @@ export default function GuestBotManagement() {
     onError: (error: Error) => {
       let errorMessage = error.message;
 
-      // Provide more helpful error messages for v7 credentials
+      // Provide more helpful error messages
       if (errorMessage.includes("Cannot extract phone number")) {
-        errorMessage = "❌ Invalid Baileys v7 session: Cannot extract phone number. Ensure your session includes 'me.id' or 'me.lid' fields.";
-      } else if (errorMessage.includes("Missing required credential fields")) {
-        errorMessage = "❌ Invalid Baileys v7 format: Missing required fields (noiseKey, signedIdentityKey). Please get fresh credentials.";
+        errorMessage = "❌ Invalid session ID: Cannot extract phone number from the credentials. Please ensure you're using valid WhatsApp session data.";
       } else if (errorMessage.includes("Invalid session ID format")) {
-        errorMessage = "❌ Invalid format: Please paste valid base64-encoded Baileys v7 session data.";
+        errorMessage = "❌ Invalid session ID format: Please ensure you're pasting valid base64-encoded WhatsApp session data.";
       }
 
       toast({
@@ -173,38 +154,21 @@ export default function GuestBotManagement() {
   // Update session ID mutation with connection testing
   const updateSessionMutation = useMutation({
     mutationFn: async (sessionId: string) => {
-      // Clean and validate the session ID
-      let cleanSessionId = sessionId.trim();
-      
-      // Remove any prefix (TREKKER~, etc.) if present
-      if (cleanSessionId.includes('~')) {
-        const parts = cleanSessionId.split('~');
-        cleanSessionId = parts[parts.length - 1].trim();
-      }
-      
-      // Validate base64 format and v7 structure
+      // Validate base64 format before sending to server
       try {
+        const cleanSessionId = sessionId.trim();
+        // Test if it's valid base64 by attempting to decode it
         const decoded = atob(cleanSessionId);
-        const parsed = JSON.parse(decoded);
-        
-        // Validate it has required v7 credential fields
-        const hasRequiredFields = parsed.noiseKey && parsed.signedIdentityKey;
-        const hasV7Format = parsed.me && (parsed.me.id || parsed.me.lid);
-        
-        if (!hasRequiredFields && !hasV7Format) {
-          throw new Error('Missing required credential fields. Please use valid Baileys v7 session data.');
-        }
+        // Test if decoded content is valid JSON
+        JSON.parse(decoded);
       } catch (error) {
-        if (error instanceof Error && error.message.includes('Missing required')) {
-          throw error;
-        }
-        throw new Error('Invalid session ID format. Please ensure you\'re providing valid base64-encoded Baileys v7 credentials.');
+        throw new Error('Invalid session ID format. Please ensure you\'re providing valid base64-encoded credentials.');
       }
 
       const response = await fetch('/api/guest/verify-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: cleanSessionId }),
+        body: JSON.stringify({ sessionId: sessionId.trim() }),
       });
 
       if (!response.ok) {
@@ -274,19 +238,17 @@ export default function GuestBotManagement() {
     onError: (error: Error) => {
       let errorMessage = error.message;
 
-      // Provide more helpful error messages for v7 credentials
+      // Provide more helpful error messages
       if (errorMessage.includes("Cannot extract phone number")) {
-        errorMessage = "❌ Invalid Baileys v7 session: Cannot extract phone number. Ensure 'me.id' or 'me.lid' fields exist.";
-      } else if (errorMessage.includes("Missing required credential fields")) {
-        errorMessage = "❌ Invalid Baileys v7 format: Missing noiseKey or signedIdentityKey. Get fresh credentials.";
+        errorMessage = "❌ Invalid session ID: Cannot extract phone number from the credentials. Please ensure you're using valid WhatsApp session data.";
       } else if (errorMessage.includes("Connection timeout")) {
-        errorMessage = "❌ Connection timeout: Your Baileys v7 session may be expired. Please get a fresh session.";
+        errorMessage = "❌ Connection timeout: Your new session ID may be expired or invalid. Please get a fresh session ID.";
       } else if (errorMessage.includes("phone number mismatch")) {
-        errorMessage = "❌ Phone number mismatch: The session belongs to a different WhatsApp account.";
+        errorMessage = "❌ Phone number mismatch: The new session ID belongs to a different phone number.";
       } else if (errorMessage.includes("Failed to establish connection")) {
-        errorMessage = "❌ Cannot connect: Ensure your Baileys v7 credentials are valid and current.";
+        errorMessage = "❌ Cannot connect with new session ID. Please ensure it's valid and active.";
       } else if (errorMessage.includes("Invalid session ID format")) {
-        errorMessage = "❌ Invalid format: Paste valid base64-encoded Baileys v7 session data.";
+        errorMessage = "❌ Invalid session ID format: Please ensure you're pasting valid base64-encoded WhatsApp session data.";
       }
 
       toast({
@@ -553,7 +515,7 @@ export default function GuestBotManagement() {
             </h1>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Manage your WhatsApp bots with Baileys v7 secure credential verification
+            Manage your WhatsApp bots with secure credential verification
           </p>
         </div>
 
@@ -596,10 +558,10 @@ export default function GuestBotManagement() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-6 w-6 text-blue-600" />
-                Enter Baileys v7 Session Credentials
+                Enter Session Credentials
               </CardTitle>
               <CardDescription>
-                Paste your bot's Baileys v7 base64 session credentials to verify ownership and check connection status
+                Paste your bot's Base64 session credentials to verify ownership and check connection status
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -619,13 +581,12 @@ export default function GuestBotManagement() {
                 </p>
                 <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800 mb-2">
                   <p className="text-xs text-amber-800 dark:text-amber-200 font-medium mb-1">
-                    💡 Baileys v7 Session ID Format:
+                    💡 Session ID Format Requirements:
                   </p>
                   <ul className="text-xs text-amber-700 dark:text-amber-300 space-y-1 ml-4">
-                    <li>• Must be base64 encoded Baileys v7 credentials</li>
-                    <li>• Contains noiseKey, signedIdentityKey, and me.lid/me.id</li>
-                    <li>• Any prefix (like TREKKER~) will be automatically removed</li>
-                    <li>• Paste the complete session without modifications</li>
+                    <li>• Must be base64 encoded (contains letters, numbers, +, /, =)</li>
+                    <li>• Should be copied completely without spaces or line breaks</li>
+                    <li>• Contains your WhatsApp credentials in JSON format</li>
                   </ul>
                 </div>
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
@@ -749,7 +710,7 @@ export default function GuestBotManagement() {
                 Bot Connection Inactive
               </CardTitle>
               <CardDescription>
-                Your bot {botInfo?.phoneNumber} was found but is not currently connected. Enter a NEW Baileys v7 session ID and we'll automatically test the connection and update your credentials.
+                Your bot {botInfo?.phoneNumber} was found but is not currently connected. Enter a NEW session ID and we'll automatically test the connection and update your bot.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -768,14 +729,13 @@ export default function GuestBotManagement() {
                 </p>
                 <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200">
                   <p className="text-sm text-green-700 dark:text-green-300 mb-2">
-                    <strong>✅ Automated Baileys v7 Update Process:</strong>
+                    <strong>✅ What happens automatically:</strong>
                   </p>
                   <ul className="text-xs text-green-600 dark:text-green-400 space-y-1">
-                    <li>• Validates Baileys v7 credential structure (noiseKey, LID, etc.)</li>
-                    <li>• Tests connection with new credentials</li>
-                    <li>• Updates bot credentials if validation passes</li>
-                    <li>• Sends success confirmation to your WhatsApp</li>
-                    <li>• Redirects to bot management dashboard</li>
+                    <li>• We test your new session ID connection</li>
+                    <li>• Bot credentials are safely updated if valid</li>
+                    <li>• A success message is sent to your WhatsApp</li>
+                    <li>• You're taken to the bot management dashboard</li>
                   </ul>
                 </div>
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">

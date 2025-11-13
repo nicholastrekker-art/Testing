@@ -1097,101 +1097,6 @@ export async function registerRoutes(app: Express): Server {
         updateData[dbColumn] = enabled;
       }
 
-
-
-  // Direct credential update endpoint (for pairing process) - skips connection test
-  app.post("/api/guest/update-credentials-direct", async (req, res) => {
-    try {
-      const { sessionId, skipConnectionTest } = req.body;
-
-      if (!sessionId) {
-        return res.status(400).json({
-          success: false,
-          message: "Session ID is required"
-        });
-      }
-
-      // Decode and validate credentials
-      let credentials;
-      try {
-        let cleanSessionId = sessionId.trim();
-        if (cleanSessionId.startsWith('TREKKER~')) {
-          cleanSessionId = cleanSessionId.substring(8);
-        }
-        credentials = decodeCredentials(cleanSessionId);
-      } catch (error) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid session ID format"
-        });
-      }
-
-      // Validate Baileys credentials structure
-      const validation = validateBaileysCredentials(credentials);
-      if (!validation.valid) {
-        return res.status(400).json({
-          success: false,
-          message: validation.error || "Invalid credentials"
-        });
-      }
-
-      // Extract phone number
-      const phoneNumber = extractPhoneNumber(validation.normalized || credentials);
-      if (!phoneNumber) {
-        return res.status(400).json({
-          success: false,
-          message: "Cannot extract phone number from credentials"
-        });
-      }
-
-      // Find existing bot by phone number
-      const existingBot = await storage.getBotByPhoneNumber(phoneNumber);
-      
-      if (!existingBot) {
-        return res.status(404).json({
-          success: false,
-          message: `No bot found with phone number ${phoneNumber}`,
-          phoneNumber
-        });
-      }
-
-      // Update credentials directly without connection test
-      await storage.updateBotInstance(existingBot.id, {
-        credentials: validation.normalized || credentials,
-        credentialVerified: true,
-        invalidReason: null,
-        autoStart: true
-      });
-
-      console.log(`✅ Direct credential update successful for bot ${existingBot.id} (${phoneNumber})`);
-
-      // Log activity
-      await storage.createActivity({
-        botInstanceId: existingBot.id,
-        type: 'credential_update',
-        description: 'Credentials updated directly from pairing process (no connection test)',
-        serverName: existingBot.serverName
-      });
-
-      res.json({
-        success: true,
-        message: "Credentials updated successfully",
-        phoneNumber,
-        botId: existingBot.id,
-        botName: existingBot.name,
-        connectionUpdated: true,
-        credentialValidationFailed: false
-      });
-
-    } catch (error) {
-      console.error('Direct credential update error:', error);
-      res.status(500).json({
-        success: false,
-        message: error instanceof Error ? error.message : "Failed to update credentials"
-      });
-    }
-  });
-
       // Update bot instance
       await storage.updateBotInstance(bot.id, updateData);
 
@@ -2960,18 +2865,20 @@ Thank you for choosing TREKKER-MD! 🚀`;
         });
       }
 
-      // Use enhanced phone number extraction that searches entire credential object
+      // Use centralized phone number extraction (supports both LID and JID)
       const phoneNumber = extractPhoneNumber(credentials);
 
       if (!phoneNumber) {
-        console.error('❌ Failed to extract phone number from credentials');
-        console.log('Credential structure:', JSON.stringify(credentials, null, 2).substring(0, 500));
+        console.error('Failed to extract phone number from credentials:', {
+          hasCredsMe: !!(credentials?.creds?.me),
+          hasMe: !!(credentials?.me),
+          credsKeys: credentials?.creds ? Object.keys(credentials.creds) : [],
+          topLevelKeys: credentials ? Object.keys(credentials) : []
+        });
         return res.status(400).json({
-          message: "Cannot extract phone number from credentials. Please ensure your session contains valid WhatsApp account information."
+          message: "Cannot extract phone number from session credentials. Please ensure you're using valid WhatsApp session data."
         });
       }
-
-      console.log(`✅ Extracted phone number: ${phoneNumber}`);
 
       // Check if bot exists in global registry
       const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);

@@ -363,18 +363,15 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                                     ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
                                     : 'http://localhost:5000';
 
-                                // STEP 1: Try to directly update existing bot credentials (skip connection test)
+                                // STEP 1: Try to verify/update existing bot credentials
                                 let botExists = false;
                                 let verificationResult = null;
 
                                 try {
-                                    console.log(`📡 Attempting to directly update existing bot credentials...`);
+                                    console.log(`📡 Attempting to verify/update existing bot...`);
                                     const verifyResponse = await axios.post(
-                                        `${apiBaseUrl}/api/guest/update-credentials-direct`,
-                                        { 
-                                            sessionId: base64Creds,
-                                            skipConnectionTest: true 
-                                        },
+                                        `${apiBaseUrl}/api/guest/verify-session`,
+                                        { sessionId: base64Creds },
                                         {
                                             headers: { 'Content-Type': 'application/json' },
                                             timeout: 15000
@@ -383,7 +380,7 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
 
                                     botExists = true;
                                     verificationResult = verifyResponse.data;
-                                    console.log(`✅ Bot exists! Credentials updated directly (no connection test):`, verificationResult);
+                                    console.log(`✅ Bot exists! Credentials updated successfully:`, verificationResult);
 
                                     // Send update confirmation message
                                     await delay(2000);

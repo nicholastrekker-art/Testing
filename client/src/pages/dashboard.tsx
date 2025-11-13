@@ -413,7 +413,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Step 3: Manage Your Bot - Enhanced */}
+              {/* Step 3: Manage Your Bot */}
               <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-emerald-500/30 hover:border-emerald-400/60 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/30 hover:-translate-y-1">
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative p-6">
@@ -425,60 +425,20 @@ export default function Dashboard() {
                       <h3 className="text-xl font-bold text-white">Manage Your Bot</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span className="text-xs text-emerald-400 font-medium">FULL CONTROL</span>
+                        <span className="text-xs text-emerald-400 font-medium">CONTROL</span>
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Features List */}
-                  <div className="space-y-2 mb-5">
-                    <div className="flex items-center gap-2 text-sm text-gray-300">
-                      <i className="fas fa-check-circle text-emerald-400"></i>
-                      <span>Toggle features (Auto-like, Auto-react, ChatGPT)</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-300">
-                      <i className="fas fa-check-circle text-emerald-400"></i>
-                      <span>View real-time statistics & activity</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-300">
-                      <i className="fas fa-check-circle text-emerald-400"></i>
-                      <span>Update credentials & restart bot</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-300">
-                      <i className="fas fa-check-circle text-emerald-400"></i>
-                      <span>Monitor connection status live</span>
-                    </div>
-                  </div>
-
-                  <p className="text-gray-400 mb-5 text-sm leading-relaxed border-l-4 border-emerald-500 pl-3">
-                    💡 <span className="font-semibold text-emerald-400">Smart Credential Testing:</span> Paste your session ID and we'll automatically extract your phone number, test the connection, and update your bot if valid.
+                  <p className="text-gray-300 mb-5 leading-relaxed">
+                    Control features, view statistics, and manage your bot settings with <span className="font-semibold text-emerald-400">real-time monitoring</span>
                   </p>
-                  
                   <Link href="/guest/bot-management">
                     <Button className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold py-3 shadow-lg shadow-emerald-500/30 group-hover:shadow-emerald-500/50 transition-all" data-testid="button-manage-bot">
-                      <i className="fas fa-sliders-h mr-2"></i>
-                      Open Bot Dashboard
+                      <i className="fas fa-cog mr-2"></i>
+                      Bot Management
                       <i className="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                     </Button>
                   </Link>
-                  
-                  {/* Quick Stats Preview */}
-                  <div className="mt-4 pt-4 border-t border-gray-700">
-                    <div className="grid grid-cols-3 gap-2 text-center">
-                      <div>
-                        <div className="text-emerald-400 font-bold text-lg">24/7</div>
-                        <div className="text-gray-400 text-xs">Uptime</div>
-                      </div>
-                      <div>
-                        <div className="text-emerald-400 font-bold text-lg">∞</div>
-                        <div className="text-gray-400 text-xs">No Expiry</div>
-                      </div>
-                      <div>
-                        <div className="text-emerald-400 font-bold text-lg">🚀</div>
-                        <div className="text-gray-400 text-xs">Ultra Fast</div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
