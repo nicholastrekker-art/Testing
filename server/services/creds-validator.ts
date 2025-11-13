@@ -10,74 +10,66 @@ const readFile = promisify(fs.readFile);
 export const extractPhoneNumber = (credentials: any): string | null => {
   if (!credentials) return null;
 
-  let phoneNumber: string | null = null;
+  console.log('🔍 Extracting phone number from credentials...');
 
-  // Check root level me.id first (v7 format)
-  if (credentials?.me?.id) {
-    const phoneMatch = credentials.me.id.match(/^(\d+)[@:]/);
-    phoneNumber = phoneMatch ? phoneMatch[1] : null;
-  }
+  // Helper function to validate phone number
+  const isValidPhone = (num: string): boolean => {
+    return num.length >= 10 && num.length <= 15 && !num.startsWith('0') && parseInt(num) > 1000000000;
+  };
 
-  // Check root level me.lid (v7 format)
-  if (!phoneNumber && credentials?.me?.lid) {
-    const lidMatch = credentials.me.lid.match(/^(\d+)[@:]/);
-    phoneNumber = lidMatch ? lidMatch[1] : null;
-  }
-
-  // Check wrapped creds.me.id
-  if (!phoneNumber && credentials?.creds?.me?.id) {
-    const phoneMatch = credentials.creds.me.id.match(/^(\d+)[@:]/);
-    phoneNumber = phoneMatch ? phoneMatch[1] : null;
-  }
-
-  // Check wrapped creds.me.lid
-  if (!phoneNumber && credentials?.creds?.me?.lid) {
-    const lidMatch = credentials.creds.me.lid.match(/^(\d+)[@:]/);
-    phoneNumber = lidMatch ? lidMatch[1] : null;
-  }
-
-  if (!phoneNumber && credentials?.creds) {
-    const credsStr = JSON.stringify(credentials.creds);
-    const phoneMatches = credsStr.match(/(\d{10,15})/g);
-    if (phoneMatches && phoneMatches.length > 0) {
-      const validPhones = phoneMatches.filter(num => 
-        num.length >= 10 && num.length <= 15 && 
-        !num.startsWith('0') &&
-        parseInt(num) > 1000000000
-      );
-      if (validPhones.length > 0) {
-        phoneNumber = validPhones[0];
-      }
-    }
-  }
-
-  if (!phoneNumber) {
-    const findPhoneInObject = (obj: any, depth = 0): string | null => {
-      if (depth > 5 || !obj || typeof obj !== 'object') return null;
-
-      for (const [key, value] of Object.entries(obj)) {
-        if (typeof value === 'string') {
-          const phoneMatch = value.match(/(\d{10,15}):/);
-          if (phoneMatch) return phoneMatch[1];
-
-          if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number')) {
-            const cleanNumber = value.replace(/\D/g, '');
-            if (cleanNumber.length >= 10 && cleanNumber.length <= 15) {
-              return cleanNumber;
-            }
+  // Deep search function to find phone numbers in entire object
+  const findPhoneNumbers = (obj: any, depth = 0, path = ''): string[] => {
+    if (depth > 10 || !obj) return [];
+    
+    const phones: string[] = [];
+    
+    if (typeof obj === 'string') {
+      // Extract phone numbers from strings with various patterns
+      const patterns = [
+        /(\d{10,15})[@:]/g,  // Pattern: 123456789@s.whatsapp.net or 123456789:50@lid
+        /(?:^|\D)(\d{10,15})(?:\D|$)/g  // Pattern: standalone numbers
+      ];
+      
+      for (const pattern of patterns) {
+        const matches = obj.matchAll(pattern);
+        for (const match of matches) {
+          if (match[1] && isValidPhone(match[1])) {
+            phones.push(match[1]);
+            console.log(`📱 Found phone number: ${match[1]} at path: ${path}`);
           }
-        } else if (typeof value === 'object') {
-          const found = findPhoneInObject(value, depth + 1);
-          if (found) return found;
         }
       }
-      return null;
-    };
+    } else if (typeof obj === 'object' && obj !== null) {
+      for (const [key, value] of Object.entries(obj)) {
+        const currentPath = path ? `${path}.${key}` : key;
+        
+        // Priority search in known phone-related fields
+        if (key.toLowerCase().includes('phone') || key.toLowerCase().includes('number') || 
+            key.toLowerCase().includes('jid') || key === 'id' || key === 'lid') {
+          console.log(`🎯 Checking priority field: ${currentPath}`);
+        }
+        
+        phones.push(...findPhoneNumbers(value, depth + 1, currentPath));
+      }
+    }
+    
+    return phones;
+  };
 
-    phoneNumber = findPhoneInObject(credentials);
+  // Search entire credential object for phone numbers
+  const allPhones = findPhoneNumbers(credentials);
+  
+  // Remove duplicates and sort by most likely to be the actual phone number
+  const uniquePhones = [...new Set(allPhones)];
+  
+  if (uniquePhones.length > 0) {
+    console.log(`✅ Found ${uniquePhones.length} potential phone number(s):`, uniquePhones);
+    // Return the first valid phone number found
+    return uniquePhones[0];
   }
 
-  return phoneNumber;
+  console.log('❌ No phone number found in credentials');
+  return null;
 };
 
 interface CredsInfo {

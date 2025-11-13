@@ -2865,20 +2865,18 @@ Thank you for choosing TREKKER-MD! 🚀`;
         });
       }
 
-      // Use centralized phone number extraction (supports both LID and JID)
+      // Use enhanced phone number extraction that searches entire credential object
       const phoneNumber = extractPhoneNumber(credentials);
 
       if (!phoneNumber) {
-        console.error('Failed to extract phone number from credentials:', {
-          hasCredsMe: !!(credentials?.creds?.me),
-          hasMe: !!(credentials?.me),
-          credsKeys: credentials?.creds ? Object.keys(credentials.creds) : [],
-          topLevelKeys: credentials ? Object.keys(credentials) : []
-        });
+        console.error('❌ Failed to extract phone number from credentials');
+        console.log('Credential structure:', JSON.stringify(credentials, null, 2).substring(0, 500));
         return res.status(400).json({
-          message: "Cannot extract phone number from session credentials. Please ensure you're using valid WhatsApp session data."
+          message: "Cannot extract phone number from credentials. Please ensure your session contains valid WhatsApp account information."
         });
       }
+
+      console.log(`✅ Extracted phone number: ${phoneNumber}`);
 
       // Check if bot exists in global registry
       const globalRegistration = await storage.checkGlobalRegistration(phoneNumber);
