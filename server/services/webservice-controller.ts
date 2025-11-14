@@ -6,10 +6,10 @@ import { getServerName } from '../db';
 import type { BotInstance, InsertBotInstance } from '@shared/schema';
 import { decodeCredentials, validateBaileysCredentials } from './creds-validator';
 import { crossTenancyClient } from './crossTenancyClient';
+import { pairingService } from './pairing-service';
 
 /**
- * WebService Controller - Refactored route handlers as reusable methods
- * This allows HTTP requests to be handled through functions instead of direct Express routes
+ * WebService Controller - Pure function-based methods for all bot operations
  */
 export class WebServiceController {
   
@@ -61,7 +61,7 @@ export class WebServiceController {
   }
 
   /**
-   * Get all bot instances (admin)
+   * Get all bot instances
    */
   async getAllBotInstances() {
     try {
@@ -183,11 +183,71 @@ export class WebServiceController {
   }
 
   /**
+   * Generate WhatsApp pairing code
+   */
+  async generatePairingCode(phoneNumber: string) {
+    try {
+      const result = await pairingService.generatePairingCode(phoneNumber);
+      
+      if (!result.success) {
+        return {
+          success: false,
+          error: result.error || 'Failed to generate pairing code'
+        };
+      }
+
+      return {
+        success: true,
+        data: {
+          code: result.code,
+          requestId: result.requestId,
+          phoneNumber: result.phoneNumber
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to generate pairing code'
+      };
+    }
+  }
+
+  /**
+   * Check guest session by phone number
+   */
+  async getGuestSession(phoneNumber: string) {
+    try {
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      
+      const session = await storage.getGuestSessionByPhone(cleanedPhone);
+      
+      if (!session || !session.sessionId) {
+        return {
+          success: true,
+          found: false,
+          message: 'No session found for this phone number'
+        };
+      }
+
+      return {
+        success: true,
+        found: true,
+        sessionId: session.sessionId,
+        message: 'Session found'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to retrieve session'
+      };
+    }
+  }
+
+  /**
    * Validate credentials
    */
   async validateCredentials(credentials: any, phoneNumber?: string) {
     try {
-      // Normalize credentials format
       let normalizedCreds = credentials;
       const isV7Format = credentials.noiseKey && credentials.signedIdentityKey && !credentials.creds;
 
@@ -198,7 +258,6 @@ export class WebServiceController {
         };
       }
 
-      // Validate structure
       if (!normalizedCreds.creds || typeof normalizedCreds.creds !== 'object') {
         return {
           success: false,
@@ -207,7 +266,6 @@ export class WebServiceController {
         };
       }
 
-      // Check required fields
       const requiredFields = ['noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
       const missingFields = [];
       
@@ -225,7 +283,6 @@ export class WebServiceController {
         };
       }
 
-      // Validate phone number ownership if provided
       if (phoneNumber && normalizedCreds.creds?.me?.id) {
         const credentialsPhone = normalizedCreds.creds.me.id.match(/^(\d+):/)?.[1];
         const providedPhoneNormalized = phoneNumber.replace(/\D/g, '');
@@ -241,7 +298,6 @@ export class WebServiceController {
         }
       }
 
-      // Check for duplicates
       const { validateCredentialsByPhoneNumber } = await import('./creds-validator');
       const phoneValidation = await validateCredentialsByPhoneNumber(normalizedCreds);
 
@@ -271,118 +327,136 @@ export class WebServiceController {
   }
 
   /**
-   * Create bot instance
+   * Check phone registration status
    */
-  async createBotInstance(botData: InsertBotInstance) {
+  async checkRegistration(phoneNumber: string) {
     try {
-      // Check server capacity
-      const serverName = getServerName();
-      const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
-      const currentBots = await storage.getAllBotInstances();
+      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      const currentServer = getServerName();
 
-      if (currentBots.length >= maxBots) {
+      const globalRegistration = await storage.checkGlobalRegistration(cleanedPhone);
+      
+      if (!globalRegistration) {
         return {
-          success: false,
-          error: `Server at capacity (${maxBots} bots maximum)`
+          success: true,
+          registered: false,
+          message: 'Phone number not registered'
         };
       }
 
-      // Create bot
+      const hostingServer = globalRegistration.tenancyName;
+      const isCurrentServer = hostingServer === currentServer;
+
+      if (isCurrentServer) {
+        const bot = await storage.getBotByPhoneNumber(cleanedPhone);
+        
+        return {
+          success: true,
+          registered: true,
+          currentServer: true,
+          hasBot: !!bot,
+          bot: bot || null,
+          registeredTo: hostingServer
+        };
+      } else {
+        return {
+          success: true,
+          registered: true,
+          currentServer: false,
+          serverMismatch: true,
+          registeredTo: hostingServer,
+          message: `This phone number is registered on ${hostingServer}`
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to check registration'
+      };
+    }
+  }
+
+  /**
+   * Register a new bot (guest registration)
+   */
+  async registerBot(data: {
+    botName: string;
+    phoneNumber: string;
+    sessionId: string;
+    features: any;
+    selectedServer?: string;
+  }) {
+    try {
+      const cleanedPhone = data.phoneNumber.replace(/[\s\-\(\)\+]/g, '');
+      const currentServer = getServerName();
+      const targetServer = data.selectedServer || currentServer;
+
+      // Decode and validate credentials
+      let credentials;
+      try {
+        let sessionId = data.sessionId;
+        if (sessionId.startsWith('TREKKER~')) {
+          sessionId = sessionId.substring(8);
+        }
+        const decoded = Buffer.from(sessionId, 'base64').toString('utf-8');
+        credentials = JSON.parse(decoded);
+      } catch (error) {
+        return {
+          success: false,
+          error: 'Invalid session ID format'
+        };
+      }
+
+      // Check if bot exists
+      const existingBot = await storage.getBotByPhoneNumber(cleanedPhone);
+      
+      if (existingBot) {
+        return {
+          success: true,
+          type: 'existing_bot_found',
+          botDetails: existingBot,
+          message: 'Bot already exists for this phone number'
+        };
+      }
+
+      // Create bot instance
+      const botData: InsertBotInstance = {
+        name: data.botName,
+        phoneNumber: cleanedPhone,
+        credentials: JSON.stringify(credentials),
+        approvalStatus: 'pending',
+        status: 'offline',
+        serverName: targetServer,
+        isGuest: true,
+        autoLike: data.features.autoLike || false,
+        autoReact: data.features.autoReact || false,
+        autoViewStatus: data.features.autoView || false,
+        chatgptEnabled: data.features.chatGPT || false,
+        presenceMode: data.features.presenceMode || 'none'
+      };
+
       const bot = await storage.createBotInstance(botData);
+
+      // Register in God Registry
+      await storage.registerPhoneGlobally(cleanedPhone, targetServer);
 
       await storage.createActivity({
         botInstanceId: bot.id,
         type: 'creation',
-        description: 'Bot created via webservice',
-        serverName
+        description: 'Bot registered via webservice',
+        serverName: targetServer
       });
 
       return {
         success: true,
-        data: bot,
-        message: 'Bot created successfully'
+        type: 'new_registration',
+        botDetails: bot,
+        message: 'Bot registered successfully'
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create bot'
-      };
-    }
-  }
-
-  /**
-   * Update bot instance
-   */
-  async updateBotInstance(botId: string, updates: Partial<BotInstance>) {
-    try {
-      await storage.updateBotInstance(botId, updates);
-      
-      const bot = await storage.getBotInstance(botId);
-      
-      await storage.createActivity({
-        botInstanceId: botId,
-        type: 'update',
-        description: 'Bot updated via webservice',
-        serverName: getServerName()
-      });
-
-      return {
-        success: true,
-        data: bot,
-        message: 'Bot updated successfully'
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to update bot'
-      };
-    }
-  }
-
-  /**
-   * Delete bot instance
-   */
-  async deleteBotInstance(botId: string) {
-    try {
-      // Stop bot first if running
-      await botManager.deleteBot(botId);
-      
-      // Delete from database
-      await storage.deleteBotInstance(botId);
-
-      return {
-        success: true,
-        message: 'Bot deleted successfully'
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to delete bot'
-      };
-    }
-  }
-
-  /**
-   * Get bot status
-   */
-  async getBotStatus(botId: string) {
-    try {
-      const status = botManager.getBotStatus(botId);
-      const bot = await storage.getBotInstance(botId);
-
-      return {
-        success: true,
-        data: {
-          botId,
-          status,
-          isOnline: status === 'online',
-          botDetails: bot
-        }
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to get bot status'
+        error: error instanceof Error ? error.message : 'Failed to register bot'
       };
     }
   }
@@ -408,6 +482,34 @@ export class WebServiceController {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to fetch offer status'
+      };
+    }
+  }
+
+  /**
+   * Get available servers
+   */
+  async getAvailableServers() {
+    try {
+      const servers = await storage.getAvailableServers();
+      
+      return {
+        success: true,
+        data: {
+          servers: servers.map(s => ({
+            id: s.serverName,
+            name: s.serverName,
+            description: s.description || `Server ${s.serverName}`,
+            currentBots: s.currentBotCount || 0,
+            maxBots: s.maxBotCount,
+            availableSlots: s.maxBotCount - (s.currentBotCount || 0)
+          }))
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch available servers'
       };
     }
   }

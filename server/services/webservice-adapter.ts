@@ -3,14 +3,10 @@ import { Request, Response } from 'express';
 import { webServiceController } from './webservice-controller';
 
 /**
- * WebService Adapter - Converts Express HTTP requests to webservice method calls
- * This maintains backward compatibility with existing Express routes
+ * WebService Adapter - Converts HTTP requests to webservice method calls
  */
 export class WebServiceAdapter {
   
-  /**
-   * Adapter for getServerInfo
-   */
   static async handleGetServerInfo(req: Request, res: Response) {
     const result = await webServiceController.getServerInfo();
     
@@ -21,9 +17,6 @@ export class WebServiceAdapter {
     }
   }
 
-  /**
-   * Adapter for getDashboardStats
-   */
   static async handleGetDashboardStats(req: Request, res: Response) {
     const result = await webServiceController.getDashboardStats();
     
@@ -34,9 +27,6 @@ export class WebServiceAdapter {
     }
   }
 
-  /**
-   * Adapter for getAllBotInstances
-   */
   static async handleGetAllBotInstances(req: Request, res: Response) {
     const result = await webServiceController.getAllBotInstances();
     
@@ -47,9 +37,6 @@ export class WebServiceAdapter {
     }
   }
 
-  /**
-   * Adapter for getBotInstance
-   */
   static async handleGetBotInstance(req: Request, res: Response) {
     const { id } = req.params;
     const result = await webServiceController.getBotInstance(id);
@@ -61,9 +48,6 @@ export class WebServiceAdapter {
     }
   }
 
-  /**
-   * Adapter for startBot
-   */
   static async handleStartBot(req: Request, res: Response) {
     const { id } = req.params;
     const result = await webServiceController.startBot(id);
@@ -75,9 +59,6 @@ export class WebServiceAdapter {
     }
   }
 
-  /**
-   * Adapter for stopBot
-   */
   static async handleStopBot(req: Request, res: Response) {
     const { id } = req.params;
     const result = await webServiceController.stopBot(id);
@@ -89,9 +70,6 @@ export class WebServiceAdapter {
     }
   }
 
-  /**
-   * Adapter for restartBot
-   */
   static async handleRestartBot(req: Request, res: Response) {
     const { id } = req.params;
     const result = await webServiceController.restartBot(id);
@@ -103,9 +81,39 @@ export class WebServiceAdapter {
     }
   }
 
-  /**
-   * Adapter for validateCredentials
-   */
+  static async handleGeneratePairingCode(req: Request, res: Response) {
+    const phoneNumber = req.query.number as string;
+    
+    if (!phoneNumber) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Phone number is required' 
+      });
+    }
+
+    const result = await webServiceController.generatePairingCode(phoneNumber);
+    
+    if (result.success) {
+      return res.json(result.data);
+    } else {
+      return res.status(500).json({ 
+        success: false, 
+        error: result.error 
+      });
+    }
+  }
+
+  static async handleGetGuestSession(req: Request, res: Response) {
+    const { phoneNumber } = req.params;
+    const result = await webServiceController.getGuestSession(phoneNumber);
+    
+    if (result.success) {
+      return res.json(result);
+    } else {
+      return res.status(500).json({ message: result.error });
+    }
+  }
+
   static async handleValidateCredentials(req: Request, res: Response) {
     const { sessionData, phoneNumber } = req.body;
     let credentials;
@@ -118,7 +126,7 @@ export class WebServiceAdapter {
         }
         credentials = JSON.parse(Buffer.from(base64Data, 'base64').toString('utf-8'));
       } else if (req.file) {
-        credentials = JSON.parse(req.file.buffer.toString());
+        credentials = JSON.parse((req.file as any).buffer.toString());
       } else {
         return res.status(400).json({
           message: 'Please provide credentials either as file upload or Base64 session data'
@@ -148,9 +156,53 @@ export class WebServiceAdapter {
     }
   }
 
-  /**
-   * Adapter for getOfferStatus
-   */
+  static async handleCheckRegistration(req: Request, res: Response) {
+    const { phoneNumber } = req.body;
+    
+    if (!phoneNumber) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Phone number is required' 
+      });
+    }
+
+    const result = await webServiceController.checkRegistration(phoneNumber);
+    
+    if (result.success) {
+      return res.json(result);
+    } else {
+      return res.status(500).json({ message: result.error });
+    }
+  }
+
+  static async handleRegisterBot(req: Request, res: Response) {
+    const { botName, phoneNumber, sessionId, features, selectedServer } = req.body;
+    
+    if (!botName || !phoneNumber || !sessionId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Bot name, phone number, and session ID are required'
+      });
+    }
+
+    const result = await webServiceController.registerBot({
+      botName,
+      phoneNumber,
+      sessionId,
+      features: features || {},
+      selectedServer
+    });
+    
+    if (result.success) {
+      return res.json(result);
+    } else {
+      return res.status(500).json({ 
+        success: false, 
+        message: result.error 
+      });
+    }
+  }
+
   static async handleGetOfferStatus(req: Request, res: Response) {
     const result = await webServiceController.getOfferStatus();
     
@@ -161,9 +213,16 @@ export class WebServiceAdapter {
     }
   }
 
-  /**
-   * Adapter for getActivities
-   */
+  static async handleGetAvailableServers(req: Request, res: Response) {
+    const result = await webServiceController.getAvailableServers();
+    
+    if (result.success) {
+      return res.json(result.data);
+    } else {
+      return res.status(500).json({ message: result.error });
+    }
+  }
+
   static async handleGetActivities(req: Request, res: Response) {
     const limit = parseInt(req.query.limit as string) || 50;
     const result = await webServiceController.getActivities(limit);

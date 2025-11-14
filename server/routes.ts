@@ -1,12 +1,11 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
-import jwt from 'jsonwebtoken';
-import multer from "multer";
-import fs from 'fs';
+import { WebServiceAdapter } from "./services/webservice-adapter";
+import { botManager } from "./services/bot-manager";
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { storage } from "./storage";
+import express from 'express';
 
 // ES Module __dirname and __filename equivalents
 const __filename = fileURLToPath(import.meta.url);
@@ -312,9 +311,11 @@ export async function registerRoutes(app: Express): Server {
   const pairPublicPath = path.join(__dirname, '..', 'pair', 'public');
   app.use('/pair', express.static(pairPublicPath));
 
-  // Import and mount pairing routes
-  const pairRouter = await import('../pair/routers/pair.js');
-  app.use('/api/pair', pairRouter.default);
+  // Pairing endpoint - Using webservice
+  app.get('/api/pair', WebServiceAdapter.handleGeneratePairingCode);
+  
+  // Guest session endpoint - Using webservice
+  app.get('/api/guest/session/:phoneNumber', WebServiceAdapter.handleGetGuestSession);
 
   // Function to resume all saved bots from database on startup
   async function resumeSavedBots() {
@@ -449,12 +450,20 @@ export async function registerRoutes(app: Express): Server {
     res.json({ user: req.user });
   });
 
-  // Credentials validation endpoint (accessible to everyone) - handles both JSON and multipart
-  const multipartOnly = (req: any, res: any, next: any) => {
-    return req.is('multipart/form-data') ? upload.single('credentials')(req, res, next) : next();
-  };
-
-  app.post("/api/validate-credentials", multipartOnly, async (req, res) => {
+  // Credentials validation - Using webservice
+  app.post("/api/validate-credentials", WebServiceAdapter.handleValidateCredentials);
+  
+  // Guest registration check - Using webservice
+  app.post("/api/guest/check-registration", WebServiceAdapter.handleCheckRegistration);
+  
+  // Guest bot registration - Using webservice
+  app.post("/api/guest/register-bot", WebServiceAdapter.handleRegisterBot);
+  
+  // Available servers - Using webservice
+  app.get("/api/servers/available", WebServiceAdapter.handleGetAvailableServers);
+  
+  // Offer status - Using webservice
+  app.get("/api/offer/status", WebServiceAdapter.handleGetOfferStatus);
     try {
       let credentials;
       let credentialType = 'file'; // Default to file
@@ -610,37 +619,11 @@ export async function registerRoutes(app: Express): Server {
     }
   });
 
-  // Dashboard stats
-  app.get("/api/dashboard/stats", async (req, res) => {
-    try {
-      const stats = await storage.getDashboardStats();
-      res.json(stats);
-    } catch (error) {
-      console.error("Dashboard stats error:", error);
-      res.status(500).json({ message: "Failed to fetch dashboard stats" });
-    }
-  });
+  // Dashboard stats - Using webservice
+  app.get("/api/dashboard/stats", WebServiceAdapter.handleGetDashboardStats);
 
-  // Server info
-  app.get("/api/server/info", async (req, res) => {
-    try {
-      const { getServerNameWithFallback } = await import('./db');
-      const serverName = await getServerNameWithFallback();
-      const maxBots = parseInt(process.env.BOTCOUNT || '10', 10);
-      const currentBots = await storage.getAllBotInstances();
-      const hasSecretConfig = !!process.env.SERVER_NAME;
-
-      res.json({
-        serverName,
-        maxBots,
-        currentBots: currentBots.length,
-        availableSlots: maxBots - currentBots.length,
-        hasSecretConfig
-      });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch server info" });
-    }
-  });
+  // Server info - Using webservice
+  app.get("/api/server/info", WebServiceAdapter.handleGetServerInfo);
 
   // Get all available servers (Server1 to Server100) with bot counts
   app.get("/api/servers/list", async (req, res) => {
