@@ -1,0 +1,30 @@
+schemaVersion: "1.2"
+
+spec:
+  resources:
+    limits:
+      cpu: "1"  # Limit to 1 CPU
+    requests:
+      cpu: "0.5"  
+endpoints:
+  # REST Endpoint
+  - name: rest-service
+    displayName: REST Service
+    type: REST
+    service:
+      basePath: /dist/public
+      port: 8080
+      networkVisibilities:
+        - Public
+      schemaFilePath: openapi.yaml
+
+  # WebSocket Endpoint
+  - name: websocket-service
+    displayName: WebSocket Service
+    type: WS
+    service:
+      basePath: /
+      port: 8080
+      networkVisibilities:
+        - Public
+      schemaFilePath: openapi.yaml
