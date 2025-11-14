@@ -3252,13 +3252,84 @@ Thank you for using TREKKER-MD! 🚀
 
         console.log(`📍 Phone ${cleanedPhone} found in God Registry on server: ${hostingServer}`);
 
-        // Check if trying to register on a different server than where bot exists
-        // This applies whether selectedServer is provided or not
+        // CROSS-SERVER CREDENTIAL UPDATE
         if (hostingServer !== currentServer) {
-          return res.status(400).json({
-            success: false,
-            message: `This phone number is registered on ${hostingServer}. Please access ${hostingServer} to update your bot credentials.`
-          });
+          console.log(`🌐 Cross-server credential update: ${currentServer} → ${hostingServer}`);
+          
+          // Use CrossTenancyClient to update credentials on hosting server
+          const { crossTenancyClient } = await import('./services/crossTenancyClient');
+          
+          // First, get bot ID from hosting server
+          const bots = await db.select()
+            .from(botInstances)
+            .where(
+              and(
+                eq(botInstances.phoneNumber, cleanedPhone),
+                eq(botInstances.serverName, hostingServer)
+              )
+            )
+            .limit(1);
+          
+          if (bots.length === 0) {
+            return res.status(404).json({
+              success: false,
+              message: `Bot found in registry on ${hostingServer} but not in database. Please contact support.`
+            });
+          }
+          
+          const remoteBotId = bots[0].id;
+          
+          // Update credentials on hosting server via CrossTenancyClient
+          const updateResult = await crossTenancyClient.updateBotCredentials(
+            hostingServer,
+            remoteBotId,
+            {
+              credentialVerified: true,
+              credentials: credentials,
+            }
+          );
+          
+          if (updateResult.success) {
+            console.log(`✅ Credentials updated on ${hostingServer} for bot ${remoteBotId}`);
+            
+            // Send success message to user
+            try {
+              const confirmationMsg = `✅ *CREDENTIALS UPDATED!*
+
+Your bot credentials have been successfully updated on ${hostingServer}!
+
+📊 *Bot Details:*
+• Phone: ${cleanedPhone}
+• Hosting Server: ${hostingServer}
+• Updated From: ${currentServer}
+• Updated: ${new Date().toLocaleString()}
+
+🔄 Your bot will restart automatically with new credentials.
+
+━━━━━━━━━━━━━━━━━━━
+_Cross-Server Update Complete_`;
+
+              await sendGuestValidationMessage(cleanedPhone, JSON.stringify(credentials), confirmationMsg, true);
+              console.log(`✅ Cross-server credential update confirmation sent to ${cleanedPhone}`);
+            } catch (messageError) {
+              console.error('Failed to send cross-server update message:', messageError);
+            }
+            
+            return res.json({
+              success: true,
+              type: 'cross_server_credential_update',
+              message: `Credentials successfully updated on ${hostingServer}!`,
+              botDetails: maskBotDataForGuest(updateResult.data!, true),
+              hostingServer,
+              currentServer
+            });
+          } else {
+            console.error(`❌ Failed to update credentials on ${hostingServer}:`, updateResult.error);
+            return res.status(500).json({
+              success: false,
+              message: `Failed to update credentials on ${hostingServer}: ${updateResult.error}`
+            });
+          }
         }
 
         // Additional check: if user explicitly selected a different server, that's also an error
