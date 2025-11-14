@@ -1,0 +1,92 @@
+{
+  "ACBB8735438832795B6D7B896FC4AC1F": {
+    "id": "ACBB8735438832795B6D7B896FC4AC1F",
+    "fromJid": "254799257758@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "",
+    "type": "protocolMessage",
+    "timestamp": 1763110305232,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254799257758@s.whatsapp.net",
+        "fromMe": true,
+        "id": "ACBB8735438832795B6D7B896FC4AC1F"
+      },
+      "messageTimestamp": 1763110305,
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "protocolMessage": {
+          "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+          "peerDataOperationRequestResponseMessage": {
+            "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+            "stanzaId": "3EB08C32D40238DA5FDD44",
+            "peerDataOperationResult": [
+              {
+                "mediaUploadResult": "SUCCESS",
+                "placeholderMessageResendResponse": {
+                  "webMessageInfoBytes": "CjYKEHN0YXR1c0Bicm9hZGNhc3QQABogQUM1QTUxRTUwM0E4Mzc5N0E1MzExNDAxNDI3MEZBRUISgQUa/gQKvwFodHRwczovL21tZy53aGF0c2FwcC5uZXQvdi90NjIuNzExOC0yNC8yNjk5ODYwNV84MjEyNDYyMTA4MTcyMjZfNjYxNjMxMjUzNjg2MjE2OTUzX24uZW5jP2NjYj0xMS00Jm9oPTAxX1E1QWEzQUh0VG80Nzc2aVZYRHVrRnNnMk8yeDhPR3VMUjNCVUhCNFVDTHBzZ3VlQ1p3Jm9lPTY5M0U0NkI0Jl9uY19zaWQ9NWUwM2UwJm1tczM9dHJ1ZRIKaW1hZ2UvanBlZxoOTXR1IHdldHXinIzvuI8iIBSltNu6K3ZwEW4eX4aBXFSaPTHZ/NKsXFo8UbABQI0zKNd7MIAKONAFQiDK9togdbggRm4aYx5Bn9eTMpMrHwa2m6cspy1glBqYMEogYMtU/Vp9Tn++a5H1dBGBaghihcOCghElAQl7ti9p/FpanQEvdi90NjIuNzExOC0yNC8yNjk5ODYwNV84MjEyNDYyMTA4MTcyMjZfNjYxNjMxMjUzNjg2MjE2OTUzX24uZW5jP2NjYj0xMS00Jm9oPTAxX1E1QWEzQUh0VG80Nzc2aVZYRHVrRnNnMk8yeDhPR3VMUjNCVUhCNFVDTHBzZ3VlQ1p3Jm9lPTY5M0U0NkI0Jl9uY19zaWQ9NWUwM2UwYPPa28gGigEqqAEBsAEBigMCIAHIAwLYAwCABACKBBAIARoMCAESCAgAEgAYACAAmAQAqgEo5/x8KfTjYvTb10saLOhsxCr4fN39jjp80NnSfZamQmilib/5sAFWu7AB7RuwAfZDsAGUDLAB4A+6ASB5O7sWM+aMPSy1QCL2RzRaf5CBsHCjXf40QuJRou8vCRiT29vIBiobMjU0NzA4MDc4MDM5QHMud2hhdHNhcHAubmV0igMgkaUX4kZNoJe293k05MaWrJaDkt3gGbTjJoMCfL5CkJ7yAxYKFAEMF6uDJ86UiikY2A7nmKCB76dhiAQA"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "AC5A51E503A83797A53114014270FAEB": {
+    "id": "AC5A51E503A83797A53114014270FAEB",
+    "fromJid": "status@broadcast",
+    "senderJid": "status@broadcast",
+    "content": "Mtu wetu✌️",
+    "type": "imageMessage",
+    "timestamp": 1763110305733,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "status@broadcast",
+        "fromMe": false,
+        "id": "AC5A51E503A83797A53114014270FAEB"
+      },
+      "message": {
+        "imageMessage": {
+          "url": "https://mmg.whatsapp.net/v/t62.7118-24/26998605_821246210817226_661631253686216953_n.enc?ccb=11-4&oh=01_Q5Aa3AHtTo4776iVXDukFsg2O2x8OGuLR3BUHB4UCLpsgueCZw&oe=693E46B4&_nc_sid=5e03e0&mms3=true",
+          "mimetype": "image/jpeg",
+          "caption": "Mtu wetu✌️",
+          "fileSha256": "FKW027ordnARbh5fhoFcVJo9Mdn80qxcWjxRsAFAjTM=",
+          "fileLength": "15831",
+          "height": 1280,
+          "width": 720,
+          "mediaKey": "yvbaIHW4IEZuGmMeQZ/XkzKTKx8GtpunLKctYJQamDA=",
+          "fileEncSha256": "YMtU/Vp9Tn++a5H1dBGBaghihcOCghElAQl7ti9p/Fo=",
+          "directPath": "/v/t62.7118-24/26998605_821246210817226_661631253686216953_n.enc?ccb=11-4&oh=01_Q5Aa3AHtTo4776iVXDukFsg2O2x8OGuLR3BUHB4UCLpsgueCZw&oe=693E46B4&_nc_sid=5e03e0",
+          "mediaKeyTimestamp": "1763110259",
+          "contextInfo": {
+            "forwardingScore": 1,
+            "isForwarded": true,
+            "featureEligibilities": {
+              "canBeReshared": true
+            },
+            "statusAttributionType": "RESHARED_FROM_POST",
+            "pairedMediaType": "NOT_PAIRED_MEDIA",
+            "statusSourceType": "IMAGE"
+          },
+          "scansSidecar": "5/x8KfTjYvTb10saLOhsxCr4fN39jjp80NnSfZamQmilib/5sAFWuw==",
+          "scanLengths": [
+            3565,
+            8694,
+            1556,
+            2016
+          ],
+          "midQualityFileSha256": "eTu7FjPmjD0stUAi9kc0Wn+QgbBwo13+NELiUaLvLwk="
+        }
+      },
+      "messageTimestamp": "1763110291",
+      "participant": "254708078039@s.whatsapp.net",
+      "messageSecret": "kaUX4kZNoJe293k05MaWrJaDkt3gGbTjJoMCfL5CkJ4=",
+      "reportingTokenInfo": {
+        "reportingTag": "AQwXq4MnzpSKKRjYDueYoIHvp2E="
+      },
+      "isMentionedInStatus": false
+    }
+  }
+}
