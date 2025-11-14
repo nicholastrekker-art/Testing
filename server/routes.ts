@@ -6,6 +6,7 @@ import { botManager } from "./services/bot-manager";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
+import multer from 'multer';
 
 // ES Module __dirname and __filename equivalents
 const __filename = fileURLToPath(import.meta.url);
