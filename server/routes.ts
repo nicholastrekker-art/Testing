@@ -464,6 +464,15 @@ export async function registerRoutes(app: Express): Server {
   
   // Offer status - Using webservice
   app.get("/api/offer/status", WebServiceAdapter.handleGetOfferStatus);
+
+  // Dashboard stats - Using webservice
+  app.get("/api/dashboard/stats", WebServiceAdapter.handleGetDashboardStats);
+
+  // Server info - Using webservice
+  app.get("/api/server/info", WebServiceAdapter.handleGetServerInfo);
+
+  // Legacy credential validation endpoint (keeping for backward compatibility)
+  app.post("/api/validate-credentials-legacy", upload.single('credsFile') as any, async (req, res) => {
     try {
       let credentials;
       let credentialType = 'file'; // Default to file
@@ -618,12 +627,6 @@ export async function registerRoutes(app: Express): Server {
       });
     }
   });
-
-  // Dashboard stats - Using webservice
-  app.get("/api/dashboard/stats", WebServiceAdapter.handleGetDashboardStats);
-
-  // Server info - Using webservice
-  app.get("/api/server/info", WebServiceAdapter.handleGetServerInfo);
 
   // Get all available servers (Server1 to Server100) with bot counts
   app.get("/api/servers/list", async (req, res) => {
