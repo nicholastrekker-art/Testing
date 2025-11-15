@@ -3065,8 +3065,13 @@ Example: 254712345678
 
       const axios = (await import('axios')).default;
 
+      // Determine the base URL dynamically
+      const baseUrl = process.env.REPLIT_DEV_DOMAIN
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+        : process.env.MAIN_APP_URL || `http://localhost:${process.env.PORT || 5000}`;
+
       // Call the pair.js endpoint to get the pairing code
-      const pairResponse = await axios.get(`http://localhost:5000/api/pair?number=${phoneNumber}`, {
+      const pairResponse = await axios.get(`${baseUrl}/api/pair?number=${phoneNumber}`, {
         timeout: 90000 // 90 second timeout
       });
 

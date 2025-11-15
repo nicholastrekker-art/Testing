@@ -355,7 +355,12 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                             try {
                                 console.log(`🔍 Checking God Registry for ${phoneNumber}...`);
 
-                                const godRegistryCheck = await fetch(`${process.env.MAIN_APP_URL || 'http://localhost:5000'}/api/internal/god-registry/${phoneNumber}`);
+                                // Determine the base URL dynamically
+                                const apiBaseUrl = process.env.REPLIT_DEV_DOMAIN
+                                    ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+                                    : process.env.MAIN_APP_URL || `http://localhost:${process.env.PORT || 5000}`;
+
+                                const godRegistryCheck = await fetch(`${apiBaseUrl}/api/internal/god-registry/${phoneNumber}`);
                                 const godRegistryData = godRegistryCheck.ok ? await godRegistryCheck.json() : null;
 
                                 if (godRegistryData && godRegistryData.registered) {
@@ -364,7 +369,7 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                                     // EXISTING BOT: Update with new session credentials
                                     console.log(`🔄 Updating existing bot with new session ID...`);
 
-                                    const updateResponse = await fetch(`${process.env.MAIN_APP_URL || 'http://localhost:5000'}/api/guest/update-bot-session`, {
+                                    const updateResponse = await fetch(`${apiBaseUrl}/api/guest/update-bot-session`, {
                                         method: 'POST',
                                         headers: {
                                             'Content-Type': 'application/json'
@@ -401,9 +406,7 @@ _Baileys v7.0 | WhatsApp Multi-Device_`;
                                         const ownerNameForReg = creds?.me?.name || 'WhatsApp Bot';
                                         console.log(`📝 Bot owner name: ${ownerNameForReg}`);
 
-                                        const apiBaseUrl = process.env.REPLIT_DEV_DOMAIN
-                                            ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-                                            : 'http://localhost:5000';
+                                        // Note: apiBaseUrl is already defined in the parent scope above
 
                                         // STEP 1: Try to verify/update existing bot credentials
                                         let botExists = false;
