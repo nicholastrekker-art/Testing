@@ -612,7 +612,7 @@ class BotManager {
       { name: 'pc', description: 'PC gaming tips', response: '', isActive: true, useChatGPT: true },
       { name: 'mobile', description: 'Mobile gaming', response: '', isActive: true, useChatGPT: true },
 
-       // Bot Control Commands
+      // Bot Control Commands
       { name: 'settings', description: 'Bot settings', response: '', isActive: true, useChatGPT: true },
       { name: 'config', description: 'Configuration options', response: '', isActive: true, useChatGPT: true },
       { name: 'toggle', description: 'Toggle features', response: '', isActive: true, useChatGPT: true },
