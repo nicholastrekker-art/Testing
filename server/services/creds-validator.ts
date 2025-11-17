@@ -175,8 +175,29 @@ export const validateCredentialsByPhoneNumber = async (credentials: any, allowCr
       } else {
         // Bot exists on different server
         if (allowCrossServerUpdate) {
-          // Find the bot instance on the target server
-          const [existingBot] = await db.select().from(botInstances).where(eq(botInstances.phoneNumber, phoneNumber));
+          // Find the bot instance on the remote server using both phoneNumber and serverName
+          // This query will work with shared database architecture
+          const { and } = await import('drizzle-orm');
+          const [remoteBot] = await db.select()
+            .from(botInstances)
+            .where(
+              and(
+                eq(botInstances.phoneNumber, phoneNumber),
+                eq(botInstances.serverName, globalRegistration.tenancyName)
+              )
+            )
+            .limit(1);
+          
+          if (!remoteBot) {
+            // Bot in registry but not in database - data inconsistency
+            console.warn(`⚠️ Bot ${phoneNumber} found in god_register on ${globalRegistration.tenancyName} but not in bot_instances`);
+            return {
+              isValid: false,
+              message: `Bot found in registry on ${globalRegistration.tenancyName} but not in database. Please contact support.`,
+              phoneNumber,
+              alreadyRegistered: true
+            };
+          }
           
           return {
             isValid: true,
@@ -185,7 +206,7 @@ export const validateCredentialsByPhoneNumber = async (credentials: any, allowCr
             alreadyRegistered: true,
             crossServerUpdate: true,
             targetServer: globalRegistration.tenancyName,
-            botId: existingBot?.id
+            botId: remoteBot.id
           };
         } else {
           // Cross-server update not allowed
