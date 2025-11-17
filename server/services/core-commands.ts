@@ -1,5 +1,5 @@
 import { commandRegistry, type CommandContext } from './command-registry.js';
-import { antideleteService } from './antidelete.js';
+import { getAntideleteService } from './antidelete.js';
 import { getAntiViewOnceService } from './antiviewonce.js';
 import { storage } from '../storage.js';
 import { getServerName } from '../db.js';
@@ -1571,7 +1571,12 @@ commandRegistry.register({
   description: 'Configure antidelete functionality (Owner only)',
   category: 'ADMIN',
   handler: async (context: CommandContext) => {
-    const { respond, message, client, args } = context;
+    const { respond, message, client, args, botId } = context;
+
+    // Get bot-specific antidelete service
+    const storage = (await import('../storage.js')).storage;
+    const botInstance = await storage.getBotInstance(botId);
+    const antideleteService = getAntideleteService(botInstance);
 
     // Extract match from args
     const match = args.length > 0 ? args[0].toLowerCase() : undefined;
