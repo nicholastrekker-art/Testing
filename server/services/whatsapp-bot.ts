@@ -16,7 +16,7 @@ import { join } from 'path';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { commandRegistry, type CommandContext } from './command-registry.js';
 import { AutoStatusService } from './auto-status.js';
-import { getAntideleteService, clearAntideleteService } from './antidelete.js';
+// Antidelete service removed
 import './core-commands.js'; // Load core commands
 import './channel-commands.js'; // Load channel commands
 import { handleChannelMessage } from './channel-commands.js';
@@ -43,7 +43,6 @@ export class WhatsAppBot {
   private reconnectAttempts: number = 0;
   private heartbeatInterval?: NodeJS.Timeout;
   private autoStatusService: AutoStatusService;
-  private antideleteService: any;
   private presenceInterval?: NodeJS.Timeout;
   private currentPresenceState: 'composing' | 'recording' = 'recording';
 
@@ -62,7 +61,7 @@ export class WhatsAppBot {
     this.autoStatusService = new AutoStatusService(botInstance);
 
     // Initialize bot-specific antidelete service
-    this.antideleteService = getAntideleteService(botInstance);
+    // this.antideleteService = getAntideleteService(botInstance);
 
     // If credentials are provided, save them to the auth directory
     if (botInstance.credentials) {
@@ -470,9 +469,9 @@ export class WhatsAppBot {
               console.log(`   😀 Reaction Message: ${message.message?.reactionMessage?.text} to ${message.message?.reactionMessage?.key?.id}`);
             }
 
-            console.log(`   💾 Storing in antidelete service...`);
-            // Store message for antidelete functionality
-            await this.antideleteService.storeMessage(message, this.sock);
+            // Message storage removed
+            // console.log(`   💾 Storing in antidelete service...`);
+            // await this.antideleteService.storeMessage(message, this.sock);
 
             console.log(`   🎯 Processing regular message handling...`);
 
@@ -539,7 +538,7 @@ export class WhatsAppBot {
 
           const revocationMessage = { key, message: update.message };
           console.log(`   📤 Forwarding to antidelete service...`);
-          await this.antideleteService.handleMessageRevocation(this.sock, revocationMessage);
+          // await this.antideleteService.handleMessageRevocation(this.sock, revocationMessage);
           console.log(`   ✅ Revocation handled by antidelete service`);
         } else if (update.message?.protocolMessage) {
           console.log(`   📡 Other Protocol Message:`, {
@@ -1330,7 +1329,7 @@ export class WhatsAppBot {
     this.isRunning = false;
 
     // Cleanup isolated antidelete service
-    clearAntideleteService(this.botInstance);
+    // clearAntideleteService(this.botInstance);
 
     await this.safeUpdateBotStatus('offline');
     await this.safeCreateActivity('status_change', 'TREKKERMD LIFETIME BOT stopped');

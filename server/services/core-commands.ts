@@ -1561,30 +1561,10 @@ const categoryCommands = {
 // Essential TREKKER-MD commands only - custom commands managed through admin panel
 // Placeholder commands removed - using clean command system
 
-// Plugin system completely removed - using clean TREKKER-MD command system
-console.log('🧹 Plugin system disabled - Clean TREKKER-MD commands only');
+// Plugin system completely removed - using clean TREKKERMD command system
+console.log('🧹 Plugin system disabled - Clean TREKKERMD commands only');
 
-// Register antidelete command
-commandRegistry.register({
-  name: 'antidelete',
-  aliases: ['antidel', 'savedeleted'],
-  description: 'Configure antidelete functionality (Owner only)',
-  category: 'ADMIN',
-  handler: async (context: CommandContext) => {
-    const { respond, message, client, args, botId } = context;
-
-    // Get bot-specific antidelete service
-    const storage = (await import('../storage.js')).storage;
-    const botInstance = await storage.getBotInstance(botId);
-    const antideleteService = getAntideleteService(botInstance);
-
-    // Extract match from args
-    const match = args.length > 0 ? args[0].toLowerCase() : undefined;
-
-    // Call antidelete service handler
-    await antideleteService.handleAntideleteCommand(client, message.key.remoteJid!, message, match);
-  }
-});
+// Antidelete command removed
 
 // Set Custom Prefix Command
 commandRegistry.register({
@@ -2414,7 +2394,7 @@ commandRegistry.register({
     const { respond, message, client, from, args } = context;
 
     if (!from.endsWith('@g.us')) {
-      await respond('❌ This command can only be used in group chats!');
+      await respond('❌ This command only works in group chats!');
       return;
     }
 
