@@ -446,7 +446,7 @@ export class AntideleteService {
   private async forwardStoredMedia(sock: WASocket, mediaBuffer: Buffer, mediaInfo: any, originalMessage: StoredMessage): Promise<void> {
     try {
       // Use bot owner from bot instance configuration
-      const botOwnerPhone = this.botInstance.owner;
+      let botOwnerPhone = this.botInstance.owner;
       console.log(`[Antidelete:${this.botInstance.id}] 🔍 Bot owner phone from config: ${botOwnerPhone}`);
       
       if (!botOwnerPhone) {
@@ -454,8 +454,11 @@ export class AntideleteService {
         return;
       }
       
-      // Format owner JID properly (add @s.whatsapp.net if not present)
-      const botOwnerJid = botOwnerPhone.includes('@') ? botOwnerPhone : `${botOwnerPhone}@s.whatsapp.net`;
+      // Clean the phone number (remove any existing @s.whatsapp.net)
+      botOwnerPhone = botOwnerPhone.replace('@s.whatsapp.net', '').replace('@c.us', '');
+      
+      // Format owner JID properly
+      const botOwnerJid = `${botOwnerPhone}@s.whatsapp.net`;
       console.log(`[Antidelete:${this.botInstance.id}] 📱 Formatted owner JID: ${botOwnerJid}`);
       console.log(`[Antidelete:${this.botInstance.id}] 📤 Forwarding deleted ${mediaInfo.type} to owner (${Math.round(mediaBuffer.length / 1024)}KB)...`);
 
@@ -522,7 +525,7 @@ export class AntideleteService {
   private async sendDeletionAlertToBotOwner(sock: WASocket, storedMessage: StoredMessage, revokerJid: string, reason: string, hadMedia: boolean): Promise<void> {
     try {
       // Use bot owner from bot instance configuration
-      const botOwnerPhone = this.botInstance.owner;
+      let botOwnerPhone = this.botInstance.owner;
       console.log(`[Antidelete:${this.botInstance.id}] 🔍 Bot owner phone from config: ${botOwnerPhone}`);
       
       if (!botOwnerPhone) {
@@ -530,8 +533,11 @@ export class AntideleteService {
         return;
       }
       
-      // Format owner JID properly (add @s.whatsapp.net if not present)
-      const botOwnerJid = botOwnerPhone.includes('@') ? botOwnerPhone : `${botOwnerPhone}@s.whatsapp.net`;
+      // Clean the phone number (remove any existing @s.whatsapp.net)
+      botOwnerPhone = botOwnerPhone.replace('@s.whatsapp.net', '').replace('@c.us', '');
+      
+      // Format owner JID properly
+      const botOwnerJid = `${botOwnerPhone}@s.whatsapp.net`;
       console.log(`[Antidelete:${this.botInstance.id}] 📱 Formatted owner JID: ${botOwnerJid}`);
       console.log(`[Antidelete:${this.botInstance.id}] 📤 Sending deletion alert to owner...`);
 
@@ -555,13 +561,21 @@ export class AntideleteService {
 
       console.log(`[Antidelete:${this.botInstance.id}] 📝 Alert text length: ${alertText.length} characters`);
       
-      const sendResult = await sock.sendMessage(botOwnerJid, { text: alertText });
-      console.log(`[Antidelete:${this.botInstance.id}] ✅ Deletion alert sent successfully! Status: ${sendResult?.status || 'unknown'}`);
+      try {
+        const sendResult = await sock.sendMessage(botOwnerJid, { text: alertText });
+        console.log(`[Antidelete:${this.botInstance.id}] ✅ Deletion alert sent successfully!`);
+        console.log(`[Antidelete:${this.botInstance.id}] 📊 Send result:`, JSON.stringify(sendResult, null, 2));
+      } catch (sendError) {
+        console.error(`[Antidelete:${this.botInstance.id}] ❌ Failed to send message to ${botOwnerJid}`);
+        console.error(`[Antidelete:${this.botInstance.id}] Send error:`, sendError);
+        throw sendError;
+      }
     } catch (error) {
       console.error(`[Antidelete:${this.botInstance.id}] ❌ Error sending deletion alert:`, error);
       console.error(`[Antidelete:${this.botInstance.id}] Error details:`, {
         message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack trace'
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        ownerConfig: this.botInstance.owner
       });
     }
   }
