@@ -89,30 +89,20 @@ export class AntiViewOnceService {
       if (!messageId || this.processedMessages.has(messageId)) return;
 
       this.processedMessages.add(messageId);
-
-      console.log(`🔍 [Anti-ViewOnce] Checking message ${messageId} for ViewOnce content...`);
       
       const viewOnceData = this.extractViewOnceFromMessage(message.message);
       if (!viewOnceData) {
-        console.log(`ℹ️ [Anti-ViewOnce] No ViewOnce content found in message ${messageId}`);
         return;
       }
 
-      console.log(`✅ [Anti-ViewOnce] ViewOnce detected! Type: ${viewOnceData.mediaType}, Message Type: ${viewOnceData.messageType}`);
-
-      // Process silently without excessive console logs
       const buffer = await this.attemptDownload(viewOnceData, message);
 
       if (buffer && buffer.length > 0) {
-        console.log(`📥 [Anti-ViewOnce] Successfully downloaded ${buffer.length} bytes of ${viewOnceData.mediaType}`);
         await this.sendInterceptedContent(sock, message, buffer, viewOnceData);
-      } else {
-        console.log(`❌ [Anti-ViewOnce] Failed to download ViewOnce content for message ${messageId}`);
       }
 
     } catch (error) {
-      console.error(`❌ [Anti-ViewOnce] Error processing message:`, error);
-      // Handle errors silently, only send notification to bot owner
+      console.error(`[Anti-ViewOnce] Error:`, error);
       await this.sendErrorNotification(sock, message, error as Error);
     }
   }
@@ -486,7 +476,6 @@ export class AntiViewOnceService {
       // Get bot owner's number (the bot's own number)
       const botOwnerJid = sock.user?.id;
       if (!botOwnerJid) {
-        console.log('❌ Bot owner JID not found, cannot send ViewOnce content');
         return;
       }
 
@@ -558,31 +547,7 @@ export class AntiViewOnceService {
     }
   }
 
-  private async sendDetectionNotification(sock: WASocket, originalMessage: WAMessage, viewOnceData: ViewOnceData): Promise<void> {
-    try {
-      const originalChatId = originalMessage.key.remoteJid;
-      if (!originalChatId) return;
-
-      // Get bot owner's number
-      const botOwnerJid = sock.user?.id;
-      if (!botOwnerJid) {
-        console.log('❌ Bot owner JID not found, cannot send ViewOnce detection notification');
-        return;
-      }
-
-      // Check if this was found in a quoted message
-      const isFromQuotedMessage = originalMessage.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-      const detectionSource = isFromQuotedMessage ? 'quoted/replied message' : 'direct message';
-
-      const message = `🚨 *ViewOnce Detected & Intercepted* 🚨\n\n✅ **TREKKER-MD Anti-ViewOnce Active**\n\n📱 **Message Details:**\n🎭 Type: ${viewOnceData.messageType}\n📸 Media: ${viewOnceData.mediaType}\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}\n🆔 Message ID: ${originalMessage.key.id}\n⏰ Time: ${new Date().toLocaleString()}\n🔍 Detection: Found in ${detectionSource}\n\n🔍 **Processing Status:**\n✅ ViewOnce message detected\n⚡ Attempting media extraction...\n📤 Content will be forwarded if available\n\n🛡️ **TREKKER-MD LIFETIME BOT** - ViewOnce Protection Active`;
-
-      // Send to bot owner immediately
-      await sock.sendMessage(botOwnerJid, { text: message });
-      console.log(`📢 ViewOnce detection notification sent to bot owner: ${botOwnerJid}`);
-    } catch (error) {
-      console.error('Error sending detection notification:', error);
-    }
-  }
+  
 
   private async sendErrorNotification(sock: WASocket, originalMessage: WAMessage, error: Error): Promise<void> {
     try {
@@ -592,9 +557,8 @@ export class AntiViewOnceService {
       const errorMessage = `❌ *Anti-ViewOnce Error* ❌\n\n🚨 **TREKKER-MD ViewOnce Processing Error**\n\n📱 **Message Details:**\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalMessage.key.remoteJid}\n🆔 Message ID: ${originalMessage.key.id}\n⏰ Time: ${new Date().toLocaleString()}\n\n❌ **Error Details:**\n${error.message}\n\n🔧 **Recommendation:**\nCheck console logs for detailed error information.\nViewOnce protection remains active.`;
 
       await sock.sendMessage(botOwnerJid, { text: errorMessage });
-      console.log(`📢 ViewOnce error notification sent to bot owner: ${botOwnerJid}`);
     } catch (notificationError) {
-      console.error('Error sending error notification:', notificationError);
+      // Silent fail
     }
   }
 
