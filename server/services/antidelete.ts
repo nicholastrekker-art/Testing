@@ -270,68 +270,32 @@ export class AntideleteService {
       const revokedMessageId = revocationMessage.message?.protocolMessage?.key?.id;
       const revokerJid = revocationMessage.key?.remoteJid;
 
-      console.log(`[Antidelete:${this.botInstance.id}] 🗑️ Message revocation detected:`);
-      console.log(`   Message ID: ${revokedMessageId}`);
-      console.log(`   Revoker JID: ${revokerJid}`);
-      console.log(`   Total messages in store: ${this.messageStore.size}`);
-      console.log(`   Bot owner configured: ${this.botInstance.owner}`);
-      console.log(`   Bot name: ${this.botInstance.name}`);
-
       if (!revokedMessageId || !revokerJid) {
-        console.log(`[Antidelete:${this.botInstance.id}] ⚠️ Missing revocation details, skipping`);
         return;
       }
 
       const originalMessage = this.messageStore.get(revokedMessageId);
-      console.log(`[Antidelete:${this.botInstance.id}] Original message found: ${!!originalMessage}`);
       
       if (originalMessage) {
-        console.log(`[Antidelete:${this.botInstance.id}] ✅ Found original message:`);
-        console.log(`   - Content: ${originalMessage.content.substring(0, 50)}${originalMessage.content.length > 50 ? '...' : ''}`);
-        console.log(`   - From: ${originalMessage.fromJid}`);
-        console.log(`   - Sender: ${originalMessage.senderJid}`);
-        console.log(`   - Type: ${originalMessage.type}`);
-        
         const revokedHadMedia = this.hasMediaContent(originalMessage.originalMessage);
-        console.log(`[Antidelete:${this.botInstance.id}] Had media: ${revokedHadMedia}`);
 
         if (revokedHadMedia) {
           const mediaPath = path.join(this.tempMediaDir, `${revokedMessageId}.media`);
-          console.log(`[Antidelete:${this.botInstance.id}] Checking for media file: ${mediaPath}`);
-          console.log(`[Antidelete:${this.botInstance.id}] Media file exists: ${fs.existsSync(mediaPath)}`);
           
           if (fs.existsSync(mediaPath)) {
             const mediaBuffer = fs.readFileSync(mediaPath);
             const mediaInfo = this.getDetailedMediaInfo(originalMessage.originalMessage);
-            console.log(`[Antidelete:${this.botInstance.id}] 📤 Forwarding media...`);
             await this.forwardStoredMedia(sock, mediaBuffer, mediaInfo, originalMessage);
             fs.unlinkSync(mediaPath);
-            console.log(`[Antidelete:${this.botInstance.id}] 🗑️ Media file deleted from temp`);
           }
         }
 
-        console.log(`[Antidelete:${this.botInstance.id}] 📤 Sending deletion alert...`);
         await this.sendDeletionAlertToBotOwner(sock, originalMessage, revokerJid, 'Message revocation', revokedHadMedia);
         
         this.messageStore.delete(revokedMessageId);
-        console.log(`[Antidelete:${this.botInstance.id}] ✅ Message removed from store`);
-      } else {
-        console.log(`[Antidelete:${this.botInstance.id}] ❌ Original message NOT found in store`);
-        console.log(`[Antidelete:${this.botInstance.id}] 📋 Messages currently in store:`);
-        let count = 0;
-        for (const [msgId, msg] of this.messageStore.entries()) {
-          if (count < 5) { // Log first 5 messages
-            console.log(`   - ${msgId}: ${msg.content.substring(0, 30)}...`);
-            count++;
-          }
-        }
       }
     } catch (error) {
-      console.error(`[Antidelete:${this.botInstance.id}] ❌ Error handling message revocation:`, error);
-      console.error(`[Antidelete:${this.botInstance.id}] Error details:`, {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack trace'
-      });
+      // Silent error handling - antidelete errors are non-critical
     }
   }
 
@@ -445,32 +409,23 @@ export class AntideleteService {
 
   private async forwardStoredMedia(sock: WASocket, mediaBuffer: Buffer, mediaInfo: any, originalMessage: StoredMessage): Promise<void> {
     try {
-      // Use bot owner from bot instance configuration
       let botOwnerPhone = this.botInstance.owner;
-      console.log(`[Antidelete:${this.botInstance.id}] 🔍 Bot owner phone from config: ${botOwnerPhone}`);
       
       if (!botOwnerPhone) {
-        console.error(`[Antidelete:${this.botInstance.id}] ❌ No owner configured for bot`);
         return;
       }
       
-      // Clean the phone number (remove any existing @s.whatsapp.net)
       botOwnerPhone = botOwnerPhone.replace('@s.whatsapp.net', '').replace('@c.us', '');
-      
-      // Format owner JID properly
       const botOwnerJid = `${botOwnerPhone}@s.whatsapp.net`;
-      console.log(`[Antidelete:${this.botInstance.id}] 📱 Formatted owner JID: ${botOwnerJid}`);
-      console.log(`[Antidelete:${this.botInstance.id}] 📤 Forwarding deleted ${mediaInfo.type} to owner (${Math.round(mediaBuffer.length / 1024)}KB)...`);
 
       const senderName = originalMessage.originalMessage?.pushName || 'Unknown';
       const senderJid = originalMessage.senderJid || 'Unknown';
       const sizeInKB = Math.round(mediaBuffer.length / 1024);
       const caption = `🚨 *DELETED MEDIA RECOVERED* 🚨\n\n🗑️ *Deleted by:* ${senderName}\n📞 *From:* ${senderJid}\n📎 *Type:* ${mediaInfo.type}\n💬 *Caption:* ${mediaInfo.caption || 'None'}\n📏 *Size:* ${sizeInKB}KB`;
 
-      let sendResult;
       switch (mediaInfo.type) {
         case 'image':
-          sendResult = await sock.sendMessage(botOwnerJid, {
+          await sock.sendMessage(botOwnerJid, {
             image: mediaBuffer,
             caption: caption,
             mimetype: mediaInfo.mimetype || 'image/jpeg'
@@ -478,7 +433,7 @@ export class AntideleteService {
           break;
 
         case 'video':
-          sendResult = await sock.sendMessage(botOwnerJid, {
+          await sock.sendMessage(botOwnerJid, {
             video: mediaBuffer,
             caption: caption,
             mimetype: mediaInfo.mimetype || 'video/mp4'
@@ -486,7 +441,7 @@ export class AntideleteService {
           break;
 
         case 'audio':
-          sendResult = await sock.sendMessage(botOwnerJid, {
+          await sock.sendMessage(botOwnerJid, {
             audio: mediaBuffer,
             mimetype: mediaInfo.mimetype || 'audio/mpeg'
           });
@@ -495,7 +450,7 @@ export class AntideleteService {
 
         case 'document':
           const fileName = `recovered_${originalMessage.id}.bin`;
-          sendResult = await sock.sendMessage(botOwnerJid, {
+          await sock.sendMessage(botOwnerJid, {
             document: mediaBuffer,
             fileName: fileName,
             mimetype: mediaInfo.mimetype || 'application/octet-stream',
@@ -504,42 +459,28 @@ export class AntideleteService {
           break;
 
         default:
-          sendResult = await sock.sendMessage(botOwnerJid, {
+          await sock.sendMessage(botOwnerJid, {
             document: mediaBuffer,
             fileName: `recovered_${originalMessage.id}.bin`,
             mimetype: 'application/octet-stream',
             caption: caption
           });
       }
-      
-      console.log(`[Antidelete:${this.botInstance.id}] ✅ Media forwarded successfully! Status: ${sendResult?.status || 'unknown'}`);
     } catch (error) {
-      console.error(`[Antidelete:${this.botInstance.id}] ❌ Error forwarding stored media:`, error);
-      console.error(`[Antidelete:${this.botInstance.id}] Error details:`, {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack trace'
-      });
+      // Silent error handling
     }
   }
 
   private async sendDeletionAlertToBotOwner(sock: WASocket, storedMessage: StoredMessage, revokerJid: string, reason: string, hadMedia: boolean): Promise<void> {
     try {
-      // Use bot owner from bot instance configuration
       let botOwnerPhone = this.botInstance.owner;
-      console.log(`[Antidelete:${this.botInstance.id}] 🔍 Bot owner phone from config: ${botOwnerPhone}`);
       
       if (!botOwnerPhone) {
-        console.error(`[Antidelete:${this.botInstance.id}] ❌ No owner configured for bot`);
         return;
       }
       
-      // Clean the phone number (remove any existing @s.whatsapp.net)
       botOwnerPhone = botOwnerPhone.replace('@s.whatsapp.net', '').replace('@c.us', '');
-      
-      // Format owner JID properly
       const botOwnerJid = `${botOwnerPhone}@s.whatsapp.net`;
-      console.log(`[Antidelete:${this.botInstance.id}] 📱 Formatted owner JID: ${botOwnerJid}`);
-      console.log(`[Antidelete:${this.botInstance.id}] 📤 Sending deletion alert to owner...`);
 
       const senderName = storedMessage.originalMessage?.pushName || 'Unknown';
       const senderJid = storedMessage.senderJid || 'Unknown';
@@ -559,24 +500,9 @@ export class AntideleteService {
         alertText += `📎 *Had Media:* Yes (forwarded above)`;
       }
 
-      console.log(`[Antidelete:${this.botInstance.id}] 📝 Alert text length: ${alertText.length} characters`);
-      
-      try {
-        const sendResult = await sock.sendMessage(botOwnerJid, { text: alertText });
-        console.log(`[Antidelete:${this.botInstance.id}] ✅ Deletion alert sent successfully!`);
-        console.log(`[Antidelete:${this.botInstance.id}] 📊 Send result:`, JSON.stringify(sendResult, null, 2));
-      } catch (sendError) {
-        console.error(`[Antidelete:${this.botInstance.id}] ❌ Failed to send message to ${botOwnerJid}`);
-        console.error(`[Antidelete:${this.botInstance.id}] Send error:`, sendError);
-        throw sendError;
-      }
+      await sock.sendMessage(botOwnerJid, { text: alertText });
     } catch (error) {
-      console.error(`[Antidelete:${this.botInstance.id}] ❌ Error sending deletion alert:`, error);
-      console.error(`[Antidelete:${this.botInstance.id}] Error details:`, {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack trace',
-        ownerConfig: this.botInstance.owner
-      });
+      // Silent error handling
     }
   }
 }
