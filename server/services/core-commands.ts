@@ -2363,15 +2363,15 @@ commandRegistry.register({
 });
 
 // Register .antidelete command
-commandRegistry.set('antidelete', {
+commandRegistry.register({
   name: 'antidelete',
+  aliases: ['ad', 'recoverdeleted'],
   description: 'Manage anti-delete settings - recovers deleted messages',
-  usage: '.antidelete [on|off|clear]',
-  category: 'privacy',
+  category: 'PRIVACY',
   ownerOnly: true,
   handler: async (context: CommandContext) => {
     const storage = await import('../storage.js');
-    const botInstance = await storage.storage.getBotInstance(context.botId);
+    const botInstance = await storage.storage.getBotInstance(context.botId || '');
 
     if (!botInstance) {
       await context.respond('❌ Bot instance not found');
