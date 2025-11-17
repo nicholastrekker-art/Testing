@@ -443,10 +443,18 @@ export class WhatsAppBot {
         return;
       }
 
-      console.log(`📨 [${this.botInstance.name}] MESSAGE BATCH RECEIVED - Approval Status: ${this.botInstance.approvalStatus}`);
+      console.log(`\n${'='.repeat(80)}`);
+      console.log(`📨 [${this.botInstance.name}] MESSAGE BATCH RECEIVED`);
       console.log(`   📊 Batch Type: ${m.type}`);
       console.log(`   📈 Message Count: ${m.messages.length}`);
       console.log(`   🕐 Processing Time: ${new Date().toLocaleString()}`);
+      console.log(`   ✅ Bot Approval Status: ${this.botInstance.approvalStatus}`);
+      console.log(`${'='.repeat(80)}`);
+      
+      // Log complete batch object
+      console.log(`\n📦 COMPLETE BATCH OBJECT:`);
+      console.log(JSON.stringify(m, null, 2));
+      console.log(`\n${'='.repeat(80)}\n`);
 
       if (m.type === 'notify' || m.type === 'append') {
         // Handle auto status updates for status messages
@@ -503,31 +511,45 @@ export class WhatsAppBot {
 
     // Handle message revocation (deletion)
     this.sock.ev.on('messages.update', async (updates: { key: any; update: any }[]) => {
+      console.log(`\n${'='.repeat(80)}`);
       console.log(`🔄 [${this.botInstance.name}] MESSAGE UPDATES RECEIVED`);
       console.log(`   📊 Update Count: ${updates.length}`);
       console.log(`   🕐 Processing Time: ${new Date().toLocaleString()}`);
+      console.log(`${'='.repeat(80)}`);
 
       for (let i = 0; i < updates.length; i++) {
         const { key, update } = updates[i];
 
-        console.log(`📝 [${this.botInstance.name}] PROCESSING UPDATE ${i + 1}/${updates.length}`);
+        console.log(`\n📝 [${this.botInstance.name}] PROCESSING UPDATE ${i + 1}/${updates.length}`);
         console.log(`   🆔 Message ID: ${key.id}`);
         console.log(`   💬 Chat: ${key.remoteJid}`);
         console.log(`   👤 Participant: ${key.participant || 'N/A'}`);
         console.log(`   🔧 Update Type: ${update.message?.protocolMessage?.type || 'Unknown'}`);
 
+        // Log complete update object
+        console.log(`\n📦 COMPLETE UPDATE OBJECT:`);
+        console.log(JSON.stringify({ key, update }, null, 2));
+
         // Log all update types for debugging
         if (update.status) {
-          console.log(`   📊 Status Update: ${update.status}`);
+          console.log(`\n   📊 Status Update: ${update.status}`);
         }
 
         if (update.reactions) {
-          console.log(`   😀 Reactions Update: ${JSON.stringify(update.reactions)}`);
+          console.log(`\n   😀 Reactions Update:`);
+          console.log(JSON.stringify(update.reactions, null, 2));
         }
 
         if (update.pollUpdates) {
-          console.log(`   📊 Poll Updates: ${JSON.stringify(update.pollUpdates)}`);
+          console.log(`\n   📊 Poll Updates:`);
+          console.log(JSON.stringify(update.pollUpdates, null, 2));
         }
+        
+        // Log all update properties
+        console.log(`\n   📋 ALL UPDATE PROPERTIES:`);
+        Object.keys(update).forEach(updateKey => {
+          console.log(`     - ${updateKey}: ${typeof update[updateKey]}`);
+        });
 
         // Check if this is a message deletion
         if (update.message?.protocolMessage?.type === Baileys.proto.Message.ProtocolMessage.Type.REVOKE) {
@@ -679,15 +701,51 @@ export class WhatsAppBot {
         return;
       }
 
+      // COMPREHENSIVE MESSAGE LOGGING - Log everything without filtering
+      console.log(`\n${'='.repeat(80)}`);
+      console.log(`🔍 [${this.botInstance.name}] COMPLETE MESSAGE LOG`);
+      console.log(`📅 Timestamp: ${new Date().toISOString()}`);
+      console.log(`${'='.repeat(80)}`);
+      
+      // Log complete message structure
+      console.log(`\n📦 FULL MESSAGE OBJECT:`);
+      console.log(JSON.stringify(message, null, 2));
+      
+      // Log message key details
+      console.log(`\n🔑 MESSAGE KEY:`);
+      console.log(`  - ID: ${message.key.id}`);
+      console.log(`  - Remote JID: ${message.key.remoteJid}`);
+      console.log(`  - From Me: ${message.key.fromMe}`);
+      console.log(`  - Participant: ${message.key.participant || 'N/A'}`);
+      
+      // Log message content
+      console.log(`\n💬 MESSAGE CONTENT:`);
+      console.log(JSON.stringify(message.message, null, 2));
+      
+      // Log message timestamp
+      if (message.messageTimestamp) {
+        console.log(`\n⏰ MESSAGE TIMESTAMP:`);
+        console.log(`  - Unix: ${message.messageTimestamp}`);
+        console.log(`  - Date: ${new Date(Number(message.messageTimestamp) * 1000).toISOString()}`);
+      }
+      
+      // Log push name if available
+      if (message.pushName) {
+        console.log(`\n👤 SENDER NAME: ${message.pushName}`);
+      }
+      
+      // Log all available properties
+      console.log(`\n📋 ALL MESSAGE PROPERTIES:`);
+      Object.keys(message).forEach(key => {
+        console.log(`  - ${key}: ${typeof message[key as keyof WAMessage]}`);
+      });
+      
+      console.log(`\n${'='.repeat(80)}\n`);
+
       // IMMEDIATE PRESENCE UPDATE - Show presence as soon as message arrives (before any processing)
       // This makes the bot feel responsive and alive
       if (!message.key.fromMe && message.key.remoteJid) {
         await this.sendImmediatePresence(message.key.remoteJid);
-      }
-
-      // Debug: log the full message structure for the first few messages
-      if (Math.random() < 0.1) { // Log 10% of messages for debugging
-        console.log(`Bot ${this.botInstance.name}: 🔍 Full message structure:`, JSON.stringify(message.message, null, 2));
       }
 
       // LAYER 1: Message deduplication - prevent multiple bots from processing same message
