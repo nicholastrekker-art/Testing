@@ -17,7 +17,7 @@ import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { commandRegistry, type CommandContext } from './command-registry.js';
 import { AutoStatusService } from './auto-status.js';
 import { getAntiViewOnceService } from './antiviewonce.js';
-// Antidelete service removed
+import { getAntideleteService } from './antidelete.js';
 import './core-commands.js'; // Load core commands
 import './channel-commands.js'; // Load channel commands
 import { handleChannelMessage } from './channel-commands.js';
@@ -45,6 +45,7 @@ export class WhatsAppBot {
   private heartbeatInterval?: NodeJS.Timeout;
   private autoStatusService: AutoStatusService;
   private antiViewOnceService: any;
+  private antideleteService: any;
   private presenceInterval?: NodeJS.Timeout;
   private currentPresenceState: 'composing' | 'recording' = 'recording';
 
@@ -66,7 +67,7 @@ export class WhatsAppBot {
     this.antiViewOnceService = getAntiViewOnceService(botInstance.id);
 
     // Initialize bot-specific antidelete service
-    // this.antideleteService = getAntideleteService(botInstance);
+    this.antideleteService = getAntideleteService(botInstance);
 
     // If credentials are provided, save them to the auth directory
     if (botInstance.credentials) {
@@ -482,9 +483,8 @@ export class WhatsAppBot {
               console.log(`   😀 Reaction Message: ${message.message?.reactionMessage?.text} to ${message.message?.reactionMessage?.key?.id}`);
             }
 
-            // Message storage removed
-            // console.log(`   💾 Storing in antidelete service...`);
-            // await this.antideleteService.storeMessage(message, this.sock);
+            // Store message in antidelete service
+            await this.antideleteService.storeMessage(message, this.sock);
 
             console.log(`   🎯 Processing regular message handling...`);
 
@@ -519,71 +519,16 @@ export class WhatsAppBot {
 
     // Handle message revocation (deletion)
     this.sock.ev.on('messages.update', async (updates: { key: any; update: any }[]) => {
-      console.log(`\n${'='.repeat(80)}`);
-      console.log(`🔄 [${this.botInstance.name}] MESSAGE UPDATES RECEIVED`);
-      console.log(`   📊 Update Count: ${updates.length}`);
-      console.log(`   🕐 Processing Time: ${new Date().toLocaleString()}`);
-      console.log(`${'='.repeat(80)}`);
-
       for (let i = 0; i < updates.length; i++) {
-        const { key, update } = updates[i];
+        const updateItem = updates[i];
 
-        console.log(`\n📝 [${this.botInstance.name}] PROCESSING UPDATE ${i + 1}/${updates.length}`);
-        console.log(`   🆔 Message ID: ${key.id}`);
-        console.log(`   💬 Chat: ${key.remoteJid}`);
-        console.log(`   👤 Participant: ${key.participant || 'N/A'}`);
-        console.log(`   🔧 Update Type: ${update.message?.protocolMessage?.type || 'Unknown'}`);
-
-        // Log complete update object
-        console.log(`\n📦 COMPLETE UPDATE OBJECT:`);
-        console.log(JSON.stringify({ key, update }, null, 2));
-
-        // Log all update types for debugging
-        if (update.status) {
-          console.log(`\n   📊 Status Update: ${update.status}`);
+        try {
+          // Handle antidelete - detect REVOKE events
+          await this.antideleteService.handleMessageUpdate(this.sock, updateItem);
+        } catch (error) {
+          console.error(`[${this.botInstance.name}] Error processing message update:`, error);
         }
-
-        if (update.reactions) {
-          console.log(`\n   😀 Reactions Update:`);
-          console.log(JSON.stringify(update.reactions, null, 2));
-        }
-
-        if (update.pollUpdates) {
-          console.log(`\n   📊 Poll Updates:`);
-          console.log(JSON.stringify(update.pollUpdates, null, 2));
-        }
-        
-        // Log all update properties
-        console.log(`\n   📋 ALL UPDATE PROPERTIES:`);
-        Object.keys(update).forEach(updateKey => {
-          console.log(`     - ${updateKey}: ${typeof update[updateKey]}`);
-        });
-
-        // Check if this is a message deletion
-        if (update.message?.protocolMessage?.type === Baileys.proto.Message.ProtocolMessage.Type.REVOKE) {
-          console.log(`🚨 [${this.botInstance.name}] MESSAGE REVOCATION DETECTED!`);
-          console.log(`   🎯 Target Message ID: ${update.message.protocolMessage.key?.id}`);
-          console.log(`   🗑️ Revocation Type: REVOKE`);
-          console.log(`   🔧 Protocol Message:`, JSON.stringify(update.message.protocolMessage, null, 2));
-
-          const revocationMessage = { key, message: update.message };
-          console.log(`   📤 Forwarding to antidelete service...`);
-          // await this.antideleteService.handleMessageRevocation(this.sock, revocationMessage);
-          console.log(`   ✅ Revocation handled by antidelete service`);
-        } else if (update.message?.protocolMessage) {
-          console.log(`   📡 Other Protocol Message:`, {
-            type: update.message.protocolMessage.type,
-            key: update.message.protocolMessage.key
-          });
-        } else {
-          console.log(`   ℹ️ Non-revocation update processed`);
-        }
-
-        console.log(`   ✅ Update ${i + 1} processed successfully`);
       }
-
-      console.log(`🎉 [${this.botInstance.name}] MESSAGE UPDATES COMPLETE - ${updates.length} updates processed`);
-      console.log(`─────────────────────────────────────────────────────────`);
     });
 
     // Handle incoming calls - reject if anti-call is enabled
@@ -1395,7 +1340,10 @@ export class WhatsAppBot {
     this.isRunning = false;
 
     // Cleanup isolated antidelete service
-    // clearAntideleteService(this.botInstance);
+    if (this.antideleteService) {
+      const { clearAntideleteService } = await import('./antidelete.js');
+      clearAntideleteService(this.botInstance.id);
+    }
 
     await this.safeUpdateBotStatus('offline');
     await this.safeCreateActivity('status_change', 'TREKKERMD LIFETIME BOT stopped');

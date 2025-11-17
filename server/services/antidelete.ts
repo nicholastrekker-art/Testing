@@ -1,52 +1,34 @@
-
-import { WASocket, proto, downloadMediaMessage } from '@whiskeysockets/baileys';
+import { WASocket, WAMessage, proto, downloadMediaMessage } from '@whiskeysockets/baileys';
 import { writeFileSync, readFileSync, existsSync, mkdirSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import type { BotInstance } from '@shared/schema';
 
-interface DeletedMessage {
+interface StoredMessage {
   messageId: string;
   chatId: string;
   sender: string;
   timestamp: number;
-  messageType: string;
+  messageContent: any; // Store complete message content
   text?: string;
   caption?: string;
-  mediaPath?: string;
+  mediaBuffer?: Buffer; // Store media as buffer
   mediaType?: string;
-  // Enhanced fields for complete recovery
-  fullMessage?: any; // Complete message object for reference
-  mediaInfo?: {
-    url?: string;
-    directPath?: string;
-    mimetype?: string;
-    fileLength?: number;
-    fileSha256?: string;
-    fileEncSha256?: string;
-    mediaKey?: string;
-    width?: number;
-    height?: number;
-    seconds?: number;
-    fileName?: string;
-  };
-  downloadAttempts?: number;
-  downloadError?: string;
 }
 
-class AntideleteService {
+export class AntideleteService {
   private botId: string;
   private storageDir: string;
   private messagesFile: string;
   private mediaDir: string;
-  private deletedMessages: Map<string, DeletedMessage> = new Map();
+  private storedMessages: Map<string, StoredMessage> = new Map();
   private enabled: boolean = true;
 
   constructor(botInstance: BotInstance) {
     this.botId = botInstance.id;
-    
+
     // Use server name from bot instance settings
     const serverName = (botInstance.settings as any)?.serverName || 'SERVER0';
-    
+
     // Create bot-specific directory under server folder
     this.storageDir = join(process.cwd(), 'server', 'data', 'antidelete', serverName, `bot_${this.botId}`);
     this.mediaDir = join(this.storageDir, 'media');
@@ -68,19 +50,39 @@ class AntideleteService {
       if (existsSync(this.messagesFile)) {
         const data = readFileSync(this.messagesFile, 'utf-8');
         const messages = JSON.parse(data);
-        this.deletedMessages = new Map(Object.entries(messages));
+        // Ensure correct type for storedMessages
+        this.storedMessages = new Map<string, StoredMessage>();
+        for (const key in messages) {
+            if (Object.prototype.hasOwnProperty.call(messages, key)) {
+                const msg = messages[key];
+                // Reconstruct buffer if it was saved as string
+                if (msg.mediaBuffer && typeof msg.mediaBuffer === 'string') {
+                    msg.mediaBuffer = Buffer.from(msg.mediaBuffer, 'base64');
+                }
+                this.storedMessages.set(key, msg);
+            }
+        }
       }
     } catch (error) {
-      console.error(`[Antidelete] Error loading messages for bot ${this.botId}:`, error);
+      console.error(`[Antidelete-${this.botId}] Error loading messages:`, error);
     }
   }
 
   private saveMessages() {
     try {
-      const messagesObj = Object.fromEntries(this.deletedMessages);
+      // Serialize buffer to base64 string for JSON compatibility
+      const messagesObj = Object.fromEntries(this.storedMessages);
+      for (const key in messagesObj) {
+          if (Object.prototype.hasOwnProperty.call(messagesObj, key)) {
+              const msg = messagesObj[key];
+              if (msg.mediaBuffer && Buffer.isBuffer(msg.mediaBuffer)) {
+                  msg.mediaBuffer = msg.mediaBuffer.toString('base64');
+              }
+          }
+      }
       writeFileSync(this.messagesFile, JSON.stringify(messagesObj, null, 2));
     } catch (error) {
-      console.error(`[Antidelete] Error saving messages for bot ${this.botId}:`, error);
+      console.error(`[Antidelete-${this.botId}] Error saving messages:`, error);
     }
   }
 
@@ -92,7 +94,7 @@ class AntideleteService {
     return this.enabled;
   }
 
-  async storeMessage(message: proto.IWebMessageInfo, client: WASocket) {
+  async storeMessage(message: WAMessage, client: WASocket) {
     if (!this.enabled) return;
 
     try {
@@ -103,333 +105,203 @@ class AntideleteService {
       const sender = message.key.participant || message.key.remoteJid || '';
       const timestamp = message.messageTimestamp ? Number(message.messageTimestamp) : Date.now();
 
-      console.log(`\n📥 [Antidelete] Storing Message`);
-      console.log(`   🆔 ID: ${messageId}`);
-      console.log(`   💬 Chat: ${chatId}`);
-      console.log(`   👤 Sender: ${sender}`);
-      console.log(`   🕐 Timestamp: ${new Date(timestamp).toLocaleString()}`);
-
-      let messageType = 'text';
       let text = '';
       let caption = '';
-      let mediaPath = '';
-      let mediaType = '';
-      let mediaInfo: any = {};
-      let downloadError = '';
+      let mediaBuffer: Buffer | undefined;
+      let mediaType: string | undefined;
 
-      // Extract message content
       const messageContent = message.message;
-      if (!messageContent) {
-        console.log(`   ⚠️ No message content found`);
-        return;
+      if (!messageContent) return;
+
+      // Extract text
+      if (messageContent.conversation) {
+        text = messageContent.conversation;
+      } else if (messageContent.extendedTextMessage?.text) {
+        text = messageContent.extendedTextMessage.text;
       }
 
-      console.log(`   📦 Message keys: ${Object.keys(messageContent).join(', ')}`);
-      console.log(`   📋 Full message structure:`, JSON.stringify(message, null, 2));
-
-      // Text message
-      if (messageContent.conversation) {
-        messageType = 'text';
-        text = messageContent.conversation;
-        console.log(`   📝 Type: Conversation`);
-        console.log(`   💬 Text: ${text.substring(0, 100)}${text.length > 100 ? '...' : ''}`);
-      } else if (messageContent.extendedTextMessage?.text) {
-        messageType = 'text';
-        text = messageContent.extendedTextMessage.text;
-        console.log(`   📝 Type: Extended Text`);
-        console.log(`   💬 Text: ${text.substring(0, 100)}${text.length > 100 ? '...' : ''}`);
-        if (messageContent.extendedTextMessage.contextInfo) {
-          console.log(`   🔗 Has context info (quoted message, etc.)`);
+      // Extract caption and download media
+      if (messageContent.imageMessage) {
+        caption = messageContent.imageMessage.caption || '';
+        mediaType = 'image';
+        try {
+          const buffer = await downloadMediaMessage(message, 'buffer', {}, { reuploadRequest: client.updateMediaMessage });
+          mediaBuffer = buffer as Buffer;
+        } catch (e) {
+          console.error(`[Antidelete-${this.botId}] Error downloading image media:`, e);
+        }
+      } else if (messageContent.videoMessage) {
+        caption = messageContent.videoMessage.caption || '';
+        mediaType = 'video';
+        try {
+          const buffer = await downloadMediaMessage(message, 'buffer', {}, { reuploadRequest: client.updateMediaMessage });
+          mediaBuffer = buffer as Buffer;
+        } catch (e) {
+          console.error(`[Antidelete-${this.botId}] Error downloading video media:`, e);
+        }
+      } else if (messageContent.audioMessage) {
+        mediaType = 'audio';
+        try {
+          const buffer = await downloadMediaMessage(message, 'buffer', {}, { reuploadRequest: client.updateMediaMessage });
+          mediaBuffer = buffer as Buffer;
+        } catch (e) {
+          console.error(`[Antidelete-${this.botId}] Error downloading audio media:`, e);
+        }
+      } else if (messageContent.documentMessage) {
+        caption = messageContent.documentMessage.caption || '';
+        mediaType = 'document';
+        try {
+          const buffer = await downloadMediaMessage(message, 'buffer', {}, { reuploadRequest: client.updateMediaMessage });
+          mediaBuffer = buffer as Buffer;
+        } catch (e) {
+          console.error(`[Antidelete-${this.botId}] Error downloading document media:`, e);
+        }
+      } else if (messageContent.stickerMessage) {
+        mediaType = 'sticker';
+        try {
+          const buffer = await downloadMediaMessage(message, 'buffer', {}, { reuploadRequest: client.updateMediaMessage });
+          mediaBuffer = buffer as Buffer;
+        } catch (e) {
+          console.error(`[Antidelete-${this.botId}] Error downloading sticker media:`, e);
         }
       }
 
-      // Image
-      else if (messageContent.imageMessage) {
-        messageType = 'image';
-        caption = messageContent.imageMessage.caption || '';
-        mediaType = 'image';
-        mediaInfo = {
-          url: messageContent.imageMessage.url,
-          directPath: messageContent.imageMessage.directPath,
-          mimetype: messageContent.imageMessage.mimetype,
-          fileLength: messageContent.imageMessage.fileLength,
-          fileSha256: messageContent.imageMessage.fileSha256 ? Buffer.from(messageContent.imageMessage.fileSha256).toString('base64') : undefined,
-          fileEncSha256: messageContent.imageMessage.fileEncSha256 ? Buffer.from(messageContent.imageMessage.fileEncSha256).toString('base64') : undefined,
-          mediaKey: messageContent.imageMessage.mediaKey ? Buffer.from(messageContent.imageMessage.mediaKey).toString('base64') : undefined,
-          width: messageContent.imageMessage.width,
-          height: messageContent.imageMessage.height
-        };
-        console.log(`   🖼️ Type: Image`);
-        console.log(`   📏 Size: ${messageContent.imageMessage.width}x${messageContent.imageMessage.height}`);
-        console.log(`   📦 File size: ${messageContent.imageMessage.fileLength} bytes`);
-        console.log(`   🔗 URL: ${messageContent.imageMessage.url || 'N/A'}`);
-        console.log(`   🛣️ Direct Path: ${messageContent.imageMessage.directPath || 'N/A'}`);
-        console.log(`   🎭 Mimetype: ${messageContent.imageMessage.mimetype || 'N/A'}`);
-        console.log(`   🔑 Media Key: ${mediaInfo.mediaKey ? 'Present' : 'Missing'}`);
-        console.log(`   🔐 SHA256: ${mediaInfo.fileSha256 ? 'Present' : 'Missing'}`);
-        if (caption) console.log(`   💬 Caption: ${caption.substring(0, 100)}${caption.length > 100 ? '...' : ''}`);
-        const downloadResult = await this.downloadMedia(message, client, messageId, 'image');
-        mediaPath = downloadResult.path;
-        downloadError = downloadResult.error;
-      }
-
-      // Video
-      else if (messageContent.videoMessage) {
-        messageType = 'video';
-        caption = messageContent.videoMessage.caption || '';
-        mediaType = 'video';
-        mediaInfo = {
-          url: messageContent.videoMessage.url,
-          directPath: messageContent.videoMessage.directPath,
-          mimetype: messageContent.videoMessage.mimetype,
-          fileLength: messageContent.videoMessage.fileLength,
-          fileSha256: messageContent.videoMessage.fileSha256 ? Buffer.from(messageContent.videoMessage.fileSha256).toString('base64') : undefined,
-          fileEncSha256: messageContent.videoMessage.fileEncSha256 ? Buffer.from(messageContent.videoMessage.fileEncSha256).toString('base64') : undefined,
-          mediaKey: messageContent.videoMessage.mediaKey ? Buffer.from(messageContent.videoMessage.mediaKey).toString('base64') : undefined,
-          width: messageContent.videoMessage.width,
-          height: messageContent.videoMessage.height,
-          seconds: messageContent.videoMessage.seconds
-        };
-        console.log(`   🎥 Type: Video`);
-        console.log(`   📏 Size: ${messageContent.videoMessage.width}x${messageContent.videoMessage.height}`);
-        console.log(`   ⏱️ Duration: ${messageContent.videoMessage.seconds || 'N/A'} seconds`);
-        console.log(`   📦 File size: ${messageContent.videoMessage.fileLength} bytes`);
-        console.log(`   🔗 URL: ${messageContent.videoMessage.url || 'N/A'}`);
-        console.log(`   🛣️ Direct Path: ${messageContent.videoMessage.directPath || 'N/A'}`);
-        console.log(`   🎭 Mimetype: ${messageContent.videoMessage.mimetype || 'N/A'}`);
-        console.log(`   🔑 Media Key: ${mediaInfo.mediaKey ? 'Present' : 'Missing'}`);
-        if (caption) console.log(`   💬 Caption: ${caption.substring(0, 100)}${caption.length > 100 ? '...' : ''}`);
-        const downloadResult = await this.downloadMedia(message, client, messageId, 'video');
-        mediaPath = downloadResult.path;
-        downloadError = downloadResult.error;
-      }
-
-      // Audio
-      else if (messageContent.audioMessage) {
-        messageType = 'audio';
-        mediaType = 'audio';
-        mediaInfo = {
-          url: messageContent.audioMessage.url,
-          directPath: messageContent.audioMessage.directPath,
-          mimetype: messageContent.audioMessage.mimetype,
-          fileLength: messageContent.audioMessage.fileLength,
-          fileSha256: messageContent.audioMessage.fileSha256 ? Buffer.from(messageContent.audioMessage.fileSha256).toString('base64') : undefined,
-          fileEncSha256: messageContent.audioMessage.fileEncSha256 ? Buffer.from(messageContent.audioMessage.fileEncSha256).toString('base64') : undefined,
-          mediaKey: messageContent.audioMessage.mediaKey ? Buffer.from(messageContent.audioMessage.mediaKey).toString('base64') : undefined,
-          seconds: messageContent.audioMessage.seconds
-        };
-        console.log(`   🎵 Type: Audio`);
-        console.log(`   ⏱️ Duration: ${messageContent.audioMessage.seconds || 'N/A'} seconds`);
-        console.log(`   📦 File size: ${messageContent.audioMessage.fileLength} bytes`);
-        console.log(`   🔗 URL: ${messageContent.audioMessage.url || 'N/A'}`);
-        console.log(`   🛣️ Direct Path: ${messageContent.audioMessage.directPath || 'N/A'}`);
-        console.log(`   🎭 Mimetype: ${messageContent.audioMessage.mimetype || 'N/A'}`);
-        console.log(`   🎤 Is Voice: ${messageContent.audioMessage.ptt ? 'Yes' : 'No'}`);
-        const downloadResult = await this.downloadMedia(message, client, messageId, 'audio');
-        mediaPath = downloadResult.path;
-        downloadError = downloadResult.error;
-      }
-
-      // Document
-      else if (messageContent.documentMessage) {
-        messageType = 'document';
-        caption = messageContent.documentMessage.caption || '';
-        mediaType = 'document';
-        mediaInfo = {
-          url: messageContent.documentMessage.url,
-          directPath: messageContent.documentMessage.directPath,
-          mimetype: messageContent.documentMessage.mimetype,
-          fileLength: messageContent.documentMessage.fileLength,
-          fileSha256: messageContent.documentMessage.fileSha256 ? Buffer.from(messageContent.documentMessage.fileSha256).toString('base64') : undefined,
-          fileEncSha256: messageContent.documentMessage.fileEncSha256 ? Buffer.from(messageContent.documentMessage.fileEncSha256).toString('base64') : undefined,
-          mediaKey: messageContent.documentMessage.mediaKey ? Buffer.from(messageContent.documentMessage.mediaKey).toString('base64') : undefined,
-          fileName: messageContent.documentMessage.fileName
-        };
-        console.log(`   📄 Type: Document`);
-        console.log(`   📝 Filename: ${messageContent.documentMessage.fileName || 'N/A'}`);
-        console.log(`   📦 File size: ${messageContent.documentMessage.fileLength} bytes`);
-        console.log(`   🔗 URL: ${messageContent.documentMessage.url || 'N/A'}`);
-        console.log(`   🛣️ Direct Path: ${messageContent.documentMessage.directPath || 'N/A'}`);
-        console.log(`   🎭 Mimetype: ${messageContent.documentMessage.mimetype || 'N/A'}`);
-        if (caption) console.log(`   💬 Caption: ${caption.substring(0, 100)}${caption.length > 100 ? '...' : ''}`);
-        const downloadResult = await this.downloadMedia(message, client, messageId, 'document');
-        mediaPath = downloadResult.path;
-        downloadError = downloadResult.error;
-      }
-
-      // Sticker
-      else if (messageContent.stickerMessage) {
-        messageType = 'sticker';
-        mediaType = 'sticker';
-        mediaInfo = {
-          url: messageContent.stickerMessage.url,
-          directPath: messageContent.stickerMessage.directPath,
-          mimetype: messageContent.stickerMessage.mimetype,
-          fileLength: messageContent.stickerMessage.fileLength,
-          fileSha256: messageContent.stickerMessage.fileSha256 ? Buffer.from(messageContent.stickerMessage.fileSha256).toString('base64') : undefined,
-          fileEncSha256: messageContent.stickerMessage.fileEncSha256 ? Buffer.from(messageContent.stickerMessage.fileEncSha256).toString('base64') : undefined,
-          mediaKey: messageContent.stickerMessage.mediaKey ? Buffer.from(messageContent.stickerMessage.mediaKey).toString('base64') : undefined,
-          width: messageContent.stickerMessage.width,
-          height: messageContent.stickerMessage.height
-        };
-        console.log(`   🎨 Type: Sticker`);
-        console.log(`   📏 Size: ${messageContent.stickerMessage.width}x${messageContent.stickerMessage.height}`);
-        console.log(`   📦 File size: ${messageContent.stickerMessage.fileLength} bytes`);
-        console.log(`   🔗 URL: ${messageContent.stickerMessage.url || 'N/A'}`);
-        console.log(`   🛣️ Direct Path: ${messageContent.stickerMessage.directPath || 'N/A'}`);
-        console.log(`   🎭 Mimetype: ${messageContent.stickerMessage.mimetype || 'N/A'}`);
-        console.log(`   🎭 Animated: ${messageContent.stickerMessage.isAnimated ? 'Yes' : 'No'}`);
-        const downloadResult = await this.downloadMedia(message, client, messageId, 'sticker');
-        mediaPath = downloadResult.path;
-        downloadError = downloadResult.error;
-      }
-
-      const deletedMessage: DeletedMessage = {
+      const storedMessage: StoredMessage = {
         messageId,
         chatId,
         sender,
         timestamp,
-        messageType,
+        messageContent, // Store the entire message content object
         text,
         caption,
-        mediaPath,
-        mediaType,
-        fullMessage: message, // Store complete message for debugging
-        mediaInfo,
-        downloadAttempts: downloadError ? 1 : 0,
-        downloadError
+        mediaBuffer,
+        mediaType
       };
 
-      this.deletedMessages.set(messageId, deletedMessage);
+      this.storedMessages.set(messageId, storedMessage);
       this.saveMessages();
       
-      console.log(`   ✅ Message stored successfully`);
-      console.log(`   💾 Total stored messages: ${this.deletedMessages.size}`);
-      if (mediaPath) {
-        console.log(`   📂 Media saved to: ${mediaPath}`);
-      }
-      if (downloadError) {
-        console.log(`   ⚠️ Download error: ${downloadError}`);
-      }
-      console.log(`─────────────────────────────────────────────────────────\n`);
+      console.log(`[Antidelete-${this.botId}] Stored message ${messageId}`);
 
     } catch (error) {
-      console.error(`❌ [Antidelete] Error storing message:`, error);
-      console.log(`─────────────────────────────────────────────────────────\n`);
+      console.error(`[Antidelete-${this.botId}] Error storing message:`, error);
     }
   }
 
-  private async downloadMedia(message: proto.IWebMessageInfo, client: WASocket, messageId: string, mediaType: string): Promise<{ path: string; error: string }> {
-    try {
-      console.log(`   ⬇️ Downloading ${mediaType} media...`);
-      console.log(`   📋 Download parameters:`, {
-        messageId,
-        mediaType,
-        hasMessage: !!message.message,
-        messageKeys: message.message ? Object.keys(message.message) : []
-      });
-      
-      const buffer = await downloadMediaMessage(
-        message, 
-        'buffer', 
-        {},
-        {
-          reuploadRequest: client.updateMediaMessage
-        }
-      );
-      
-      const filename = `${messageId}.media`;
-      const filepath = join(this.mediaDir, filename);
-      writeFileSync(filepath, buffer as Buffer);
-      
-      console.log(`   ✅ Media downloaded successfully`);
-      console.log(`   📊 Download stats:`, {
-        size: (buffer as Buffer).length,
-        filename,
-        filepath,
-        mediaType
-      });
-      
-      return { path: filepath, error: '' };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error(`   ❌ [Antidelete] Media download failed:`, {
-        error: errorMessage,
-        messageId,
-        mediaType,
-        stack: error instanceof Error ? error.stack : undefined
-      });
-      return { path: '', error: errorMessage };
-    }
-  }
-
-  async handleDeletedMessage(messageId: string, client: WASocket, chatId: string) {
+  async handleMessageUpdate(sock: WASocket, update: proto.IWebMessageInfo) {
     if (!this.enabled) return;
 
-    const deletedMsg = this.deletedMessages.get(messageId);
-    if (!deletedMsg) {
-      return;
-    }
-
     try {
-      let recoveryText = `🔴 *Message Deleted*\n\n`;
-      recoveryText += `👤 *Sender:* @${deletedMsg.sender.split('@')[0]}\n`;
-      recoveryText += `📅 *Time:* ${new Date(deletedMsg.timestamp).toLocaleString()}\n`;
-      recoveryText += `💬 *Type:* ${deletedMsg.messageType}\n\n`;
+      // Check if this is a REVOKE (delete) event
+      // The structure for a revoked message in `update` is a bit different.
+      // We need to find the protocolMessage within the update.
+      // The `update` itself is often the message, but for deletes, it might be nested.
+      // Let's assume `update` is the WAMessage containing the protocolMessage.
+      
+      const messageUpdate = update.update; // This is often where the actual update payload is.
+      
+      // Check if it's actually a delete event
+      if (messageUpdate?.message?.protocolMessage?.type === proto.ProtocolMessage.ProtocolMessageType.REVOKE) {
+        const deletedMessageId = messageUpdate.message.protocolMessage.key?.id;
+        
+        if (!deletedMessageId) {
+            console.log(`[Antidelete-${this.botId}] REVOKE message found but no deleted message ID.`);
+            return;
+        }
 
-      if (deletedMsg.text) {
-        recoveryText += `📝 *Message:*\n${deletedMsg.text}`;
-      } else if (deletedMsg.caption) {
-        recoveryText += `📝 *Caption:*\n${deletedMsg.caption}`;
+        console.log(`[Antidelete-${this.botId}] Detected deleted message ID: ${deletedMessageId}`);
+
+        // Retrieve the stored message
+        const storedMsg = this.storedMessages.get(deletedMessageId);
+
+        if (!storedMsg) {
+          console.log(`[Antidelete-${this.botId}] Stored message not found for ID: ${deletedMessageId}`);
+          return;
+        }
+
+        // Send recovery notification to bot owner
+        await this.sendRecoveryMessage(sock, storedMsg, update.key.remoteJid);
+      }
+    } catch (error) {
+      console.error(`[Antidelete-${this.botId}] Error handling message update:`, error);
+    }
+  }
+
+  private async sendRecoveryMessage(sock: WASocket, storedMsg: StoredMessage, chatId: string) {
+    try {
+      const botOwnerJid = sock.user?.id;
+      if (!botOwnerJid) {
+        console.error(`[Antidelete-${this.botId}] Bot owner JID not found.`);
+        return;
       }
 
-      // Send text info
-      await client.sendMessage(chatId, {
+      const senderNumber = storedMsg.sender.split('@')[0];
+
+      let recoveryText = `🔴 *Message Deleted - TREKKER-MD Recovery* 🔴\n\n`;
+      recoveryText += `👤 *Sender:* @${senderNumber}\n`;
+      recoveryText += `💬 *Chat:* ${storedMsg.chatId}\n`;
+      recoveryText += `📅 *Time:* ${new Date(storedMsg.timestamp).toLocaleString()}\n`;
+      recoveryText += `🆔 *Message ID:* ${storedMsg.messageId}\n\n`;
+
+      if (storedMsg.text) {
+        recoveryText += `📝 *Message Text:*\n${storedMsg.text}\n\n`;
+      }
+
+      if (storedMsg.caption) {
+        recoveryText += `📝 *Caption:*\n${storedMsg.caption}\n\n`;
+      }
+
+      // Send text notification first
+      await sock.sendMessage(botOwnerJid, {
         text: recoveryText,
-        mentions: [deletedMsg.sender]
+        mentions: [storedMsg.sender]
       });
 
-      // Send media if exists
-      if (deletedMsg.mediaPath && existsSync(deletedMsg.mediaPath)) {
-        const buffer = readFileSync(deletedMsg.mediaPath);
+      // Send media if available
+      if (storedMsg.mediaBuffer && storedMsg.mediaType) {
+        const caption = `🔴 Recovered ${storedMsg.mediaType} from deleted message`;
 
-        if (deletedMsg.mediaType === 'image') {
-          await client.sendMessage(chatId, {
-            image: buffer,
-            caption: '📸 Recovered Image'
-          });
-        } else if (deletedMsg.mediaType === 'video') {
-          await client.sendMessage(chatId, {
-            video: buffer,
-            caption: '🎥 Recovered Video'
-          });
-        } else if (deletedMsg.mediaType === 'audio') {
-          await client.sendMessage(chatId, {
-            audio: buffer,
-            mimetype: 'audio/mp4'
-          });
-        } else if (deletedMsg.mediaType === 'sticker') {
-          await client.sendMessage(chatId, {
-            sticker: buffer
-          });
-        } else if (deletedMsg.mediaType === 'document') {
-          await client.sendMessage(chatId, {
-            document: buffer,
-            fileName: 'recovered_document'
-          });
+        switch (storedMsg.mediaType) {
+          case 'image':
+            await sock.sendMessage(botOwnerJid, {
+              image: storedMsg.mediaBuffer,
+              caption
+            });
+            break;
+          case 'video':
+            await sock.sendMessage(botOwnerJid, {
+              video: storedMsg.mediaBuffer,
+              caption
+            });
+            break;
+          case 'audio':
+            await sock.sendMessage(botOwnerJid, {
+              audio: storedMsg.mediaBuffer,
+              mimetype: 'audio/mp4' // Common mimetype for audio playback
+            });
+            break;
+          case 'sticker':
+            await sock.sendMessage(botOwnerJid, {
+              sticker: storedMsg.mediaBuffer
+            });
+            break;
+          case 'document':
+            await sock.sendMessage(botOwnerJid, {
+              document: storedMsg.mediaBuffer,
+              fileName: 'recovered_document' // Generic filename
+            });
+            break;
+          default:
+            console.warn(`[Antidelete-${this.botId}] Unsupported media type for recovery: ${storedMsg.mediaType}`);
         }
       }
 
     } catch (error) {
-      console.error(`[Antidelete] Error handling deleted message:`, error);
+      console.error(`[Antidelete-${this.botId}] Error sending recovery message:`, error);
     }
   }
 
-  getStoredMessage(messageId: string): DeletedMessage | undefined {
-    return this.deletedMessages.get(messageId);
-  }
-
-  async handleAntideleteCommand(client: WASocket, chatId: string, message: proto.IWebMessageInfo, command?: string) {
+  async handleAntideleteCommand(client: WASocket, chatId: string, message: WAMessage, command?: string) {
     try {
       const isOwner = message.key.fromMe;
 
@@ -442,7 +314,7 @@ class AntideleteService {
 
       if (!command) {
         const status = this.enabled ? 'Enabled ✅' : 'Disabled ❌';
-        const statusText = `📊 *Anti-Delete Status*\n\n🔰 *Status:* ${status}\n💾 *Stored Messages:* ${this.deletedMessages.size}\n\n*Usage:*\n.antidelete on - Enable\n.antidelete off - Disable\n.antidelete clear - Clear stored messages`;
+        const statusText = `📊 *Anti-Delete Status*\n\n🔰 *Status:* ${status}\n💾 *Stored Messages:* ${this.storedMessages.size}\n\n*Usage:*\n.antidelete on - Enable\n.antidelete off - Disable\n.antidelete clear - Clear stored messages`;
 
         await client.sendMessage(chatId, { text: statusText });
         return;
@@ -459,22 +331,16 @@ class AntideleteService {
           text: '❌ *Anti-Delete Disabled!*\n\n⚠️ Deleted messages will not be recovered.'
         });
       } else if (command === 'clear') {
-        // Clear messages and media files
-        this.deletedMessages.forEach((msg) => {
-          if (msg.mediaPath && existsSync(msg.mediaPath)) {
-            try {
-              unlinkSync(msg.mediaPath);
-            } catch (error) {
-              console.error(`[Antidelete] Error deleting media file:`, error);
-            }
-          }
-        });
+        // Clear stored messages and associated media buffers
+        this.storedMessages.clear();
+        this.saveMessages(); // Save the empty map
 
-        this.deletedMessages.clear();
-        this.saveMessages();
+        // Note: Media files are not explicitly saved to disk in this version,
+        // so there's no need to unlink them. If media was saved to disk,
+        // we would iterate and unlink here.
 
         await client.sendMessage(chatId, {
-          text: '🗑️ *Anti-Delete Storage Cleared!*\n\nAll stored messages and media have been deleted.'
+          text: '🗑️ *Anti-Delete Storage Cleared!*\n\nAll stored messages have been deleted.'
         });
       } else {
         await client.sendMessage(chatId, {
@@ -483,7 +349,7 @@ class AntideleteService {
       }
 
     } catch (error) {
-      console.error('[Antidelete] Command error:', error);
+      console.error(`[Antidelete-${this.botId}] Command error:`, error);
       await client.sendMessage(chatId, {
         text: '❌ Error executing antidelete command.'
       });
@@ -496,23 +362,15 @@ const antideleteServices = new Map<string, AntideleteService>();
 
 export function getAntideleteService(botInstance: BotInstance): AntideleteService {
   if (!antideleteServices.has(botInstance.id)) {
+    console.log(`[Antidelete] Creating new service for bot: ${botInstance.id}`);
     antideleteServices.set(botInstance.id, new AntideleteService(botInstance));
   }
   return antideleteServices.get(botInstance.id)!;
 }
 
 export function clearAntideleteService(botId: string): void {
-  antideleteServices.delete(botId);
-}
-
-// Legacy export for backward compatibility
-export const antideleteService = {
-  getStoredMessage: (messageId: string) => {
-    // This is a fallback - ideally each bot should use its own service
-    for (const service of antideleteServices.values()) {
-      const msg = service.getStoredMessage(messageId);
-      if (msg) return msg;
-    }
-    return undefined;
+  if (antideleteServices.has(botId)) {
+    console.log(`[Antidelete] Clearing service for bot: ${botId}`);
+    antideleteServices.delete(botId);
   }
-};
+}

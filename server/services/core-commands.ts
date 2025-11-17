@@ -2298,42 +2298,21 @@ commandRegistry.register({
 commandRegistry.register({
   name: 'antiviewonce',
   aliases: ['antiview', 'avo'],
-  description: 'Enable/disable anti-viewonce feature',
+  description: 'Manage anti-viewonce settings',
   category: 'PRIVACY',
+  ownerOnly: true, // This should be ownerOnly as per typical privacy commands
   handler: async (context: CommandContext) => {
-    const { respond, message, args, botId } = context;
+    const antiViewOnceService = getAntiViewOnceService(context.botId);
+    const subCommand = context.args[0]?.toLowerCase();
 
-    if (!message.key.fromMe) {
-      await respond('❌ This command can only be used by the bot owner!');
-      return;
-    }
-
-    if (!botId) {
-      await respond('❌ Bot ID not found!');
-      return;
-    }
-
-    try {
-      const { getAntiViewOnceService } = await import('./antiviewonce.js');
-      const antiViewOnceService = getAntiViewOnceService(botId);
-
-      if (!args || args.length === 0) {
-        await respond(antiViewOnceService.getStatusMessage());
-        return;
-      }
-
-      const command = args[0].toLowerCase();
-      if (command === 'on' || command === 'enable') {
-        antiViewOnceService.setEnabled(true);
-        await respond('✅ *Anti-ViewOnce Enabled!*\n\n👁️ ViewOnce messages will be intercepted and forwarded to you.\n\n💡 Bot will automatically save ViewOnce media from your sent messages.');
-      } else if (command === 'off' || command === 'disable') {
-        antiViewOnceService.setEnabled(false);
-        await respond('❌ *Anti-ViewOnce Disabled!*');
-      } else {
-        await respond('❌ Invalid option! Use: .antiviewonce on/off');
-      }
-    } catch (error) {
-      await respond('❌ Failed to update anti-viewonce settings!');
+    if (subCommand === 'on') {
+      antiViewOnceService.setEnabled(true);
+      await context.respond('✅ *Anti-ViewOnce Enabled*\n\nViewOnce messages you send will be automatically saved and forwarded to you.');
+    } else if (subCommand === 'off') {
+      antiViewOnceService.setEnabled(false);
+      await context.respond('❌ *Anti-ViewOnce Disabled*\n\nViewOnce protection is now turned off.');
+    } else {
+      await context.respond(antiViewOnceService.getStatusMessage());
     }
   }
 });
@@ -2382,6 +2361,28 @@ commandRegistry.register({
     }
   }
 });
+
+// Register .antidelete command
+commandRegistry.set('antidelete', {
+  name: 'antidelete',
+  description: 'Manage anti-delete settings - recovers deleted messages',
+  usage: '.antidelete [on|off|clear]',
+  category: 'privacy',
+  ownerOnly: true,
+  handler: async (context: CommandContext) => {
+    const storage = await import('../storage.js');
+    const botInstance = await storage.storage.getBotInstance(context.botId);
+
+    if (!botInstance) {
+      await context.respond('❌ Bot instance not found');
+      return;
+    }
+
+    const antideleteService = getAntideleteService(botInstance);
+    await antideleteService.handleAntideleteCommand(context.client, context.from, context.message, context.args[0]?.toLowerCase());
+  }
+});
+
 
 // Group Management Commands
 
@@ -2602,7 +2603,7 @@ commandRegistry.register({
     const { respond, message, client, from } = context;
 
     if (!from.endsWith('@g.us')) {
-      await respond('❌ This command can only be used in group chats!');
+      await respond('❌ This command only works in group chats!');
       return;
     }
 
@@ -2636,7 +2637,7 @@ commandRegistry.register({
     const { respond, message, client, from } = context;
 
     if (!from.endsWith('@g.us')) {
-      await respond('❌ This command can only be used in group chats!');
+      await respond('❌ This command only works in group chats!');
       return;
     }
 
@@ -2886,7 +2887,7 @@ commandRegistry.register({
     const { respond, message, client, from } = context;
 
     if (!from.endsWith('@g.us')) {
-      await respond('❌ This command can only be used in group chats!');
+      await respond('❌ This command only works in group chats!');
       return;
     }
 
@@ -2930,7 +2931,7 @@ commandRegistry.register({
     const { respond, message, client, from } = context;
 
     if (!from.endsWith('@g.us')) {
-      await respond('❌ This command can only be used in group chats!');
+      await respond('❌ This command only works in group chats!');
       return;
     }
 
@@ -3039,7 +3040,7 @@ Example: .pair 254712345678
 Please use a valid phone number (10-15 digits)
 Example: 254712345678
 
-> TREKKER-MD Pairing System`);
+> TREKKERMD Pairing System`);
       return;
     }
 
