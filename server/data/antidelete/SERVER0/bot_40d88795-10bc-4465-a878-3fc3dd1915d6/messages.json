@@ -1,0 +1,217 @@
+{
+  "AC7287EDF523F3DAB4946C1C14FA545A": {
+    "messageId": "AC7287EDF523F3DAB4946C1C14FA545A",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763405858,
+    "messageContent": {
+      "protocolMessage": {
+        "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+        "peerDataOperationRequestResponseMessage": {
+          "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+          "stanzaId": "3EB0E5F6B79C4B9D2F5CB9",
+          "peerDataOperationResult": [
+            {
+              "mediaUploadResult": "NOT_FOUND"
+            }
+          ]
+        }
+      }
+    },
+    "text": "",
+    "caption": ""
+  },
+  "AC4907A23FA6011AE830717D02071BF2": {
+    "messageId": "AC4907A23FA6011AE830717D02071BF2",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763405879,
+    "messageContent": {
+      "protocolMessage": {
+        "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+        "peerDataOperationRequestResponseMessage": {
+          "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+          "stanzaId": "3EB01D777C080B02D11EFA",
+          "peerDataOperationResult": [
+            {
+              "mediaUploadResult": "SUCCESS",
+              "placeholderMessageResendResponse": {
+                "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNUUxODE4Q0VCRDkzQkQ2QzAxNDlFNjNBOUI3MDlBNRINCgtBbGFoaGhoaGhoaBix4O3IBooDINW9oqwRhzdVDOwPJ17dlJ/gvxkj7a6Ua0A1uTC2LW8j8gMWChQBDdQz+5Q+kaC1h6wUCqUdv89X4YgEAA=="
+              }
+            }
+          ]
+        }
+      }
+    },
+    "text": "",
+    "caption": ""
+  },
+  "A5E1818CEBD93BD6C0149E63A9B709A5": {
+    "messageId": "A5E1818CEBD93BD6C0149E63A9B709A5",
+    "chatId": "254704897825@s.whatsapp.net",
+    "sender": "254704897825@s.whatsapp.net",
+    "timestamp": 1763405880,
+    "messageContent": {
+      "conversation": "Alahhhhhhhh",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "senderKeyHash": "pS3jvm4CTUhH7Q==",
+          "senderTimestamp": "1763388939",
+          "recipientKeyHash": "mK4CQ9ywBUua2g==",
+          "recipientTimestamp": "1763395625"
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": "1b2irBGHN1UM7A8nXt2Un+C/GSPtrpRrQDW5MLYtbyM="
+      }
+    },
+    "text": "Alahhhhhhhh",
+    "caption": ""
+  },
+  "A5EF4981C2C1049517A5B568D36EC52C": {
+    "messageId": "A5EF4981C2C1049517A5B568D36EC52C",
+    "chatId": "254704897825@s.whatsapp.net",
+    "sender": "254704897825@s.whatsapp.net",
+    "timestamp": 1763405899,
+    "messageContent": {
+      "protocolMessage": {
+        "key": {
+          "remoteJid": "254799257758@s.whatsapp.net",
+          "fromMe": true,
+          "id": "A5E1818CEBD93BD6C0149E63A9B709A5"
+        },
+        "type": "REVOKE"
+      },
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "senderKeyHash": "pS3jvm4CTUhH7Q==",
+          "senderTimestamp": "1763388939",
+          "recipientKeyHash": "mK4CQ9ywBUua2g==",
+          "recipientTimestamp": "1763395625"
+        },
+        "deviceListMetadataVersion": 2
+      }
+    },
+    "text": "",
+    "caption": ""
+  },
+  "AC98A887B61156D6081A7124B7641441": {
+    "messageId": "AC98A887B61156D6081A7124B7641441",
+    "chatId": "254704897825@s.whatsapp.net",
+    "sender": "254704897825@s.whatsapp.net",
+    "timestamp": 1763405927,
+    "messageContent": {
+      "conversation": ".ping"
+    },
+    "text": ".ping",
+    "caption": ""
+  },
+  "3EB0C0A9EE4E0E46A651B3": {
+    "messageId": "3EB0C0A9EE4E0E46A651B3",
+    "chatId": "254704897825@s.whatsapp.net",
+    "sender": "254704897825@s.whatsapp.net",
+    "timestamp": 1763405928,
+    "messageContent": {
+      "extendedTextMessage": {
+        "text": "🏃‍♂️ *TREKKER-MD LIFETIME BOT*\n\n⚡ *Speed:* 0ms\n🤖 *Status:* Online\n💚 *Health:* Perfect\n\n> Ultra fast response from TREKKER-MD"
+      }
+    },
+    "text": "🏃‍♂️ *TREKKER-MD LIFETIME BOT*\n\n⚡ *Speed:* 0ms\n🤖 *Status:* Online\n💚 *Health:* Perfect\n\n> Ultra fast response from TREKKER-MD",
+    "caption": ""
+  },
+  "AC6F37238FB63CB15CB3AE6DEFD35558": {
+    "messageId": "AC6F37238FB63CB15CB3AE6DEFD35558",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763405942,
+    "messageContent": {
+      "conversation": ".antidelete"
+    },
+    "text": ".antidelete",
+    "caption": ""
+  },
+  "3EB0210FCDEE7DD73FFFBF": {
+    "messageId": "3EB0210FCDEE7DD73FFFBF",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763405943,
+    "messageContent": {
+      "extendedTextMessage": {
+        "text": "🚫 Access denied. This command can only be used by the bot owner."
+      }
+    },
+    "text": "🚫 Access denied. This command can only be used by the bot owner.",
+    "caption": ""
+  },
+  "AC418918E06EE9A454CA6B2CF82E042C": {
+    "messageId": "AC418918E06EE9A454CA6B2CF82E042C",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763405983,
+    "messageContent": {
+      "conversation": ".antidelete"
+    },
+    "text": ".antidelete",
+    "caption": ""
+  },
+  "3EB0B39FF5FEE15A0F96A1": {
+    "messageId": "3EB0B39FF5FEE15A0F96A1",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763405984,
+    "messageContent": {
+      "extendedTextMessage": {
+        "text": "🚫 Access denied. This command can only be used by the bot owner."
+      }
+    },
+    "text": "🚫 Access denied. This command can only be used by the bot owner.",
+    "caption": ""
+  },
+  "AC760D781F75AD77B6B217FB2225E3ED": {
+    "messageId": "AC760D781F75AD77B6B217FB2225E3ED",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763406002,
+    "messageContent": {
+      "conversation": ". antidelete"
+    },
+    "text": ". antidelete",
+    "caption": ""
+  },
+  "3EB08C4FA27F8A43BA3643": {
+    "messageId": "3EB08C4FA27F8A43BA3643",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763406003,
+    "messageContent": {
+      "extendedTextMessage": {
+        "text": "🚫 Access denied. This command can only be used by the bot owner."
+      }
+    },
+    "text": "🚫 Access denied. This command can only be used by the bot owner.",
+    "caption": ""
+  },
+  "ACDCC27523774039240A89FEB7D69E21": {
+    "messageId": "ACDCC27523774039240A89FEB7D69E21",
+    "chatId": "254704897825@s.whatsapp.net",
+    "sender": "254704897825@s.whatsapp.net",
+    "timestamp": 1763406016,
+    "messageContent": {
+      "conversation": ".antidelete"
+    },
+    "text": ".antidelete",
+    "caption": ""
+  },
+  "3EB0885D2CE1117F4AA1C5": {
+    "messageId": "3EB0885D2CE1117F4AA1C5",
+    "chatId": "254704897825@s.whatsapp.net",
+    "sender": "254704897825@s.whatsapp.net",
+    "timestamp": 1763406018,
+    "messageContent": {
+      "extendedTextMessage": {
+        "text": "🚫 Access denied. This command can only be used by the bot owner."
+      }
+    },
+    "text": "🚫 Access denied. This command can only be used by the bot owner.",
+    "caption": ""
+  }
+}
