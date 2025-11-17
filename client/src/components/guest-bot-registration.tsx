@@ -10,7 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import CredentialUpdateModal from "./credential-update-modal"; import ServerSelectionPanel from "./server-selection-panel";
+import CredentialUpdateModal from "./credential-update-modal";
+import ServerSelectionPanel from "./server-selection-panel";
 
 interface GuestBotRegistrationProps {
   open: boolean;

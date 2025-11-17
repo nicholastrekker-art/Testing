@@ -7,17 +7,17 @@
     "node": ">=20.6.0"
   },
   "scripts": {
-    "dev": "NODE_ENV=development yarn tsx server/index.ts",
-    "start": "NODE_ENV=production yarn tsx server/index.ts",
-    "build": "BASE_PATH=/ yarn vite build",
-    "build:prod": "NODE_ENV=production BASE_PATH=/ yarn vite build",
-    "start:prod": "NODE_ENV=production BASE_PATH=/ yarn tsx server/index.ts",
+    "dev": "NODE_ENV=development tsx server/index.ts",
+    "start": "NODE_ENV=production tsx server/index.ts",
+    "build": "BASE_PATH=/ vite build",
+    "build:prod": "NODE_ENV=production BASE_PATH=/ vite build",
+    "start:prod": "NODE_ENV=production BASE_PATH=/ tsx server/index.ts",
     "postbuild": "echo 'Build completed successfully'",
     "check": "tsc --noEmit",
-    "typecheck": "yarn check",
-    "db:push": "yarn drizzle-kit push",
-    "install:clean": "yarn --frozen-lockfile --production",
-    "install:prod": "yarn install --frozen-lockfile --production"
+    "typecheck": "tsc --noEmit",
+    "db:push": "drizzle-kit push",
+    "install:clean": "npm ci --production",
+    "install:prod": "npm ci --production"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
