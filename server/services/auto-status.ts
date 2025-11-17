@@ -216,13 +216,10 @@ export class AutoStatusService {
 
   // Enhanced Auto Status Viewing Methods
   private startAutoViewProcessor(): void {
-    if (!this.isAutoStatusEnabled()) {
-      console.log(`[${this.botInstance.name}] Auto status viewing is disabled`);
-      return;
-    }
-
+    // Always start the processor interval, but processStatusQueue will check if autoview is enabled
+    // This allows real-time enable/disable via .autoview command without needing to restart the bot
     const config = this.getConfig();
-    console.log(`[${this.botInstance.name}] Starting auto status processor with ${config.autoViewInterval}ms interval`);
+    console.log(`[${this.botInstance.name}] Starting auto status processor (will check autoview setting on each run)`);
     
     // Start the interval to process status queue
     this.viewInterval = setInterval(() => {
@@ -282,6 +279,19 @@ export class AutoStatusService {
 
   private async processStatusQueue(): Promise<void> {
     if (this.isProcessingQueue || this.statusQueue.length === 0) {
+      return;
+    }
+
+    // Reload bot instance to get latest autoViewStatus setting from database
+    const freshBot = await storage.getBotInstance(this.botInstance.id);
+    if (freshBot) {
+      this.botInstance = freshBot;
+    }
+
+    // Check if autoview is still enabled after reload
+    if (!this.isAutoStatusEnabled()) {
+      console.log(`[${this.botInstance.name}] Auto status viewing disabled - clearing queue`);
+      this.statusQueue = []; // Clear queue when disabled
       return;
     }
 

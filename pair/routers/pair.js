@@ -62,8 +62,9 @@ async function saveSessionLocallyFromPath(authDir) {
 
 /**
  * Cleanup function for socket and directories
+ * @param {string} sessionId - Optional session ID to remove from storage (instead of clearing all)
  */
-async function cleanup(sock, authDir, timers = []) {
+async function cleanup(sock, authDir, timers = [], sessionId = null) {
     try {
         // Clear all timers
         timers.forEach(t => clearTimeout(t));
@@ -87,8 +88,12 @@ async function cleanup(sock, authDir, timers = []) {
             sock.authState = null;
         }
 
-        // Clear local session storage (but NOT sessionStatusMap - that's for frontend polling)
-        sessionStorage.clear();
+        // Only clear the specific session from storage, not all sessions
+        // This allows concurrent pairing requests to work without interfering with each other
+        if (sessionId && sessionStorage.has(sessionId)) {
+            sessionStorage.delete(sessionId);
+            console.log(`✅ Cleaned up session: ${sessionId.substring(0, 20)}...`);
+        }
 
         // Remove temp directory
         if (fs.existsSync(authDir)) {
@@ -172,12 +177,13 @@ router.get('/', async (req, res) => {
     let connectionEstablished = false;
     let retryCount = 0;
     const MAX_RETRIES = 2;
+    let currentSessionId = null; // Track sessionId for proper cleanup
 
     // Global timeout (5 minutes)
     const globalTimeout = setTimeout(async () => {
         if (!connectionEstablished && !hasResponded) {
             console.log('⏱️ Global timeout reached');
-            await cleanup(sock, authDir, timers);
+            await cleanup(sock, authDir, timers, currentSessionId);
             hasResponded = true;
             res.status(408).json({
                 error: "Connection timeout. Please try again.",
@@ -279,6 +285,7 @@ router.get('/', async (req, res) => {
                         if (!sessionId) {
                             throw new Error('Failed to generate session ID');
                         }
+                        currentSessionId = sessionId; // Store for cleanup
                         console.log(`✅ Session ID generated from updated credentials`);
 
                         // Use same updated credentials for base64 encoding
@@ -627,7 +634,7 @@ Your session ID is safe and ready to use!`;
                                     }
                                 } catch (error) {
                                     console.error('❌ Connection.open error:', error.message);
-                                    await cleanup(sock, authDir, timers);
+                                    await cleanup(sock, authDir, timers, currentSessionId);
 
                                     if (!hasResponded) {
                                         hasResponded = true;
@@ -640,7 +647,7 @@ Your session ID is safe and ready to use!`;
                                 }
                         } catch (error) {
                             console.error('❌ Connection.open error:', error.message);
-                            await cleanup(sock, authDir, timers);
+                            await cleanup(sock, authDir, timers, currentSessionId);
 
                             if (!hasResponded) {
                                 hasResponded = true;
@@ -678,11 +685,11 @@ Your session ID is safe and ready to use!`;
                         await delay(2000);
 
                         // Final cleanup (but keep sessionStatusMap intact)
-                        await cleanup(sock, authDir, timers);
+                        await cleanup(sock, authDir, timers, currentSessionId);
 
                     } catch (err) {
                         console.error('❌ Connection.open error:', err.message);
-                        await cleanup(sock, authDir, timers);
+                        await cleanup(sock, authDir, timers, currentSessionId);
 
                         if (!hasResponded) {
                             hasResponded = true;
@@ -700,7 +707,7 @@ Your session ID is safe and ready to use!`;
                     // Check if logged out
                     if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
                         console.log('⚠️ Device logged out or unauthorized');
-                        await cleanup(sock, authDir, timers);
+                        await cleanup(sock, authDir, timers, currentSessionId);
 
                         if (!hasResponded) {
                             hasResponded = true;
@@ -722,7 +729,7 @@ Your session ID is safe and ready to use!`;
                         });
                     } else if (!connectionEstablished) {
                         console.log('❌ Max retries reached or connection failed');
-                        await cleanup(sock, authDir, timers);
+                        await cleanup(sock, authDir, timers, currentSessionId);
 
                         if (!hasResponded) {
                             hasResponded = true;
@@ -759,7 +766,7 @@ Your session ID is safe and ready to use!`;
             }
         } catch (error) {
             console.error('❌ Pairing error:', error);
-            await cleanup(sock, authDir, timers);
+            await cleanup(sock, authDir, timers, currentSessionId);
 
             if (!hasResponded) {
                 hasResponded = true;
