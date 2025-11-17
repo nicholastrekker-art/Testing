@@ -130,11 +130,14 @@ const scanExistingCreds = async (): Promise<CredsInfo[]> => {
 };
 
 // Check if credentials already exist in database by phone number (cross-server search)
-export const validateCredentialsByPhoneNumber = async (credentials: any): Promise<{
+export const validateCredentialsByPhoneNumber = async (credentials: any, allowCrossServerUpdate: boolean = true): Promise<{
   isValid: boolean;
   message?: string;
   phoneNumber?: string;
   alreadyRegistered?: boolean;
+  crossServerUpdate?: boolean;
+  targetServer?: string;
+  botId?: string;
 }> => {
   try {
     const phoneNumber = extractPhoneNumber(credentials);
@@ -152,17 +155,48 @@ export const validateCredentialsByPhoneNumber = async (credentials: any): Promis
     const [globalRegistration] = await db.select().from(godRegister).where(eq(godRegister.phoneNumber, phoneNumber));
     
     if (globalRegistration) {
-      // Phone number is globally registered - block registration regardless of bot existence
       const isCurrentServer = globalRegistration.tenancyName === currentServerName;
       
-      return {
-        isValid: false,
-        message: isCurrentServer 
-          ? "❌ This phone number is already registered on this server. You can update your bot credentials if you own this bot."
-          : "❌ This phone number is already registered on another server. Please use that server to manage your bot.",
-        phoneNumber,
-        alreadyRegistered: true
-      };
+      if (isCurrentServer) {
+        // Bot exists on current server - find the bot instance
+        const [existingBot] = await db.select().from(botInstances).where(eq(botInstances.phoneNumber, phoneNumber));
+        
+        if (existingBot) {
+          return {
+            isValid: true,
+            message: "🔄 Bot found on current server. Credentials will be updated.",
+            phoneNumber,
+            alreadyRegistered: true,
+            crossServerUpdate: false,
+            targetServer: currentServerName,
+            botId: existingBot.id
+          };
+        }
+      } else {
+        // Bot exists on different server
+        if (allowCrossServerUpdate) {
+          // Find the bot instance on the target server
+          const [existingBot] = await db.select().from(botInstances).where(eq(botInstances.phoneNumber, phoneNumber));
+          
+          return {
+            isValid: true,
+            message: `🌐 Bot found on server ${globalRegistration.tenancyName}. Credentials will be updated on that server.`,
+            phoneNumber,
+            alreadyRegistered: true,
+            crossServerUpdate: true,
+            targetServer: globalRegistration.tenancyName,
+            botId: existingBot?.id
+          };
+        } else {
+          // Cross-server update not allowed
+          return {
+            isValid: false,
+            message: "❌ This phone number is already registered on another server. Please use that server to manage your bot.",
+            phoneNumber,
+            alreadyRegistered: true
+          };
+        }
+      }
     }
 
     // Fallback: Check if bot exists in current database without global registration (catch inconsistent data)
@@ -170,10 +204,13 @@ export const validateCredentialsByPhoneNumber = async (credentials: any): Promis
     
     if (existingBot) {
       return {
-        isValid: false,
-        message: "❌ This phone number is already registered in the system. Please contact support if you need assistance.",
+        isValid: true,
+        message: "🔄 Bot found in database. Credentials will be updated.",
         phoneNumber,
-        alreadyRegistered: true
+        alreadyRegistered: true,
+        crossServerUpdate: false,
+        targetServer: currentServerName,
+        botId: existingBot.id
       };
     }
 
@@ -181,7 +218,8 @@ export const validateCredentialsByPhoneNumber = async (credentials: any): Promis
     return {
       isValid: true,
       message: `✅ Phone number ${phoneNumber} is available for registration.`,
-      phoneNumber
+      phoneNumber,
+      alreadyRegistered: false
     };
 
   } catch (error) {
