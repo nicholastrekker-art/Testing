@@ -93,7 +93,9 @@ export class AutoStatusService {
   }
 
   public isAutoStatusEnabled(): boolean {
-    return this.getConfig().enabled;
+    // Always check the bot instance's autoViewStatus from database
+    // This ensures the setting is always up-to-date when toggled via commands
+    return this.botInstance.autoViewStatus ?? true;
   }
 
   public isStatusReactionEnabled(): boolean {
@@ -119,6 +121,12 @@ export class AutoStatusService {
 
   public async handleStatusUpdate(sock: any, status: any): Promise<void> {
     try {
+      // Reload bot instance to get latest settings from database
+      const freshBot = await storage.getBotInstance(this.botInstance.id);
+      if (freshBot) {
+        this.botInstance = freshBot;
+      }
+
       if (!this.isAutoStatusEnabled()) {
         return;
       }
