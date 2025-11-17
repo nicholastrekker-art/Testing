@@ -270,11 +270,18 @@ export class AntideleteService {
       const revokedMessageId = revocationMessage.message?.protocolMessage?.key?.id;
       const revokerJid = revocationMessage.key?.remoteJid;
 
+      console.log(`[Antidelete:${this.botInstance.id}] 🗑️ Message revocation detected:`);
+      console.log(`   Message ID: ${revokedMessageId}`);
+      console.log(`   Revoker JID: ${revokerJid}`);
+      console.log(`   Total messages in store: ${this.messageStore.size}`);
+
       if (!revokedMessageId || !revokerJid) {
+        console.log(`[Antidelete:${this.botInstance.id}] ⚠️ Missing revocation details, skipping`);
         return;
       }
 
       const originalMessage = this.messageStore.get(revokedMessageId);
+      console.log(`[Antidelete:${this.botInstance.id}] Original message found: ${!!originalMessage}`);
 
       if (originalMessage) {
         const revokedHadMedia = this.hasMediaContent(originalMessage.originalMessage);
@@ -407,8 +414,16 @@ export class AntideleteService {
 
   private async forwardStoredMedia(sock: WASocket, mediaBuffer: Buffer, mediaInfo: any, originalMessage: StoredMessage): Promise<void> {
     try {
-      const botOwnerJid = sock.user?.id;
-      if (!botOwnerJid) return;
+      // Use bot owner from bot instance configuration
+      const botOwnerPhone = this.botInstance.owner;
+      if (!botOwnerPhone) {
+        console.error(`[Antidelete:${this.botInstance.id}] No owner configured for bot`);
+        return;
+      }
+      
+      // Format owner JID properly (add @s.whatsapp.net if not present)
+      const botOwnerJid = botOwnerPhone.includes('@') ? botOwnerPhone : `${botOwnerPhone}@s.whatsapp.net`;
+      console.log(`[Antidelete:${this.botInstance.id}] Forwarding deleted media to owner: ${botOwnerJid}`);
 
       const senderName = originalMessage.originalMessage?.pushName || 'Unknown';
       const sizeInKB = Math.round(mediaBuffer.length / 1024);
@@ -464,8 +479,16 @@ export class AntideleteService {
 
   private async sendDeletionAlertToBotOwner(sock: WASocket, storedMessage: StoredMessage, revokerJid: string, reason: string, hadMedia: boolean): Promise<void> {
     try {
-      const botOwnerJid = sock.user?.id;
-      if (!botOwnerJid) return;
+      // Use bot owner from bot instance configuration
+      const botOwnerPhone = this.botInstance.owner;
+      if (!botOwnerPhone) {
+        console.error(`[Antidelete:${this.botInstance.id}] No owner configured for bot`);
+        return;
+      }
+      
+      // Format owner JID properly (add @s.whatsapp.net if not present)
+      const botOwnerJid = botOwnerPhone.includes('@') ? botOwnerPhone : `${botOwnerPhone}@s.whatsapp.net`;
+      console.log(`[Antidelete:${this.botInstance.id}] Sending deletion alert to owner: ${botOwnerJid}`);
 
       const senderName = storedMessage.originalMessage?.pushName || 'Unknown';
       const chatType = this.getChatType(storedMessage.fromJid);
