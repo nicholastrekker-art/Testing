@@ -534,5 +534,154 @@
     },
     "text": "",
     "caption": ""
+  },
+  "AC32A9C9F54719CF271BEB8382EFA9D8": {
+    "messageId": "AC32A9C9F54719CF271BEB8382EFA9D8",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763407719,
+    "messageContent": {
+      "protocolMessage": {
+        "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+        "peerDataOperationRequestResponseMessage": {
+          "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+          "stanzaId": "3EB083871A3C3F2B5B07DF",
+          "peerDataOperationResult": [
+            {
+              "mediaUploadResult": "SUCCESS",
+              "placeholderMessageResendResponse": {
+                "webMessageInfoBytes": "CkEKGzI1NDc5OTI1Nzc1OEBzLndoYXRzYXBwLm5ldBABGiBBQzA2MEYwMkIzMzA4RERBNEMwMjA0N0M1NDgwMENBMRIsCgUucGludpoCIhogKHb2cbcitc+y8PjrEpWACmDu28tCyGDecLO0l10GzxkY4O7tyAYgBDDh7u3IBooDICh29nG3IrXPsvD46xKVgApg7tvLQshg3nCztJddBs8ZmgMbMjU0Nzk5MjU3NzU4QHMud2hhdHNhcHAubmV0iAQA"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "text": "",
+    "caption": ""
+  },
+  "AC060F02B3308DDA4C02047C54800CA1": {
+    "messageId": "AC060F02B3308DDA4C02047C54800CA1",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763407712,
+    "messageContent": {
+      "conversation": ".pinv",
+      "messageContextInfo": {
+        "messageSecret": "KHb2cbcitc+y8PjrEpWACmDu28tCyGDecLO0l10Gzxk="
+      }
+    },
+    "text": ".pinv",
+    "caption": ""
+  },
+  "3EB024BEC7B11FC3071A92": {
+    "messageId": "3EB024BEC7B11FC3071A92",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763407722,
+    "messageContent": {
+      "extendedTextMessage": {
+        "text": "❌ Command .pinv not found. Type .help to see available commands."
+      }
+    },
+    "text": "❌ Command .pinv not found. Type .help to see available commands.",
+    "caption": ""
+  },
+  "AC3B0C3694A0D99FB296039869D0663E": {
+    "messageId": "AC3B0C3694A0D99FB296039869D0663E",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763407732,
+    "messageContent": {
+      "conversation": ".ping"
+    },
+    "text": ".ping",
+    "caption": ""
+  },
+  "3EB06F6105EA51342AF8E3": {
+    "messageId": "3EB06F6105EA51342AF8E3",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763407733,
+    "messageContent": {
+      "extendedTextMessage": {
+        "text": "🏃‍♂️ *TREKKER-MD LIFETIME BOT*\n\n⚡ *Speed:* 0ms\n🤖 *Status:* Online\n💚 *Health:* Perfect\n\n> Ultra fast response from TREKKER-MD"
+      }
+    },
+    "text": "🏃‍♂️ *TREKKER-MD LIFETIME BOT*\n\n⚡ *Speed:* 0ms\n🤖 *Status:* Online\n💚 *Health:* Perfect\n\n> Ultra fast response from TREKKER-MD",
+    "caption": ""
+  },
+  "AC9C0E609157AF54575968D10E9A90BA": {
+    "messageId": "AC9C0E609157AF54575968D10E9A90BA",
+    "chatId": "254799257758@s.whatsapp.net",
+    "sender": "254799257758@s.whatsapp.net",
+    "timestamp": 1763407762,
+    "messageContent": {
+      "protocolMessage": {
+        "type": "PEER_DATA_OPERATION_REQUEST_RESPONSE_MESSAGE",
+        "peerDataOperationRequestResponseMessage": {
+          "peerDataOperationRequestType": "PLACEHOLDER_MESSAGE_RESEND",
+          "stanzaId": "3EB076476E9B45ACF12F79",
+          "peerDataOperationResult": [
+            {
+              "mediaUploadResult": "SUCCESS",
+              "placeholderMessageResendResponse": {
+                "webMessageInfoBytes": "CkEKGzI1NDcwNDg5NzgyNUBzLndoYXRzYXBwLm5ldBAAGiBBNUREN0IzRTBDMjZDMkRDRjc3RUIzRjE2OEM2Qjc4QhIcChpIZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVleRiN7+3IBooDIIpOmmhTK4LoEMpAaQ21LmHpE1GmpUzxEF1aVX/sCxl68gMWChQBDdh7r54BHVNKMNWMXuiUIfD5/4gEAA=="
+              }
+            }
+          ]
+        }
+      }
+    },
+    "text": "",
+    "caption": ""
+  },
+  "A5DD7B3E0C26C2DCF77EB3F168C6B78B": {
+    "messageId": "A5DD7B3E0C26C2DCF77EB3F168C6B78B",
+    "chatId": "254704897825@s.whatsapp.net",
+    "sender": "254704897825@s.whatsapp.net",
+    "timestamp": 1763407768,
+    "messageContent": {
+      "conversation": "Heeeeeeeeeeeeeeeeeeeeeeeey",
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "senderKeyHash": "pS3jvm4CTUhH7Q==",
+          "senderTimestamp": "1763388939",
+          "recipientKeyHash": "mK4CQ9ywBUua2g==",
+          "recipientTimestamp": "1763395625"
+        },
+        "deviceListMetadataVersion": 2,
+        "messageSecret": "ik6aaFMrgugQykBpDbUuYekTUaalTPEQXVpVf+wLGXo="
+      }
+    },
+    "text": "Heeeeeeeeeeeeeeeeeeeeeeeey",
+    "caption": ""
+  },
+  "A5CA3D98F8112866A2D2BA9CEC530AEF": {
+    "messageId": "A5CA3D98F8112866A2D2BA9CEC530AEF",
+    "chatId": "254704897825@s.whatsapp.net",
+    "sender": "254704897825@s.whatsapp.net",
+    "timestamp": 1763407772,
+    "messageContent": {
+      "protocolMessage": {
+        "key": {
+          "remoteJid": "254799257758@s.whatsapp.net",
+          "fromMe": true,
+          "id": "A5DD7B3E0C26C2DCF77EB3F168C6B78B"
+        },
+        "type": "REVOKE"
+      },
+      "messageContextInfo": {
+        "deviceListMetadata": {
+          "senderKeyHash": "pS3jvm4CTUhH7Q==",
+          "senderTimestamp": "1763388939",
+          "recipientKeyHash": "mK4CQ9ywBUua2g==",
+          "recipientTimestamp": "1763395625"
+        },
+        "deviceListMetadataVersion": 2
+      }
+    },
+    "text": "",
+    "caption": ""
   }
 }
