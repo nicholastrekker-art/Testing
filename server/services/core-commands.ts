@@ -1586,32 +1586,6 @@ commandRegistry.register({
   }
 });
 
-wOnceService = getAntiViewOnceService(context.botId);
-
-      if (!args || args.length === 0) {
-        const statusMessage = antiViewOnceService.getStatusMessage();
-        await respond(statusMessage);
-        return;
-      }
-
-      const command = args[0].toLowerCase();
-
-      if (command === 'on') {
-        antiViewOnceService.setEnabled(true);
-        await respond('✅ Anti ViewOnce has been enabled!\nAll ViewOnce messages will now be intercepted and saved.');
-      } else if (command === 'off') {
-        antiViewOnceService.setEnabled(false);
-        await respond('❌ Anti ViewOnce has been disabled.');
-      } else {
-        await respond('❌ Invalid command. Use: .antiviewonce on/off');
-      }
-    } catch (error) {
-      console.error('Error in antiviewonce command:', error);
-      await respond('❌ Error managing anti-viewonce settings.');
-    }
-  }
-});
-
 // Set Custom Prefix Command
 commandRegistry.register({
   name: 'setprefix',
