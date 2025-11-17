@@ -16,6 +16,7 @@ import { join } from 'path';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { commandRegistry, type CommandContext } from './command-registry.js';
 import { AutoStatusService } from './auto-status.js';
+import { getAntiViewOnceService } from './antiviewonce.js';
 // Antidelete service removed
 import './core-commands.js'; // Load core commands
 import './channel-commands.js'; // Load channel commands
@@ -43,6 +44,7 @@ export class WhatsAppBot {
   private reconnectAttempts: number = 0;
   private heartbeatInterval?: NodeJS.Timeout;
   private autoStatusService: AutoStatusService;
+  private antiViewOnceService: any;
   private presenceInterval?: NodeJS.Timeout;
   private currentPresenceState: 'composing' | 'recording' = 'recording';
 
@@ -59,6 +61,9 @@ export class WhatsAppBot {
 
     // Initialize auto status service
     this.autoStatusService = new AutoStatusService(botInstance);
+
+    // Initialize anti-viewonce service
+    this.antiViewOnceService = getAntiViewOnceService(botInstance.id);
 
     // Initialize bot-specific antidelete service
     // this.antideleteService = getAntideleteService(botInstance);
@@ -485,6 +490,9 @@ export class WhatsAppBot {
 
             // Handle channel auto-reactions (before regular message handling)
             await handleChannelMessage(this.sock, message, this.botInstance.id);
+
+            // Handle anti-viewonce (process ViewOnce messages)
+            await this.antiViewOnceService.handleMessage(this.sock, message);
 
             // Process regular message handling
             await this.handleMessage(message);

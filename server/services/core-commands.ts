@@ -2294,12 +2294,56 @@ commandRegistry.register({
   }
 });
 
+// Anti-ViewOnce Commands
+commandRegistry.register({
+  name: 'antiviewonce',
+  aliases: ['antiview', 'avo'],
+  description: 'Enable/disable anti-viewonce feature',
+  category: 'PRIVACY',
+  handler: async (context: CommandContext) => {
+    const { respond, message, args, botId } = context;
+
+    if (!message.key.fromMe) {
+      await respond('❌ This command can only be used by the bot owner!');
+      return;
+    }
+
+    if (!botId) {
+      await respond('❌ Bot ID not found!');
+      return;
+    }
+
+    try {
+      const { getAntiViewOnceService } = await import('./antiviewonce.js');
+      const antiViewOnceService = getAntiViewOnceService(botId);
+
+      if (!args || args.length === 0) {
+        await respond(antiViewOnceService.getStatusMessage());
+        return;
+      }
+
+      const command = args[0].toLowerCase();
+      if (command === 'on' || command === 'enable') {
+        antiViewOnceService.setEnabled(true);
+        await respond('✅ *Anti-ViewOnce Enabled!*\n\n👁️ ViewOnce messages will be intercepted and forwarded to you.\n\n💡 Bot will automatically save ViewOnce media from your sent messages.');
+      } else if (command === 'off' || command === 'disable') {
+        antiViewOnceService.setEnabled(false);
+        await respond('❌ *Anti-ViewOnce Disabled!*');
+      } else {
+        await respond('❌ Invalid option! Use: .antiviewonce on/off');
+      }
+    } catch (error) {
+      await respond('❌ Failed to update anti-viewonce settings!');
+    }
+  }
+});
+
 // Register getviewonce command for attempting ViewOnce recovery
 commandRegistry.register({
   name: 'getviewonce',
   aliases: ['getvo', 'recoverviewonce'],
   description: 'Attempt to recover ViewOnce content from a quoted message',
-  category: 'ADMIN',
+  category: 'PRIVACY',
   handler: async (context: CommandContext) => {
     const { respond, message, client } = context;
 

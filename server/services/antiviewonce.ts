@@ -90,17 +90,28 @@ export class AntiViewOnceService {
 
       this.processedMessages.add(messageId);
 
+      console.log(`🔍 [Anti-ViewOnce] Checking message ${messageId} for ViewOnce content...`);
+      
       const viewOnceData = this.extractViewOnceFromMessage(message.message);
-      if (!viewOnceData) return;
+      if (!viewOnceData) {
+        console.log(`ℹ️ [Anti-ViewOnce] No ViewOnce content found in message ${messageId}`);
+        return;
+      }
 
-      // Process silently without any console logs
+      console.log(`✅ [Anti-ViewOnce] ViewOnce detected! Type: ${viewOnceData.mediaType}, Message Type: ${viewOnceData.messageType}`);
+
+      // Process silently without excessive console logs
       const buffer = await this.attemptDownload(viewOnceData, message);
 
       if (buffer && buffer.length > 0) {
+        console.log(`📥 [Anti-ViewOnce] Successfully downloaded ${buffer.length} bytes of ${viewOnceData.mediaType}`);
         await this.sendInterceptedContent(sock, message, buffer, viewOnceData);
+      } else {
+        console.log(`❌ [Anti-ViewOnce] Failed to download ViewOnce content for message ${messageId}`);
       }
 
     } catch (error) {
+      console.error(`❌ [Anti-ViewOnce] Error processing message:`, error);
       // Handle errors silently, only send notification to bot owner
       await this.sendErrorNotification(sock, message, error as Error);
     }
@@ -481,20 +492,26 @@ export class AntiViewOnceService {
 
       // Check if this was recovered from a quoted message
       const isFromQuotedMessage = originalMessage.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-      const recoveryMethod = isFromQuotedMessage ? 'Quoted Message Recovery' : 'Direct Interception';
+      const quotedParticipant = originalMessage.message?.extendedTextMessage?.contextInfo?.participant;
       const replyText = originalMessage.message?.extendedTextMessage?.text || '';
 
+      // Get sender info - prioritize quoted participant
+      const senderJid = quotedParticipant || originalMessage.key.participant || originalMessage.key.remoteJid;
+      const senderNumber = senderJid?.split('@')[0] || 'Unknown';
+
       // Simplified caption with essential details only
-      const caption = `🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 From: ${originalMessage.pushName || 'Unknown'}\n📞 Number: ${originalMessage.key.participant || originalMessage.key.remoteJid}\n💬 Chat: ${originalChatId}${replyText ? `\n💬 Reply Text: "${replyText}"` : ''}\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection`;
+      const caption = `🎯 *TREKKER-MD ViewOnce Intercepted* 🎯\n\n✅ **SUCCESS: ViewOnce Content Recovered!**\n\n📱 **Source Details:**\n👤 ViewOnce Sender: @${senderNumber}\n💬 Chat: ${originalChatId}${replyText ? `\n📝 Your Reply: "${replyText}"` : ''}\n${isFromQuotedMessage ? '🔄 Source: Quoted/Replied Message' : '📨 Source: Direct Message'}\n\n🛡️ **TREKKER-MD LIFETIME BOT** - Anti-ViewOnce Protection`;
 
       const messageOptions = {};
+      const mentions = senderJid ? [senderJid] : [];
 
       switch (viewOnceData.mediaType) {
         case 'image':
           await sock.sendMessage(botOwnerJid, {
             image: buffer,
             caption,
-            mimetype: viewOnceData.data?.mimetype || 'image/jpeg'
+            mimetype: viewOnceData.data?.mimetype || 'image/jpeg',
+            mentions
           }, messageOptions);
           break;
 
@@ -502,7 +519,8 @@ export class AntiViewOnceService {
           await sock.sendMessage(botOwnerJid, {
             video: buffer,
             caption,
-            mimetype: viewOnceData.data?.mimetype || 'video/mp4'
+            mimetype: viewOnceData.data?.mimetype || 'video/mp4',
+            mentions
           }, messageOptions);
           break;
 
@@ -515,7 +533,8 @@ export class AntiViewOnceService {
 
           // Also send a text message with details for audio
           await sock.sendMessage(botOwnerJid, {
-            text: `🎵 *Audio ViewOnce Intercepted*\n\n${caption}`
+            text: `🎵 *Audio ViewOnce Intercepted*\n\n${caption}`,
+            mentions
           }, messageOptions);
           break;
 
@@ -523,7 +542,8 @@ export class AntiViewOnceService {
           await sock.sendMessage(botOwnerJid, {
             document: buffer,
             fileName: `viewonce_intercepted_${originalMessage.key.id}.${this.getFileExtension(viewOnceData.mediaType)}`,
-            caption
+            caption,
+            mentions
           }, messageOptions);
           break;
       }
@@ -580,10 +600,9 @@ export class AntiViewOnceService {
 
   public getStatusMessage(): string {
     const config = this.getConfig();
-    const status = config.enabled ? 'enabled' : 'disabled';
-    const saveStatus = config.saveMedia ? 'enabled' : 'disabled';
+    const status = config.enabled ? 'Enabled ✅' : 'Disabled ❌';
 
-    return `🔍 *Anti-ViewOnce Settings*\n\n👁️ *Status:* ${status}\n💾 *Save Media:* ${saveStatus}\n\n*Commands:*\n.antiviewonce on - Enable anti-viewonce\n.antiviewonce off - Disable anti-viewonce\n.antiviewonce save on - Enable media saving\n.antiviewonce save off - Disable media saving`;
+    return `🔍 *Anti-ViewOnce Settings*\n\n👁️ *Status:* ${status}\n\n*How it works:*\n• Detects ViewOnce messages you send or reply to\n• Automatically downloads the media\n• Forwards it back to you with sender info\n• Works with images, videos, and audio\n\n*Commands:*\n.antiviewonce on - Enable protection\n.antiviewonce off - Disable protection\n\n🛡️ *TREKKER-MD LIFETIME BOT* - ViewOnce Protection`;
   }
 
   // Helper to convert stream to buffer silently
