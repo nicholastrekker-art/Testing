@@ -456,7 +456,7 @@ export class WhatsAppBot {
       console.log(`   🕐 Processing Time: ${new Date().toLocaleString()}`);
       console.log(`   ✅ Bot Approval Status: ${this.botInstance.approvalStatus}`);
       console.log(`${'='.repeat(80)}`);
-      
+
       // Log complete batch object
       console.log(`\n📦 COMPLETE BATCH OBJECT:`);
       console.log(JSON.stringify(m, null, 2));
@@ -659,40 +659,40 @@ export class WhatsAppBot {
       console.log(`🔍 [${this.botInstance.name}] COMPLETE MESSAGE LOG`);
       console.log(`📅 Timestamp: ${new Date().toISOString()}`);
       console.log(`${'='.repeat(80)}`);
-      
+
       // Log complete message structure
       console.log(`\n📦 FULL MESSAGE OBJECT:`);
       console.log(JSON.stringify(message, null, 2));
-      
+
       // Log message key details
       console.log(`\n🔑 MESSAGE KEY:`);
       console.log(`  - ID: ${message.key.id}`);
       console.log(`  - Remote JID: ${message.key.remoteJid}`);
       console.log(`  - From Me: ${message.key.fromMe}`);
       console.log(`  - Participant: ${message.key.participant || 'N/A'}`);
-      
+
       // Log message content
       console.log(`\n💬 MESSAGE CONTENT:`);
       console.log(JSON.stringify(message.message, null, 2));
-      
+
       // Log message timestamp
       if (message.messageTimestamp) {
         console.log(`\n⏰ MESSAGE TIMESTAMP:`);
         console.log(`  - Unix: ${message.messageTimestamp}`);
         console.log(`  - Date: ${new Date(Number(message.messageTimestamp) * 1000).toISOString()}`);
       }
-      
+
       // Log push name if available
       if (message.pushName) {
         console.log(`\n👤 SENDER NAME: ${message.pushName}`);
       }
-      
+
       // Log all available properties
       console.log(`\n📋 ALL MESSAGE PROPERTIES:`);
       Object.keys(message).forEach(key => {
         console.log(`  - ${key}: ${typeof message[key as keyof WAMessage]}`);
       });
-      
+
       console.log(`\n${'='.repeat(80)}\n`);
 
       // IMMEDIATE PRESENCE UPDATE - Show presence as soon as message arrives (before any processing)
@@ -849,9 +849,12 @@ export class WhatsAppBot {
 
     if (registeredCommand) {
       // Check if command is owner-only and if the user is the owner
-      const isOwner = this.botInstance.owner === message.key.remoteJid?.split(':')[0];
+      // If fromMe is true, the message is from the bot owner
+      const isOwner = message.key.fromMe === true || this.botInstance.owner === message.key.remoteJid?.split(':')[0];
       const ownerOnly = registeredCommand.ownerOnly ?? false; // Default to false if not specified
       const isPublicCommand = registeredCommand.isPublic === true || registeredCommand.ownerOnly === false;
+
+      console.log(`Bot ${this.botInstance.name}: 🔐 Owner check for .${commandName}: fromMe=${message.key.fromMe}, owner=${this.botInstance.owner}, remoteJid=${message.key.remoteJid}, isOwner=${isOwner}, ownerOnly=${ownerOnly}`);
 
       // Allow execution if it's a public command, or if it's owner-only and the user is the owner
       if (!isPublicCommand && ownerOnly && !isOwner) {

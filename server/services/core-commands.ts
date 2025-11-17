@@ -2370,6 +2370,8 @@ commandRegistry.register({
   category: 'PRIVACY',
   ownerOnly: true,
   handler: async (context: CommandContext) => {
+    // Owner check is handled by commandRegistry via ownerOnly: true
+    // No need for additional checks here
     const storage = await import('../storage.js');
     const botInstance = await storage.storage.getBotInstance(context.botId || '');
 
