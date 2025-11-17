@@ -3247,5 +3247,445 @@
         }
       }
     }
+  },
+  "ACDB4305B0A70FC4BD169BBA870EE0DD": {
+    "id": "ACDB4305B0A70FC4BD169BBA870EE0DD",
+    "fromJid": "status@broadcast",
+    "senderJid": "status@broadcast",
+    "content": "Amen🥹🙏",
+    "type": "videoMessage",
+    "timestamp": 1763373611146,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "status@broadcast",
+        "fromMe": false,
+        "id": "ACDB4305B0A70FC4BD169BBA870EE0DD"
+      },
+      "message": {
+        "videoMessage": {
+          "url": "https://mmg.whatsapp.net/v/t62.7161-24/34628113_1388571272892422_4250138969223048145_n.enc?ccb=11-4&oh=01_Q5Aa3AHXO-ZrncG9242I6gHWUwQ2au1hkhBJnhPiSCalgUJyuA&oe=694140BF&_nc_sid=5e03e0&mms3=true",
+          "mimetype": "video/mp4",
+          "fileSha256": "Lbw5zrL5JLE7ikXJ7N9wV3qdDiTJ/lIUvThMzb3FnLU=",
+          "fileLength": "605564",
+          "seconds": 18,
+          "mediaKey": "g1IXfcyUGnvCF8koKC680DhTvLn6PyOg/YqsrO26Jio=",
+          "caption": "Amen🥹🙏",
+          "height": 642,
+          "width": 360,
+          "fileEncSha256": "u+hHaTB7wmeEGUFYvoBpXzFaNbfjpKdf3aRo5xa8BXw=",
+          "directPath": "/v/t62.7161-24/34628113_1388571272892422_4250138969223048145_n.enc?ccb=11-4&oh=01_Q5Aa3AHXO-ZrncG9242I6gHWUwQ2au1hkhBJnhPiSCalgUJyuA&oe=694140BF&_nc_sid=5e03e0",
+          "mediaKeyTimestamp": "1763301360",
+          "contextInfo": {
+            "forwardingScore": 2,
+            "isForwarded": true,
+            "featureEligibilities": {
+              "canBeReshared": true
+            },
+            "statusAttributionType": "RESHARED_FROM_POST",
+            "pairedMediaType": "NOT_PAIRED_MEDIA",
+            "statusSourceType": "VIDEO"
+          },
+          "streamingSidecar": "jCSQvCFD5gN289q7D5SAl5kG/Ci4LvaWaZB3KAwVQwUqtPeVE4SA2t9JhJceDGNUsQOsbyjyq+UN3KewvTBU1UpVrL0jfRAic0YXe3x3G5iSPRXicRQz2/2kneyRsowOgTo2+g==",
+          "thumbnailDirectPath": "/v/t62.36147-24/584717475_851977640527899_3188624289250728011_n.enc?ccb=11-4&oh=01_Q5Aa3AFBBn-tEsSHPJ2ObzOjHNOk5eyLBq3zuhfskhzEReNZzw&oe=69414458&_nc_sid=5e03e0",
+          "thumbnailSha256": "zsO27NH5IrcPbQysRSVGOHkOd4m73VxAcF8phVyShkc=",
+          "thumbnailEncSha256": "K4ScB7nAgW0LykzGtoeQQO+R8mP1OoKRAcn0jXYUHLo="
+        }
+      },
+      "messageTimestamp": "1763373601",
+      "participant": "254717439433@s.whatsapp.net",
+      "messageSecret": "pL6b3AngAuX/LG4Ym9EeQwDhbsayWNbQynib8+JCzdw=",
+      "reportingTokenInfo": {
+        "reportingTag": "AQ31ETlSHAd99NldXTf2Fgb9JaE="
+      },
+      "isMentionedInStatus": false
+    }
+  },
+  "A5600EBA993CEA188F403CC80687B656": {
+    "id": "A5600EBA993CEA188F403CC80687B656",
+    "fromJid": "status@broadcast",
+    "senderJid": "self",
+    "content": "*Economic Calendar Outlook👁* \n\nMonday : Trade Day ✅ \nTuesday: Trade Day ✅ \nWednesday: Trade Day ✅ \nThursday : Trade Day ✅ \nFriday : Trade Day ✅ \n\nThis week is shaping up to be a strong trading week 📊. On Thursday, we have NFP report at 4.30 PM. ✍🏼\n\nKeep in mind, that the US Government shutdown is over now and US news releases that we're postponed earlier, will be released soon. ✍🏼\n \nBe sure to plan your trades in advance, avoid overexposure, and apply strict risk management to protect your capital. Stay sharp, follow structure, and happy 💹! \n\n\n *Weekly Roadmap 🗺*",
+    "type": "unknown",
+    "timestamp": 1763373611699,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "status@broadcast",
+        "fromMe": false,
+        "id": "A5600EBA993CEA188F403CC80687B656",
+        "participant": "254704801012@s.whatsapp.net",
+        "participantLid": "49212221821168@lid"
+      },
+      "messageTimestamp": 1763373607,
+      "pushName": "Manu Kirarei",
+      "broadcast": true,
+      "message": {
+        "senderKeyDistributionMessage": {
+          "groupId": "status@broadcast",
+          "axolotlSenderKeyDistributionMessage": "Mwi/37bMARAAGiCW9dicAGWJACXlOhdYg/uL8o2WKgQAj2wLi6VNc0iKlCIhBXps3FE8d8cZsLby9P9X+35KO5Hn2KQ59razAb7ShSgH"
+        },
+        "imageMessage": {
+          "url": "https://mmg.whatsapp.net/v/t62.7118-24/30518542_1786318385328124_2089081738105190564_n.enc?ccb=11-4&oh=01_Q5Aa3AHzTwJ_FxRH-9chuE06Z7C-QL-RTvVw7Pf4_ayjWYddEQ&oe=69424D84&_nc_sid=5e03e0&mms3=true",
+          "mimetype": "image/jpeg",
+          "caption": "*Economic Calendar Outlook👁* \n\nMonday : Trade Day ✅ \nTuesday: Trade Day ✅ \nWednesday: Trade Day ✅ \nThursday : Trade Day ✅ \nFriday : Trade Day ✅ \n\nThis week is shaping up to be a strong trading week 📊. On Thursday, we have NFP report at 4.30 PM. ✍🏼\n\nKeep in mind, that the US Government shutdown is over now and US news releases that we're postponed earlier, will be released soon. ✍🏼\n \nBe sure to plan your trades in advance, avoid overexposure, and apply strict risk management to protect your capital. Stay sharp, follow structure, and happy 💹! \n\n\n *Weekly Roadmap 🗺*",
+          "fileSha256": "sIdNO8uBitoQNGX12iTI0Gio4eu5686d4stU8e7FyWc=",
+          "fileLength": "50008",
+          "height": 625,
+          "width": 892,
+          "mediaKey": "+SIPdzfpP02IeytNYMXKMfrEgCw2WQVmdcGs0KQh3rE=",
+          "fileEncSha256": "bEPuz4b2ap7vY33vVSfT6Uh55ad2insk4qJ4cjmOFIo=",
+          "directPath": "/v/t62.7118-24/30518542_1786318385328124_2089081738105190564_n.enc?ccb=11-4&oh=01_Q5Aa3AHzTwJ_FxRH-9chuE06Z7C-QL-RTvVw7Pf4_ayjWYddEQ&oe=69424D84&_nc_sid=5e03e0",
+          "mediaKeyTimestamp": "1763368428",
+          "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEABsbGxscGx4hIR4qLSgtKj04MzM4PV1CR0JHQl2NWGdYWGdYjX2Xe3N7l33gsJycsOD/2c7Z//////////////8BGxsbGxwbHiEhHiotKC0qPTgzMzg9XUJHQkdCXY1YZ1hYZ1iNfZd7c3uXfeCwnJyw4P/Zztn////////////////CABEIADIASAMBIgACEQEDEQH/xAAtAAEBAQEBAQAAAAAAAAAAAAAAAQIEBQMBAQEBAAAAAAAAAAAAAAAAAAABAv/aAAwDAQACEAMQAAAA9J3NTzXojgeiPOvoQ4XaksZarMPtcDTIrA+udQzLI3qKCIquEIBQAcAr/8QAJBAAAgIBAwQCAwAAAAAAAAAAAAECEVESFVIDBBBBFCEgIoH/2gAIAQEAAT8AXYrkfBXI2+Dv9jbYcjbYcjbYcjbYcj4EeQuyUXakKT+yzImWy2Wy3fi4/dFqi1cjWsCkmWhNFouJVDuincipFFFeGmUej3I/pFPPn2JeGKrkKvxRbyapZNUsmqWTVLJqlk1SyapZO66vUjKNSZ//xAAbEQACAgMBAAAAAAAAAAAAAAAAAhJRASExQP/aAAgBAgEBPwCTWSayTWSazO++D//EABoRAAMAAwEAAAAAAAAAAAAAAAABERASIDD/2gAIAQMBAT8AiIiIiNVh8vx//9k=",
+          "contextInfo": {
+            "pairedMediaType": "NOT_PAIRED_MEDIA",
+            "statusSourceType": "IMAGE"
+          },
+          "scansSidecar": "fp7JP2l/a1UBq/wHWrXdxJXhF1YOqLDowAfqD4YrBNWUgc3lTibHxA==",
+          "scanLengths": [
+            4267,
+            21975,
+            10864,
+            12902
+          ],
+          "midQualityFileSha256": "gczOun4F0NLj0Ujl1uEUbpZMZJm2ubz5OPVFm2ZdEPA="
+        },
+        "messageContextInfo": {
+          "messageSecret": "akVPmcQgNjOZpTicOx9GlFFgUZOUhqh6snk2EZ4Fd88="
+        }
+      },
+      "verifiedBizName": "Manu Kirarei"
+    }
+  },
+  "A55698F89DD835FB657736165B52C350": {
+    "id": "A55698F89DD835FB657736165B52C350",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".ping",
+    "type": "conversation",
+    "timestamp": 1763373641365,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "A55698F89DD835FB657736165B52C350"
+      },
+      "messageTimestamp": 1763373640,
+      "pushName": "Trekker inc",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".ping"
+      }
+    }
+  },
+  "3EB0DA5BC157C6A0A02499": {
+    "id": "3EB0DA5BC157C6A0A02499",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🏃‍♂️ *TREKKER-MD LIFETIME BOT*\n\n⚡ *Speed:* 0ms\n🤖 *Status:* Online\n💚 *Health:* Perfect\n\n> Ultra fast response from TREKKER-MD",
+    "type": "extendedTextMessage",
+    "timestamp": 1763373644086,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0DA5BC157C6A0A02499"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "🏃‍♂️ *TREKKER-MD LIFETIME BOT*\n\n⚡ *Speed:* 0ms\n🤖 *Status:* Online\n💚 *Health:* Perfect\n\n> Ultra fast response from TREKKER-MD"
+        }
+      },
+      "messageTimestamp": "1763373641",
+      "status": "SERVER_ACK"
+    }
+  },
+  "A5204C057FF358A87C86D6EF9146441D": {
+    "id": "A5204C057FF358A87C86D6EF9146441D",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".pair",
+    "type": "conversation",
+    "timestamp": 1763373648866,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "A5204C057FF358A87C86D6EF9146441D"
+      },
+      "messageTimestamp": 1763373648,
+      "pushName": "Trekker inc",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".pair"
+      }
+    }
+  },
+  "3EB023D191430471EAE8CA": {
+    "id": "3EB023D191430471EAE8CA",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "❌ *Phone Number Required*\n\n📱 Usage: .pair <phone number>\n\nExample: .pair 254712345678\n\n💡 *Note:* This command is available to EVERYONE in groups, private chats, and public channels!\n\n> TREKKER-MD Pairing System",
+    "type": "extendedTextMessage",
+    "timestamp": 1763373650418,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB023D191430471EAE8CA"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "❌ *Phone Number Required*\n\n📱 Usage: .pair <phone number>\n\nExample: .pair 254712345678\n\n💡 *Note:* This command is available to EVERYONE in groups, private chats, and public channels!\n\n> TREKKER-MD Pairing System"
+        }
+      },
+      "messageTimestamp": "1763373649",
+      "status": "SERVER_ACK"
+    }
+  },
+  "A5704ED05D3526B0AE55C6A1DEF8E30E": {
+    "id": "A5704ED05D3526B0AE55C6A1DEF8E30E",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": ".pair 254704897825",
+    "type": "conversation",
+    "timestamp": 1763373664027,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "A5704ED05D3526B0AE55C6A1DEF8E30E"
+      },
+      "messageTimestamp": 1763373663,
+      "pushName": "Trekker inc",
+      "broadcast": false,
+      "status": 2,
+      "message": {
+        "conversation": ".pair 254704897825"
+      }
+    }
+  },
+  "3EB0E5BF596FD499432B8C": {
+    "id": "3EB0E5BF596FD499432B8C",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "🔄 *Generating pairing code...*\n\n📱 Phone: +254704897825\n⏳ Please wait...",
+    "type": "extendedTextMessage",
+    "timestamp": 1763373665572,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB0E5BF596FD499432B8C"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "🔄 *Generating pairing code...*\n\n📱 Phone: +254704897825\n⏳ Please wait..."
+        }
+      },
+      "messageTimestamp": "1763373664",
+      "status": "SERVER_ACK"
+    }
+  },
+  "3EB09D21F760EAF4B04662": {
+    "id": "3EB09D21F760EAF4B04662",
+    "fromJid": "254704897825@s.whatsapp.net",
+    "senderJid": "self",
+    "content": "DZTR-BS4C",
+    "type": "extendedTextMessage",
+    "timestamp": 1763373667233,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "254704897825@s.whatsapp.net",
+        "fromMe": true,
+        "id": "3EB09D21F760EAF4B04662"
+      },
+      "message": {
+        "extendedTextMessage": {
+          "text": "DZTR-BS4C"
+        }
+      },
+      "messageTimestamp": "1763373666",
+      "status": "SERVER_ACK"
+    }
+  },
+  "ACF71F5B0BEE47BF5B7DC7E88B8D2EB3": {
+    "id": "ACF71F5B0BEE47BF5B7DC7E88B8D2EB3",
+    "fromJid": "status@broadcast",
+    "senderJid": "self",
+    "content": "😂😂🔪💀 kila mtu ashike mambo yake 😂💯",
+    "type": "unknown",
+    "timestamp": 1763373674708,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "status@broadcast",
+        "fromMe": false,
+        "id": "ACF71F5B0BEE47BF5B7DC7E88B8D2EB3",
+        "participant": "254708796085@s.whatsapp.net",
+        "participantLid": "89705173495858@lid"
+      },
+      "messageTimestamp": 1763373673,
+      "pushName": "~erick~",
+      "broadcast": true,
+      "message": {
+        "senderKeyDistributionMessage": {
+          "groupId": "status@broadcast",
+          "axolotlSenderKeyDistributionMessage": "MwiTp9KpBRAFGiCpzjRUgd2kytzz8jnsQV9n963Bv2ijH7/A013pBoM2nCIhBRvtwyQjmJk/z7P8winCZuS2EPrYCsnk/kMRXEX1dkQK"
+        },
+        "imageMessage": {
+          "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m233/AQOdJvJVKww1F2Toyqf4KbxKzwIhBes9KjEP06CA9XbmN8KOsc_1QGUgGy3tf-yf9hBYibAbyi0rOSmIY8iK3gr_lBoq1dv3huTKuxUM7Q?ccb=9-4&oh=01_Q5Aa3AHl7Y-aGBRzCE4NDcyuV7Baukc4AZvnDIl_qAkGa5B_ww&oe=694250ED&_nc_sid=e6ed6c&mms3=true",
+          "mimetype": "image/jpeg",
+          "caption": "😂😂🔪💀 kila mtu ashike mambo yake 😂💯",
+          "fileSha256": "PKnGJzgG7Y31Gcqyggo+YUND9CCy485mPOJhuqZTBfw=",
+          "fileLength": "20113",
+          "height": 887,
+          "width": 720,
+          "mediaKey": "dVc9aeTqXGc0ufAC/zSyBlQyUspgBd9Now/Agtwp1rw=",
+          "fileEncSha256": "UxN+wv7pp1n/xdMVgWokjgkW3FgUjKXcybFkg6cNeHs=",
+          "directPath": "/o1/v/t24/f2/m233/AQOdJvJVKww1F2Toyqf4KbxKzwIhBes9KjEP06CA9XbmN8KOsc_1QGUgGy3tf-yf9hBYibAbyi0rOSmIY8iK3gr_lBoq1dv3huTKuxUM7Q?ccb=9-4&oh=01_Q5Aa3AHl7Y-aGBRzCE4NDcyuV7Baukc4AZvnDIl_qAkGa5B_ww&oe=694250ED&_nc_sid=e6ed6c",
+          "mediaKeyTimestamp": "1763373672",
+          "jpegThumbnail": "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",
+          "contextInfo": {
+            "forwardingScore": 0,
+            "featureEligibilities": {
+              "canBeReshared": true
+            },
+            "pairedMediaType": "NOT_PAIRED_MEDIA",
+            "statusSourceType": "IMAGE"
+          },
+          "scansSidecar": "/d+9fPqWC6Z/ZeBO0jtxll4a0VEVk15W9r1PI3rVoC0Tgtpq4P5STg==",
+          "scanLengths": [
+            3333,
+            9346,
+            2802,
+            4632
+          ],
+          "midQualityFileSha256": "DZKqpPedbDUqYzoKdnlhEDJDMR8gWMeygFvgYACDKBg="
+        },
+        "messageContextInfo": {
+          "messageSecret": "JFd5MOeHMX5hdunmKt6vP33Fr9kCtVKsSzR0ogx8XBc="
+        }
+      }
+    }
+  },
+  "A5BDA15AC0804B504F891420B946B93D": {
+    "id": "A5BDA15AC0804B504F891420B946B93D",
+    "fromJid": "status@broadcast",
+    "senderJid": "self",
+    "content": "🥲",
+    "type": "unknown",
+    "timestamp": 1763373683747,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "status@broadcast",
+        "fromMe": false,
+        "id": "A5BDA15AC0804B504F891420B946B93D",
+        "participant": "254115897478@s.whatsapp.net",
+        "participantLid": "13976142364924@lid"
+      },
+      "messageTimestamp": 1763373681,
+      "pushName": "error",
+      "broadcast": true,
+      "message": {
+        "senderKeyDistributionMessage": {
+          "groupId": "status@broadcast",
+          "axolotlSenderKeyDistributionMessage": "Mwj05LmIBBAAGiBDHDObyqsIP9RzJqx0lhZcdgdkLR49T0yo7z8gyfalGSIhBTkzErXRelNYp7hG/nP0iY3JvZjYzTek59Kdd3dPybNo"
+        },
+        "imageMessage": {
+          "url": "https://mmg.whatsapp.net/o1/v/t24/f2/m239/AQPaIxWwU9sZjNjZcTUp5oT2v7_0TbFZawHltboRtMUT3ZdMjjF9B_f5dY5mbl423RZRaOZ8REVdfLpxxg06nrom_YdPsaRnE9t9YfSlcw?ccb=9-4&oh=01_Q5Aa3AGJ-K9-YWUi-qQawz26XVAi80JqFMmNN-JvPtitOvrkZw&oe=69426A83&_nc_sid=e6ed6c&mms3=true",
+          "mimetype": "image/jpeg",
+          "caption": "🥲",
+          "fileSha256": "CDXbQqiZBUatmsKRWwbWJoQr7Artc7+1trvv7+mXMzE=",
+          "fileLength": "9973",
+          "height": 1280,
+          "width": 576,
+          "mediaKey": "h0oikIqCEyhIqlm68iTfV43rqBjcDdcTuhY9rIQLBfU=",
+          "fileEncSha256": "8qX1D/ofRT6UpihGZN5Ve2T2d2YbkIomJM9tPtjuw2g=",
+          "directPath": "/o1/v/t24/f2/m239/AQPaIxWwU9sZjNjZcTUp5oT2v7_0TbFZawHltboRtMUT3ZdMjjF9B_f5dY5mbl423RZRaOZ8REVdfLpxxg06nrom_YdPsaRnE9t9YfSlcw?ccb=9-4&oh=01_Q5Aa3AGJ-K9-YWUi-qQawz26XVAi80JqFMmNN-JvPtitOvrkZw&oe=69426A83&_nc_sid=e6ed6c",
+          "mediaKeyTimestamp": "1763373653",
+          "jpegThumbnail": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkJCQkKCQoLCwoODw0PDhUTERETFR8WGBYYFh8wHiMeHiMeMCozKScpMypMOzU1O0xXSUVJV2pfX2qFf4WuruoBCQkJCQoJCgsLCg4PDQ8OFRMRERMVHxYYFhgWHzAeIx4eIx4wKjMpJykzKkw7NTU7TFdJRUlXal9faoV/ha6u6v/CABEIAKAASAMBIgACEQEDEQH/xAAsAAEBAQEAAwAAAAAAAAAAAAAABQIBAwQHAQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAD4aAAAAAAAAAAAAAAAAAAAAr9I6gJ6gJ6nknKA9bnhAAAAAAAAAAAAAAAAAAAABvAbwHeAH//EACcQAAEDBAAFBAMAAAAAAAAAAAECAxEABBIxBRAUISITJEFgQlJh/9oACAEBAAE/APqKWmlMNHoXSqB5DRpxq3CCegfTjBJyr1eHZT0zmOOs/mg9w+fK1WR/F161gM/arM689Ul6wBM2qyJ/elvcM/C0c1srpL/DwTNmo95HnTz1gUENWygopHcq0aTc3CQAl5YA1CjSrh9QxU8siIgk/UsRhlkJmMeWKcMsu865QIBn51z/AP/EABQRAQAAAAAAAAAAAAAAAAAAAFD/2gAIAQIBAT8AS//EABQRAQAAAAAAAAAAAAAAAAAAAFD/2gAIAQMBAT8AS//Z",
+          "contextInfo": {
+            "forwardingScore": 1,
+            "isForwarded": true,
+            "featureEligibilities": {
+              "canBeReshared": true
+            },
+            "statusAttributionType": "RESHARED_FROM_POST",
+            "pairedMediaType": "NOT_PAIRED_MEDIA",
+            "statusSourceType": "IMAGE"
+          },
+          "scansSidecar": "Xr5bfOB+ZZ2bbuNx/bVaF74IznbK54qiaIzK0T3gsiC5wv1HPNGn9g==",
+          "scanLengths": [
+            2615,
+            5573,
+            775,
+            1010
+          ],
+          "midQualityFileSha256": "KXi8F+7Qp9hBD8gqCT5F/uzg9M1ev6iH1epMIoOjgn4="
+        },
+        "messageContextInfo": {
+          "messageSecret": "ZxopN8jyUu9VfQBRIKp5wxrCs71Wv+xrHpOfIwiP3Oc="
+        }
+      },
+      "verifiedBizName": "error"
+    }
+  },
+  "A5995D0972138C4486BA2CC46664EEC6": {
+    "id": "A5995D0972138C4486BA2CC46664EEC6",
+    "fromJid": "status@broadcast",
+    "senderJid": "self",
+    "content": "",
+    "type": "unknown",
+    "timestamp": 1763373686325,
+    "originalMessage": {
+      "key": {
+        "remoteJid": "status@broadcast",
+        "fromMe": false,
+        "id": "A5995D0972138C4486BA2CC46664EEC6",
+        "participant": "254707875026@s.whatsapp.net",
+        "participantLid": "101499237588998@lid"
+      },
+      "messageTimestamp": 1763373683,
+      "pushName": "Tabbynowils",
+      "broadcast": true,
+      "message": {
+        "senderKeyDistributionMessage": {
+          "groupId": "status@broadcast",
+          "axolotlSenderKeyDistributionMessage": "MwiT3LsBEAAaIPB0bofJD8N4GpCjeDaK2dIGdxDGDZ3ewRKXFxyKd9XxIiEFgcUIZI0iVW2TFCgfV1AUkdJn2u91RLm5OXu7v/vL3Xg="
+        },
+        "videoMessage": {
+          "url": "https://mmg.whatsapp.net/v/t62.7161-24/577663677_1223271616278851_762065267813103883_n.enc?ccb=11-4&oh=01_Q5Aa3AGzPB0Nildt9RaXn8ll6sAE9CLee8VLe0KSCRJjdOpsvQ&oe=69427D88&_nc_sid=5e03e0&mms3=true",
+          "mimetype": "video/mp4",
+          "fileSha256": "sIIk3k6qvgO6g4eBYqbA5P9lGIeLhCQYLsACzcEMl2o=",
+          "fileLength": "1348997",
+          "seconds": 7,
+          "mediaKey": "k7ZtNCP6VWsgY/qVz4UE9L42QaBo4lnni+M6pRlBHI8=",
+          "height": 848,
+          "width": 480,
+          "fileEncSha256": "Lrl7EAvM+6ctlX3wqzelOd/RpGogY/AcsA1ZFhSS9Ng=",
+          "directPath": "/v/t62.7161-24/577663677_1223271616278851_762065267813103883_n.enc?ccb=11-4&oh=01_Q5Aa3AGzPB0Nildt9RaXn8ll6sAE9CLee8VLe0KSCRJjdOpsvQ&oe=69427D88&_nc_sid=5e03e0",
+          "mediaKeyTimestamp": "1763373639",
+          "jpegThumbnail": "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",
+          "contextInfo": {
+            "forwardingScore": 0,
+            "featureEligibilities": {
+              "canBeReshared": true
+            },
+            "pairedMediaType": "NOT_PAIRED_MEDIA",
+            "statusSourceType": "VIDEO"
+          },
+          "streamingSidecar": "sVmSAmo1LnxFCxaCw8C79XeCA+NWmBNCy/ofFlVaqCw71Z0Y5vCAfivhciYVRC6sTL3vSuH/7pTWWU40LWHeuv2D96yCdZMVwqxI3v1tIaiyyCAmp3sfu2WW2oySYR8cRFaP8EtYyDA7GpCzlCMVpDkEz82iuFkg5N70LvaDQmQnHgRB5q2sknKAW7SRGClZoUwV0bE709aWzb/sH3Fdgg7eFIHRNW3WbvumOkNgysMtyiqVslNi/GH4uWShjB53NfZFEptxE5fFHkaDhYtKW5f1",
+          "thumbnailDirectPath": "/v/t62.36147-24/585956882_1448083653989383_464818464310358750_n.enc?ccb=11-4&oh=01_Q5Aa3AEZmaH4gr5WPmW4kf9PmdDodvAMrJuNhbTlC4VNrZD6ZQ&oe=6942746E&_nc_sid=5e03e0",
+          "thumbnailSha256": "Pk3EsMJyhV1RMIyYXNkGOFc3HSF1v2FB0j1aYdFxS+c=",
+          "thumbnailEncSha256": "P4CriGsgtWS5u/Mm24t/v6FL7OQtkBmtjgmaN9OS3q0=",
+          "externalShareFullVideoDurationInSeconds": 0
+        },
+        "messageContextInfo": {
+          "messageSecret": "lDxthWU/kW3P1PTmhu7UcMeQLa5+FH5H7482EfYoHXE="
+        }
+      },
+      "verifiedBizName": "Tabbynowils"
+    }
   }
 }
