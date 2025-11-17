@@ -16,7 +16,7 @@ import { join } from 'path';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { commandRegistry, type CommandContext } from './command-registry.js';
 import { AutoStatusService } from './auto-status.js';
-import { antideleteService, clearAntideleteService } from './antidelete.js';
+import { getAntideleteService, clearAntideleteService } from './antidelete.js';
 import { getAntiViewOnceService } from './antiviewonce.js';
 import './core-commands.js'; // Load core commands
 import './channel-commands.js'; // Load channel commands
@@ -44,6 +44,7 @@ export class WhatsAppBot {
   private reconnectAttempts: number = 0;
   private heartbeatInterval?: NodeJS.Timeout;
   private autoStatusService: AutoStatusService;
+  private antideleteService: any;
   private antiViewOnceService: any;
   private presenceInterval?: NodeJS.Timeout;
   private currentPresenceState: 'composing' | 'recording' = 'recording';
@@ -61,6 +62,9 @@ export class WhatsAppBot {
 
     // Initialize auto status service
     this.autoStatusService = new AutoStatusService(botInstance);
+
+    // Initialize bot-specific antidelete service
+    this.antideleteService = getAntideleteService(botInstance);
 
     // Initialize anti-viewonce service
     this.antiViewOnceService = getAntiViewOnceService(botInstance.id);
@@ -473,7 +477,7 @@ export class WhatsAppBot {
 
             console.log(`   💾 Storing in antidelete service...`);
             // Store message for antidelete functionality
-            await antideleteService.storeMessage(message, this.sock);
+            await this.antideleteService.storeMessage(message, this.sock);
 
             // Handle Anti-ViewOnce
             if (this.antiViewOnceService && !isReactionMessage && message.key.fromMe) {
@@ -562,7 +566,7 @@ export class WhatsAppBot {
 
           const revocationMessage = { key, message: update.message };
           console.log(`   📤 Forwarding to antidelete service...`);
-          await antideleteService.handleMessageRevocation(this.sock, revocationMessage);
+          await this.antideleteService.handleMessageRevocation(this.sock, revocationMessage);
           console.log(`   ✅ Revocation handled by antidelete service`);
         } else if (update.message?.protocolMessage) {
           console.log(`   📡 Other Protocol Message:`, {
