@@ -86,6 +86,12 @@ class AntideleteService {
       const sender = message.key.participant || message.key.remoteJid || '';
       const timestamp = message.messageTimestamp ? Number(message.messageTimestamp) : Date.now();
 
+      console.log(`\n📥 [Antidelete] Storing Message`);
+      console.log(`   🆔 ID: ${messageId}`);
+      console.log(`   💬 Chat: ${chatId}`);
+      console.log(`   👤 Sender: ${sender}`);
+      console.log(`   🕐 Timestamp: ${new Date(timestamp).toLocaleString()}`);
+
       let messageType = 'text';
       let text = '';
       let caption = '';
@@ -94,15 +100,27 @@ class AntideleteService {
 
       // Extract message content
       const messageContent = message.message;
-      if (!messageContent) return;
+      if (!messageContent) {
+        console.log(`   ⚠️ No message content found`);
+        return;
+      }
+
+      console.log(`   📦 Message keys: ${Object.keys(messageContent).join(', ')}`);
 
       // Text message
       if (messageContent.conversation) {
         messageType = 'text';
         text = messageContent.conversation;
+        console.log(`   📝 Type: Conversation`);
+        console.log(`   💬 Text: ${text.substring(0, 100)}${text.length > 100 ? '...' : ''}`);
       } else if (messageContent.extendedTextMessage?.text) {
         messageType = 'text';
         text = messageContent.extendedTextMessage.text;
+        console.log(`   📝 Type: Extended Text`);
+        console.log(`   💬 Text: ${text.substring(0, 100)}${text.length > 100 ? '...' : ''}`);
+        if (messageContent.extendedTextMessage.contextInfo) {
+          console.log(`   🔗 Has context info (quoted message, etc.)`);
+        }
       }
 
       // Image
@@ -110,6 +128,13 @@ class AntideleteService {
         messageType = 'image';
         caption = messageContent.imageMessage.caption || '';
         mediaType = 'image';
+        console.log(`   🖼️ Type: Image`);
+        console.log(`   📏 Size: ${messageContent.imageMessage.width}x${messageContent.imageMessage.height}`);
+        console.log(`   📦 File size: ${messageContent.imageMessage.fileLength} bytes`);
+        console.log(`   🔗 URL: ${messageContent.imageMessage.url || 'N/A'}`);
+        console.log(`   🛣️ Direct Path: ${messageContent.imageMessage.directPath || 'N/A'}`);
+        console.log(`   🎭 Mimetype: ${messageContent.imageMessage.mimetype || 'N/A'}`);
+        if (caption) console.log(`   💬 Caption: ${caption.substring(0, 100)}${caption.length > 100 ? '...' : ''}`);
         mediaPath = await this.downloadMedia(message, client, messageId, 'image');
       }
 
@@ -118,6 +143,14 @@ class AntideleteService {
         messageType = 'video';
         caption = messageContent.videoMessage.caption || '';
         mediaType = 'video';
+        console.log(`   🎥 Type: Video`);
+        console.log(`   📏 Size: ${messageContent.videoMessage.width}x${messageContent.videoMessage.height}`);
+        console.log(`   ⏱️ Duration: ${messageContent.videoMessage.seconds || 'N/A'} seconds`);
+        console.log(`   📦 File size: ${messageContent.videoMessage.fileLength} bytes`);
+        console.log(`   🔗 URL: ${messageContent.videoMessage.url || 'N/A'}`);
+        console.log(`   🛣️ Direct Path: ${messageContent.videoMessage.directPath || 'N/A'}`);
+        console.log(`   🎭 Mimetype: ${messageContent.videoMessage.mimetype || 'N/A'}`);
+        if (caption) console.log(`   💬 Caption: ${caption.substring(0, 100)}${caption.length > 100 ? '...' : ''}`);
         mediaPath = await this.downloadMedia(message, client, messageId, 'video');
       }
 
@@ -125,6 +158,13 @@ class AntideleteService {
       else if (messageContent.audioMessage) {
         messageType = 'audio';
         mediaType = 'audio';
+        console.log(`   🎵 Type: Audio`);
+        console.log(`   ⏱️ Duration: ${messageContent.audioMessage.seconds || 'N/A'} seconds`);
+        console.log(`   📦 File size: ${messageContent.audioMessage.fileLength} bytes`);
+        console.log(`   🔗 URL: ${messageContent.audioMessage.url || 'N/A'}`);
+        console.log(`   🛣️ Direct Path: ${messageContent.audioMessage.directPath || 'N/A'}`);
+        console.log(`   🎭 Mimetype: ${messageContent.audioMessage.mimetype || 'N/A'}`);
+        console.log(`   🎤 Is Voice: ${messageContent.audioMessage.ptt ? 'Yes' : 'No'}`);
         mediaPath = await this.downloadMedia(message, client, messageId, 'audio');
       }
 
@@ -133,6 +173,13 @@ class AntideleteService {
         messageType = 'document';
         caption = messageContent.documentMessage.caption || '';
         mediaType = 'document';
+        console.log(`   📄 Type: Document`);
+        console.log(`   📝 Filename: ${messageContent.documentMessage.fileName || 'N/A'}`);
+        console.log(`   📦 File size: ${messageContent.documentMessage.fileLength} bytes`);
+        console.log(`   🔗 URL: ${messageContent.documentMessage.url || 'N/A'}`);
+        console.log(`   🛣️ Direct Path: ${messageContent.documentMessage.directPath || 'N/A'}`);
+        console.log(`   🎭 Mimetype: ${messageContent.documentMessage.mimetype || 'N/A'}`);
+        if (caption) console.log(`   💬 Caption: ${caption.substring(0, 100)}${caption.length > 100 ? '...' : ''}`);
         mediaPath = await this.downloadMedia(message, client, messageId, 'document');
       }
 
@@ -140,6 +187,13 @@ class AntideleteService {
       else if (messageContent.stickerMessage) {
         messageType = 'sticker';
         mediaType = 'sticker';
+        console.log(`   🎨 Type: Sticker`);
+        console.log(`   📏 Size: ${messageContent.stickerMessage.width}x${messageContent.stickerMessage.height}`);
+        console.log(`   📦 File size: ${messageContent.stickerMessage.fileLength} bytes`);
+        console.log(`   🔗 URL: ${messageContent.stickerMessage.url || 'N/A'}`);
+        console.log(`   🛣️ Direct Path: ${messageContent.stickerMessage.directPath || 'N/A'}`);
+        console.log(`   🎭 Mimetype: ${messageContent.stickerMessage.mimetype || 'N/A'}`);
+        console.log(`   🎭 Animated: ${messageContent.stickerMessage.isAnimated ? 'Yes' : 'No'}`);
         mediaPath = await this.downloadMedia(message, client, messageId, 'sticker');
       }
 
@@ -157,21 +211,31 @@ class AntideleteService {
 
       this.deletedMessages.set(messageId, deletedMessage);
       this.saveMessages();
+      
+      console.log(`   ✅ Message stored successfully`);
+      console.log(`   💾 Total stored messages: ${this.deletedMessages.size}`);
+      if (mediaPath) {
+        console.log(`   📂 Media saved to: ${mediaPath}`);
+      }
+      console.log(`─────────────────────────────────────────────────────────\n`);
 
     } catch (error) {
-      console.error(`[Antidelete] Error storing message:`, error);
+      console.error(`❌ [Antidelete] Error storing message:`, error);
+      console.log(`─────────────────────────────────────────────────────────\n`);
     }
   }
 
   private async downloadMedia(message: proto.IWebMessageInfo, client: WASocket, messageId: string, mediaType: string): Promise<string> {
     try {
+      console.log(`   ⬇️ Downloading ${mediaType} media...`);
       const buffer = await downloadMediaMessage(message, 'buffer', {});
       const filename = `${messageId}.media`;
       const filepath = join(this.mediaDir, filename);
       writeFileSync(filepath, buffer as Buffer);
+      console.log(`   ✅ Media downloaded: ${(buffer as Buffer).length} bytes`);
       return filepath;
     } catch (error) {
-      console.error(`[Antidelete] Error downloading media:`, error);
+      console.error(`   ❌ [Antidelete] Error downloading media:`, error);
       return '';
     }
   }
