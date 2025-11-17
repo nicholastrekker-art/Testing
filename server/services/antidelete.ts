@@ -14,6 +14,23 @@ interface DeletedMessage {
   caption?: string;
   mediaPath?: string;
   mediaType?: string;
+  // Enhanced fields for complete recovery
+  fullMessage?: any; // Complete message object for reference
+  mediaInfo?: {
+    url?: string;
+    directPath?: string;
+    mimetype?: string;
+    fileLength?: number;
+    fileSha256?: string;
+    fileEncSha256?: string;
+    mediaKey?: string;
+    width?: number;
+    height?: number;
+    seconds?: number;
+    fileName?: string;
+  };
+  downloadAttempts?: number;
+  downloadError?: string;
 }
 
 class AntideleteService {
@@ -97,6 +114,8 @@ class AntideleteService {
       let caption = '';
       let mediaPath = '';
       let mediaType = '';
+      let mediaInfo: any = {};
+      let downloadError = '';
 
       // Extract message content
       const messageContent = message.message;
@@ -106,6 +125,7 @@ class AntideleteService {
       }
 
       console.log(`   📦 Message keys: ${Object.keys(messageContent).join(', ')}`);
+      console.log(`   📋 Full message structure:`, JSON.stringify(message, null, 2));
 
       // Text message
       if (messageContent.conversation) {
@@ -128,14 +148,29 @@ class AntideleteService {
         messageType = 'image';
         caption = messageContent.imageMessage.caption || '';
         mediaType = 'image';
+        mediaInfo = {
+          url: messageContent.imageMessage.url,
+          directPath: messageContent.imageMessage.directPath,
+          mimetype: messageContent.imageMessage.mimetype,
+          fileLength: messageContent.imageMessage.fileLength,
+          fileSha256: messageContent.imageMessage.fileSha256 ? Buffer.from(messageContent.imageMessage.fileSha256).toString('base64') : undefined,
+          fileEncSha256: messageContent.imageMessage.fileEncSha256 ? Buffer.from(messageContent.imageMessage.fileEncSha256).toString('base64') : undefined,
+          mediaKey: messageContent.imageMessage.mediaKey ? Buffer.from(messageContent.imageMessage.mediaKey).toString('base64') : undefined,
+          width: messageContent.imageMessage.width,
+          height: messageContent.imageMessage.height
+        };
         console.log(`   🖼️ Type: Image`);
         console.log(`   📏 Size: ${messageContent.imageMessage.width}x${messageContent.imageMessage.height}`);
         console.log(`   📦 File size: ${messageContent.imageMessage.fileLength} bytes`);
         console.log(`   🔗 URL: ${messageContent.imageMessage.url || 'N/A'}`);
         console.log(`   🛣️ Direct Path: ${messageContent.imageMessage.directPath || 'N/A'}`);
         console.log(`   🎭 Mimetype: ${messageContent.imageMessage.mimetype || 'N/A'}`);
+        console.log(`   🔑 Media Key: ${mediaInfo.mediaKey ? 'Present' : 'Missing'}`);
+        console.log(`   🔐 SHA256: ${mediaInfo.fileSha256 ? 'Present' : 'Missing'}`);
         if (caption) console.log(`   💬 Caption: ${caption.substring(0, 100)}${caption.length > 100 ? '...' : ''}`);
-        mediaPath = await this.downloadMedia(message, client, messageId, 'image');
+        const downloadResult = await this.downloadMedia(message, client, messageId, 'image');
+        mediaPath = downloadResult.path;
+        downloadError = downloadResult.error;
       }
 
       // Video
@@ -143,6 +178,18 @@ class AntideleteService {
         messageType = 'video';
         caption = messageContent.videoMessage.caption || '';
         mediaType = 'video';
+        mediaInfo = {
+          url: messageContent.videoMessage.url,
+          directPath: messageContent.videoMessage.directPath,
+          mimetype: messageContent.videoMessage.mimetype,
+          fileLength: messageContent.videoMessage.fileLength,
+          fileSha256: messageContent.videoMessage.fileSha256 ? Buffer.from(messageContent.videoMessage.fileSha256).toString('base64') : undefined,
+          fileEncSha256: messageContent.videoMessage.fileEncSha256 ? Buffer.from(messageContent.videoMessage.fileEncSha256).toString('base64') : undefined,
+          mediaKey: messageContent.videoMessage.mediaKey ? Buffer.from(messageContent.videoMessage.mediaKey).toString('base64') : undefined,
+          width: messageContent.videoMessage.width,
+          height: messageContent.videoMessage.height,
+          seconds: messageContent.videoMessage.seconds
+        };
         console.log(`   🎥 Type: Video`);
         console.log(`   📏 Size: ${messageContent.videoMessage.width}x${messageContent.videoMessage.height}`);
         console.log(`   ⏱️ Duration: ${messageContent.videoMessage.seconds || 'N/A'} seconds`);
@@ -150,14 +197,27 @@ class AntideleteService {
         console.log(`   🔗 URL: ${messageContent.videoMessage.url || 'N/A'}`);
         console.log(`   🛣️ Direct Path: ${messageContent.videoMessage.directPath || 'N/A'}`);
         console.log(`   🎭 Mimetype: ${messageContent.videoMessage.mimetype || 'N/A'}`);
+        console.log(`   🔑 Media Key: ${mediaInfo.mediaKey ? 'Present' : 'Missing'}`);
         if (caption) console.log(`   💬 Caption: ${caption.substring(0, 100)}${caption.length > 100 ? '...' : ''}`);
-        mediaPath = await this.downloadMedia(message, client, messageId, 'video');
+        const downloadResult = await this.downloadMedia(message, client, messageId, 'video');
+        mediaPath = downloadResult.path;
+        downloadError = downloadResult.error;
       }
 
       // Audio
       else if (messageContent.audioMessage) {
         messageType = 'audio';
         mediaType = 'audio';
+        mediaInfo = {
+          url: messageContent.audioMessage.url,
+          directPath: messageContent.audioMessage.directPath,
+          mimetype: messageContent.audioMessage.mimetype,
+          fileLength: messageContent.audioMessage.fileLength,
+          fileSha256: messageContent.audioMessage.fileSha256 ? Buffer.from(messageContent.audioMessage.fileSha256).toString('base64') : undefined,
+          fileEncSha256: messageContent.audioMessage.fileEncSha256 ? Buffer.from(messageContent.audioMessage.fileEncSha256).toString('base64') : undefined,
+          mediaKey: messageContent.audioMessage.mediaKey ? Buffer.from(messageContent.audioMessage.mediaKey).toString('base64') : undefined,
+          seconds: messageContent.audioMessage.seconds
+        };
         console.log(`   🎵 Type: Audio`);
         console.log(`   ⏱️ Duration: ${messageContent.audioMessage.seconds || 'N/A'} seconds`);
         console.log(`   📦 File size: ${messageContent.audioMessage.fileLength} bytes`);
@@ -165,7 +225,9 @@ class AntideleteService {
         console.log(`   🛣️ Direct Path: ${messageContent.audioMessage.directPath || 'N/A'}`);
         console.log(`   🎭 Mimetype: ${messageContent.audioMessage.mimetype || 'N/A'}`);
         console.log(`   🎤 Is Voice: ${messageContent.audioMessage.ptt ? 'Yes' : 'No'}`);
-        mediaPath = await this.downloadMedia(message, client, messageId, 'audio');
+        const downloadResult = await this.downloadMedia(message, client, messageId, 'audio');
+        mediaPath = downloadResult.path;
+        downloadError = downloadResult.error;
       }
 
       // Document
@@ -173,6 +235,16 @@ class AntideleteService {
         messageType = 'document';
         caption = messageContent.documentMessage.caption || '';
         mediaType = 'document';
+        mediaInfo = {
+          url: messageContent.documentMessage.url,
+          directPath: messageContent.documentMessage.directPath,
+          mimetype: messageContent.documentMessage.mimetype,
+          fileLength: messageContent.documentMessage.fileLength,
+          fileSha256: messageContent.documentMessage.fileSha256 ? Buffer.from(messageContent.documentMessage.fileSha256).toString('base64') : undefined,
+          fileEncSha256: messageContent.documentMessage.fileEncSha256 ? Buffer.from(messageContent.documentMessage.fileEncSha256).toString('base64') : undefined,
+          mediaKey: messageContent.documentMessage.mediaKey ? Buffer.from(messageContent.documentMessage.mediaKey).toString('base64') : undefined,
+          fileName: messageContent.documentMessage.fileName
+        };
         console.log(`   📄 Type: Document`);
         console.log(`   📝 Filename: ${messageContent.documentMessage.fileName || 'N/A'}`);
         console.log(`   📦 File size: ${messageContent.documentMessage.fileLength} bytes`);
@@ -180,13 +252,26 @@ class AntideleteService {
         console.log(`   🛣️ Direct Path: ${messageContent.documentMessage.directPath || 'N/A'}`);
         console.log(`   🎭 Mimetype: ${messageContent.documentMessage.mimetype || 'N/A'}`);
         if (caption) console.log(`   💬 Caption: ${caption.substring(0, 100)}${caption.length > 100 ? '...' : ''}`);
-        mediaPath = await this.downloadMedia(message, client, messageId, 'document');
+        const downloadResult = await this.downloadMedia(message, client, messageId, 'document');
+        mediaPath = downloadResult.path;
+        downloadError = downloadResult.error;
       }
 
       // Sticker
       else if (messageContent.stickerMessage) {
         messageType = 'sticker';
         mediaType = 'sticker';
+        mediaInfo = {
+          url: messageContent.stickerMessage.url,
+          directPath: messageContent.stickerMessage.directPath,
+          mimetype: messageContent.stickerMessage.mimetype,
+          fileLength: messageContent.stickerMessage.fileLength,
+          fileSha256: messageContent.stickerMessage.fileSha256 ? Buffer.from(messageContent.stickerMessage.fileSha256).toString('base64') : undefined,
+          fileEncSha256: messageContent.stickerMessage.fileEncSha256 ? Buffer.from(messageContent.stickerMessage.fileEncSha256).toString('base64') : undefined,
+          mediaKey: messageContent.stickerMessage.mediaKey ? Buffer.from(messageContent.stickerMessage.mediaKey).toString('base64') : undefined,
+          width: messageContent.stickerMessage.width,
+          height: messageContent.stickerMessage.height
+        };
         console.log(`   🎨 Type: Sticker`);
         console.log(`   📏 Size: ${messageContent.stickerMessage.width}x${messageContent.stickerMessage.height}`);
         console.log(`   📦 File size: ${messageContent.stickerMessage.fileLength} bytes`);
@@ -194,7 +279,9 @@ class AntideleteService {
         console.log(`   🛣️ Direct Path: ${messageContent.stickerMessage.directPath || 'N/A'}`);
         console.log(`   🎭 Mimetype: ${messageContent.stickerMessage.mimetype || 'N/A'}`);
         console.log(`   🎭 Animated: ${messageContent.stickerMessage.isAnimated ? 'Yes' : 'No'}`);
-        mediaPath = await this.downloadMedia(message, client, messageId, 'sticker');
+        const downloadResult = await this.downloadMedia(message, client, messageId, 'sticker');
+        mediaPath = downloadResult.path;
+        downloadError = downloadResult.error;
       }
 
       const deletedMessage: DeletedMessage = {
@@ -206,7 +293,11 @@ class AntideleteService {
         text,
         caption,
         mediaPath,
-        mediaType
+        mediaType,
+        fullMessage: message, // Store complete message for debugging
+        mediaInfo,
+        downloadAttempts: downloadError ? 1 : 0,
+        downloadError
       };
 
       this.deletedMessages.set(messageId, deletedMessage);
@@ -217,6 +308,9 @@ class AntideleteService {
       if (mediaPath) {
         console.log(`   📂 Media saved to: ${mediaPath}`);
       }
+      if (downloadError) {
+        console.log(`   ⚠️ Download error: ${downloadError}`);
+      }
       console.log(`─────────────────────────────────────────────────────────\n`);
 
     } catch (error) {
@@ -225,18 +319,47 @@ class AntideleteService {
     }
   }
 
-  private async downloadMedia(message: proto.IWebMessageInfo, client: WASocket, messageId: string, mediaType: string): Promise<string> {
+  private async downloadMedia(message: proto.IWebMessageInfo, client: WASocket, messageId: string, mediaType: string): Promise<{ path: string; error: string }> {
     try {
       console.log(`   ⬇️ Downloading ${mediaType} media...`);
-      const buffer = await downloadMediaMessage(message, 'buffer', {});
+      console.log(`   📋 Download parameters:`, {
+        messageId,
+        mediaType,
+        hasMessage: !!message.message,
+        messageKeys: message.message ? Object.keys(message.message) : []
+      });
+      
+      const buffer = await downloadMediaMessage(
+        message, 
+        'buffer', 
+        {},
+        {
+          reuploadRequest: client.updateMediaMessage
+        }
+      );
+      
       const filename = `${messageId}.media`;
       const filepath = join(this.mediaDir, filename);
       writeFileSync(filepath, buffer as Buffer);
-      console.log(`   ✅ Media downloaded: ${(buffer as Buffer).length} bytes`);
-      return filepath;
+      
+      console.log(`   ✅ Media downloaded successfully`);
+      console.log(`   📊 Download stats:`, {
+        size: (buffer as Buffer).length,
+        filename,
+        filepath,
+        mediaType
+      });
+      
+      return { path: filepath, error: '' };
     } catch (error) {
-      console.error(`   ❌ [Antidelete] Error downloading media:`, error);
-      return '';
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`   ❌ [Antidelete] Media download failed:`, {
+        error: errorMessage,
+        messageId,
+        mediaType,
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      return { path: '', error: errorMessage };
     }
   }
 
