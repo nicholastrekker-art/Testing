@@ -133,9 +133,15 @@ export class AutoStatusService {
 
       const config = this.getConfig();
       
-      // NO THROTTLING FOR VIEWING - Instant view
-      // Only small delay to prevent rate limiting
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Apply throttling for viewing statuses
+      const now = Date.now();
+      const timeSinceLastView = config.lastStatusView ? now - config.lastStatusView : config.autoViewInterval;
+      
+      if (timeSinceLastView < config.autoViewInterval) {
+        const waitTime = config.autoViewInterval - timeSinceLastView;
+        console.log(`⏳ Throttling status view - waiting ${waitTime}ms`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
 
       // Handle status from messages.upsert
       if (status.messages && status.messages.length > 0) {
