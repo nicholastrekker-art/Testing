@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { downloadContentFromMessage } from '@whiskeysockets/baileys';
 import { writeFile } from 'fs/promises';
 import type { WASocket, WAMessage } from '@whiskeysockets/baileys';
+import type { BotInstance } from '@shared/schema';
 
 interface StoredMessage {
   id: string;
@@ -21,18 +22,24 @@ interface AntideleteConfig {
 
 export class AntideleteService {
   private messageStore = new Map<string, StoredMessage>();
+  private botInstance: BotInstance;
   private configPath: string;
   private tempMediaDir: string;
   private messageStorePath: string;
-  private processedMessages = new Set<string>(); // To prevent processing the same message multiple times
+  private processedMessages = new Set<string>();
 
-  constructor() {
+  constructor(botInstance: BotInstance) {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
 
-    this.configPath = path.join(__dirname, '../data/antidelete.json');
-    this.tempMediaDir = path.join(__dirname, '../tmp');
-    this.messageStorePath = path.join(__dirname, '../data/message-store.json');
+    this.botInstance = botInstance;
+
+    // Isolated paths based on tenancy and bot ID
+    const isolatedDir = path.join(__dirname, '../data/antidelete', botInstance.serverName, `bot_${botInstance.id}`);
+
+    this.configPath = path.join(isolatedDir, 'config.json');
+    this.tempMediaDir = path.join(isolatedDir, 'media');
+    this.messageStorePath = path.join(isolatedDir, 'messages.json');
 
     // Ensure directories exist
     this.ensureDirectories();
@@ -40,7 +47,7 @@ export class AntideleteService {
     // Clear stored messages from previous sessions
     this.loadMessageStore();
 
-    // Also clear any old temp media files from previous sessions
+    // Clear any old temp media files from previous sessions
     this.clearTempMedia();
 
     // Start periodic cleanup every minute
@@ -48,21 +55,28 @@ export class AntideleteService {
 
     // Save message store periodically (every 5 minutes)
     setInterval(() => this.saveMessageStore(), 5 * 60 * 1000);
+
+    console.log(`✅ [Antidelete] Initialized for bot ${botInstance.name} (${botInstance.id}) in tenant ${botInstance.serverName}`);
   }
 
   private ensureDirectories(): void {
-    const dataDir = path.dirname(this.configPath);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
-    }
+    const dirs = [
+      path.dirname(this.configPath),
+      this.tempMediaDir,
+      path.dirname(this.messageStorePath)
+    ];
 
-    if (!fs.existsSync(this.tempMediaDir)) {
-      fs.mkdirSync(this.tempMediaDir, { recursive: true });
+    for (const dir of dirs) {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
     }
   }
 
   private getFolderSizeInMB(folderPath: string): number {
     try {
+      if (!fs.existsSync(folderPath)) return 0;
+
       const files = fs.readdirSync(folderPath);
       let totalSize = 0;
 
@@ -73,9 +87,9 @@ export class AntideleteService {
         }
       }
 
-      return totalSize / (1024 * 1024); // Convert bytes to MB
+      return totalSize / (1024 * 1024);
     } catch (err) {
-      console.error('Error getting folder size:', err);
+      console.error(`[Antidelete:${this.botInstance.id}] Error getting folder size:`, err);
       return 0;
     }
   }
@@ -90,10 +104,10 @@ export class AntideleteService {
           const filePath = path.join(this.tempMediaDir, file);
           fs.unlinkSync(filePath);
         }
-        console.log(`Cleaned temp folder - was ${sizeMB.toFixed(2)}MB`);
+        console.log(`[Antidelete:${this.botInstance.id}] Cleaned temp folder - was ${sizeMB.toFixed(2)}MB`);
       }
     } catch (err) {
-      console.error('Temp cleanup error:', err);
+      console.error(`[Antidelete:${this.botInstance.id}] Temp cleanup error:`, err);
     }
   }
 
@@ -106,11 +120,11 @@ export class AntideleteService {
           fs.unlinkSync(filePath);
         }
         if (files.length > 0) {
-          console.log(`🧹 Cleared ${files.length} temp media files from previous session`);
+          console.log(`[Antidelete:${this.botInstance.id}] Cleared ${files.length} temp media files from previous session`);
         }
       }
     } catch (err) {
-      console.error('Error clearing temp media:', err);
+      console.error(`[Antidelete:${this.botInstance.id}] Error clearing temp media:`, err);
     }
   }
 
@@ -127,47 +141,42 @@ export class AntideleteService {
 
   private saveAntideleteConfig(config: AntideleteConfig): void {
     try {
-      // Ensure the directory exists before writing
       const dataDir = path.dirname(this.configPath);
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
       }
-      
+
       fs.writeFileSync(this.configPath, JSON.stringify(config, null, 2));
     } catch (err) {
-      console.error('Config save error:', err);
+      console.error(`[Antidelete:${this.botInstance.id}] Config save error:`, err);
     }
   }
 
   private loadMessageStore(): void {
     try {
       if (fs.existsSync(this.messageStorePath)) {
-        // Delete the existing message store file instead of loading it
         fs.unlinkSync(this.messageStorePath);
-        console.log('🗑️ Deleted old stored messages from previous session');
+        console.log(`[Antidelete:${this.botInstance.id}] Deleted old stored messages from previous session`);
       }
-      // Always start with a fresh, empty message store
       this.messageStore = new Map();
-      console.log('✨ Started with fresh message store for antidelete');
+      console.log(`[Antidelete:${this.botInstance.id}] Started with fresh message store`);
     } catch (err) {
-      console.error('Error clearing message store:', err);
+      console.error(`[Antidelete:${this.botInstance.id}] Error clearing message store:`, err);
       this.messageStore = new Map();
     }
   }
 
   private saveMessageStore(): void {
     try {
-      // Ensure the directory exists before writing
       const dataDir = path.dirname(this.messageStorePath);
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
       }
-      
-      // Convert Map to plain object for JSON storage
+
       const messageObj = Object.fromEntries(this.messageStore);
       fs.writeFileSync(this.messageStorePath, JSON.stringify(messageObj, null, 2));
     } catch (err) {
-      console.error('Error saving message store:', err);
+      console.error(`[Antidelete:${this.botInstance.id}] Error saving message store:`, err);
     }
   }
 
@@ -199,157 +208,6 @@ export class AntideleteService {
     await sock.sendMessage(chatId, { text: `*Antidelete ${match === 'on' ? 'enabled' : 'disabled'}*` });
   }
 
-  // Helper to extract text from different message types
-  private extractMessageText(message: any): string {
-    if (!message) return '';
-    if (message.conversation) return message.conversation;
-    if (message.extendedTextMessage?.text) return message.extendedTextMessage.text;
-    if (message.imageMessage?.caption) return message.imageMessage.caption;
-    if (message.videoMessage?.caption) return message.videoMessage.caption;
-    if (message.audioMessage?.caption) return message.audioMessage.caption;
-    if (message.stickerMessage?.caption) return message.stickerMessage.caption;
-    if (message.documentMessage?.caption) return message.documentMessage.caption;
-    if (message.viewOnceMessageV2?.message?.imageMessage?.caption) return message.viewOnceMessageV2.message.imageMessage.caption;
-    if (message.viewOnceMessageV2?.message?.videoMessage?.caption) return message.viewOnceMessageV2.message.videoMessage.caption;
-    return '';
-  }
-
-  // Helper to extract and save media
-  private async extractAndSaveMedia(message: WAMessage): Promise<{ type: string, path: string }> {
-    let mediaType = '';
-    let mediaPath = '';
-    const messageId = message.key.id;
-
-    console.log(`🔄 [Antidelete] Attempting to extract media from message ${messageId}`);
-
-    if (message.message?.imageMessage) {
-      mediaType = 'image';
-      console.log(`📸 [Antidelete] Extracting image media`);
-      try {
-        const buffer = await downloadContentFromMessage(message.message.imageMessage, 'image');
-        mediaPath = path.join(this.tempMediaDir, `${messageId}.jpg`);
-        const chunks: Buffer[] = [];
-        for await (const chunk of buffer) {
-          chunks.push(chunk);
-        }
-        const fullBuffer = Buffer.concat(chunks);
-        await writeFile(mediaPath, fullBuffer);
-        console.log(`✅ [Antidelete] Image saved: ${mediaPath} (${fullBuffer.length} bytes)`);
-      } catch (err) {
-        console.error('❌ [Antidelete] Error downloading image:', err);
-        mediaPath = '';
-      }
-    } else if (message.message?.stickerMessage) {
-      mediaType = 'sticker';
-      console.log(`🎭 [Antidelete] Extracting sticker media`);
-      try {
-        const buffer = await downloadContentFromMessage(message.message.stickerMessage, 'sticker');
-        mediaPath = path.join(this.tempMediaDir, `${messageId}.webp`);
-        const chunks: Buffer[] = [];
-        for await (const chunk of buffer) {
-          chunks.push(chunk);
-        }
-        const fullBuffer = Buffer.concat(chunks);
-        await writeFile(mediaPath, fullBuffer);
-        console.log(`✅ [Antidelete] Sticker saved: ${mediaPath} (${fullBuffer.length} bytes)`);
-      } catch (err) {
-        console.error('❌ [Antidelete] Error downloading sticker:', err);
-        mediaPath = '';
-      }
-    } else if (message.message?.videoMessage) {
-      mediaType = 'video';
-      console.log(`🎬 [Antidelete] Extracting video media`);
-      try {
-        const buffer = await downloadContentFromMessage(message.message.videoMessage, 'video');
-        mediaPath = path.join(this.tempMediaDir, `${messageId}.mp4`);
-        const chunks: Buffer[] = [];
-        for await (const chunk of buffer) {
-          chunks.push(chunk);
-        }
-        const fullBuffer = Buffer.concat(chunks);
-        await writeFile(mediaPath, fullBuffer);
-        console.log(`✅ [Antidelete] Video saved: ${mediaPath} (${fullBuffer.length} bytes)`);
-      } catch (err) {
-        console.error('❌ [Antidelete] Error downloading video:', err);
-        mediaPath = '';
-      }
-    } else if (message.message?.audioMessage) {
-      mediaType = 'audio';
-      console.log(`🎵 [Antidelete] Extracting audio media`);
-      try {
-        const buffer = await downloadContentFromMessage(message.message.audioMessage, 'audio');
-        mediaPath = path.join(this.tempMediaDir, `${messageId}.mp3`);
-        const chunks: Buffer[] = [];
-        for await (const chunk of buffer) {
-          chunks.push(chunk);
-        }
-        const fullBuffer = Buffer.concat(chunks);
-        await writeFile(mediaPath, fullBuffer);
-        console.log(`✅ [Antidelete] Audio saved: ${mediaPath} (${fullBuffer.length} bytes)`);
-      } catch (err) {
-        console.error('❌ [Antidelete] Error downloading audio:', err);
-        mediaPath = '';
-      }
-    } else if (message.message?.documentMessage) {
-      mediaType = 'document';
-      console.log(`📄 [Antidelete] Extracting document media`);
-      try {
-        const buffer = await downloadContentFromMessage(message.message.documentMessage, 'document');
-        const extension = message.message.documentMessage.fileName?.split('.').pop() || 'bin';
-        mediaPath = path.join(this.tempMediaDir, `${messageId}.${extension}`);
-        const chunks: Buffer[] = [];
-        for await (const chunk of buffer) {
-          chunks.push(chunk);
-        }
-        const fullBuffer = Buffer.concat(chunks);
-        await writeFile(mediaPath, fullBuffer);
-        console.log(`✅ [Antidelete] Document saved: ${mediaPath} (${fullBuffer.length} bytes)`);
-      } catch (err) {
-        console.error('❌ [Antidelete] Error downloading document:', err);
-        mediaPath = '';
-      }
-    } else if (message.message?.viewOnceMessageV2?.message?.imageMessage) {
-      mediaType = 'image';
-      console.log(`👁️ [Antidelete] Extracting view-once image media`);
-      try {
-        const buffer = await downloadContentFromMessage(message.message.viewOnceMessageV2.message.imageMessage, 'image');
-        mediaPath = path.join(this.tempMediaDir, `${messageId}-viewonce.jpg`);
-        const chunks: Buffer[] = [];
-        for await (const chunk of buffer) {
-          chunks.push(chunk);
-        }
-        const fullBuffer = Buffer.concat(chunks);
-        await writeFile(mediaPath, fullBuffer);
-        console.log(`✅ [Antidelete] View-once image saved: ${mediaPath} (${fullBuffer.length} bytes)`);
-      } catch (err) {
-        console.error('❌ [Antidelete] Error downloading view-once image:', err);
-        mediaPath = '';
-      }
-    } else if (message.message?.viewOnceMessageV2?.message?.videoMessage) {
-      mediaType = 'video';
-      console.log(`👁️ [Antidelete] Extracting view-once video media`);
-      try {
-        const buffer = await downloadContentFromMessage(message.message.viewOnceMessageV2.message.videoMessage, 'video');
-        mediaPath = path.join(this.tempMediaDir, `${messageId}-viewonce.mp4`);
-        const chunks: Buffer[] = [];
-        for await (const chunk of buffer) {
-          chunks.push(chunk);
-        }
-        const fullBuffer = Buffer.concat(chunks);
-        await writeFile(mediaPath, fullBuffer);
-        console.log(`✅ [Antidelete] View-once video saved: ${mediaPath} (${fullBuffer.length} bytes)`);
-      } catch (err) {
-        console.error('❌ [Antidelete] Error downloading view-once video:', err);
-        mediaPath = '';
-      }
-    } else {
-      console.log(`⚠️ [Antidelete] No supported media type found in message`);
-    }
-
-    console.log(`📋 [Antidelete] Media extraction result: type=${mediaType}, path=${mediaPath}, exists=${mediaPath ? fs.existsSync(mediaPath) : false}`);
-    return { type: mediaType, path: mediaPath };
-  }
-
   async storeMessage(message: WAMessage, sock?: WASocket): Promise<void> {
     try {
       const messageId = message.key.id;
@@ -357,19 +215,13 @@ export class AntideleteService {
       const senderJid = message.key.participant || message.key.fromMe ? 'self' : fromJid;
 
       if (!messageId || !fromJid) {
-        console.log(`⚠️ [Antidelete] Skipping message - Missing ID or JID | ID: ${messageId} | JID: ${fromJid}`);
         return;
       }
 
-      // Extract message content
       const messageContent = this.extractMessageContent(message);
       const messageType = this.getMessageType(message);
-      const chatType = this.getChatType(fromJid);
-      const timestamp = new Date().toLocaleString();
 
-      // Store messages with actual content or media
       if (messageContent.trim() !== '' || this.hasMediaContent(message)) {
-        // Store the message
         this.messageStore.set(messageId, {
           id: messageId,
           fromJid,
@@ -380,79 +232,31 @@ export class AntideleteService {
           originalMessage: message
         });
 
-        // If message has media, download and store it
         if (this.hasMediaContent(message)) {
           const mediaInfo = this.getDetailedMediaInfo(message);
-          console.log(`📥 [Antidelete] DOWNLOADING MEDIA FOR STORAGE`);
-          console.log(`   📱 Media Type: ${mediaInfo.type}`);
-          console.log(`   🔗 Media URL: ${mediaInfo.url ? 'Present' : 'None'}`);
-          console.log(`   📏 File Size: ${mediaInfo.size || 'Unknown'} bytes`);
-
           if (mediaInfo.url) {
             try {
               const mediaBuffer = await this.downloadMediaFromUrl(mediaInfo.url);
               if (mediaBuffer) {
                 const mediaPath = path.join(this.tempMediaDir, `${messageId}.media`);
                 fs.writeFileSync(mediaPath, mediaBuffer);
-                console.log(`💾 [Antidelete] Media stored at: ${mediaPath} (${mediaBuffer.length} bytes)`);
               }
             } catch (error) {
-              console.error(`❌ [Antidelete] Failed to download and store media:`, error);
+              console.error(`[Antidelete:${this.botInstance.id}] Failed to download and store media:`, error);
             }
           }
         }
       }
 
-      // Comprehensive logging
-      console.log(`📨 [Antidelete] INCOMING MESSAGE`);
-      console.log(`   📍 Message ID: ${messageId}`);
-      console.log(`   👤 From: ${message.pushName || 'Unknown'} (${senderJid})`);
-      console.log(`   💬 Chat: ${chatType} (${fromJid})`);
-      console.log(`   📝 Type: ${messageType}`);
-      console.log(`   🕐 Time: ${timestamp}`);
-      console.log(`   📄 Content: ${messageContent.substring(0, 100)}${messageContent.length > 100 ? '...' : ''}`);
-      console.log(`   🔄 From Me: ${message.key.fromMe ? 'Yes' : 'No'}`);
-      console.log(`   📊 Store Size: ${this.messageStore.size} messages`);
-
-      // Log message structure for debugging
-      if (message.message) {
-        const messageKeys = Object.keys(message.message);
-        console.log(`   🔧 Message Structure: [${messageKeys.join(', ')}]`);
-      }
-
-      // Log detailed media info
-      if (this.hasMediaContent(message)) {
-        const mediaInfo = this.getDetailedMediaInfo(message);
-        console.log(`   📎 MEDIA CONTENT DETECTED:`);
-        console.log(`      📱 Media Type: ${mediaInfo.type}`);
-        console.log(`      📏 File Size: ${mediaInfo.size || 'Unknown'}`);
-        console.log(`      🎭 MIME Type: ${mediaInfo.mimetype || 'Unknown'}`);
-        console.log(`      📄 Caption: ${mediaInfo.caption || 'None'}`);
-        console.log(`      🔗 URL: ${mediaInfo.url ? 'Present' : 'None'}`);
-        console.log(`      👁️ ViewOnce: ${mediaInfo.viewOnce ? 'Yes' : 'No'}`);
-        console.log(`      🎬 Duration: ${mediaInfo.duration || 'N/A'}`);
-        console.log(`      📐 Dimensions: ${mediaInfo.width}x${mediaInfo.height || 'Unknown'}`);
-      }
-
-      console.log(`   ✅ Successfully stored message ${messageId}`);
-      console.log(`─────────────────────────────────────────────────────────`);
-
       // Cleanup old messages (keep last 1000)
       if (this.messageStore.size > 1000) {
         const oldestKey = this.messageStore.keys().next().value;
         this.messageStore.delete(oldestKey);
-        console.log(`🧹 [Antidelete] Cleaned up oldest message: ${oldestKey}`);
       }
 
-      // Persist to file periodically
       this.saveToFile();
     } catch (error) {
-      console.error('❌ [Antidelete] Error storing message:', error);
-      console.error('❌ [Antidelete] Error details:', {
-        messageId: message.key?.id,
-        fromJid: message.key?.remoteJid,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      console.error(`[Antidelete:${this.botInstance.id}] Error storing message:`, error);
     }
   }
 
@@ -465,111 +269,34 @@ export class AntideleteService {
     try {
       const revokedMessageId = revocationMessage.message?.protocolMessage?.key?.id;
       const revokerJid = revocationMessage.key?.remoteJid;
-      const participantJid = revocationMessage.key?.participant;
-      const timestamp = new Date().toLocaleString();
-
-      console.log(`🚨 [Antidelete] MESSAGE REVOCATION DETECTED!`);
-      console.log(`══════════════════════════════════════════════════════════`);
-      console.log(`   🆔 Revocation Message ID: ${revocationMessage.key?.id}`);
-      console.log(`   🎯 Target Message ID: ${revokedMessageId}`);
-      console.log(`   👤 Revoked by: ${participantJid || revokerJid}`);
-      console.log(`   💬 Chat: ${this.getChatType(revokerJid)} (${revokerJid})`);
-      console.log(`   🕐 Revocation Time: ${timestamp}`);
-      console.log(`   📊 Protocol Type: ${revocationMessage.message?.protocolMessage?.type}`);
 
       if (!revokedMessageId || !revokerJid) {
-        console.log(`❌ [Antidelete] Invalid revocation - Missing message ID or JID`);
-        console.log(`   🔧 Debug Info:`);
-        console.log(`      - Revoked Message ID: ${revokedMessageId}`);
-        console.log(`      - Revoker JID: ${revokerJid}`);
-        console.log(`      - Full revocation structure:`, JSON.stringify(revocationMessage, null, 2));
         return;
       }
 
-      // Check if we have the original message
       const originalMessage = this.messageStore.get(revokedMessageId);
 
       if (originalMessage) {
-        console.log(`✅ [Antidelete] ORIGINAL MESSAGE FOUND IN STORE!`);
-        console.log(`   📝 Original Type: ${originalMessage.type}`);
-        console.log(`   📄 Original Content: ${originalMessage.content}`);
-        console.log(`   👤 Original Sender: ${originalMessage.senderJid}`);
-        console.log(`   🕐 Original Timestamp: ${new Date(originalMessage.timestamp).toLocaleString()}`);
-        console.log(`   ⏱️ Time Since Original: ${Date.now() - originalMessage.timestamp}ms`);
+        const revokedHadMedia = this.hasMediaContent(originalMessage.originalMessage);
 
-        // Log the restoration attempt
-        console.log(`📤 [Antidelete] SENDING DELETION ALERT TO BOT OWNER...`);
-
-        try {
-          // Check if the revoked message had media
-          const revokedHadMedia = this.hasMediaContent(originalMessage.originalMessage);
-          if (revokedHadMedia) {
+        if (revokedHadMedia) {
+          const mediaPath = path.join(this.tempMediaDir, `${revokedMessageId}.media`);
+          if (fs.existsSync(mediaPath)) {
+            const mediaBuffer = fs.readFileSync(mediaPath);
             const mediaInfo = this.getDetailedMediaInfo(originalMessage.originalMessage);
-            console.log(`🎬 [Antidelete] REVOKED MESSAGE CONTAINED MEDIA!`);
-            console.log(`      📱 Media Type: ${mediaInfo.type}`);
-            console.log(`      📏 File Size: ${mediaInfo.size || 'Unknown'} bytes`);
-            console.log(`      🎭 MIME Type: ${mediaInfo.mimetype || 'Unknown'}`);
-            console.log(`      📄 Caption: ${mediaInfo.caption || 'None'}`);
-            console.log(`      👁️ ViewOnce: ${mediaInfo.viewOnce ? 'Yes' : 'No'}`);
-
-            // Try to save and forward the media
-            try {
-              const savedMedia = await this.extractAndSaveMedia(originalMessage.originalMessage);
-              if (savedMedia.path && fs.existsSync(savedMedia.path)) {
-                console.log(`💾 [Antidelete] Revoked media saved to: ${savedMedia.path}`);
-
-                // Forward the saved media to bot owner first
-                await this.forwardMediaToBotOwner(sock, savedMedia, mediaInfo, originalMessage);
-              } else {
-                console.log(`⚠️ [Antidelete] Revoked media file not saved or doesn't exist`);
-              }
-            } catch (mediaError) {
-              console.error(`❌ [Antidelete] Failed to save revoked media:`, mediaError);
-            }
+            await this.forwardStoredMedia(sock, mediaBuffer, mediaInfo, originalMessage);
+            fs.unlinkSync(mediaPath);
           }
-
-          // Send deletion alert to bot owner only
-          await this.sendDeletionAlertToBotOwner(sock, originalMessage, revokerJid, 'Message revocation', revokedHadMedia);
-          console.log(`✅ [Antidelete] DELETION ALERT SENT TO BOT OWNER!`);
-        } catch (alertError) {
-          console.error(`❌ [Antidelete] Failed to send deletion alert:`, alertError);
         }
-      } else {
-        console.log(`❌ [Antidelete] ORIGINAL MESSAGE NOT FOUND IN STORE!`);
-        console.log(`   🔍 Searched for ID: ${revokedMessageId}`);
-        console.log(`   📊 Store contains ${this.messageStore.size} messages`);
-        console.log(`   🗂️ Available message IDs: [${Array.from(this.messageStore.keys()).slice(0, 10).join(', ')}${this.messageStore.size > 10 ? '...' : ''}]`);
 
-        // Check if it might be a partial match
-        const similarIds = Array.from(this.messageStore.keys()).filter(id =>
-          id.includes(revokedMessageId.substring(0, 8)) || revokedMessageId.includes(id.substring(0, 8))
-        );
-
-        if (similarIds.length > 0) {
-          console.log(`   🔍 Similar message IDs found: [${similarIds.join(', ')}]`);
-        }
+        await this.sendDeletionAlertToBotOwner(sock, originalMessage, revokerJid, 'Message revocation', revokedHadMedia);
+        this.messageStore.delete(revokedMessageId);
       }
-
-      // Log server revocation request details
-      console.log(`📡 [Antidelete] SERVER REVOCATION REQUEST DETAILS:`);
-      console.log(`   🌐 Request from server: ${sock.user?.id || 'Unknown'}`);
-      console.log(`   🔧 Socket connection: ${sock.ws?.readyState === 1 ? 'Active' : 'Inactive'}`);
-      console.log(`   📊 Total stored messages: ${this.messageStore.size}`);
-
-      console.log(`══════════════════════════════════════════════════════════`);
-
     } catch (error) {
-      console.error('❌ [Antidelete] CRITICAL ERROR handling message revocation:', error);
-      console.error('❌ [Antidelete] Full error details:', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack trace',
-        revocationMessage: revocationMessage,
-        timestamp: new Date().toISOString()
-      });
+      console.error(`[Antidelete:${this.botInstance.id}] Error handling message revocation:`, error);
     }
   }
 
-  // Helper to get message type
   private getMessageType(message: WAMessage): string {
     if (!message.message) return 'empty';
     const messageKeys = Object.keys(message.message);
@@ -579,58 +306,29 @@ export class AntideleteService {
     return 'unknown';
   }
 
-  // Helper to get chat type
   private getChatType(jid: string | undefined): string {
     if (!jid) return 'unknown';
     return jid.includes('@g.us') ? 'Group' : 'Private';
   }
 
-  // Helper to extract message content, including media captions
   private extractMessageContent(message: WAMessage): string {
     if (!message.message) return '';
-    let content = '';
 
-    if (message.message.conversation) {
-      content = message.message.conversation;
-    } else if (message.message.extendedTextMessage?.text) {
-      content = message.message.extendedTextMessage.text;
-    } else if (message.message.imageMessage?.caption) {
-      content = message.message.imageMessage.caption;
-    } else if (message.message.videoMessage?.caption) {
-      content = message.message.videoMessage.caption;
-    } else if (message.message.audioMessage?.caption) {
-      content = message.message.audioMessage.caption;
-    } else if (message.message.stickerMessage?.caption) {
-      content = message.message.stickerMessage.caption;
-    } else if (message.message.documentMessage?.caption) {
-      content = message.message.documentMessage.caption;
-    } else if (message.message.viewOnceMessageV2?.message?.imageMessage?.caption) {
-      content = message.message.viewOnceMessageV2.message.imageMessage.caption;
-    } else if (message.message.viewOnceMessageV2?.message?.videoMessage?.caption) {
-      content = message.message.viewOnceMessageV2.message.videoMessage.caption;
-    } else if (message.message.templateButtonReplyMessage?.selectedDisplayText) {
-      content = `[Button Reply: ${message.message.templateButtonReplyMessage.selectedDisplayText}]`;
-    } else if (message.message.interactiveMessage?.body?.text) {
-      content = `[Interactive: ${message.message.interactiveMessage.body.text}]`;
-    } else if (message.message.buttonsResponseMessage?.selectedButtonId) {
-      content = `[Button Response: ${message.message.buttonsResponseMessage.selectedButtonId}]`;
-    } else if (message.message.listResponseMessage?.title) {
-      content = `[List Response: ${message.message.listResponseMessage.title}]`;
-    }
+    const msg = message.message;
 
-    // Include quoted message text if available
-    if (message.message.extendedTextMessage?.contextInfo?.quotedMessage && message.message.extendedTextMessage?.contextInfo?.quotedMessage.conversation) {
-      content = `"${message.message.extendedTextMessage.contextInfo.quotedMessage.conversation}"\n${content}`;
-    }
+    if (msg.conversation) return msg.conversation;
+    if (msg.extendedTextMessage?.text) return msg.extendedTextMessage.text;
+    if (msg.imageMessage?.caption) return msg.imageMessage.caption;
+    if (msg.videoMessage?.caption) return msg.videoMessage.caption;
+    if (msg.audioMessage?.caption) return msg.audioMessage.caption;
+    if (msg.documentMessage?.caption) return msg.documentMessage.caption;
 
-    return content || '';
+    return '';
   }
 
-  // Helper to check if a message contains any media content
   private hasMediaContent(message: WAMessage): boolean {
     if (!message.message) return false;
 
-    // Only check for actual downloadable media types
     const actualMediaTypes = [
       'imageMessage', 'videoMessage', 'audioMessage', 'documentMessage', 'stickerMessage'
     ];
@@ -639,47 +337,27 @@ export class AntideleteService {
       if (actualMediaTypes.includes(type)) {
         return true;
       }
-      
-      // Check specifically for media attachments within viewOnce messages
-      if (type === 'viewOnceMessageV2' && message.message[type]?.message) {
-        const viewOnceMessage = message.message[type].message;
-        const viewOnceKeys = Object.keys(viewOnceMessage);
-        if (viewOnceKeys.some(key => actualMediaTypes.includes(key))) {
-          return true;
-        }
-      }
     }
     return false;
   }
 
-  // Helper to get detailed media information for logging
   private getDetailedMediaInfo(message: WAMessage): any {
     if (!message.message) return { type: 'none' };
 
-    const mediaInfo = {
+    const mediaInfo: any = {
       type: 'unknown',
       size: null,
       mimetype: null,
       caption: null,
-      url: null,
-      viewOnce: false,
-      duration: null,
-      width: null,
-      height: null,
-      structure: [] as string[]
+      url: null
     };
 
-    // Check for different media types
     if (message.message.imageMessage) {
       mediaInfo.type = 'image';
       mediaInfo.size = message.message.imageMessage.fileLength;
       mediaInfo.mimetype = message.message.imageMessage.mimetype;
       mediaInfo.caption = message.message.imageMessage.caption;
       mediaInfo.url = message.message.imageMessage.url;
-      mediaInfo.viewOnce = message.message.imageMessage.viewOnce || false;
-      mediaInfo.width = message.message.imageMessage.width;
-      mediaInfo.height = message.message.imageMessage.height;
-      mediaInfo.structure.push('imageMessage');
     }
 
     if (message.message.videoMessage) {
@@ -688,11 +366,6 @@ export class AntideleteService {
       mediaInfo.mimetype = message.message.videoMessage.mimetype;
       mediaInfo.caption = message.message.videoMessage.caption;
       mediaInfo.url = message.message.videoMessage.url;
-      mediaInfo.viewOnce = message.message.videoMessage.viewOnce || false;
-      mediaInfo.duration = message.message.videoMessage.seconds;
-      mediaInfo.width = message.message.videoMessage.width;
-      mediaInfo.height = message.message.videoMessage.height;
-      mediaInfo.structure.push('videoMessage');
     }
 
     if (message.message.audioMessage) {
@@ -700,19 +373,6 @@ export class AntideleteService {
       mediaInfo.size = message.message.audioMessage.fileLength;
       mediaInfo.mimetype = message.message.audioMessage.mimetype;
       mediaInfo.url = message.message.audioMessage.url;
-      mediaInfo.viewOnce = message.message.audioMessage.viewOnce || false;
-      mediaInfo.duration = message.message.audioMessage.seconds;
-      mediaInfo.structure.push('audioMessage');
-    }
-
-    if (message.message.stickerMessage) {
-      mediaInfo.type = 'sticker';
-      mediaInfo.size = message.message.stickerMessage.fileLength;
-      mediaInfo.mimetype = message.message.stickerMessage.mimetype;
-      mediaInfo.url = message.message.stickerMessage.url;
-      mediaInfo.width = message.message.stickerMessage.width;
-      mediaInfo.height = message.message.stickerMessage.height;
-      mediaInfo.structure.push('stickerMessage');
     }
 
     if (message.message.documentMessage) {
@@ -721,486 +381,129 @@ export class AntideleteService {
       mediaInfo.mimetype = message.message.documentMessage.mimetype;
       mediaInfo.caption = message.message.documentMessage.caption;
       mediaInfo.url = message.message.documentMessage.url;
-      mediaInfo.structure.push('documentMessage');
-    }
-
-    if (message.message.locationMessage) {
-      mediaInfo.type = 'location';
-      mediaInfo.structure.push('locationMessage');
-    }
-
-    if (message.message.contactMessage) {
-      mediaInfo.type = 'contact';
-      mediaInfo.structure.push('contactMessage');
-    }
-
-    if (message.message.pollMessage) {
-      mediaInfo.type = 'poll';
-      mediaInfo.structure.push('pollMessage');
-    }
-
-    // Check for ViewOnce messages
-    if (message.message.viewOnceMessageV2?.message) {
-      mediaInfo.viewOnce = true;
-      mediaInfo.structure.push('viewOnceMessageV2');
-
-      const viewOnceMsg = message.message.viewOnceMessageV2.message;
-
-      if (viewOnceMsg.imageMessage) {
-        mediaInfo.type = 'viewonce-image';
-        mediaInfo.size = viewOnceMsg.imageMessage.fileLength;
-        mediaInfo.mimetype = viewOnceMsg.imageMessage.mimetype;
-        mediaInfo.caption = viewOnceMsg.imageMessage.caption;
-        mediaInfo.url = viewOnceMsg.imageMessage.url;
-        mediaInfo.width = viewOnceMsg.imageMessage.width;
-        mediaInfo.height = viewOnceMsg.imageMessage.height;
-        mediaInfo.structure.push('viewOnceImageMessage');
-      }
-
-      if (viewOnceMsg.videoMessage) {
-        mediaInfo.type = 'viewonce-video';
-        mediaInfo.size = viewOnceMsg.videoMessage.fileLength;
-        mediaInfo.mimetype = viewOnceMsg.videoMessage.mimetype;
-        mediaInfo.caption = viewOnceMsg.videoMessage.caption;
-        mediaInfo.url = viewOnceMsg.videoMessage.url;
-        mediaInfo.duration = viewOnceMsg.videoMessage.seconds;
-        mediaInfo.width = viewOnceMsg.videoMessage.width;
-        mediaInfo.height = viewOnceMsg.videoMessage.height;
-        mediaInfo.structure.push('viewOnceVideoMessage');
-      }
     }
 
     return mediaInfo;
   }
 
-
-  // Helper to save the message store to a file
   private saveToFile(): void {
-    // Debounce or throttle this if called too frequently to avoid performance issues
-    // For now, calling it directly is fine, but a more robust solution would use debouncing.
     this.saveMessageStore();
   }
 
-  // Download media from URL and return buffer
   private async downloadMediaFromUrl(url: string): Promise<Buffer | null> {
     try {
-      console.log(`📥 [Antidelete] Downloading media from URL: ${url.substring(0, 50)}...`);
-
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const mediaBuffer = Buffer.from(await response.arrayBuffer());
-      console.log(`✅ [Antidelete] Media downloaded successfully (${mediaBuffer.length} bytes)`);
       return mediaBuffer;
     } catch (error) {
-      console.error('❌ [Antidelete] Error downloading media:', error);
+      console.error(`[Antidelete:${this.botInstance.id}] Error downloading media:`, error);
       return null;
     }
   }
 
-  // Forward stored media to bot owner
   private async forwardStoredMedia(sock: WASocket, mediaBuffer: Buffer, mediaInfo: any, originalMessage: StoredMessage): Promise<void> {
     try {
       const botOwnerJid = sock.user?.id;
-      if (!botOwnerJid) {
-        console.log(`❌ [Antidelete] Cannot forward media - bot owner JID not found`);
-        return;
-      }
+      if (!botOwnerJid) return;
 
       const senderName = originalMessage.originalMessage?.pushName || 'Unknown';
       const sizeInKB = Math.round(mediaBuffer.length / 1024);
-      const caption = `🚨 *DELETED MEDIA RECOVERED* 🚨\n\n🗑️ *Deleted by:* ${senderName}\n📎 *Type:* ${mediaInfo.type}\n💬 *Caption:* ${mediaInfo.caption || 'None'}\n📏 *Size:* ${sizeInKB}KB\n\n📞 *Owner:* +254704897825`;
+      const caption = `🚨 *DELETED MEDIA RECOVERED* 🚨\n\n🗑️ *Deleted by:* ${senderName}\n📎 *Type:* ${mediaInfo.type}\n💬 *Caption:* ${mediaInfo.caption || 'None'}\n📏 *Size:* ${sizeInKB}KB`;
 
-      console.log(`📤 [Antidelete] Forwarding stored ${mediaInfo.type} media (${sizeInKB}KB) to bot owner...`);
+      switch (mediaInfo.type) {
+        case 'image':
+          await sock.sendMessage(botOwnerJid, {
+            image: mediaBuffer,
+            caption: caption,
+            mimetype: mediaInfo.mimetype || 'image/jpeg'
+          });
+          break;
 
-      try {
-        switch (mediaInfo.type) {
-          case 'image':
-          case 'viewonce-image':
-            await sock.sendMessage(botOwnerJid, {
-              image: mediaBuffer,
-              caption: caption,
-              mimetype: mediaInfo.mimetype || 'image/jpeg'
-            });
-            break;
+        case 'video':
+          await sock.sendMessage(botOwnerJid, {
+            video: mediaBuffer,
+            caption: caption,
+            mimetype: mediaInfo.mimetype || 'video/mp4'
+          });
+          break;
 
-          case 'video':
-          case 'viewonce-video':
-            await sock.sendMessage(botOwnerJid, {
-              video: mediaBuffer,
-              caption: caption,
-              mimetype: mediaInfo.mimetype || 'video/mp4'
-            });
-            break;
+        case 'audio':
+          await sock.sendMessage(botOwnerJid, {
+            audio: mediaBuffer,
+            mimetype: mediaInfo.mimetype || 'audio/mpeg'
+          });
+          await sock.sendMessage(botOwnerJid, { text: caption });
+          break;
 
-          case 'audio':
-            await sock.sendMessage(botOwnerJid, {
-              audio: mediaBuffer,
-              mimetype: mediaInfo.mimetype || 'audio/mpeg'
-            });
-            await sock.sendMessage(botOwnerJid, { text: caption });
-            break;
-
-          case 'sticker':
-            await sock.sendMessage(botOwnerJid, {
-              sticker: mediaBuffer,
-              mimetype: mediaInfo.mimetype || 'image/webp'
-            });
-            await sock.sendMessage(botOwnerJid, { text: caption });
-            break;
-
-          case 'document':
-            const fileName = `recovered_${originalMessage.id}.${this.getFileExtension(mediaInfo.type)}`;
-            await sock.sendMessage(botOwnerJid, {
-              document: mediaBuffer,
-              fileName: fileName,
-              caption: caption,
-              mimetype: mediaInfo.mimetype || 'application/octet-stream'
-            });
-            break;
-
-          default:
-            const defaultFileName = `recovered_${originalMessage.id}.bin`;
-            await sock.sendMessage(botOwnerJid, {
-              document: mediaBuffer,
-              fileName: defaultFileName,
-              caption: caption,
-              mimetype: 'application/octet-stream'
-            });
-            break;
-        }
-
-        console.log(`✅ [Antidelete] Stored media forwarded successfully!`);
-      } catch (sendError) {
-        console.error('❌ [Antidelete] Error sending stored media:', sendError);
-
-        // Fallback: send as document
-        try {
-          const fallbackFileName = `recovered_${originalMessage.id}_${mediaInfo.type}.bin`;
+        case 'document':
+          const fileName = `recovered_${originalMessage.id}.bin`;
           await sock.sendMessage(botOwnerJid, {
             document: mediaBuffer,
-            fileName: fallbackFileName,
-            caption: caption,
-            mimetype: 'application/octet-stream'
+            fileName: fileName,
+            mimetype: mediaInfo.mimetype || 'application/octet-stream',
+            caption: caption
           });
-          console.log(`✅ [Antidelete] Media forwarded as fallback document`);
-        } catch (fallbackError) {
-          console.error('❌ [Antidelete] Fallback document send also failed:', fallbackError);
-        }
-      }
-    } catch (error) {
-      console.error('❌ [Antidelete] Critical error in forwardStoredMedia:', error);
-    }
-  }
+          break;
 
-  // Download and forward media using URL
-  private async downloadAndForwardMediaFromUrl(sock: WASocket, mediaInfo: any, originalMessage: StoredMessage): Promise<void> {
-    try {
-      const botOwnerJid = sock.user?.id;
-      if (!botOwnerJid) {
-        console.log(`❌ [Antidelete] Cannot forward media - bot owner JID not found`);
-        return;
-      }
-
-      if (!mediaInfo.url) {
-        console.log(`❌ [Antidelete] Cannot download media - no URL found`);
-        return;
-      }
-
-      console.log(`📥 [Antidelete] Downloading media from URL: ${mediaInfo.url.substring(0, 50)}...`);
-
-      // Download media from URL
-      const response = await fetch(mediaInfo.url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const mediaBuffer = Buffer.from(await response.arrayBuffer());
-      const senderName = originalMessage.originalMessage?.pushName || 'Unknown';
-      const sizeInKB = Math.round(mediaBuffer.length / 1024);
-      const caption = `🚨 *DELETED MEDIA RECOVERED* 🚨\n\n🗑️ *Deleted by:* ${senderName}\n📎 *Type:* ${mediaInfo.type}\n💬 *Caption:* ${mediaInfo.caption || 'None'}\n📏 *Size:* ${sizeInKB}KB\n\n📞 *Owner:* +254704897825`;
-
-      console.log(`📤 [Antidelete] Forwarding ${mediaInfo.type} media (${sizeInKB}KB) to bot owner...`);
-
-      try {
-        switch (mediaInfo.type) {
-          case 'image':
-            await sock.sendMessage(botOwnerJid, {
-              image: mediaBuffer,
-              caption: caption,
-              mimetype: mediaInfo.mimetype || 'image/jpeg'
-            });
-            console.log(`✅ [Antidelete] Image forwarded successfully`);
-            break;
-
-          case 'video':
-            await sock.sendMessage(botOwnerJid, {
-              video: mediaBuffer,
-              caption: caption,
-              mimetype: mediaInfo.mimetype || 'video/mp4'
-            });
-            console.log(`✅ [Antidelete] Video forwarded successfully`);
-            break;
-
-          case 'audio':
-            await sock.sendMessage(botOwnerJid, {
-              audio: mediaBuffer,
-              caption: caption,
-              mimetype: mediaInfo.mimetype || 'audio/mpeg'
-            });
-            console.log(`✅ [Antidelete] Audio forwarded successfully`);
-            break;
-
-          case 'sticker':
-            await sock.sendMessage(botOwnerJid, {
-              sticker: mediaBuffer,
-              mimetype: mediaInfo.mimetype || 'image/webp'
-            });
-            // Send caption separately for stickers
-            await sock.sendMessage(botOwnerJid, { text: caption });
-            console.log(`✅ [Antidelete] Sticker forwarded successfully`);
-            break;
-
-          case 'document':
-            const fileName = `recovered_${originalMessage.id}.${this.getFileExtension(mediaInfo.type)}`;
-            await sock.sendMessage(botOwnerJid, {
-              document: mediaBuffer,
-              fileName: fileName,
-              caption: caption,
-              mimetype: mediaInfo.mimetype || 'application/octet-stream'
-            });
-            console.log(`✅ [Antidelete] Document forwarded successfully`);
-            break;
-
-          default:
-            // Fallback to document
-            const defaultFileName = `recovered_${originalMessage.id}.bin`;
-            await sock.sendMessage(botOwnerJid, {
-              document: mediaBuffer,
-              fileName: defaultFileName,
-              caption: caption,
-              mimetype: 'application/octet-stream'
-            });
-            console.log(`✅ [Antidelete] Unknown media type forwarded as document`);
-            break;
-        }
-
-        console.log(`✅ [Antidelete] Media forwarded to bot owner successfully!`);
-
-      } catch (sendError) {
-        console.error('❌ [Antidelete] Error sending media message:', sendError);
-
-        // Fallback: try to send as document
-        try {
-          const fallbackFileName = `recovered_${originalMessage.id}_${mediaInfo.type}.bin`;
+        default:
           await sock.sendMessage(botOwnerJid, {
             document: mediaBuffer,
-            fileName: fallbackFileName,
-            caption: caption,
-            mimetype: 'application/octet-stream'
+            fileName: `recovered_${originalMessage.id}.bin`,
+            mimetype: 'application/octet-stream',
+            caption: caption
           });
-          console.log(`✅ [Antidelete] Media forwarded as fallback document`);
-        } catch (fallbackError) {
-          console.error('❌ [Antidelete] Fallback document send also failed:', fallbackError);
-        }
       }
-
     } catch (error) {
-      console.error('❌ [Antidelete] Critical error in downloadAndForwardMediaFromUrl:', error);
+      console.error(`[Antidelete:${this.botInstance.id}] Error forwarding stored media:`, error);
     }
   }
 
-  // Forward saved media to bot owner
-  private async forwardMediaToBotOwner(sock: WASocket, savedMedia: { type: string, path: string }, mediaInfo: any, originalMessage: StoredMessage): Promise<void> {
+  private async sendDeletionAlertToBotOwner(sock: WASocket, storedMessage: StoredMessage, revokerJid: string, reason: string, hadMedia: boolean): Promise<void> {
     try {
       const botOwnerJid = sock.user?.id;
-      if (!botOwnerJid) {
-        console.log(`❌ [Antidelete] Cannot forward media - bot owner JID not found`);
-        return;
+      if (!botOwnerJid) return;
+
+      const senderName = storedMessage.originalMessage?.pushName || 'Unknown';
+      const chatType = this.getChatType(storedMessage.fromJid);
+      const timestamp = new Date(storedMessage.timestamp).toLocaleString();
+
+      let alertText = `🚨 *DELETED MESSAGE DETECTED* 🚨\n\n`;
+      alertText += `🗑️ *Deleted by:* ${senderName}\n`;
+      alertText += `💬 *Chat Type:* ${chatType}\n`;
+      alertText += `🕐 *Original Time:* ${timestamp}\n`;
+      alertText += `📝 *Type:* ${storedMessage.type}\n\n`;
+
+      if (!hadMedia && storedMessage.content) {
+        alertText += `📄 *Original Message:*\n${storedMessage.content}`;
+      } else if (hadMedia) {
+        alertText += `📎 *Had Media:* Yes (forwarded above)`;
       }
 
-      if (!savedMedia.path || !fs.existsSync(savedMedia.path)) {
-        console.log(`❌ [Antidelete] Cannot forward media - file not found: ${savedMedia.path}`);
-        return;
-      }
-
-      const mediaBuffer = fs.readFileSync(savedMedia.path);
-      const senderName = originalMessage.originalMessage?.pushName || 'Unknown';
-      const sizeInKB = Math.round(mediaBuffer.length / 1024);
-      const caption = `🚨 *DELETED MEDIA RECOVERED* 🚨\n\n🗑️ *Deleted by:* ${senderName}\n📎 *Type:* ${savedMedia.type}\n💬 *Caption:* ${mediaInfo.caption || 'None'}\n📏 *Size:* ${sizeInKB}KB\n\n📞 *Owner:* +254704897825`;
-
-      console.log(`📤 [Antidelete] Forwarding ${savedMedia.type} media (${sizeInKB}KB) to bot owner...`);
-
-      try {
-        switch (savedMedia.type) {
-          case 'image':
-            await sock.sendMessage(botOwnerJid, {
-              image: mediaBuffer,
-              caption: caption,
-              mimetype: mediaInfo.mimetype || 'image/jpeg'
-            });
-            console.log(`✅ [Antidelete] Image forwarded successfully`);
-            break;
-
-          case 'video':
-            await sock.sendMessage(botOwnerJid, {
-              video: mediaBuffer,
-              caption: caption,
-              mimetype: mediaInfo.mimetype || 'video/mp4'
-            });
-            console.log(`✅ [Antidelete] Video forwarded successfully`);
-            break;
-
-          case 'audio':
-            await sock.sendMessage(botOwnerJid, {
-              audio: mediaBuffer,
-              caption: caption,
-              mimetype: mediaInfo.mimetype || 'audio/mpeg'
-            });
-            console.log(`✅ [Antidelete] Audio forwarded successfully`);
-            break;
-
-          case 'sticker':
-            await sock.sendMessage(botOwnerJid, {
-              sticker: mediaBuffer,
-              mimetype: mediaInfo.mimetype || 'image/webp'
-            });
-            // Send caption separately for stickers
-            await sock.sendMessage(botOwnerJid, { text: caption });
-            console.log(`✅ [Antidelete] Sticker forwarded successfully`);
-            break;
-
-          case 'document':
-            const fileName = `recovered_${originalMessage.id}.${this.getFileExtension(savedMedia.type)}`;
-            await sock.sendMessage(botOwnerJid, {
-              document: mediaBuffer,
-              fileName: fileName,
-              caption: caption,
-              mimetype: mediaInfo.mimetype || 'application/octet-stream'
-            });
-            console.log(`✅ [Antidelete] Document forwarded successfully`);
-            break;
-
-          default:
-            // Fallback to document
-            const defaultFileName = `recovered_${originalMessage.id}.bin`;
-            await sock.sendMessage(botOwnerJid, {
-              document: mediaBuffer,
-              fileName: defaultFileName,
-              caption: caption,
-              mimetype: 'application/octet-stream'
-            });
-            console.log(`✅ [Antidelete] Unknown media type forwarded as document`);
-            break;
-        }
-
-        console.log(`✅ [Antidelete] Media forwarded to bot owner successfully!`);
-
-        // Clean up the stored message after successful forwarding
-        this.messageStore.delete(originalMessage.id);
-        console.log(`🧹 [Antidelete] Cleaned up stored message ${originalMessage.id} after forwarding`);
-
-      } catch (sendError) {
-        console.error('❌ [Antidelete] Error sending media message:', sendError);
-
-        // Fallback: try to send as document
-        try {
-          const fallbackFileName = `recovered_${originalMessage.id}_${savedMedia.type}.bin`;
-          await sock.sendMessage(botOwnerJid, {
-            document: mediaBuffer,
-            fileName: fallbackFileName,
-            caption: caption,
-            mimetype: 'application/octet-stream'
-          });
-          console.log(`✅ [Antidelete] Media forwarded as fallback document`);
-
-          // Clean up after fallback success too
-          this.messageStore.delete(originalMessage.id);
-          console.log(`🧹 [Antidelete] Cleaned up stored message ${originalMessage.id} after fallback forwarding`);
-        } catch (fallbackError) {
-          console.error('❌ [Antidelete] Fallback document send also failed:', fallbackError);
-        }
-      }
-
-      // Clean up the temp file after forwarding attempt
-      try {
-        fs.unlinkSync(savedMedia.path);
-        console.log(`🧹 [Antidelete] Cleaned up temp file: ${savedMedia.path}`);
-      } catch (cleanupError) {
-        console.warn(`⚠️ [Antidelete] Failed to cleanup temp file:`, cleanupError);
-      }
-
+      await sock.sendMessage(botOwnerJid, { text: alertText });
     } catch (error) {
-      console.error('❌ [Antidelete] Critical error in forwardMediaToBotOwner:', error);
+      console.error(`[Antidelete:${this.botInstance.id}] Error sending deletion alert:`, error);
     }
   }
-
-  // Helper to get file extension based on media type
-  private getFileExtension(mediaType: string): string {
-    switch (mediaType) {
-      case 'image': return 'jpg';
-      case 'video': return 'mp4';
-      case 'audio': return 'mp3';
-      case 'sticker': return 'webp';
-      case 'document': return 'pdf';
-      default: return 'bin';
-    }
-  }
-
-  // Send deletion alert to bot owner
-  private async sendDeletionAlertToBotOwner(sock: WASocket, originalMessage: StoredMessage, chatJid: string, detectionMethod: string, hadMedia: boolean = false): Promise<void> {
-    try {
-      const botOwnerJid = sock.user?.id;
-      if (!botOwnerJid) {
-        console.log(`❌ [Antidelete] Bot owner JID not found, cannot send deletion alert`);
-        return;
-      }
-
-      const senderName = originalMessage.originalMessage?.pushName || 'Unknown';
-      const chatType = this.getChatType(chatJid);
-      const timestamp = new Date().toLocaleString();
-
-      let alertMessage = `🚨 *DELETED MESSAGE*🚨\n\n` +
-        `🗑️ *Deleted by:* ${senderName}\n` +
-        `💬 *Message:* ░▒▓████◤ "${originalMessage.content}" ◢████▓▒░\n`;
-
-      if (hadMedia) {
-        const mediaInfo = this.getDetailedMediaInfo(originalMessage.originalMessage);
-        alertMessage += `📎 *Media:* ${mediaInfo.type} (${mediaInfo.size ? Math.round(mediaInfo.size / 1024) + 'KB' : 'Unknown size'})\n`;
-        if (mediaInfo.mimetype) {
-          alertMessage += `🎭 *Type:* ${mediaInfo.mimetype}\n`;
-        }
-        if (mediaInfo.viewOnce) {
-          alertMessage += `👁️ *ViewOnce:* Yes\n`;
-        }
-      }
-
-      alertMessage += `\n📞 *Owner:* +254704897825`;
-
-      console.log(`📤 [Antidelete] Sending deletion alert to bot owner...`);
-      await sock.sendMessage(botOwnerJid, { text: alertMessage });
-
-      console.log(`✅ [Antidelete] DELETION ALERT SENT TO BOT OWNER!`);
-      console.log(`   📤 Sent to bot owner: ${botOwnerJid.split('@')[0]}`);
-      console.log(`   📊 Alert message length: ${alertMessage.length} characters`);
-      console.log(`   🎯 Alert ID: ${Date.now()}`);
-
-    } catch (error) {
-      console.error('❌ [Antidelete] CRITICAL ERROR sending deletion alert to bot owner:', error);
-      console.error('❌ [Antidelete] Alert error details:', {
-        chatJid,
-        originalMessageId: originalMessage.id,
-        detectionMethod,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
-      });
-    }
-  }
-
-
 }
 
-// Export singleton instance
-export const antideleteService = new AntideleteService();
+// Bot-specific antidelete instances
+const antideleteInstances = new Map<string, AntideleteService>();
+
+export function getAntideleteService(botInstance: BotInstance): AntideleteService {
+  const key = `${botInstance.serverName}_${botInstance.id}`;
+
+  if (!antideleteInstances.has(key)) {
+    antideleteInstances.set(key, new AntideleteService(botInstance));
+  }
+
+  return antideleteInstances.get(key)!;
+}
+
+export function clearAntideleteService(botInstance: BotInstance): void {
+  const key = `${botInstance.serverName}_${botInstance.id}`;
+  antideleteInstances.delete(key);
+}

@@ -16,7 +16,7 @@ import { join } from 'path';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { commandRegistry, type CommandContext } from './command-registry.js';
 import { AutoStatusService } from './auto-status.js';
-import { antideleteService } from './antidelete.js';
+import { antideleteService, clearAntideleteService } from './antidelete.js';
 import { getAntiViewOnceService } from './antiviewonce.js';
 import './core-commands.js'; // Load core commands
 import './channel-commands.js'; // Load channel commands
@@ -193,7 +193,7 @@ export class WhatsAppBot {
 
         // Check for conflict errors (440 - multiple simultaneous connections)
         const isConflictError = disconnectReason === 440 || errorMessage.includes('conflict');
-        
+
         if (isConflictError) {
           console.log(`⚠️ Bot ${this.botInstance.name}: Conflict detected (440) - another instance is connected. Stopping reconnection.`);
           this.reconnectAttempts = 999; // Stop auto-reconnect
@@ -361,7 +361,7 @@ export class WhatsAppBot {
           if (freshBot) {
             this.botInstance = freshBot;
           }
-          
+
           const initialPresence = this.resolvePresenceMode();
           if (initialPresence && this.sock.user?.id) {
             await this.sock.sendPresenceUpdate(initialPresence);
@@ -826,13 +826,13 @@ export class WhatsAppBot {
             // Public commands should execute on ANY bot regardless of ownership
             const messageText = this.extractMessageText(message.message);
             const commandPrefix = process.env.BOT_PREFIX || '.';
-            
+
             if (messageText && messageText.trim().startsWith(commandPrefix)) {
               const textWithoutPrefix = messageText.substring(commandPrefix.length).trim();
               const args = textWithoutPrefix.split(' ');
               const commandName = args[0].toLowerCase();
               const registeredCommand = commandRegistry.get(commandName);
-              
+
               // If this is a public command, allow it to proceed
               if (registeredCommand && registeredCommand.isPublic === true) {
                 console.log(`Bot ${this.botInstance.name}: ✅ Allowing public command .${commandName} from ${recipientJid}`);
@@ -1145,7 +1145,7 @@ export class WhatsAppBot {
 
   private async sendImmediatePresence(chatId: string) {
     if (!chatId || !this.isRunning || !this.sock) return;
-    
+
     const isConnected = this.sock.user?.id || this.sock.user?.lid;
     if (!isConnected) return;
 
@@ -1154,7 +1154,7 @@ export class WhatsAppBot {
       if (freshBot) {
         this.botInstance = freshBot;
       }
-      
+
       const presence = this.resolvePresenceMode();
       if (presence) {
         await this.sock.sendPresenceUpdate(presence, chatId);
@@ -1167,7 +1167,7 @@ export class WhatsAppBot {
 
   private async updatePresenceForChat(chatId: string | null | undefined) {
     if (!chatId || !this.isRunning || !this.sock) return;
-    
+
     const isConnected = this.sock.user?.id || this.sock.user?.lid;
     if (!isConnected) return;
 
@@ -1176,7 +1176,7 @@ export class WhatsAppBot {
       if (freshBot) {
         this.botInstance = freshBot;
       }
-      
+
       const presence = this.resolvePresenceMode();
       if (presence) {
         await this.sock.sendPresenceUpdate(presence, chatId);
@@ -1217,7 +1217,7 @@ export class WhatsAppBot {
         console.log(`Bot ${this.botInstance.name}: ⚠️ Presence auto-switch state update failed:`, error);
       }
     }, intervalMs);
-    
+
     console.log(`Bot ${this.botInstance.name}: Auto-switch presence enabled (updates per-chat only)`);
   }
 
@@ -1326,7 +1326,7 @@ export class WhatsAppBot {
         console.log(`🔄 Bot ${this.botInstance.name}: Attempting automatic restart in 10 seconds...`);
         await this.safeUpdateBotStatus('error');
         await this.safeCreateActivity('error', `Bot startup failed: ${errorMessage}. Auto-restart scheduled.`);
-        
+
         // Restart after 10 seconds
         setTimeout(async () => {
           console.log(`🔄 Bot ${this.botInstance.name}: Auto-restarting after error...`);
@@ -1409,24 +1409,26 @@ export class WhatsAppBot {
     this.stopHeartbeat();
     this.stopPresenceAutoSwitch(); // Stop presence auto-switch when bot stops
 
-    try {
-      if (this.sock) {
-        // Remove all event listeners to prevent conflicts
-        this.sock.ev.removeAllListeners();
-
-        // Close the socket connection
-        await this.sock.end();
-        this.sock = null;
-      }
-
-      this.isRunning = false;
-
-      await this.safeUpdateBotStatus('offline');
-      await this.safeCreateActivity('status_change', 'TREKKERMD LIFETIME BOT stopped');
-    } catch (error) {
-      console.error(`Error stopping bot ${this.botInstance.name}:`, error);
-      this.isRunning = false; // Force stop even if error occurs
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
     }
+
+    if (this.sock) {
+      this.sock.ev.removeAllListeners();
+      // Use ws.close() for a cleaner shutdown, avoid direct sock.ws.close() if sock.ws might not be defined
+      if (this.sock.ws && this.sock.ws.readyState === 1) { // Check if WebSocket is OPEN
+        this.sock.ws.close();
+      }
+      this.sock = null; // Nullify sock after closing
+    }
+
+    this.isRunning = false;
+
+    // Cleanup isolated antidelete service
+    clearAntideleteService(this.botInstance);
+
+    await this.safeUpdateBotStatus('offline');
+    await this.safeCreateActivity('status_change', 'TREKKERMD LIFETIME BOT stopped');
   }
 
   async restart() {
