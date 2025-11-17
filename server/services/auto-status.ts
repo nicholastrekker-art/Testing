@@ -143,6 +143,9 @@ export class AutoStatusService {
         await new Promise(resolve => setTimeout(resolve, waitTime));
       }
 
+      // Update last view time after throttling
+      config.lastStatusView = Date.now();
+
       // Handle status from messages.upsert
       if (status.messages && status.messages.length > 0) {
         const msg = status.messages[0];

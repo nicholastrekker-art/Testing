@@ -191,6 +191,28 @@ export class WhatsAppBot {
         this.isRunning = false;
         this.stopPresenceAutoSwitch();
 
+        // Check for conflict errors (440 - multiple simultaneous connections)
+        const isConflictError = disconnectReason === 440 || errorMessage.includes('conflict');
+        
+        if (isConflictError) {
+          console.log(`⚠️ Bot ${this.botInstance.name}: Conflict detected (440) - another instance is connected. Stopping reconnection.`);
+          this.reconnectAttempts = 999; // Stop auto-reconnect
+
+          await storage.updateBotInstance(this.botInstance.id, {
+            status: 'offline',
+            invalidReason: 'Conflict: Another instance of this bot is already connected. Please ensure only one instance is running.',
+            autoStart: false
+          });
+
+          await storage.createActivity({
+            serverName: this.botInstance.serverName,
+            botInstanceId: this.botInstance.id,
+            type: 'error',
+            description: 'Connection conflict (440) - multiple instances detected. Bot stopped.'
+          });
+          return;
+        }
+
         // Check for 428 errors (Connection Closed / Precondition Required)
         const is428Error = disconnectReason === 428 || errorMessage.includes('Connection Closed');
 
