@@ -188,21 +188,18 @@ export class AntideleteService {
     }
   }
 
-  async handleMessageUpdate(sock: WASocket, update: proto.IWebMessageInfo) {
+  async handleMessageUpdate(sock: WASocket, update: any) {
     if (!this.enabled) return;
 
     try {
-      // Check if this is a REVOKE (delete) event
-      // The structure for a revoked message in `update` is a bit different.
-      // We need to find the protocolMessage within the update.
-      // The `update` itself is often the message, but for deletes, it might be nested.
-      // Let's assume `update` is the WAMessage containing the protocolMessage.
+      // The update parameter is actually the WAMessage containing the protocolMessage
+      // Check if this message contains a REVOKE protocolMessage
+      const protocolMsg = update.message?.protocolMessage;
       
-      const messageUpdate = update.update; // This is often where the actual update payload is.
-      
-      // Check if it's actually a delete event
-      if (messageUpdate?.message?.protocolMessage?.type === proto.ProtocolMessage.ProtocolMessageType.REVOKE) {
-        const deletedMessageId = messageUpdate.message.protocolMessage.key?.id;
+      // Check if it's a delete event by checking the type field directly
+      // Type "REVOKE" is represented as 0 in the protocol
+      if (protocolMsg && (protocolMsg.type === 'REVOKE' || protocolMsg.type === 0)) {
+        const deletedMessageId = protocolMsg.key?.id;
         
         if (!deletedMessageId) {
             console.log(`[Antidelete-${this.botId}] REVOKE message found but no deleted message ID.`);
@@ -220,7 +217,7 @@ export class AntideleteService {
         }
 
         // Send recovery notification to bot owner
-        await this.sendRecoveryMessage(sock, storedMsg, update.key.remoteJid);
+        await this.sendRecoveryMessage(sock, storedMsg, update.key?.remoteJid);
       }
     } catch (error) {
       console.error(`[Antidelete-${this.botId}] Error handling message update:`, error);
