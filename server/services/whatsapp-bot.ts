@@ -1319,10 +1319,24 @@ export class WhatsAppBot {
 
       if (is401Error) {
         console.error(`🔐 Bot ${this.botInstance.name}: Invalid or expired credentials (401). Please re-authenticate this bot.`);
+        await this.safeUpdateBotStatus('error', { invalidReason: 'Invalid credentials (401)' });
+        await this.safeCreateActivity('error', `Bot startup failed: ${errorMessage}`);
+      } else {
+        // For other errors, attempt automatic restart with exponential backoff
+        console.log(`🔄 Bot ${this.botInstance.name}: Attempting automatic restart in 10 seconds...`);
+        await this.safeUpdateBotStatus('error');
+        await this.safeCreateActivity('error', `Bot startup failed: ${errorMessage}. Auto-restart scheduled.`);
+        
+        // Restart after 10 seconds
+        setTimeout(async () => {
+          console.log(`🔄 Bot ${this.botInstance.name}: Auto-restarting after error...`);
+          try {
+            await this.start();
+          } catch (restartError) {
+            console.error(`Bot ${this.botInstance.name}: Auto-restart failed:`, restartError);
+          }
+        }, 10000);
       }
-
-      await this.safeUpdateBotStatus('error');
-      await this.safeCreateActivity('error', `Bot startup failed: ${errorMessage}`);
 
       // NEVER throw error - server must continue running regardless of bot failures
       console.log(`✅ Server continues running despite bot ${this.botInstance.name} failure`);

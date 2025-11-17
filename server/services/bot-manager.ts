@@ -88,7 +88,7 @@ class BotManager {
     // Use serverName from the bot instance if available
     const tenantPath = serverName || 'default-server';
     const authDir = join(process.cwd(), 'auth', tenantPath, `bot_${botId}`);
-    
+
     if (existsSync(authDir)) {
       try {
         rmSync(authDir, { recursive: true, force: true });
@@ -131,7 +131,7 @@ class BotManager {
       // Check if bot is already running
       const existingBot = this.bots.get(botId);
       const currentStatus = existingBot?.getStatus();
-      
+
       if (existingBot && currentStatus === 'online') {
         console.log(`BotManager: Bot ${botId} is already online`);
         // Reset failures since bot is running
@@ -165,16 +165,16 @@ class BotManager {
 
       // Always create fresh instance for ALL approved bots (including newly approved ones)
       console.log(`BotManager: Starting approved bot ${botId} (${botInstance.name}) on server ${botInstance.serverName}`);
-      
+
       // Clear session files for fresh start (tenant-isolated)
       this.clearBotSessionFiles(botId, botInstance.serverName);
-      
+
       const newBot = new WhatsAppBot(botInstance);
       this.bots.set(botId, newBot);
-      
+
       // Start bot and keep connection alive (errors handled internally)
       await newBot.start();
-      
+
       // Only log success if bot actually started (check status)
       if (newBot.getStatus() === 'online') {
         console.log(`✅ BotManager: Bot ${botId} started successfully`);
@@ -183,10 +183,10 @@ class BotManager {
       } else {
         console.log(`⚠️ BotManager: Bot ${botId} start initiated, waiting for connection`);
       }
-      
+
     } catch (error) {
       console.error(`❌ BotManager: Failed to start bot ${botId}:`, error);
-      
+
       // Clean up failed bot
       const failedBot = this.bots.get(botId);
       if (failedBot) {
@@ -197,10 +197,10 @@ class BotManager {
         }
         this.bots.delete(botId);
       }
-      
+
       // Record failure for monitoring (will skip after 2 failures)
       this.recordBotFailure(botId);
-      
+
       // NEVER throw - server must continue running
       console.log(`✅ Server continues running despite bot ${botId} failure`);
     }
@@ -217,22 +217,22 @@ class BotManager {
     try {
       const bot = this.bots.get(botId);
       let serverName: string | undefined;
-      
+
       if (bot) {
         // Get serverName before stopping
         const botInstance = await storage.getBotInstance(botId);
         serverName = botInstance?.serverName;
-        
+
         await bot.stop();
         await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds for complete shutdown
-        
+
         // Remove from map to ensure clean restart
         this.bots.delete(botId);
       }
-      
+
       // Clear all session files for fresh start (tenant-isolated)
       this.clearBotSessionFiles(botId, serverName);
-      
+
       // Start fresh isolated instance
       await this.startBot(botId);
     } catch (error) {
@@ -244,15 +244,15 @@ class BotManager {
   async destroyBot(botId: string) {
     const bot = this.bots.get(botId);
     let serverName: string | undefined;
-    
+
     if (bot) {
       // Get serverName before stopping
       const botInstance = await storage.getBotInstance(botId);
       serverName = botInstance?.serverName;
-      
+
       await bot.stop();
       this.bots.delete(botId);
-      
+
       // Clear all container data when destroying bot (tenant-isolated)
       this.clearBotSessionFiles(botId, serverName);
     }
@@ -300,7 +300,7 @@ class BotManager {
       // Get all approved bots for this server from database
       const serverBots = await storage.getBotInstancesForServer(serverName);
       const approvedBots = serverBots.filter(bot => bot.approvalStatus === 'approved');
-      
+
       // Start each approved bot
       for (const bot of approvedBots) {
         try {
@@ -345,7 +345,7 @@ class BotManager {
       { name: 'info', description: 'Bot information', response: 'WhatsApp Bot powered by Bailey\'s Bot Management System', isActive: true, useChatGPT: false },
       { name: 'version', description: 'Bot version info', response: 'Bailey\'s WhatsApp Bot v2.0 - Advanced Multi-Bot Management System', isActive: true, useChatGPT: false },
       { name: 'about', description: 'About this bot', response: 'Advanced WhatsApp automation bot with AI integration and comprehensive command system.', isActive: true, useChatGPT: false },
-      
+
       // Group Management Commands
       { name: 'mute', description: 'Mute group notifications', response: 'Group notifications muted for 1 hour.', isActive: true, useChatGPT: false },
       { name: 'unmute', description: 'Unmute group notifications', response: 'Group notifications unmuted.', isActive: true, useChatGPT: false },
@@ -359,7 +359,7 @@ class BotManager {
       { name: 'groupinfo', description: 'Get group information', response: '', isActive: true, useChatGPT: true },
       { name: 'members', description: 'List group members', response: '', isActive: true, useChatGPT: true },
       { name: 'admins', description: 'List group admins', response: '', isActive: true, useChatGPT: true },
-      { name: 'rules', description: 'Show group rules', response: '📋 Group Rules:\\n1. Be respectful to all members\\n2. No spam or promotional content\\n3. Stay on topic\\n4. Use appropriate language\\n5. Follow WhatsApp community guidelines', isActive: true, useChatGPT: false },
+      { name: 'rules', description: 'Show group rules', response: '📋 Group Rules:\n1. Be respectful to all members\n2. No spam or promotional content\n3. Stay on topic\n4. Use appropriate language\n5. Follow WhatsApp community guidelines', isActive: true, useChatGPT: false },
       { name: 'setrules', description: 'Set group rules', response: '', isActive: true, useChatGPT: true },
       { name: 'welcome', description: 'Set welcome message', response: '', isActive: true, useChatGPT: true },
       { name: 'goodbye', description: 'Set goodbye message', response: '', isActive: true, useChatGPT: true },
@@ -368,7 +368,7 @@ class BotManager {
       { name: 'warn', description: 'Warn a user', response: '', isActive: true, useChatGPT: true },
       { name: 'warnings', description: 'Check user warnings', response: '', isActive: true, useChatGPT: true },
       { name: 'clearwarn', description: 'Clear user warnings', response: '', isActive: true, useChatGPT: true },
-      
+
       // Entertainment Commands
       { name: 'joke', description: 'Tell a random joke', response: '', isActive: true, useChatGPT: true },
       { name: 'meme', description: 'Share a meme', response: '', isActive: true, useChatGPT: true },
@@ -390,7 +390,7 @@ class BotManager {
       { name: 'number', description: 'Random number generator', response: '', isActive: true, useChatGPT: true },
       { name: 'choose', description: 'Choose between options', response: '', isActive: true, useChatGPT: true },
       { name: 'spin', description: 'Spin the wheel', response: '', isActive: true, useChatGPT: true },
-      
+
       // Information & Utility Commands
       { name: 'weather', description: 'Get weather information', response: '', isActive: true, useChatGPT: true },
       { name: 'time', description: 'Current time', response: '', isActive: true, useChatGPT: true },
@@ -413,7 +413,7 @@ class BotManager {
       { name: 'hash', description: 'Generate hash', response: '', isActive: true, useChatGPT: true },
       { name: 'encode', description: 'Encode text', response: '', isActive: true, useChatGPT: true },
       { name: 'decode', description: 'Decode text', response: '', isActive: true, useChatGPT: true },
-      
+
       // Search & Information Commands
       { name: 'search', description: 'Web search', response: '', isActive: true, useChatGPT: true },
       { name: 'wiki', description: 'Wikipedia search', response: '', isActive: true, useChatGPT: true },
@@ -435,7 +435,7 @@ class BotManager {
       { name: 'nature', description: 'Nature facts', response: '', isActive: true, useChatGPT: true },
       { name: 'animal', description: 'Animal facts', response: '', isActive: true, useChatGPT: true },
       { name: 'plant', description: 'Plant information', response: '', isActive: true, useChatGPT: true },
-      
+
       // Creative Commands
       { name: 'draw', description: 'ASCII art generator', response: '', isActive: true, useChatGPT: true },
       { name: 'color', description: 'Color palette generator', response: '', isActive: true, useChatGPT: true },
@@ -457,7 +457,7 @@ class BotManager {
       { name: 'collage', description: 'Collage ideas', response: '', isActive: true, useChatGPT: true },
       { name: 'video', description: 'Video editing tips', response: '', isActive: true, useChatGPT: true },
       { name: 'animation', description: 'Animation ideas', response: '', isActive: true, useChatGPT: true },
-      
+
       // Learning & Education Commands
       { name: 'learn', description: 'Learning resources', response: '', isActive: true, useChatGPT: true },
       { name: 'study', description: 'Study tips', response: '', isActive: true, useChatGPT: true },
@@ -479,7 +479,7 @@ class BotManager {
       { name: 'code', description: 'Programming help', response: '', isActive: true, useChatGPT: true },
       { name: 'debug', description: 'Debug code', response: '', isActive: true, useChatGPT: true },
       { name: 'algorithm', description: 'Algorithm explanations', response: '', isActive: true, useChatGPT: true },
-      
+
       // Health & Fitness Commands
       { name: 'health', description: 'Health tips', response: '', isActive: true, useChatGPT: true },
       { name: 'fitness', description: 'Fitness advice', response: '', isActive: true, useChatGPT: true },
@@ -501,7 +501,7 @@ class BotManager {
       { name: 'mental', description: 'Mental health tips', response: '', isActive: true, useChatGPT: true },
       { name: 'therapy', description: 'Therapy resources', response: '', isActive: true, useChatGPT: true },
       { name: 'counseling', description: 'Counseling information', response: '', isActive: true, useChatGPT: true },
-      
+
       // Lifestyle Commands
       { name: 'fashion', description: 'Fashion advice', response: '', isActive: true, useChatGPT: true },
       { name: 'style', description: 'Style tips', response: '', isActive: true, useChatGPT: true },
@@ -523,7 +523,7 @@ class BotManager {
       { name: 'festival', description: 'Festival information', response: '', isActive: true, useChatGPT: true },
       { name: 'holiday', description: 'Holiday information', response: '', isActive: true, useChatGPT: true },
       { name: 'celebration', description: 'Celebration ideas', response: '', isActive: true, useChatGPT: true },
-      
+
       // Food & Cooking Commands
       { name: 'cook', description: 'Cooking tips', response: '', isActive: true, useChatGPT: true },
       { name: 'bake', description: 'Baking recipes', response: '', isActive: true, useChatGPT: true },
@@ -545,7 +545,7 @@ class BotManager {
       { name: 'snack', description: 'Snack ideas', response: '', isActive: true, useChatGPT: true },
       { name: 'dessert', description: 'Dessert recipes', response: '', isActive: true, useChatGPT: true },
       { name: 'drink', description: 'Drink recipes', response: '', isActive: true, useChatGPT: true },
-      
+
       // Business & Career Commands
       { name: 'business', description: 'Business advice', response: '', isActive: true, useChatGPT: true },
       { name: 'startup', description: 'Startup tips', response: '', isActive: true, useChatGPT: true },
@@ -567,7 +567,7 @@ class BotManager {
       { name: 'teamwork', description: 'Teamwork strategies', response: '', isActive: true, useChatGPT: true },
       { name: 'communication', description: 'Communication skills', response: '', isActive: true, useChatGPT: true },
       { name: 'presentation', description: 'Presentation tips', response: '', isActive: true, useChatGPT: true },
-      
+
       // Technology Commands
       { name: 'tech', description: 'Technology trends', response: '', isActive: true, useChatGPT: true },
       { name: 'ai', description: 'Artificial Intelligence info', response: '', isActive: true, useChatGPT: true },
@@ -589,7 +589,7 @@ class BotManager {
       { name: 'website', description: 'Website development', response: '', isActive: true, useChatGPT: true },
       { name: 'domain', description: 'Domain name tips', response: '', isActive: true, useChatGPT: true },
       { name: 'hosting', description: 'Web hosting advice', response: '', isActive: true, useChatGPT: true },
-      
+
       // Sports & Gaming Commands
       { name: 'sport', description: 'Sports information', response: '', isActive: true, useChatGPT: true },
       { name: 'football', description: 'Football updates', response: '', isActive: true, useChatGPT: true },
@@ -611,11 +611,11 @@ class BotManager {
       { name: 'nintendo', description: 'Nintendo news', response: '', isActive: true, useChatGPT: true },
       { name: 'pc', description: 'PC gaming tips', response: '', isActive: true, useChatGPT: true },
       { name: 'mobile', description: 'Mobile gaming', response: '', isActive: true, useChatGPT: true },
-      
+
       // Anti-ViewOnce Commands
       { name: 'antiviewonce', description: 'Manage anti-viewonce settings', response: 'Anti-ViewOnce management - intercept ViewOnce messages', isActive: true, useChatGPT: false },
       { name: 'viewonce', description: 'ViewOnce message interception', response: 'ViewOnce interception settings', isActive: true, useChatGPT: false },
-      
+
       // Bot Control Commands
       { name: 'settings', description: 'Bot settings', response: '', isActive: true, useChatGPT: true },
       { name: 'config', description: 'Configuration options', response: '', isActive: true, useChatGPT: true },
@@ -639,7 +639,7 @@ class BotManager {
 
     const { getServerName } = await import('../db');
     const serverName = getServerName();
-    
+
     for (const commandData of defaultCommands) {
       try {
         await storage.createCommand({

@@ -55,6 +55,14 @@ async function startScheduledBotMonitoring() {
           // Check if bot is in the bot manager and its status
           const existingBot = botManager.getBot(bot.id);
           const isOnline = existingBot?.getStatus() === 'online';
+          const isError = bot.status === 'error';
+
+          // Auto-restart bots in error state (automatic error recovery)
+          if (isError && bot.invalidReason && !bot.invalidReason.includes('401')) {
+            console.log(`🔄 Monitoring: Auto-restarting bot ${bot.name} (${bot.id}) from error state`);
+            await botManager.restartBot(bot.id);
+            continue;
+          }
 
           // Auto-start ALL approved bots that are not online (including newly approved ones)
           if (!existingBot || !isOnline) {
@@ -180,6 +188,19 @@ app.use((req, res, next) => {
     }, 10000);
   });
 
+  // Global error handlers to prevent crashes
+  process.on('uncaughtException', (error) => {
+    console.error('🚨 Uncaught Exception - Server continues running:', error);
+    console.error('Stack trace:', error.stack);
+    // Log but don't crash - let server continue
+  });
+
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('🚨 Unhandled Promise Rejection - Server continues running:', reason);
+    console.error('Promise:', promise);
+    // Log but don't crash - let server continue
+  });
+
   // Graceful shutdown handling for containerized environments
   const gracefulShutdown = (signal: string) => {
     log(`${signal} received, shutting down gracefully`);
@@ -204,6 +225,16 @@ app.use((req, res, next) => {
   process.on('SIGHUP', () => gracefulShutdown('SIGHUP'));
 
 })().catch(error => {
-  console.error('Failed to start server:', error);
-  process.exit(1);
+  console.error('❌ Failed to start server:', error);
+  console.error('🔄 Attempting server restart in 5 seconds...');
+  
+  // Attempt to restart the server instead of exiting
+  setTimeout(() => {
+    console.log('🔄 Restarting server...');
+    // Re-import and restart
+    import('./index.ts').catch(restartError => {
+      console.error('❌ Server restart failed:', restartError);
+      process.exit(1);
+    });
+  }, 5000);
 });
