@@ -367,67 +367,7 @@ export class AntideleteService {
       const chatType = this.getChatType(fromJid);
       const timestamp = new Date().toLocaleString();
 
-      // Check if this is an empty content message - potential deletion
-      // Filter out status updates and protocol messages (reactions, receipts, etc.)
-      const isStatusUpdate = message.message?.protocolMessage?.type !== undefined;
-      const isReaction = message.message?.reactionMessage !== undefined;
-      const isStatusBroadcast = fromJid === 'status@broadcast';
-      const isValidMessageJID = fromJid && (fromJid.endsWith('@s.whatsapp.net') || fromJid.endsWith('@g.us'));
-
-      if ((!messageContent || messageContent.trim() === '') && !message.key.fromMe && !isStatusUpdate && !isReaction && !isStatusBroadcast && isValidMessageJID) {
-        console.log(`🚨 [Antidelete] EMPTY CONTENT MESSAGE DETECTED - CHECKING FOR DELETION!`);
-        console.log(`══════════════════════════════════════════════════════════`);
-        console.log(`   🆔 Message ID: ${messageId}`);
-        console.log(`   💬 Chat: ${chatType} (${fromJid})`);
-        console.log(`   🕐 Detection Time: ${timestamp}`);
-
-        // Look for stored message with same ID
-        const storedMessage = this.messageStore.get(messageId);
-        if (storedMessage && sock) {
-          console.log(`✅ [Antidelete] FOUND STORED MESSAGE - DELETION DETECTED!`);
-          console.log(`   📝 Original Content: "${storedMessage.content}"`);
-          console.log(`   📱 Had Media: ${this.hasMediaContent(storedMessage.originalMessage) ? 'Yes' : 'No'}`);
-
-          // Check if stored message had media
-          const hadMedia = this.hasMediaContent(storedMessage.originalMessage);
-          if (hadMedia) {
-            // Try to get the stored media file
-            const mediaPath = path.join(this.tempMediaDir, `${messageId}.media`);
-            if (fs.existsSync(mediaPath)) {
-              console.log(`📂 [Antidelete] Found stored media file: ${mediaPath}`);
-              try {
-                const mediaBuffer = fs.readFileSync(mediaPath);
-                const mediaInfo = this.getDetailedMediaInfo(storedMessage.originalMessage);
-                await this.forwardStoredMedia(sock, mediaBuffer, mediaInfo, storedMessage);
-
-                // Clean up media file after forwarding
-                fs.unlinkSync(mediaPath);
-                console.log(`🧹 [Antidelete] Cleaned up media file: ${mediaPath}`);
-              } catch (error) {
-                console.error(`❌ [Antidelete] Error forwarding stored media:`, error);
-              }
-            } else {
-              console.log(`⚠️ [Antidelete] Media file not found, sending text alert only`);
-              await this.sendDeletionAlertToBotOwner(sock, storedMessage, fromJid, 'Media deletion detected', false);
-            }
-          } else {
-            // Text message deletion
-            await this.sendDeletionAlertToBotOwner(sock, storedMessage, fromJid, 'Text deletion detected', false);
-          }
-
-          // Remove from store after processing deletion
-          this.messageStore.delete(messageId);
-          console.log(`🧹 [Antidelete] Cleaned up stored message ${messageId} after processing deletion`);
-        } else {
-          console.log(`❌ [Antidelete] NO STORED MESSAGE FOUND FOR DELETION`);
-        }
-        console.log(`══════════════════════════════════════════════════════════`);
-
-        // Don't store empty content messages
-        return;
-      }
-
-      // Only store messages with actual content or media
+      // Store messages with actual content or media
       if (messageContent.trim() !== '' || this.hasMediaContent(message)) {
         // Store the message
         this.messageStore.set(messageId, {
