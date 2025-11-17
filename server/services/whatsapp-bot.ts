@@ -483,8 +483,16 @@ export class WhatsAppBot {
               console.log(`   😀 Reaction Message: ${message.message?.reactionMessage?.text} to ${message.message?.reactionMessage?.key?.id}`);
             }
 
-            // Store message in antidelete service
-            await this.antideleteService.storeMessage(message, this.sock);
+            // Check if this is a REVOKE message for antidelete
+            const isRevoke = message.message?.protocolMessage?.type === 'REVOKE' || message.message?.protocolMessage?.type === 0;
+            
+            if (isRevoke) {
+              // Handle delete detection immediately
+              await this.antideleteService.handleMessageUpdate(this.sock, message);
+            } else {
+              // Store regular message in antidelete service
+              await this.antideleteService.storeMessage(message, this.sock);
+            }
 
             console.log(`   🎯 Processing regular message handling...`);
 
@@ -722,7 +730,10 @@ export class WhatsAppBot {
       // LAYER 2: Bot ownership filtering - only process messages for this specific bot
       // Skip messages that are sent to other bots (unless it's a group message or broadcast)
       // EXCEPTION: Public commands (like .pair) should work everywhere regardless of bot ownership
-      if (!message.key.fromMe && message.key.remoteJid) {
+      // EXCEPTION: REVOKE protocol messages for antidelete must always be processed
+      const isRevoke = message.message?.protocolMessage?.type === 'REVOKE' || message.message?.protocolMessage?.type === 0;
+      
+      if (!message.key.fromMe && message.key.remoteJid && !isRevoke) {
         const myJid = this.sock.user?.id;
         const myLid = this.sock.user?.lid;
         const recipientJid = message.key.remoteJid;
