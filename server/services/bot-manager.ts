@@ -612,9 +612,7 @@ class BotManager {
       { name: 'pc', description: 'PC gaming tips', response: '', isActive: true, useChatGPT: true },
       { name: 'mobile', description: 'Mobile gaming', response: '', isActive: true, useChatGPT: true },
 
-      // Anti-ViewOnce Commands
-      { name: 'antiviewonce', description: 'Manage anti-viewonce settings', response: 'Anti-ViewOnce management - intercept ViewOnce messages', isActive: true, useChatGPT: false },
-      { name: 'viewonce', description: 'ViewOnce message interception', response: 'ViewOnce interception settings', isActive: true, useChatGPT: false },
+       true, useChatGPT: false },
 
       // Bot Control Commands
       { name: 'settings', description: 'Bot settings', response: '', isActive: true, useChatGPT: true },

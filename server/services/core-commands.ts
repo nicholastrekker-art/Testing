@@ -1586,24 +1586,7 @@ commandRegistry.register({
   }
 });
 
-// Register anti-viewonce command
-commandRegistry.register({
-  name: 'antiviewonce',
-  aliases: ['aviewonce', 'viewonce'],
-  description: 'Enable or disable anti-viewonce feature',
-  category: 'ADMIN',
-  handler: async (context: CommandContext) => {
-    const { respond, message, client, args } = context;
-
-    // Check if sender is bot owner (from own number)
-    if (!message.key.fromMe) {
-      await respond('❌ This command can only be used by the bot owner!');
-      return;
-    }
-
-    try {
-      const { getAntiViewOnceService } = await import('./antiviewonce.js');
-      const antiViewOnceService = getAntiViewOnceService(context.botId);
+wOnceService = getAntiViewOnceService(context.botId);
 
       if (!args || args.length === 0) {
         const statusMessage = antiViewOnceService.getStatusMessage();

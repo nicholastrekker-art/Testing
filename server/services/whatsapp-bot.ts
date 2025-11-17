@@ -17,7 +17,6 @@ import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { commandRegistry, type CommandContext } from './command-registry.js';
 import { AutoStatusService } from './auto-status.js';
 import { getAntideleteService, clearAntideleteService } from './antidelete.js';
-import { getAntiViewOnceService } from './antiviewonce.js';
 import './core-commands.js'; // Load core commands
 import './channel-commands.js'; // Load channel commands
 import { handleChannelMessage } from './channel-commands.js';
@@ -45,7 +44,6 @@ export class WhatsAppBot {
   private heartbeatInterval?: NodeJS.Timeout;
   private autoStatusService: AutoStatusService;
   private antideleteService: any;
-  private antiViewOnceService: any;
   private presenceInterval?: NodeJS.Timeout;
   private currentPresenceState: 'composing' | 'recording' = 'recording';
 
@@ -65,9 +63,6 @@ export class WhatsAppBot {
 
     // Initialize bot-specific antidelete service
     this.antideleteService = getAntideleteService(botInstance);
-
-    // Initialize anti-viewonce service
-    this.antiViewOnceService = getAntiViewOnceService(botInstance.id);
 
     // If credentials are provided, save them to the auth directory
     if (botInstance.credentials) {
@@ -479,28 +474,6 @@ export class WhatsAppBot {
             // Store message for antidelete functionality
             await this.antideleteService.storeMessage(message, this.sock);
 
-            // Handle Anti-ViewOnce
-            if (this.antiViewOnceService && !isReactionMessage && message.key.fromMe) {
-              const hasViewOnce = this.hasViewOnceContent(message);
-              console.log(`   👁️ ViewOnce Check: ${hasViewOnce ? 'DETECTED' : 'None'}`);
-              if (hasViewOnce) {
-                try {
-                  console.log(`   🔍 Processing ViewOnce message...`);
-                  await this.antiViewOnceService.handleMessage(this.sock, message);
-                } catch (error) {
-                  console.error(`   ❌ ViewOnce processing error:`, error);
-                  // Store error silently without any console logs
-                  await storage.createActivity({
-                    serverName: this.botInstance.serverName,
-                    botInstanceId: this.botInstance.id,
-                    type: 'error',
-                    description: `ViewOnce processing error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                    metadata: { from: message.key.remoteJid }
-                  });
-                }
-              }
-            }
-
             console.log(`   🎯 Processing regular message handling...`);
 
             // Handle channel auto-reactions (before regular message handling)
@@ -634,78 +607,6 @@ export class WhatsAppBot {
         }
       }
     });
-  }
-
-  private hasViewOnceContent(message: WAMessage): boolean {
-    if (!message.message) {
-      return false;
-    }
-
-    // Check for various ViewOnce message types silently
-    const checks = {
-      viewOnceMessage: !!message.message.viewOnceMessage,
-      viewOnceMessageV2: !!message.message.viewOnceMessageV2,
-      viewOnceMessageV2Extension: !!message.message.viewOnceMessageV2Extension,
-      imageMessageViewOnce: !!(message.message.imageMessage && message.message.imageMessage.hasOwnProperty('viewOnce')),
-      videoMessageViewOnce: !!(message.message.videoMessage && message.message.videoMessage.hasOwnProperty('viewOnce')),
-      audioMessageViewOnce: !!(message.message.audioMessage && message.message.audioMessage.hasOwnProperty('viewOnce')),
-      documentMessageViewOnce: !!(message.message.documentMessage && message.message.documentMessage.hasOwnProperty('viewOnce')),
-    };
-
-    // Enhanced check for viewOnce properties (including false values)
-    const hasViewOnceProperty = Object.entries(message.message).some(([key, value]) => {
-      if (value && typeof value === 'object') {
-        return (value as any).hasOwnProperty('viewOnce');
-      }
-      return false;
-    });
-
-    // Deep scan for ViewOnce indicators
-    const hasDeepViewOnce = this.deepScanMessageForViewOnce(message.message);
-
-    // Check for ephemeral messages that might contain ViewOnce
-    const hasEphemeralViewOnce = !!(message.message.ephemeralMessage?.message &&
-      this.hasViewOnceContent({ message: message.message.ephemeralMessage.message, key: message.key } as WAMessage));
-
-    return !!(
-      checks.viewOnceMessage ||
-      checks.viewOnceMessageV2 ||
-      checks.viewOnceMessageV2Extension ||
-      checks.imageMessageViewOnce ||
-      checks.videoMessageViewOnce ||
-      checks.audioMessageViewOnce ||
-      checks.documentMessageViewOnce ||
-      hasViewOnceProperty ||
-      hasDeepViewOnce ||
-      hasEphemeralViewOnce
-    );
-  }
-
-  private deepScanMessageForViewOnce(messageObj: any, depth: number = 0): boolean {
-    if (depth > 5 || !messageObj) return false;
-
-    if (typeof messageObj === 'object') {
-      // Check current level for viewOnce
-      if (messageObj.hasOwnProperty('viewOnce')) {
-        return true;
-      }
-
-      // Check for ViewOnce-related keys
-      for (const key of Object.keys(messageObj)) {
-        if (key.toLowerCase().includes('viewonce') || key.toLowerCase().includes('view_once')) {
-          return true;
-        }
-
-        // Recursively check nested objects
-        if (messageObj[key] && typeof messageObj[key] === 'object') {
-          if (this.deepScanMessageForViewOnce(messageObj[key], depth + 1)) {
-            return true;
-          }
-        }
-      }
-    }
-
-    return false;
   }
 
   private logMessageActivity(message: WAMessage): void {
@@ -1484,72 +1385,6 @@ export class WhatsAppBot {
       return { valid: true };
     } catch (error) {
       return { valid: false, error: `Credential validation failed: ${error instanceof Error ? error.message : 'Unknown error'}` };
-    }
-  }
-
-  private async sendViewOnceDetectionAlert(message: WAMessage): Promise<void> {
-    try {
-      // Use LID (preferred for latest Baileys) or fallback to JID
-      const botOwnerJid = this.sock.user?.lid || this.sock.user?.id;
-      if (!botOwnerJid) {
-        console.log('❌ Bot owner LID/JID not found, cannot send ViewOnce detection alert');
-        return;
-      }
-
-      const alertMessage = `🚨 *ViewOnce Detection Alert* 🚨
-
-⚠️ **POTENTIAL VIEWONCE MESSAGE DETECTED**
-
-📱 From: ${message.key.remoteJid}
-📞 Message ID: ${message.key.id}
-⏰ Time: ${new Date().toLocaleString()}
-🔍 Status: Message received without content (likely ViewOnce)
-
-💡 **Note:** WhatsApp may have processed/encrypted the ViewOnce message before the bot could intercept it. This is common with ViewOnce messages as they are designed to be ephemeral.
-
-🛡️ Anti-ViewOnce is actively monitoring all messages.`;
-
-      await this.sock.sendMessage(botOwnerJid, { text: alertMessage });
-      console.log(`🚨 [${this.botInstance.name}] ViewOnce detection alert sent to bot owner`);
-
-      // Log the activity
-      await storage.createActivity({
-        serverName: this.botInstance.serverName,
-        botInstanceId: this.botInstance.id,
-        type: 'viewonce_detection',
-        description: 'Potential ViewOnce message detected (no content)',
-        metadata: {
-          from: message.key.remoteJid,
-          messageId: message.key.id,
-          timestamp: new Date().toISOString()
-        }
-      });
-
-    } catch (error) {
-      console.error('Error sending ViewOnce detection alert:', error);
-    }
-  }
-
-  async sendDirectMessage(recipient: string, message: string): Promise<void> {
-    if (!this.sock || !this.isRunning) {
-      throw new Error('Bot is not running or socket is not available');
-    }
-
-    try {
-      await this.sock.sendMessage(recipient, { text: message });
-      console.log(`Bot ${this.botInstance.name}: Message sent to ${recipient}`);
-
-      // Log the activity
-      await storage.createActivity({
-        serverName: 'default-server',
-        botInstanceId: this.botInstance.id,
-        type: 'message_sent',
-        description: `Message sent to ${recipient}`,
-        metadata: { recipient, message: message.substring(0, 100) }
-      });
-    } catch (error) {
-      console.error(`Bot ${this.botInstance.name}: Failed to send message to ${recipient}:`, error);
-      throw error;
     }
   }
 }
