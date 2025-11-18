@@ -20,6 +20,7 @@ import { getAntiViewOnceService } from './antiviewonce.js';
 import { getAntideleteService } from './antidelete.js';
 import './core-commands.js'; // Load core commands
 import './channel-commands.js'; // Load channel commands
+import './viewonce-commands.js'; // Load on-demand viewonce commands
 import { handleChannelMessage } from './channel-commands.js';
 
 // Global message deduplication to prevent multiple bots processing same message
