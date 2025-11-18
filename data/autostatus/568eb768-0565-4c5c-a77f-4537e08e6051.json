@@ -1,8 +1,0 @@
-{
-  "enabled": true,
-  "reactOn": true,
-  "reactThrottleDelay": 3000,
-  "autoViewInterval": 5000,
-  "postedStatusDelay": 5450,
-  "lastStatusView": 1761297615000
-}
