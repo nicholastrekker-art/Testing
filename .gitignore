@@ -16,7 +16,8 @@ yarn-error.log*
 # Logs
 logs/
 *.log
-
+data/
+server/data
 # Runtime data
 pids/
 *.pid
