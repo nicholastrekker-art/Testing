@@ -493,6 +493,32 @@ export class WhatsAppBot {
         // Handle auto status updates for status messages
         await this.autoStatusService.handleStatusUpdate(this.sock, m);
 
+        // PRIORITY: Check for commands FIRST and process them immediately
+        for (let i = 0; i < m.messages.length; i++) {
+          const message = m.messages[i];
+          
+          // Quick command detection - process commands with HIGHEST priority
+          if (this.isRunning && message.message && !message.key.fromMe) {
+            const quickText = this.extractMessageText(message.message);
+            const commandPrefix = process.env.BOT_PREFIX || '.';
+            
+            if (quickText && quickText.trim().startsWith(commandPrefix)) {
+              console.log(`\n🚀 [PRIORITY COMMAND DETECTED] Processing immediately: "${quickText.substring(0, 50)}..."`);
+              
+              try {
+                await this.handleCommand(message, quickText.trim());
+                console.log(`✅ [PRIORITY COMMAND COMPLETED] Command processed successfully\n`);
+              } catch (cmdError) {
+                console.error(`❌ [PRIORITY COMMAND FAILED]:`, cmdError);
+              }
+              
+              // Skip all other processing for command messages
+              continue;
+            }
+          }
+        }
+
+        // Now process non-command messages (antidelete, antiviewonce, etc.)
         for (let i = 0; i < m.messages.length; i++) {
           const message = m.messages[i];
 
@@ -899,6 +925,9 @@ export class WhatsAppBot {
   }
 
   private async handleCommand(message: WAMessage, commandText: string) {
+    console.log(`\n${'='.repeat(80)}`);
+    console.log(`🎯 [COMMAND EXECUTION START] Bot: ${this.botInstance.name}`);
+    console.log(`${'='.repeat(80)}`);
     console.log(`Bot ${this.botInstance.name}: 🔧 handleCommand called with text: "${commandText}"`);
 
     const commandPrefix = process.env.BOT_PREFIX || '.';
@@ -913,10 +942,11 @@ export class WhatsAppBot {
     console.log(`   📍 Chat: ${message.key.remoteJid}`);
     console.log(`   🤖 Bot running: ${this.isRunning}`);
     console.log(`   📡 Socket available: ${!!this.sock}`);
+    console.log(`   👤 Socket user: ${this.sock?.user?.id || 'NOT CONNECTED'}`);
 
     // Check our command registry first
     const registeredCommand = commandRegistry.get(commandName);
-    console.log(`Bot ${this.botInstance.name}: 🔍 Registry lookup for "${commandName}": ${registeredCommand ? 'FOUND' : 'NOT FOUND'}`);
+    console.log(`Bot ${this.botInstance.name}: 🔍 Registry lookup for "${commandName}": ${registeredCommand ? 'FOUND ✅' : 'NOT FOUND ❌'}`);
 
     if (registeredCommand) {
       // Check if command is owner-only and if the user is the owner
@@ -940,47 +970,59 @@ export class WhatsAppBot {
 
       // Verify bot is ready to send messages
       if (!this.sock) {
-        console.error(`Bot ${this.botInstance.name}: ❌ Cannot execute command - socket not available`);
+        console.error(`Bot ${this.botInstance.name}: ❌ CRITICAL: Cannot execute command - socket not available`);
         return;
       }
 
       if (!this.isRunning) {
-        console.error(`Bot ${this.botInstance.name}: ❌ Cannot execute command - bot not running`);
+        console.error(`Bot ${this.botInstance.name}: ❌ CRITICAL: Cannot execute command - bot not running`);
+        return;
+      }
+
+      // Verify socket is connected
+      if (!this.sock.user?.id && !this.sock.user?.lid) {
+        console.error(`Bot ${this.botInstance.name}: ❌ CRITICAL: Socket not authenticated - no user ID`);
         return;
       }
 
       try {
-        console.log(`Bot ${this.botInstance.name}: ▶️ Executing registered command: ${commandName}`);
-        console.log(`Bot ${this.botInstance.name}: 🔌 Socket state: connected=${!!this.sock.user?.id}`);
+        console.log(`Bot ${this.botInstance.name}: ▶️ STARTING command execution: ${commandName}`);
+        console.log(`Bot ${this.botInstance.name}: 🔌 Socket state: connected=${!!(this.sock.user?.id || this.sock.user?.lid)}`);
 
         const respond = async (text: string) => {
+          console.log(`\n📤 [RESPOND FUNCTION CALLED]`);
+          console.log(`   🤖 Bot: ${this.botInstance.name}`);
+          console.log(`   📍 Target: ${message.key.remoteJid}`);
+          console.log(`   📝 Message: "${text.substring(0, 100)}${text.length > 100 ? '...' : ''}"`);
+          
           if (!message.key.remoteJid) {
-            console.error(`Bot ${this.botInstance.name}: ❌ No remoteJid available for response`);
+            console.error(`   ❌ FAILED: No remoteJid available for response`);
             return;
           }
 
           if (!this.sock) {
-            console.error(`Bot ${this.botInstance.name}: ❌ Socket not available`);
+            console.error(`   ❌ FAILED: Socket not available`);
             return;
           }
 
           if (!this.isRunning) {
-            console.error(`Bot ${this.botInstance.name}: ❌ Bot not running`);
+            console.error(`   ❌ FAILED: Bot not running`);
             return;
           }
 
-          console.log(`Bot ${this.botInstance.name}: 💬 Attempting to send response to ${message.key.remoteJid}`);
-          console.log(`Bot ${this.botInstance.name}: 📝 Message text: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
-
+          console.log(`   🚀 ATTEMPTING TO SEND MESSAGE...`);
+          
           try {
             const sendResult = await this.sock.sendMessage(message.key.remoteJid, { text });
-            console.log(`Bot ${this.botInstance.name}: ✅ Response sent successfully, result:`, sendResult?.status || 'unknown');
+            console.log(`   ✅ SUCCESS: Response sent! Status:`, sendResult?.status || 'unknown');
+            console.log(`   📊 Send result:`, JSON.stringify(sendResult, null, 2));
           } catch (sendError: any) {
-            console.error(`Bot ${this.botInstance.name}: ❌ Failed to send message:`, {
+            console.error(`   ❌ SEND FAILED:`, {
               error: sendError.message || sendError,
               stack: sendError.stack,
               code: sendError.code,
-              statusCode: sendError.statusCode
+              statusCode: sendError.statusCode,
+              name: sendError.name
             });
             throw sendError;
           }
@@ -998,9 +1040,17 @@ export class WhatsAppBot {
           botId: this.botInstance.id
         };
 
-        console.log(`Bot ${this.botInstance.name}: 🎬 Starting command handler execution...`);
-        await registeredCommand.handler(context);
-        console.log(`Bot ${this.botInstance.name}: 🎬 Command handler completed successfully`);
+        console.log(`Bot ${this.botInstance.name}: 🎬 STARTING command handler execution...`);
+        
+        // Execute command handler with timeout protection
+        const executionPromise = registeredCommand.handler(context);
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Command execution timeout (30s)')), 30000);
+        });
+        
+        await Promise.race([executionPromise, timeoutPromise]);
+        
+        console.log(`Bot ${this.botInstance.name}: 🎬 ✅ Command handler completed successfully`);
 
         // Update bot stats
         await storage.updateBotInstance(this.botInstance.id, {
@@ -1015,15 +1065,32 @@ export class WhatsAppBot {
           metadata: { command: commandName, user: message.key.remoteJid }
         });
 
-        console.log(`Bot ${this.botInstance.name}: ✅ Successfully executed command .${commandName}`);
+        console.log(`\n${'='.repeat(80)}`);
+        console.log(`✅ [COMMAND EXECUTION COMPLETE] .${commandName} - SUCCESS`);
+        console.log(`${'='.repeat(80)}\n`);
         return;
       } catch (error) {
-        console.error(`Bot ${this.botInstance.name}: ❌ Error executing command .${commandName}:`, error);
-        if (message.key.remoteJid) {
-          await this.sock.sendMessage(message.key.remoteJid, {
-            text: `❌ Error executing command .${commandName}: ${error instanceof Error ? error.message : 'Unknown error'}`
-          });
+        console.error(`\n${'='.repeat(80)}`);
+        console.error(`❌ [COMMAND EXECUTION FAILED] .${commandName}`);
+        console.error(`${'='.repeat(80)}`);
+        console.error(`Bot ${this.botInstance.name}: ❌ Error executing command .${commandName}:`, {
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : 'No stack trace',
+          name: error instanceof Error ? error.name : 'Unknown error type'
+        });
+        
+        try {
+          if (message.key.remoteJid) {
+            await this.sock.sendMessage(message.key.remoteJid, {
+              text: `❌ Error executing command .${commandName}: ${error instanceof Error ? error.message : 'Unknown error'}`
+            });
+            console.log(`Bot ${this.botInstance.name}: 📤 Error message sent to user`);
+          }
+        } catch (sendError) {
+          console.error(`Bot ${this.botInstance.name}: ❌ Failed to send error message:`, sendError);
         }
+        
+        console.error(`${'='.repeat(80)}\n`);
         return;
       }
     }
