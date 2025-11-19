@@ -61,9 +61,6 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
     adminToken: ""
   });
   const [selectedBot, setSelectedBot] = useState<CrossTenancyBot | null>(null);
-  const [showCredentialUpdate, setShowCredentialUpdate] = useState(false);
-  const [newCredentials, setNewCredentials] = useState("");
-  const [credentialType, setCredentialType] = useState<"base64" | "file">("base64");
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [pendingApproval, setPendingApproval] = useState<CrossTenancyBot | null>(null);
   const [approvalDuration, setApprovalDuration] = useState("1"); // Default to 1 month
@@ -927,19 +924,6 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
                                 {bot.status === 'online' ? '⏹️' : '▶️'}
                               </Button>
 
-                              {/* Credential Update */}
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => {
-                                  setSelectedBot(bot);
-                                  setShowCredentialUpdate(true);
-                                }}
-                                data-testid={`button-creds-${bot.id}`}
-                              >
-                                🔐
-                              </Button>
-
                               {/* Feature Toggle */}
                               <Button 
                                 size="sm" 
@@ -1196,52 +1180,24 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
           <TabsContent value="credentials" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-green-600">🔐 Bot Credential Management</CardTitle>
+                <CardTitle className="text-purple-600">🔐 Credential Management</CardTitle>
                 <CardDescription>
-                  Update WhatsApp credentials for bots in their respective containers
+                  Credential updates removed - credentials can only be set during bot pairing process
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 dark:bg-yellow-900/20 dark:border-yellow-800">
-                  <h4 className="font-medium text-yellow-800 dark:text-yellow-300">⚠️ Credential Update Safety</h4>
-                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                    Credential updates are performed within each bot's isolated container. 
-                    Data registry entries remain unchanged to maintain system integrity.
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
+                  <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">🔒 Credential Security Policy</h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+                    For security reasons, bot credentials can only be set during the initial pairing process through:
                   </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {(crossTenancyBots as CrossTenancyBot[]).filter(bot => bot.approvalStatus === 'approved').map((bot) => (
-                    <Card key={`cred-${bot.tenancy}-${bot.id}`} className="border-l-4 border-l-green-500">
-                      <CardContent className="pt-6">
-                        <div className="space-y-3">
-                          <div>
-                            <h4 className="font-medium">{bot.name}</h4>
-                            <p className="text-sm text-muted-foreground">{bot.phoneNumber}</p>
-                            <Badge variant="outline" className="mt-1">{bot.tenancy}</Badge>
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm">Container Status:</span>
-                            {getStatusBadge(bot.status)}
-                          </div>
-
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedBot(bot);
-                              setShowCredentialUpdate(true);
-                            }}
-                            className="w-full"
-                            data-testid={`button-update-creds-${bot.id}`}
-                          >
-                            🔐 Update Credentials
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                  <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1 ml-4">
+                    <li>• Landing page Step 1 (Get Session ID)</li>
+                    <li>• WhatsApp .pair command</li>
+                  </ul>
+                  <p className="text-sm text-blue-700 dark:text-blue-300 mt-3">
+                    If credentials are invalid, please register a new bot or contact admin support.
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -1472,141 +1428,6 @@ export default function MasterControlPanel({ open, onClose }: MasterControlPanel
             </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Credential Update Modal */}
-        {selectedBot && (
-          <Dialog open={showCredentialUpdate} onOpenChange={setShowCredentialUpdate}>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>🔐 Update Bot Credentials</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 dark:bg-blue-900/20 dark:border-blue-800">
-                  <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Bot Information</h4>
-                  <div className="space-y-1 text-sm">
-                    <div><strong>Name:</strong> {selectedBot.name}</div>
-                    <div><strong>Phone:</strong> {selectedBot.phoneNumber}</div>
-                    <div><strong>Server:</strong> {selectedBot.tenancy}</div>
-                    <div><strong>Status:</strong> {selectedBot.status}</div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="credential-type">Credential Type</Label>
-                    <Select value={credentialType} onValueChange={(value: "base64" | "file") => setCredentialType(value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select credential type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="base64">Base64 String</SelectItem>
-                        <SelectItem value="file">File Upload</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {credentialType === 'base64' ? (
-                    <div>
-                      <Label htmlFor="credentials">New Credentials (Base64)</Label>
-                      <textarea
-                        id="credentials"
-                        className="w-full h-32 p-3 border rounded-md resize-none font-mono text-sm"
-                        placeholder="Paste your base64-encoded credentials here..."
-                        value={newCredentials}
-                        onChange={(e) => setNewCredentials(e.target.value)}
-                      />
-                    </div>
-                  ) : (
-                    <div>
-                      <Label htmlFor="credential-file">Upload Credentials File</Label>
-                      <input
-                        id="credential-file"
-                        type="file"
-                        accept=".json"
-                        className="w-full p-2 border rounded-md"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                              setNewCredentials(event.target?.result as string || '');
-                            };
-                            reader.readAsText(file);
-                          }
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  <div className="flex gap-2">
-                    <Button 
-                      onClick={() => {
-                        if (!newCredentials.trim()) {
-                          toast({
-                            title: "Validation Error",
-                            description: "Please provide credentials",
-                            variant: "destructive"
-                          });
-                          return;
-                        }
-
-                        // Call credential update API
-                        fetch('/api/master/bot-action', {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-                          },
-                          body: JSON.stringify({
-                            action: 'update_credentials',
-                            botId: selectedBot.id,
-                            tenancy: selectedBot.tenancy,
-                            data: {
-                              credentials: credentialType === 'base64' ? newCredentials : JSON.parse(newCredentials),
-                              type: credentialType
-                            }
-                          })
-                        }).then(async (response) => {
-                          if (response.ok) {
-                            toast({
-                              title: "Credentials Updated",
-                              description: `Credentials updated for ${selectedBot.name} in ${selectedBot.tenancy} container`,
-                            });
-                            setShowCredentialUpdate(false);
-                            setSelectedBot(null);
-                            setNewCredentials('');
-                            refetchBots();
-                          } else {
-                            const error = await response.json();
-                            toast({
-                              title: "Update Failed",
-                              description: error.message || "Failed to update credentials",
-                              variant: "destructive"
-                            });
-                          }
-                        });
-                      }}
-                      className="flex-1"
-                      data-testid="button-save-credentials"
-                    >
-                      💾 Update Credentials
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      onClick={() => {
-                        setShowCredentialUpdate(false);
-                        setSelectedBot(null);
-                        setNewCredentials('');
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
 
         {/* Cross-Server Bot Approval Modal with Custom Expiry */}
         {showApprovalModal && pendingApproval && (
