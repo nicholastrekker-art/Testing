@@ -464,15 +464,17 @@ export class WhatsAppBot {
       }
 
       console.log(`\n${'='.repeat(80)}`);
-      console.log(`📨 [${this.botInstance.name}] MESSAGE BATCH RECEIVED`);
+      console.log(`📨 [${this.botInstance.name}] MESSAGE BATCH RECEIVED IN ISOLATED CONTAINER`);
       console.log(`   📊 Batch Type: ${m.type}`);
       console.log(`   📈 Message Count: ${m.messages.length}`);
       console.log(`   🕐 Processing Time: ${new Date().toLocaleString()}`);
       console.log(`   ✅ Bot Approval Status: ${this.botInstance.approvalStatus}`);
+      console.log(`   🔒 Bot Container: ${this.botInstance.serverName}/bot_${this.botInstance.id}`);
+      console.log(`   🎯 Auth Directory: ${this.authDir}`);
       console.log(`${'='.repeat(80)}`);
 
-      // Log complete batch object
-      console.log(`\n📦 COMPLETE BATCH OBJECT:`);
+      // Log complete batch object for debugging
+      console.log(`\n📦 COMPLETE BATCH OBJECT FOR ${this.botInstance.name}:`);
       console.log(JSON.stringify(m, null, 2));
       console.log(`\n${'='.repeat(80)}\n`);
 
@@ -501,25 +503,37 @@ export class WhatsAppBot {
             const isRevoke = message.message?.protocolMessage?.type === 'REVOKE' || message.message?.protocolMessage?.type === 0;
             
             if (isRevoke) {
+              console.log(`   🗑️ [${this.botInstance.name}] REVOKE MESSAGE DETECTED - Processing delete...`);
               // Handle delete detection immediately
               await this.antideleteService.handleMessageUpdate(this.sock, message);
+              console.log(`   ✅ [${this.botInstance.name}] Delete message processed by antidelete service`);
             } else {
+              console.log(`   💾 [${this.botInstance.name}] STORING MESSAGE in antidelete service...`);
+              console.log(`      Message ID: ${message.key.id}`);
+              console.log(`      From: ${message.key.remoteJid}`);
+              console.log(`      Timestamp: ${message.messageTimestamp}`);
+              
               // Store regular message in antidelete service
               await this.antideleteService.storeMessage(message, this.sock);
+              
+              console.log(`   ✅ [${this.botInstance.name}] Message stored successfully in isolated storage`);
             }
 
-            console.log(`   🎯 Processing regular message handling...`);
+            console.log(`   🎯 [${this.botInstance.name}] Processing regular message handling...`);
 
             // Handle channel auto-reactions (before regular message handling)
+            console.log(`   📢 [${this.botInstance.name}] Checking for channel messages...`);
             await handleChannelMessage(this.sock, message, this.botInstance.id);
 
             // Handle anti-viewonce (process ViewOnce messages)
+            console.log(`   👁️ [${this.botInstance.name}] Checking for ViewOnce messages...`);
             await this.antiViewOnceService.handleMessage(this.sock, message);
 
             // Process regular message handling
+            console.log(`   🔄 [${this.botInstance.name}] Starting main message handler...`);
             await this.handleMessage(message);
 
-            console.log(`   ✅ Message ${i + 1} processed successfully`);
+            console.log(`   ✅ [${this.botInstance.name}] Message ${i + 1} processed successfully in isolated container`);
 
           } catch (error) {
             console.error(`❌ [${this.botInstance.name}] Error processing message ${i + 1} from ${message.key.remoteJid}:`, error);
