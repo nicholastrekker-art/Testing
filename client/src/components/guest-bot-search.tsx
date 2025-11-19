@@ -678,7 +678,7 @@ export default function GuestBotSearch() {
           onClose={() => setShowCredentialUpdate(false)}
           botId={botData.id}
           phoneNumber={botData.phoneNumber}
-          guestToken={guestToken} // Pass guest token for authentication
+          guestToken={guestToken || undefined}
           onSuccess={() => {
             // Refresh bot data after credential update
             queryClient.invalidateQueries({ queryKey: ["/api/guest/search-bot", phoneNumber] });
