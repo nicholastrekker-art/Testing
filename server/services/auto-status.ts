@@ -131,13 +131,15 @@ export class AutoStatusService {
         this.sock = sock;
       }
 
-      // Reload bot instance to get latest settings from database
+      // ALWAYS reload bot instance to get latest settings from database
       const freshBot = await storage.getBotInstance(this.botInstance.id);
       if (freshBot) {
         this.botInstance = freshBot;
+        console.log(`[${this.botInstance.name}] Reloaded bot settings - autoViewStatus: ${freshBot.autoViewStatus}`);
       }
 
       if (!this.isAutoStatusEnabled()) {
+        console.log(`[${this.botInstance.name}] Auto view status disabled - skipping status update`);
         return;
       }
 
