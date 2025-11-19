@@ -76,9 +76,9 @@ export default function GuestBotSearch() {
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authenticatedPhone, setAuthenticatedPhone] = useState<string | null>(null); // Track which phone was authenticated
-  const [sessionId, setSessionId] = useState<string>("");
   
   // UI modals state - credential updates removed, only available during pairing
+  // Session ID input removed - credentials can only be set during pairing, not for existing bots
 
   // Search for guest bot by phone number
   const { data: botData, isLoading, error } = useQuery({
@@ -105,63 +105,8 @@ export default function GuestBotSearch() {
     enabled: searchTriggered && !!phoneNumber.trim(),
   });
 
-  // Session ID validation mutation
-  const validateSessionMutation = useMutation({
-    mutationFn: async ({ phoneNumber, sessionId }: { phoneNumber: string, sessionId: string }) => {
-      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      
-      // Validate base64 format before sending to server
-      try {
-        const cleanSessionId = sessionId.trim();
-        // Test if it's valid base64 by attempting to decode it
-        const decoded = atob(cleanSessionId);
-        // Test if decoded content is valid JSON
-        JSON.parse(decoded);
-      } catch (error) {
-        throw new Error('Invalid session ID format. Please ensure you\'re providing valid base64-encoded credentials.');
-      }
-      
-      const response = await fetch('/api/guest/validate-existing-bot', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          phoneNumber: cleanedPhone, 
-          sessionId: sessionId.trim()
-        }),
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to validate session ID');
-      }
-      
-      return response.json();
-    },
-    onSuccess: (data) => {
-      const cleanedPhone = phoneNumber.replace(/[\s\-\(\)\+]/g, '');
-      setGuestToken(data.guestToken);
-      setIsAuthenticated(true);
-      setAuthenticatedPhone(cleanedPhone);
-      setSessionId("");
-      
-      toast({ 
-        title: "Session validated successfully", 
-        description: data.message || "You can now manage your bot" 
-      });
-      
-      // Refresh bot data after authentication
-      queryClient.invalidateQueries({ queryKey: ["/api/guest/search-bot", phoneNumber] });
-    },
-    onError: (error: any) => {
-      toast({ 
-        title: "Session validation failed", 
-        description: error.message,
-        variant: "destructive"
-      });
-    },
-  });
+  // Session ID validation removed - credentials can only be set during pairing, not for existing bots
+  // Guests should contact admin support if their bot is offline or needs attention
 
   // Updated bot actions mutations to use guest endpoints
   const startBotMutation = useMutation({
@@ -286,33 +231,12 @@ export default function GuestBotSearch() {
     setSearchTriggered(true);
   }, [phoneNumber, toast]);
 
-  const handleSessionValidation = useCallback(() => {
-    if (!phoneNumber.trim()) {
-      toast({
-        title: "Phone number required",
-        description: "Please enter your phone number first",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!sessionId.trim()) {
-      toast({
-        title: "Session ID required",
-        description: "Please enter your session ID (base64 encoded credentials)",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    validateSessionMutation.mutate({ phoneNumber, sessionId });
-  }, [phoneNumber, sessionId, validateSessionMutation, toast]);
+  // handleSessionValidation removed - credentials can only be set during pairing, not for existing bots
 
   const resetAuthentication = useCallback(() => {
     setGuestToken(null);
     setIsAuthenticated(false);
     setAuthenticatedPhone(null);
-    setSessionId("");
   }, []);
 
   const canPerformActions = (bot: GuestBot) => {
@@ -377,45 +301,18 @@ export default function GuestBotSearch() {
             </Button>
           </div>
 
-          {/* Session ID Authentication */}
+          {/* Session ID Authentication removed - credentials can only be set during pairing */}
           {botData && needsAuthenticationForBot(botData) && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-800 space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium text-blue-700 dark:text-blue-300">
-                <Shield className="h-4 w-4" />
-                Session ID Verification Required
+            <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded border border-amber-200 dark:border-amber-800 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-300">
+                <AlertTriangle className="h-4 w-4" />
+                Bot Requires Attention
               </div>
-              <p className="text-xs text-blue-600 dark:text-blue-400">
-                To manage "{botData.name}" ({botData.phoneNumber}), please enter your session ID (base64 encoded credentials).
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                Bot "{botData.name}" ({botData.phoneNumber}) needs assistance. Credentials can only be set during the initial pairing process.
               </p>
-              
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-blue-700 dark:text-blue-300">Session ID (Base64 Credentials)</label>
-                  <textarea
-                    placeholder="Paste your base64 encoded credentials here..."
-                    value={sessionId}
-                    onChange={(e) => setSessionId(e.target.value)}
-                    className="w-full h-24 text-xs p-2 border border-blue-300 dark:border-blue-600 rounded resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                    data-testid="input-session-id"
-                  />
-                </div>
-                
-                <Button 
-                  onClick={handleSessionValidation}
-                  disabled={validateSessionMutation.isPending || !sessionId.trim()}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  data-testid="button-validate-session"
-                >
-                  {validateSessionMutation.isPending ? (
-                    <><RefreshCw className="h-3 w-3 mr-2 animate-spin" /> Validating...</>
-                  ) : (
-                    <><Shield className="h-3 w-3 mr-2" /> Validate Session ID</>
-                  )}
-                </Button>
-                
-                <div className="text-xs text-blue-600 dark:text-blue-400 text-center bg-blue-100 dark:bg-blue-900/30 p-2 rounded">
-                  💡 Enter your base64 encoded credentials (creds.json converted to base64) to verify bot ownership.
-                </div>
+              <div className="text-xs text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/30 p-2 rounded">
+                📞 Please contact admin support for help with this bot.
               </div>
             </div>
           )}

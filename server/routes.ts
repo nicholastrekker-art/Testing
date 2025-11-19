@@ -2910,15 +2910,20 @@ Thank you for choosing TREKKER-MD! 🚀`;
         botActive = botStatuses[bot.id] === 'online';
       }
 
-      // SECURITY: Reject credential updates for existing bots
-      // Credentials can only be set during pairing, not for existing bots
-      if (!botActive && credentials) {
-        console.log(`🔒 Credential update blocked - bot already exists (phone: ${phoneNumber})`);
+      // SECURITY: Block credential rotation for existing bots
+      // Credentials can only be set during pairing, never for existing bots
+      // Check if bot already has credentials stored in database
+      const hasExistingCredentials = bot.credentials && Object.keys(bot.credentials).length > 0;
+      
+      if (credentials && hasExistingCredentials) {
+        console.log(`🔒 Credential rotation blocked - bot already has stored credentials (phone: ${phoneNumber}, botId: ${bot.id})`);
         return res.status(403).json({
-          message: "Credential updates are not allowed for existing bots. Credentials can only be set during the initial pairing process. Please contact admin support or register a new bot.",
-          botStatus: "existing_bot",
+          message: "Credential updates are not allowed for existing bots. Credentials can only be set during the initial pairing process. Please contact admin support if you need assistance.",
+          botStatus: "has_credentials",
           nextStep: "contact_admin",
-          canManage: false
+          canManage: botActive,
+          phoneNumber: `+${phoneNumber}`,
+          botId: bot.id
         });
       }
 
