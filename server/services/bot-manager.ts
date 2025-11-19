@@ -176,17 +176,9 @@ class BotManager {
 
       console.log(`BotManager: ✅ Loaded fresh credentials for bot ${botId} - credentials exist: ${!!freshBotInstance.credentials}`);
 
-      // Only clear session files if explicitly requested or if bot has never started successfully
-      // This preserves authenticated sessions across restarts
-      const shouldClearSession = freshBotInstance.status === 'error' || 
-                                  (freshBotInstance.invalidReason && freshBotInstance.invalidReason.includes('401'));
-      
-      if (shouldClearSession) {
-        console.log(`BotManager: Clearing session files for bot ${botId} due to error state`);
-        this.clearBotSessionFiles(botId, freshBotInstance.serverName);
-      } else {
-        console.log(`BotManager: Preserving existing session for bot ${botId}`);
-      }
+      // ALWAYS clear session files on start to ensure fresh authentication
+      console.log(`BotManager: 🧹 Clearing old session files for bot ${botId} to start fresh`);
+      this.clearBotSessionFiles(botId, freshBotInstance.serverName);
 
       // Use the freshly loaded instance with current credentials
       const newBot = new WhatsAppBot(freshBotInstance);
