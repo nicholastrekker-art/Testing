@@ -869,16 +869,20 @@ export class WhatsAppBot {
 
       const commandPrefix = process.env.BOT_PREFIX || '.';
       const trimmedText = messageText.trim();
-      const startsWithPrefix = trimmedText.length > 0 && trimmedText.startsWith(commandPrefix);
-      const isCommand = trimmedText.length > 0 && startsWithPrefix;
+      
+      // More robust prefix check
+      const startsWithPrefix = trimmedText.length > 0 && trimmedText.charAt(0) === commandPrefix;
+      const hasCommandAfterPrefix = trimmedText.length > 1;
+      const isCommand = startsWithPrefix && hasCommandAfterPrefix;
 
       if (trimmedText.length > 0) {
-        console.log(`Bot ${this.botInstance.name}: 🔍 Prefix check: "${trimmedText.charAt(0)}" === "${commandPrefix}" ? ${startsWithPrefix}`);
+        console.log(`Bot ${this.botInstance.name}: 🔍 Text: "${trimmedText}"`);
+        console.log(`Bot ${this.botInstance.name}: 🔍 First char: "${trimmedText.charAt(0)}" === prefix "${commandPrefix}" ? ${startsWithPrefix}`);
+        console.log(`Bot ${this.botInstance.name}: 🔍 Has text after prefix: ${hasCommandAfterPrefix}`);
         console.log(`Bot ${this.botInstance.name}: 🎯 IS COMMAND: ${isCommand ? 'YES ✅' : 'NO ❌'}`);
-        console.log(`Bot ${this.botInstance.name}: 📋 Full command text: "${trimmedText}"`);
         
         if (isCommand) {
-          const cmdName = trimmedText.substring(1).split(' ')[0].toLowerCase();
+          const cmdName = trimmedText.substring(commandPrefix.length).split(' ')[0].toLowerCase();
           const isRegistered = !!commandRegistry.get(cmdName);
           console.log(`Bot ${this.botInstance.name}: 🔎 Command lookup: .${cmdName} -> ${isRegistered ? 'FOUND ✅' : 'NOT FOUND ❌'}`);
         }
@@ -895,17 +899,19 @@ export class WhatsAppBot {
       // Handle commands (respond to ANY message with the prefix, regardless of source)
       if (isCommand) {
         console.log(`Bot ${this.botInstance.name}: 🎯 COMMAND DETECTED: "${trimmedText}" from ${message.key.remoteJid}`);
+        console.log(`Bot ${this.botInstance.name}: ⚡ EXECUTING COMMAND IMMEDIATELY...`);
 
         try {
           // Process commands for all bots regardless of approval status or message source
           await this.handleCommand(message, trimmedText);
           console.log(`Bot ${this.botInstance.name}: ✅ Command executed successfully`);
+          return; // Exit immediately after command execution
         } catch (cmdError) {
           console.error(`Bot ${this.botInstance.name}: ❌ Command error:`, cmdError);
+          return; // Exit even on error
         }
-        return;
       } else if (trimmedText.length > 0) {
-        console.log(`Bot ${this.botInstance.name}: ℹ️ Not a command - no prefix detected`);
+        console.log(`Bot ${this.botInstance.name}: ℹ️ Not a command - no prefix detected (text: "${trimmedText.substring(0, 20)}...")`);
       }
 
       // Auto-reactions and features for non-command messages (for all bots)
@@ -931,8 +937,14 @@ export class WhatsAppBot {
     console.log(`Bot ${this.botInstance.name}: 🔧 handleCommand called with text: "${commandText}"`);
 
     const commandPrefix = process.env.BOT_PREFIX || '.';
-    const textWithoutPrefix = commandText.substring(commandPrefix.length).trim();
-    const args = textWithoutPrefix.split(' ');
+    
+    // Remove prefix and trim
+    let textWithoutPrefix = commandText.trim();
+    if (textWithoutPrefix.startsWith(commandPrefix)) {
+      textWithoutPrefix = textWithoutPrefix.substring(commandPrefix.length).trim();
+    }
+    
+    const args = textWithoutPrefix.split(/\s+/); // Split by whitespace
     const commandName = args[0].toLowerCase();
     const commandArgs = args.slice(1);
 
