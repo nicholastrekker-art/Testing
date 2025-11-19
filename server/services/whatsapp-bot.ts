@@ -5,7 +5,8 @@ import makeWASocket, {
   WAMessage,
   BaileysEventMap,
   makeCacheableSignalKeyStore,
-  fetchLatestBaileysVersion
+  fetchLatestBaileysVersion,
+  Browsers
 } from '@whiskeysockets/baileys';
 import * as Baileys from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
@@ -123,10 +124,15 @@ export class WhatsAppBot {
   }
 
   private async getMessage(key: any) {
+    // getMessage is called when a retry is needed for a message
+    // Return undefined if message not found (Baileys will handle retry logic)
     console.log(`📨 [getMessage] Retrieving message for retry: ${key.id}`);
-    return {
-      conversation: ''
-    };
+    
+    // You can implement actual message retrieval from antidelete service if needed:
+    // const storedMsg = await this.antideleteService.getStoredMessage(key.id);
+    // return storedMsg?.message;
+    
+    return undefined;
   }
 
   private resolvePresenceMode(): 'available' | 'composing' | 'recording' | 'unavailable' | null {
@@ -1240,7 +1246,7 @@ export class WhatsAppBot {
 
       // Create isolated socket connection with Baileys v7 LID support
       const logger = this.createLogger();
-      this.sock = Baileys.makeWASocket({
+      this.sock = makeWASocket({
         version,
         auth: {
           creds: state.creds,
@@ -1248,29 +1254,35 @@ export class WhatsAppBot {
         },
         printQRInTerminal: false,
         logger,
-        browser: [`TREKKERMD-${this.botInstance.id}`, 'Chrome', '110.0.0.0'],
+        browser: Browsers.macOS('Desktop'),
         connectTimeoutMs: 60000,
         defaultQueryTimeoutMs: 60000,
         generateHighQualityLinkPreview: false,
+        getMessage: this.getMessage.bind(this),
+        // Proper retry configuration
         retryRequestDelayMs: 250,
         maxMsgRetryCount: 5,
+        // Link preview and media settings
+        linkPreviewImageThumbnailWidth: 192,
+        // History sync settings
         syncFullHistory: false,
         markOnlineOnConnect: false,
-        getMessage: this.getMessage.bind(this)
+        // Mobile connection support
+        mobile: false,
+        // Proper auth state structure
+        shouldSyncHistoryMessage: () => false,
+        // Transaction capability
+        transactionOpts: { maxCommitRetries: 10, delayBetweenTriesMs: 3000 }
       });
 
-      // Save credentials when they change (isolated per bot) with error handling
-      this.sock.ev.on('creds.update', async () => {
-        try {
-          await saveCreds();
-        } catch (error) {
-          // Silently handle credential save errors (e.g., directory deleted)
-          console.log(`Bot ${this.botInstance.name}: Credential save skipped (directory may be cleaned up)`);
-        }
-      });
+      // CRITICAL: Register creds.update BEFORE setupEventHandlers to ensure credentials are saved
+      this.sock.ev.on('creds.update', saveCreds);
 
+      // Setup all event handlers (connection.update, messages.upsert, etc.)
       await this.setupEventHandlers();
-      this.startHeartbeat(); // Start heartbeat monitoring
+      
+      // Start heartbeat monitoring
+      this.startHeartbeat();
 
     } catch (error) {
       console.error(`❌ Error starting bot ${this.botInstance.name}:`, error);
