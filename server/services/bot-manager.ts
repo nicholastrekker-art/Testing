@@ -166,8 +166,17 @@ class BotManager {
       // Always create fresh instance for ALL approved bots (including newly approved ones)
       console.log(`BotManager: Starting approved bot ${botId} (${botInstance.name}) on server ${botInstance.serverName}`);
 
-      // Clear session files for fresh start (tenant-isolated)
-      this.clearBotSessionFiles(botId, botInstance.serverName);
+      // Only clear session files if explicitly requested or if bot has never started successfully
+      // This preserves authenticated sessions across restarts
+      const shouldClearSession = botInstance.status === 'error' || 
+                                  (botInstance.invalidReason && botInstance.invalidReason.includes('401'));
+      
+      if (shouldClearSession) {
+        console.log(`BotManager: Clearing session files for bot ${botId} due to error state`);
+        this.clearBotSessionFiles(botId, botInstance.serverName);
+      } else {
+        console.log(`BotManager: Preserving existing session for bot ${botId}`);
+      }
 
       const newBot = new WhatsAppBot(botInstance);
       this.bots.set(botId, newBot);
@@ -230,8 +239,9 @@ class BotManager {
         this.bots.delete(botId);
       }
 
-      // Clear all session files for fresh start (tenant-isolated)
-      this.clearBotSessionFiles(botId, serverName);
+      // Don't clear session files on restart - preserve authentication
+      // Only startBot will clear if there's an error state
+      console.log(`BotManager: Restarting bot ${botId} (preserving session)`);
 
       // Start fresh isolated instance
       await this.startBot(botId);

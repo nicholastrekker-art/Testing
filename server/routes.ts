@@ -1488,7 +1488,8 @@ export async function registerRoutes(app: Express): Server {
         approvalStatus: 'approved',
         approvalDate: new Date().toISOString(),
         expirationMonths,
-        status: 'loading' // Set to loading as we're about to start it
+        status: 'loading', // Set to loading as we're about to start it
+        autoStart: true // Ensure bot auto-starts on server restart
       });
 
       // Log activity
