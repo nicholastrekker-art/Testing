@@ -1415,7 +1415,7 @@ export async function registerRoutes(app: Express): Server {
   });
 
   // Approve Bot (Admin only)
-  app.post("/api/bot-instances/:id/approve", async (req, res) => {
+  app.post("/api/bot-instances/:id/approve", authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const { id } = req.params;
       const { expirationMonths = 3, targetServer } = req.body; // targetServer for cross-registration
@@ -3259,10 +3259,10 @@ Thank you for using TREKKER-MD! 🚀
         // CROSS-SERVER CREDENTIAL UPDATE
         if (hostingServer !== currentServer) {
           console.log(`🌐 Cross-server credential update: ${currentServer} → ${hostingServer}`);
-          
+
           // Use CrossTenancyClient to update credentials on hosting server
           const { crossTenancyClient } = await import('./services/crossTenancyClient');
-          
+
           // First, get bot ID from hosting server
           const bots = await db.select()
             .from(botInstances)
@@ -3273,16 +3273,16 @@ Thank you for using TREKKER-MD! 🚀
               )
             )
             .limit(1);
-          
+
           if (bots.length === 0) {
             return res.status(404).json({
               success: false,
               message: `Bot found in registry on ${hostingServer} but not in database. Please contact support.`
             });
           }
-          
+
           const remoteBotId = bots[0].id;
-          
+
           // Update credentials on hosting server via CrossTenancyClient
           const updateResult = await crossTenancyClient.updateBotCredentials(
             hostingServer,
@@ -3292,10 +3292,10 @@ Thank you for using TREKKER-MD! 🚀
               credentials: credentials,
             }
           );
-          
+
           if (updateResult.success) {
             console.log(`✅ Credentials updated on ${hostingServer} for bot ${remoteBotId}`);
-            
+
             // Send success message to user
             try {
               const confirmationMsg = `✅ *CREDENTIALS UPDATED!*
@@ -3318,7 +3318,7 @@ _Cross-Server Update Complete_`;
             } catch (messageError) {
               console.error('Failed to send cross-server update message:', messageError);
             }
-            
+
             return res.json({
               success: true,
               type: 'cross_server_credential_update',
@@ -3349,10 +3349,10 @@ _Cross-Server Update Complete_`;
           const existingBot = await storage.getBotByPhoneNumber(cleanedPhone);
           if (existingBot) {
             console.log(`🔄 Existing bot found: ${existingBot.name} - UPDATING CREDENTIALS`);
-            
+
             // Check if promotional offer is active (for messaging)
             const offerActive = await storage.isOfferActive();
-            
+
             // Update bot credentials (keep existing approval status and other settings)
             const updatedBot = await storage.updateBotInstance(existingBot.id, {
               credentials,
@@ -3374,10 +3374,10 @@ _Cross-Server Update Complete_`;
 
             // Send WhatsApp confirmation
             try {
-              const statusMessage = updatedBot.approvalStatus === 'approved' 
-                ? '✅ APPROVED & ACTIVE' 
+              const statusMessage = updatedBot.approvalStatus === 'approved'
+                ? '✅ APPROVED & ACTIVE'
                 : '⏳ Pending Admin Approval';
-                
+
               const confirmationMsg = `✅ *CREDENTIALS UPDATED!*
 
 Your bot "${updatedBot.name}" credentials have been successfully updated!
