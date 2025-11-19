@@ -128,14 +128,14 @@ class BotManager {
         return;
       }
 
-      // Get bot instance from database FIRST
+      // 1. Load bot from database
       const botInstance = await storage.getBotInstance(botId);
       if (!botInstance) {
         console.error(`BotManager: Bot with ID ${botId} not found in database`);
         return; // Don't throw - just skip this bot
       }
 
-      // AUTO-START POLICY: Only approved bots are auto-started (applies to ALL approved bots)
+      // 2. Only approved bots can auto-start (same logic as offer flow)
       if (botInstance.approvalStatus !== 'approved') {
         console.log(`BotManager: Bot ${botId} is not approved, skipping auto-start`);
         return;
@@ -163,11 +163,9 @@ class BotManager {
         this.bots.delete(botId);
       }
 
-      // Always create fresh instance for ALL approved bots (including newly approved ones)
       console.log(`BotManager: Starting approved bot ${botId} (${botInstance.name}) on server ${botInstance.serverName}`);
 
-      // CRITICAL: Reload bot instance from database to get latest credentials
-      // This ensures we have the same credentials that were used during approval
+      // 3. Reload FRESH credentials from database (same as offer flow)
       const freshBotInstance = await storage.getBotInstance(botId);
       if (!freshBotInstance) {
         console.error(`BotManager: Bot ${botId} disappeared from database during start`);
@@ -176,15 +174,15 @@ class BotManager {
 
       console.log(`BotManager: ✅ Loaded fresh credentials for bot ${botId} - credentials exist: ${!!freshBotInstance.credentials}`);
 
-      // ALWAYS clear session files on start to ensure fresh authentication
+      // 4. ALWAYS clear old session files for fresh authentication (same as offer flow)
       console.log(`BotManager: 🧹 Clearing old session files for bot ${botId} to start fresh`);
       this.clearBotSessionFiles(botId, freshBotInstance.serverName);
 
-      // Use the freshly loaded instance with current credentials
+      // 5. Create new WhatsAppBot instance (same as offer flow)
       const newBot = new WhatsAppBot(freshBotInstance);
       this.bots.set(botId, newBot);
 
-      // Start bot and keep connection alive (errors handled internally)
+      // 6. Start the bot (connects to WhatsApp) - same as offer flow
       await newBot.start();
 
       // Only log success if bot actually started (check status)
