@@ -49,7 +49,7 @@ export class AutoStatusService {
     if (!existsSync(this.configPath)) {
       const defaultConfig: AutoStatusConfig = {
         enabled: this.botInstance.autoViewStatus ?? true,
-        reactOn: this.botInstance.autoLike ?? true,
+        reactOn: this.botInstance.autoLike ?? false,
         reactThrottleDelay: 3000, // 3 seconds between status reactions only
         autoViewInterval: 5000, // 5 seconds between auto views
         postedStatusDelay: Math.floor(Math.random() * 5000) + 5000 // 5-10 seconds delay for posted status

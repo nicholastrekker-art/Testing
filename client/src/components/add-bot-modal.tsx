@@ -47,19 +47,19 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
   const createBotMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const formData = new FormData();
-      
+
       // Append form fields
       Object.entries(data).forEach(([key, value]) => {
         if (key !== 'credentialsFile' && key !== 'credentialsBase64') {
           formData.append(key, String(value));
         }
       });
-      
+
       // Append file if selected (file upload method)
       if (uploadMethod === "file" && selectedFile) {
         formData.append('credentials', selectedFile);
       }
-      
+
       // Append base64 credentials if provided (base64 method)
       if (uploadMethod === "base64" && base64Credentials.trim()) {
         formData.append('credentialsBase64', base64Credentials.trim());
@@ -133,7 +133,7 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
         try {
           const content = e.target?.result as string;
           const parsed = JSON.parse(content);
-          
+
           // Check if it looks like a valid credentials file
           if (typeof parsed !== 'object' || !parsed || Array.isArray(parsed)) {
             throw new Error('Invalid credentials format');
@@ -165,13 +165,13 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
 
   const handleBase64Input = (value: string) => {
     setBase64Credentials(value);
-    
+
     if (value.trim()) {
       try {
         // Decode base64 and validate JSON
         const decoded = atob(value.trim());
         const parsed = JSON.parse(decoded);
-        
+
         // Check if it looks like a valid credentials file
         if (typeof parsed !== 'object' || !parsed || Array.isArray(parsed)) {
           throw new Error('Invalid credentials format');
@@ -207,7 +207,7 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-foreground">Add New Bot Instance</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <Label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
@@ -234,7 +234,7 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
                 <TabsTrigger value="file">Upload File</TabsTrigger>
                 <TabsTrigger value="base64">Paste Base64</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="file" className="mt-4">
                 <div 
                   className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
@@ -260,7 +260,7 @@ export default function AddBotModal({ open, onClose }: AddBotModalProps) {
                   data-testid="input-credentials-file"
                 />
               </TabsContent>
-              
+
               <TabsContent value="base64" className="mt-4">
                 <div className="space-y-2">
                   <Textarea
