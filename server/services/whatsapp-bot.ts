@@ -389,9 +389,19 @@ export class WhatsAppBot {
         // Start presence auto-switch if configured
         this.startPresenceAutoSwitch();
 
-        // Log that bot is ready (welcome message removed to prevent spam)
+        // Log that bot is ready with all active services
         console.log(`✅ TREKKERMD LIFETIME BOT: ${this.botInstance.name} is now online and ready!`);
         console.log(`📋 Bot owner can test with: .ping command`);
+        
+        // Log active services
+        console.log(`\n🔧 Active Services for ${this.botInstance.name}:`);
+        console.log(`   ✅ Command Processing - Ready to receive .commands`);
+        console.log(`   ${this.botInstance.autoViewStatus ? '✅' : '❌'} Auto Status Viewing - ${this.botInstance.autoViewStatus ? 'Active' : 'Disabled'}`);
+        console.log(`   ${this.botInstance.autoLike ? '✅' : '❌'} Auto Status Reactions - ${this.botInstance.autoLike ? 'Active' : 'Disabled'}`);
+        console.log(`   ✅ Anti-Delete - Active (messages being stored)`);
+        console.log(`   ✅ Channel Auto-React - Ready`);
+        console.log(`   ✅ Presence Updates - Mode: ${this.botInstance.presenceMode || 'recording'}`);
+        console.log(`   ✅ Message Event Listeners - Active\n`);
 
         // Fetch existing statuses after connection is established
         const sock = this.sock; // Capture sock in a variable for the timeout
