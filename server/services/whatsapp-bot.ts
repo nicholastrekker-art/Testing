@@ -1004,14 +1004,22 @@ export class WhatsAppBot {
         const respond = async (text: string) => {
           console.log(`\n📤 [RESPOND FUNCTION CALLED]`);
           console.log(`   🤖 Bot: ${this.botInstance.name}`);
-          console.log(`   📍 Target: ${message.key.remoteJid}`);
+          console.log(`   📍 Original remoteJid: ${message.key.remoteJid}`);
+          console.log(`   📍 fromMe: ${message.key.fromMe}`);
           console.log(`   📝 Message: "${text.substring(0, 100)}${text.length > 100 ? '...' : ''}"`);
           
-          const targetJid = message.key.remoteJid;
+          // CRITICAL FIX: When fromMe=true, send response to bot owner's number, not the bot's own number
+          let targetJid = message.key.remoteJid;
+          
+          if (message.key.fromMe === true && this.botInstance.owner) {
+            // Message is from bot owner - send response to owner's WhatsApp number
+            targetJid = this.botInstance.owner + '@s.whatsapp.net';
+            console.log(`   🔧 CORRECTED: Sending to bot owner instead: ${targetJid}`);
+          }
           
           if (!targetJid) {
-            console.error(`   ❌ FAILED: No remoteJid available for response`);
-            throw new Error('No remoteJid available');
+            console.error(`   ❌ FAILED: No target JID available for response`);
+            throw new Error('No target JID available');
           }
 
           if (!this.sock) {
