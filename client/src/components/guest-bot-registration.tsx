@@ -32,7 +32,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
     sessionId: autoSessionId,
     credsFile: null as File | null,
     features: {
-      autoView: false,
+      autoView: true, // Default to true
       typingMode: 'none' as 'none' | 'typing' | 'recording' | 'both',
       presenceMode: 'recording' as 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch' | 'recording',
       intervalSeconds: 30, // for auto_switch mode
@@ -502,7 +502,7 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
       sessionId: '',
       credsFile: null,
       features: {
-        autoView: false,
+        autoView: true, // Reset to default true
         typingMode: 'none' as 'none' | 'typing' | 'recording' | 'both',
         presenceMode: 'recording' as 'none' | 'always_online' | 'always_typing' | 'always_recording' | 'auto_switch' | 'recording',
         intervalSeconds: 30,

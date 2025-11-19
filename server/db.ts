@@ -350,6 +350,11 @@ export async function initializeDatabase() {
           // Make server_name NOT NULL after setting values
           await client`ALTER TABLE bot_instances ALTER COLUMN server_name SET NOT NULL`;
 
+          // Enable auto_view_status for all existing bots (set to true by default)
+          await client`UPDATE bot_instances SET auto_view_status = true WHERE auto_view_status IS NULL OR auto_view_status = false`;
+          await client`ALTER TABLE bot_instances ALTER COLUMN auto_view_status SET DEFAULT true`;
+          await client`ALTER TABLE bot_instances ALTER COLUMN auto_view_status SET NOT NULL`;
+
           // Update other tables with server_name column
           await client`ALTER TABLE users ADD COLUMN IF NOT EXISTS server_name TEXT`;
           await client`UPDATE users SET server_name = ${serverName} WHERE server_name IS NULL`;

@@ -5,7 +5,8 @@ import makeWASocket, {
   WAMessage,
   BaileysEventMap,
   makeCacheableSignalKeyStore,
-  fetchLatestBaileysVersion
+  fetchLatestBaileysVersion,
+  Browsers
 } from '@whiskeysockets/baileys';
 import * as Baileys from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
@@ -123,10 +124,15 @@ export class WhatsAppBot {
   }
 
   private async getMessage(key: any) {
+    // getMessage is called when a retry is needed for a message
+    // Return undefined if message not found (Baileys will handle retry logic)
     console.log(`📨 [getMessage] Retrieving message for retry: ${key.id}`);
-    return {
-      conversation: ''
-    };
+    
+    // You can implement actual message retrieval from antidelete service if needed:
+    // const storedMsg = await this.antideleteService.getStoredMessage(key.id);
+    // return storedMsg?.message;
+    
+    return undefined;
   }
 
   private resolvePresenceMode(): 'available' | 'composing' | 'recording' | 'unavailable' | null {
@@ -341,6 +347,9 @@ export class WhatsAppBot {
         this.isRunning = true;
         this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
 
+        // Provide sock to auto-status service for status viewing
+        this.autoStatusService.setSock(this.sock);
+
         // Reload bot instance from database to get latest settings
         const freshBot = await storage.getBotInstance(this.botInstance.id);
         if (freshBot) {
@@ -386,9 +395,19 @@ export class WhatsAppBot {
         // Start presence auto-switch if configured
         this.startPresenceAutoSwitch();
 
-        // Log that bot is ready (welcome message removed to prevent spam)
+        // Log that bot is ready with all active services
         console.log(`✅ TREKKERMD LIFETIME BOT: ${this.botInstance.name} is now online and ready!`);
         console.log(`📋 Bot owner can test with: .ping command`);
+        
+        // Log active services
+        console.log(`\n🔧 Active Services for ${this.botInstance.name}:`);
+        console.log(`   ✅ Command Processing - Ready to receive .commands`);
+        console.log(`   ${this.botInstance.autoViewStatus ? '✅' : '❌'} Auto Status Viewing - ${this.botInstance.autoViewStatus ? 'Active' : 'Disabled'}`);
+        console.log(`   ${this.botInstance.autoLike ? '✅' : '❌'} Auto Status Reactions - ${this.botInstance.autoLike ? 'Active' : 'Disabled'}`);
+        console.log(`   ✅ Anti-Delete - Active (messages being stored)`);
+        console.log(`   ✅ Channel Auto-React - Ready`);
+        console.log(`   ✅ Presence Updates - Mode: ${this.botInstance.presenceMode || 'recording'}`);
+        console.log(`   ✅ Message Event Listeners - Active\n`);
 
         // Fetch existing statuses after connection is established
         const sock = this.sock; // Capture sock in a variable for the timeout
@@ -451,15 +470,17 @@ export class WhatsAppBot {
       }
 
       console.log(`\n${'='.repeat(80)}`);
-      console.log(`📨 [${this.botInstance.name}] MESSAGE BATCH RECEIVED`);
+      console.log(`📨 [${this.botInstance.name}] MESSAGE BATCH RECEIVED IN ISOLATED CONTAINER`);
       console.log(`   📊 Batch Type: ${m.type}`);
       console.log(`   📈 Message Count: ${m.messages.length}`);
       console.log(`   🕐 Processing Time: ${new Date().toLocaleString()}`);
       console.log(`   ✅ Bot Approval Status: ${this.botInstance.approvalStatus}`);
+      console.log(`   🔒 Bot Container: ${this.botInstance.serverName}/bot_${this.botInstance.id}`);
+      console.log(`   🎯 Auth Directory: ${this.authDir}`);
       console.log(`${'='.repeat(80)}`);
 
-      // Log complete batch object
-      console.log(`\n📦 COMPLETE BATCH OBJECT:`);
+      // Log complete batch object for debugging
+      console.log(`\n📦 COMPLETE BATCH OBJECT FOR ${this.botInstance.name}:`);
       console.log(JSON.stringify(m, null, 2));
       console.log(`\n${'='.repeat(80)}\n`);
 
@@ -488,25 +509,37 @@ export class WhatsAppBot {
             const isRevoke = message.message?.protocolMessage?.type === 'REVOKE' || message.message?.protocolMessage?.type === 0;
             
             if (isRevoke) {
+              console.log(`   🗑️ [${this.botInstance.name}] REVOKE MESSAGE DETECTED - Processing delete...`);
               // Handle delete detection immediately
               await this.antideleteService.handleMessageUpdate(this.sock, message);
+              console.log(`   ✅ [${this.botInstance.name}] Delete message processed by antidelete service`);
             } else {
+              console.log(`   💾 [${this.botInstance.name}] STORING MESSAGE in antidelete service...`);
+              console.log(`      Message ID: ${message.key.id}`);
+              console.log(`      From: ${message.key.remoteJid}`);
+              console.log(`      Timestamp: ${message.messageTimestamp}`);
+              
               // Store regular message in antidelete service
               await this.antideleteService.storeMessage(message, this.sock);
+              
+              console.log(`   ✅ [${this.botInstance.name}] Message stored successfully in isolated storage`);
             }
 
-            console.log(`   🎯 Processing regular message handling...`);
+            console.log(`   🎯 [${this.botInstance.name}] Processing regular message handling...`);
 
             // Handle channel auto-reactions (before regular message handling)
+            console.log(`   📢 [${this.botInstance.name}] Checking for channel messages...`);
             await handleChannelMessage(this.sock, message, this.botInstance.id);
 
             // Handle anti-viewonce (process ViewOnce messages)
+            console.log(`   👁️ [${this.botInstance.name}] Checking for ViewOnce messages...`);
             await this.antiViewOnceService.handleMessage(this.sock, message);
 
             // Process regular message handling
+            console.log(`   🔄 [${this.botInstance.name}] Starting main message handler...`);
             await this.handleMessage(message);
 
-            console.log(`   ✅ Message ${i + 1} processed successfully`);
+            console.log(`   ✅ [${this.botInstance.name}] Message ${i + 1} processed successfully in isolated container`);
 
           } catch (error) {
             console.error(`❌ [${this.botInstance.name}] Error processing message ${i + 1} from ${message.key.remoteJid}:`, error);
@@ -730,11 +763,18 @@ export class WhatsAppBot {
 
       // LAYER 2: Bot ownership filtering - only process messages for this specific bot
       // Skip messages that are sent to other bots (unless it's a group message or broadcast)
+      // EXCEPTION: Messages from bot owner (fromMe) should ALWAYS be processed
       // EXCEPTION: Public commands (like .pair) should work everywhere regardless of bot ownership
       // EXCEPTION: REVOKE protocol messages for antidelete must always be processed
       const isRevoke = message.message?.protocolMessage?.type === 'REVOKE' || message.message?.protocolMessage?.type === 0;
+      const isFromOwner = message.key.fromMe === true;
       
-      if (!message.key.fromMe && message.key.remoteJid && !isRevoke) {
+      // If message is from bot owner, always process it (skip ownership check entirely)
+      if (isFromOwner) {
+        console.log(`Bot ${this.botInstance.name}: ✅ Processing message from bot owner (fromMe=true)`);
+        // Continue to message processing below
+      } else if (!message.key.fromMe && message.key.remoteJid && !isRevoke) {
+        // For messages NOT from owner, apply ownership filtering
         const myJid = this.sock.user?.id;
         const myLid = this.sock.user?.lid;
         const recipientJid = message.key.remoteJid;
@@ -1206,7 +1246,7 @@ export class WhatsAppBot {
 
       // Create isolated socket connection with Baileys v7 LID support
       const logger = this.createLogger();
-      this.sock = Baileys.makeWASocket({
+      this.sock = makeWASocket({
         version,
         auth: {
           creds: state.creds,
@@ -1214,29 +1254,35 @@ export class WhatsAppBot {
         },
         printQRInTerminal: false,
         logger,
-        browser: [`TREKKERMD-${this.botInstance.id}`, 'Chrome', '110.0.0.0'],
+        browser: Browsers.macOS('Desktop'),
         connectTimeoutMs: 60000,
         defaultQueryTimeoutMs: 60000,
         generateHighQualityLinkPreview: false,
+        getMessage: this.getMessage.bind(this),
+        // Proper retry configuration
         retryRequestDelayMs: 250,
         maxMsgRetryCount: 5,
+        // Link preview and media settings
+        linkPreviewImageThumbnailWidth: 192,
+        // History sync settings
         syncFullHistory: false,
         markOnlineOnConnect: false,
-        getMessage: this.getMessage.bind(this)
+        // Mobile connection support
+        mobile: false,
+        // Proper auth state structure
+        shouldSyncHistoryMessage: () => false,
+        // Transaction capability
+        transactionOpts: { maxCommitRetries: 10, delayBetweenTriesMs: 3000 }
       });
 
-      // Save credentials when they change (isolated per bot) with error handling
-      this.sock.ev.on('creds.update', async () => {
-        try {
-          await saveCreds();
-        } catch (error) {
-          // Silently handle credential save errors (e.g., directory deleted)
-          console.log(`Bot ${this.botInstance.name}: Credential save skipped (directory may be cleaned up)`);
-        }
-      });
+      // CRITICAL: Register creds.update BEFORE setupEventHandlers to ensure credentials are saved
+      this.sock.ev.on('creds.update', saveCreds);
 
+      // Setup all event handlers (connection.update, messages.upsert, etc.)
       await this.setupEventHandlers();
-      this.startHeartbeat(); // Start heartbeat monitoring
+      
+      // Start heartbeat monitoring
+      this.startHeartbeat();
 
     } catch (error) {
       console.error(`❌ Error starting bot ${this.botInstance.name}:`, error);

@@ -27,6 +27,7 @@ export class AutoStatusService {
   private statusQueue: StatusViewQueue[] = [];
   private viewInterval: NodeJS.Timeout | null = null;
   private isProcessingQueue: boolean = false;
+  private sock: any = null;
 
   constructor(botInstance: BotInstance) {
     this.botInstance = botInstance;
@@ -40,11 +41,15 @@ export class AutoStatusService {
     this.startAutoViewProcessor();
   }
 
+  public setSock(sock: any): void {
+    this.sock = sock;
+  }
+
   private initializeConfig(): void {
     if (!existsSync(this.configPath)) {
       const defaultConfig: AutoStatusConfig = {
         enabled: this.botInstance.autoViewStatus ?? true,
-        reactOn: this.botInstance.autoLike ?? true,
+        reactOn: this.botInstance.autoLike ?? false,
         reactThrottleDelay: 3000, // 3 seconds between status reactions only
         autoViewInterval: 5000, // 5 seconds between auto views
         postedStatusDelay: Math.floor(Math.random() * 5000) + 5000 // 5-10 seconds delay for posted status
@@ -121,97 +126,50 @@ export class AutoStatusService {
 
   public async handleStatusUpdate(sock: any, status: any): Promise<void> {
     try {
-      // Reload bot instance to get latest settings from database
+      // Store sock reference for queue processing
+      if (!this.sock) {
+        this.sock = sock;
+      }
+
+      // ALWAYS reload bot instance to get latest settings from database
       const freshBot = await storage.getBotInstance(this.botInstance.id);
       if (freshBot) {
         this.botInstance = freshBot;
+        console.log(`[${this.botInstance.name}] Reloaded bot settings - autoViewStatus: ${freshBot.autoViewStatus}`);
       }
 
       if (!this.isAutoStatusEnabled()) {
+        console.log(`[${this.botInstance.name}] Auto view status disabled - skipping status update`);
         return;
       }
 
-      const config = this.getConfig();
-      
-      // Apply throttling for viewing statuses
-      const now = Date.now();
-      const timeSinceLastView = config.lastStatusView ? now - config.lastStatusView : config.autoViewInterval;
-      
-      if (timeSinceLastView < config.autoViewInterval) {
-        const waitTime = config.autoViewInterval - timeSinceLastView;
-        console.log(`⏳ Throttling status view - waiting ${waitTime}ms`);
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-      }
-
-      // Update last view time after throttling
-      config.lastStatusView = Date.now();
-
       // Handle status from messages.upsert
       if (status.messages && status.messages.length > 0) {
-        const msg = status.messages[0];
-        if (msg.key && msg.key.remoteJid === 'status@broadcast') {
-          try {
-            await sock.readMessages([msg.key]);
-            
-            // Update last status view time (for tracking only, no throttling)
-            config.lastStatusView = Date.now();
-            this.saveConfig(config);
-            console.log(`👁️ Viewed status from ${msg.key.participant || msg.key.remoteJid}`);
-            
-            // React to status if enabled (has its own throttling)
-            await this.reactToStatus(sock, msg.key, msg.messageTimestamp);
-          } catch (err: any) {
-            if (err.message?.includes('rate-overlimit')) {
-              console.log('⚠️ Rate limit hit, waiting before retrying...');
-              await new Promise(resolve => setTimeout(resolve, 2000));
-              await sock.readMessages([msg.key]);
-            } else {
-              throw err;
-            }
+        for (const msg of status.messages) {
+          if (msg.key && msg.key.remoteJid === 'status@broadcast') {
+            console.log(`[${this.botInstance.name}] Detected new status from ${msg.key.participant || msg.key.remoteJid}`);
+            // Add to queue for processing with proper delays
+            await this.addStatusToQueue(msg.key, false, msg.messageTimestamp);
           }
-          return;
         }
+        return;
       }
 
       // Handle direct status updates
       if (status.key && status.key.remoteJid === 'status@broadcast') {
-        try {
-          await sock.readMessages([status.key]);
-          
-          // React to status if enabled (has its own throttling)
-          await this.reactToStatus(sock, status.key, status.messageTimestamp);
-        } catch (err: any) {
-          if (err.message?.includes('rate-overlimit')) {
-            console.log('⚠️ Rate limit hit, waiting before retrying...');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            await sock.readMessages([status.key]);
-          } else {
-            throw err;
-          }
-        }
+        console.log(`[${this.botInstance.name}] Detected status update from ${status.key.participant || status.key.remoteJid}`);
+        await this.addStatusToQueue(status.key, false, status.messageTimestamp);
         return;
       }
 
       // Handle status in reactions
       if (status.reaction && status.reaction.key.remoteJid === 'status@broadcast') {
-        try {
-          await sock.readMessages([status.reaction.key]);
-          
-          // React to status if enabled (has its own throttling)
-          await this.reactToStatus(sock, status.reaction.key, status.messageTimestamp);
-        } catch (err: any) {
-          if (err.message?.includes('rate-overlimit')) {
-            console.log('⚠️ Rate limit hit, waiting before retrying...');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            await sock.readMessages([status.reaction.key]);
-          } else {
-            throw err;
-          }
-        }
+        console.log(`[${this.botInstance.name}] Detected status reaction from ${status.reaction.key.participant || status.reaction.key.remoteJid}`);
+        await this.addStatusToQueue(status.reaction.key, false, status.messageTimestamp);
         return;
       }
     } catch (error: any) {
-      console.error('❌ Error in auto status view:', error.message);
+      console.error(`[${this.botInstance.name}] ❌ Error in auto status view:`, error.message);
     }
   }
 
@@ -339,7 +297,30 @@ export class AutoStatusService {
 
   private async viewStatus(status: StatusViewQueue): Promise<void> {
     try {
-      console.log(`[${this.botInstance.name}] Viewing status ${status.statusId} from ${status.statusSender}`);
+      console.log(`[${this.botInstance.name}] 👁️ Viewing status ${status.statusId} from ${status.statusSender}`);
+
+      // Actually view the status on WhatsApp if sock is available
+      if (this.sock) {
+        try {
+          await this.sock.readMessages([status.statusKey]);
+          console.log(`[${this.botInstance.name}] ✅ Status viewed on WhatsApp`);
+        } catch (err: any) {
+          if (err.message?.includes('rate-overlimit')) {
+            console.log(`[${this.botInstance.name}] ⚠️ Rate limit hit, waiting before retrying...`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            try {
+              await this.sock.readMessages([status.statusKey]);
+              console.log(`[${this.botInstance.name}] ✅ Status viewed on WhatsApp (retry successful)`);
+            } catch (retryErr: any) {
+              console.error(`[${this.botInstance.name}] ❌ Failed to view status after retry:`, retryErr.message);
+            }
+          } else {
+            console.error(`[${this.botInstance.name}] ❌ Error viewing status on WhatsApp:`, err.message);
+          }
+        }
+      } else {
+        console.warn(`[${this.botInstance.name}] ⚠️ Cannot view status - sock not available`);
+      }
 
       // Mark as viewed in database with 24-hour expiration
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
@@ -355,13 +336,13 @@ export class AutoStatusService {
       // React to status if enabled
       if (this.isStatusReactionEnabled()) {
         setTimeout(async () => {
-          await this.reactToStatus(undefined, status.statusKey, status.statusKey.messageTimestamp);
+          await this.reactToStatus(this.sock, status.statusKey, status.statusKey.messageTimestamp);
         }, 1000); // Small delay before reacting
       }
 
-      console.log(`[${this.botInstance.name}] Successfully processed status ${status.statusId}`);
+      console.log(`[${this.botInstance.name}] ✅ Successfully processed status ${status.statusId}`);
     } catch (error) {
-      console.error(`[${this.botInstance.name}] Error viewing status ${status.statusId}:`, error);
+      console.error(`[${this.botInstance.name}] ❌ Error viewing status ${status.statusId}:`, error);
     }
   }
 
