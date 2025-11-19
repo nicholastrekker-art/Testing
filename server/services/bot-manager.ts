@@ -128,18 +128,7 @@ class BotManager {
         return;
       }
 
-      // Check if bot is already running
-      const existingBot = this.bots.get(botId);
-      const currentStatus = existingBot?.getStatus();
-
-      if (existingBot && currentStatus === 'online') {
-        console.log(`BotManager: Bot ${botId} is already online`);
-        // Reset failures since bot is running
-        this.resetBotFailures(botId);
-        return;
-      }
-
-      // Get bot instance from database
+      // Get bot instance from database FIRST
       const botInstance = await storage.getBotInstance(botId);
       if (!botInstance) {
         console.error(`BotManager: Bot with ID ${botId} not found in database`);
@@ -149,6 +138,17 @@ class BotManager {
       // AUTO-START POLICY: Only approved bots are auto-started (applies to ALL approved bots)
       if (botInstance.approvalStatus !== 'approved') {
         console.log(`BotManager: Bot ${botId} is not approved, skipping auto-start`);
+        return;
+      }
+
+      // Check if bot is already running
+      const existingBot = this.bots.get(botId);
+      const currentStatus = existingBot?.getStatus();
+
+      if (existingBot && currentStatus === 'online') {
+        console.log(`BotManager: Bot ${botId} is already online`);
+        // Reset failures since bot is running
+        this.resetBotFailures(botId);
         return;
       }
 

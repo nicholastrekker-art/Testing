@@ -359,8 +359,11 @@ export async function registerRoutes(app: Express): Server {
           try {
             console.log(`🔄 Resuming bot: ${bot.name} (${bot.id})`);
 
-            // Create and start the bot
-            await botManager.createBot(bot.id, bot);
+            // Set status to loading first (like during approval)
+            await storage.updateBotInstance(bot.id, { status: 'loading' });
+
+            // Start the bot directly (createBot is handled internally in startBot)
+            // This matches the approval flow exactly
             await botManager.startBot(bot.id);
 
             console.log(`✅ Bot ${bot.name} resumed successfully`);
