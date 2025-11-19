@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Phone, Bot, Play, Square, RefreshCw, Settings, Trash2, Shield, AlertTriangle, ExternalLink, Upload } from "lucide-react";
+import { Search, Phone, Bot, Play, Square, RefreshCw, Settings, Trash2, AlertTriangle, ExternalLink, Upload } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import CredentialUpdateModal from "./credential-update-modal";
 
 interface GuestBot {
   id: string;
@@ -79,8 +78,7 @@ export default function GuestBotSearch() {
   const [authenticatedPhone, setAuthenticatedPhone] = useState<string | null>(null); // Track which phone was authenticated
   const [sessionId, setSessionId] = useState<string>("");
   
-  // UI modals state
-  const [showCredentialUpdate, setShowCredentialUpdate] = useState(false);
+  // UI modals state - credential updates removed, only available during pairing
 
   // Search for guest bot by phone number
   const { data: botData, isLoading, error } = useQuery({
@@ -578,20 +576,9 @@ export default function GuestBotSearch() {
                       </div>
                     </div>
                   ) : botData.nextStep === 'update_credentials' ? (
-                    <div className="w-full space-y-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full text-xs"
-                        onClick={() => setShowCredentialUpdate(true)}
-                        data-testid={`button-upload-credentials-${botData.phoneNumber}`}
-                        disabled={!isAuthenticated}
-                      >
-                        <Shield className="h-3 w-3 mr-1" />
-                        Upload New Credentials
-                      </Button>
-                      <div className="text-xs text-center text-muted-foreground">
-                        Upload your creds.json file to reactivate your bot
+                    <div className="w-full bg-red-50 dark:bg-red-900/20 p-3 rounded border border-red-200 dark:border-red-800 text-center">
+                      <div className="text-xs text-red-700 dark:text-red-300">
+                        Bot credentials invalid. Please contact admin or register a new bot with fresh credentials.
                       </div>
                     </div>
                   ) : botData.nextStep === 'authenticated' && !needsAuthenticationForBot(botData) ? (
@@ -669,22 +656,6 @@ export default function GuestBotSearch() {
             )}
           </CardContent>
         </Card>
-      )}
-      
-      {/* Credential Update Modal */}
-      {botData && (
-        <CredentialUpdateModal
-          open={showCredentialUpdate}
-          onClose={() => setShowCredentialUpdate(false)}
-          botId={botData.id}
-          phoneNumber={botData.phoneNumber}
-          guestToken={guestToken || undefined}
-          onSuccess={() => {
-            // Refresh bot data after credential update
-            queryClient.invalidateQueries({ queryKey: ["/api/guest/search-bot", phoneNumber] });
-            setShowCredentialUpdate(false);
-          }}
-        />
       )}
     </div>
   );
