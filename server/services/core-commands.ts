@@ -73,6 +73,8 @@ const getRandomQuote = () => {
   return quotes[randomIndex];
 };
 
+console.log('🔧 [Core Commands] Registering essential commands: menu, ping, help, status, owner...');
+
 // Register menu command
 commandRegistry.register({
   name: 'menu',
@@ -1563,6 +1565,11 @@ const categoryCommands = {
 
 // Plugin system completely removed - using clean TREKKERMD command system
 console.log('🧹 Plugin system disabled - Clean TREKKERMD commands only');
+
+// Verify all core commands are loaded
+const coreCommands = ['menu', 'ping', 'help', 'status', 'owner', 'list'];
+const loadedCommands = coreCommands.filter(cmd => commandRegistry.get(cmd));
+console.log(`✅ [Core Commands] Loaded ${loadedCommands.length}/${coreCommands.length} essential commands: ${loadedCommands.join(', ')}`);
 
 // Antidelete command removed
 
