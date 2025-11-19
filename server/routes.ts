@@ -169,10 +169,6 @@ function validateGuestAction(action: string, bot: any): { allowed: boolean; reas
       }
       return { allowed: true };
 
-    case 'update_credentials':
-      // All bots can have credentials updated
-      return { allowed: true };
-
     default:
       return { allowed: false, reason: "Unknown action" };
   }
@@ -2730,12 +2726,11 @@ Thank you for choosing TREKKER-MD! 🚀`;
         const reason = botData.invalidReason || 'Credentials need verification';
         console.log(`🔐 Bot needs credential verification - Status: ${botData.status}, CredVerified: ${botData.credentialVerified}, Reason: ${reason}`);
         return res.status(400).json({
-          message: "Your bot credentials need to be updated before you can authenticate.",
+          message: "Your bot credentials are invalid. Please contact admin or register a new bot.",
           botStatus: "needs_credentials",
-          nextStep: "update_credentials",
+          nextStep: "contact_admin",
           needsCredentials: true,
-          canManage: false,
-          credentialUploadEndpoint: "/api/guest/verify-credentials"
+          canManage: false
         });
       }
 
@@ -2751,19 +2746,17 @@ Thank you for choosing TREKKER-MD! 🚀`;
         } catch (error) {
           console.error(`❌ Invalid stored credentials format for ${cleanedPhone}:`, error);
           return res.status(500).json({
-            message: "Stored credentials are corrupted. Please update your credentials.",
+            message: "Stored credentials are corrupted. Please contact admin or register a new bot.",
             botStatus: "needs_credentials",
-            nextStep: "update_credentials",
-            credentialUploadEndpoint: "/api/guest/verify-credentials"
+            nextStep: "contact_admin"
           });
         }
       } else {
         console.error(`❌ No stored credentials found for verified bot ${cleanedPhone}`);
         return res.status(500).json({
-          message: "No credentials found for verified bot. Please update your credentials.",
+          message: "No credentials found for verified bot. Please contact admin or register a new bot.",
           botStatus: "needs_credentials",
-          nextStep: "update_credentials",
-          credentialUploadEndpoint: "/api/guest/verify-credentials"
+          nextStep: "contact_admin"
         });
       }
 
@@ -3110,7 +3103,7 @@ Thank you for using TREKKER-MD! 🚀
         connectionUpdated: credentials && !credentialTestFailed ? true : false,
         tenancyPreserved: true,
         updateMethod: 'direct_database_access',
-        nextStep: !credentialTestFailed ? 'authenticated' : 'update_credentials',
+        nextStep: !credentialTestFailed ? 'authenticated' : 'contact_admin',
         credentialValidationFailed: credentialTestFailed
       });
 
