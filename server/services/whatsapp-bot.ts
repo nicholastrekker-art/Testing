@@ -463,41 +463,39 @@ export class WhatsAppBot {
     });
 
     this.sock.ev.on('messages.upsert', async (m: { messages: WAMessage[], type: string }) => {
-      console.log(`\n🚨🚨🚨 [${this.botInstance.name}] MESSAGES.UPSERT EVENT FIRED! isRunning: ${this.isRunning} 🚨🚨🚨`);
-      
-      // Only process messages if the bot is actually running and connected
-      if (!this.isRunning) {
-        console.log(`⚠️ [${this.botInstance.name}] Skipping message processing - bot not running`);
-        return;
-      }
-
-      console.log(`\n${'='.repeat(80)}`);
-      console.log(`📨 [${this.botInstance.name}] MESSAGE BATCH RECEIVED IN ISOLATED CONTAINER`);
+      console.log(`\n🚨🚨🚨 [${this.botInstance.name}] MESSAGES.UPSERT EVENT FIRED! 🚨🚨🚨`);
+      console.log(`   🤖 Bot: ${this.botInstance.name}`);
+      console.log(`   🔄 isRunning: ${this.isRunning}`);
       console.log(`   📊 Batch Type: ${m.type}`);
       console.log(`   📈 Message Count: ${m.messages.length}`);
-      console.log(`   🕐 Processing Time: ${new Date().toLocaleString()}`);
-      console.log(`   ✅ Bot Approval Status: ${this.botInstance.approvalStatus}`);
-      console.log(`   🔒 Bot Container: ${this.botInstance.serverName}/bot_${this.botInstance.id}`);
-      console.log(`   🎯 Auth Directory: ${this.authDir}`);
-      console.log(`${'='.repeat(80)}`);
-
-      // Log complete batch object for debugging
-      console.log(`\n📦 COMPLETE BATCH OBJECT FOR ${this.botInstance.name}:`);
+      console.log(`   🕐 Time: ${new Date().toLocaleString()}`);
+      
+      // Log complete batch object FIRST for debugging
+      console.log(`\n📦 COMPLETE BATCH OBJECT:`);
       console.log(JSON.stringify(m, null, 2));
       console.log(`\n${'='.repeat(80)}\n`);
 
-      if (m.type === 'notify' || m.type === 'append') {
+      // Process ALL message types, not just notify/append
+      if (m.messages && m.messages.length > 0) {
         // Handle auto status updates for status messages
         await this.autoStatusService.handleStatusUpdate(this.sock, m);
 
         for (let i = 0; i < m.messages.length; i++) {
           const message = m.messages[i];
 
-          console.log(`📝 [${this.botInstance.name}] PROCESSING MESSAGE ${i + 1}/${m.messages.length}`);
-          console.log(`   🆔 Message ID: ${message.key.id}`);
-          console.log(`   👤 From: ${message.pushName || 'Unknown'} (${message.key.remoteJid})`);
+          console.log(`\n📝 [${this.botInstance.name}] MESSAGE ${i + 1}/${m.messages.length}`);
+          console.log(`   🆔 ID: ${message.key.id}`);
+          console.log(`   👤 From: ${message.pushName || 'Unknown'}`);
+          console.log(`   📱 JID: ${message.key.remoteJid}`);
           console.log(`   🔄 From Me: ${message.key.fromMe ? 'Yes' : 'No'}`);
-          console.log(`   📅 Timestamp: ${message.messageTimestamp ? new Date(Number(message.messageTimestamp) * 1000).toLocaleString() : 'Unknown'}`);
+          console.log(`   ⏰ Timestamp: ${message.messageTimestamp ? new Date(Number(message.messageTimestamp) * 1000).toLocaleString() : 'Unknown'}`);
+          console.log(`   📋 Message Keys: ${message.message ? Object.keys(message.message).join(', ') : 'No message content'}`);
+
+          // Skip processing if bot not running, but still log the message
+          if (!this.isRunning) {
+            console.log(`   ⚠️ Bot not running - logging only, skipping processing`);
+            continue;
+          }
 
           try {
             // Filter out reaction messages to reduce noise
@@ -554,10 +552,10 @@ export class WhatsAppBot {
           }
         }
 
-        console.log(`🎉 [${this.botInstance.name}] BATCH PROCESSING COMPLETE - ${m.messages.length} messages processed`);
-        console.log(`─────────────────────────────────────────────────────────`);
+        console.log(`\n🎉 [${this.botInstance.name}] BATCH COMPLETE - ${m.messages.length} messages`);
+        console.log(`${'='.repeat(80)}\n`);
       } else {
-        console.log(`⚠️ [${this.botInstance.name}] Skipping batch - type '${m.type}' not handled`);
+        console.log(`⚠️ [${this.botInstance.name}] Empty message batch received`);
       }
     });
 
