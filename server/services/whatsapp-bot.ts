@@ -1007,35 +1007,53 @@ export class WhatsAppBot {
           console.log(`   📍 Target: ${message.key.remoteJid}`);
           console.log(`   📝 Message: "${text.substring(0, 100)}${text.length > 100 ? '...' : ''}"`);
           
-          if (!message.key.remoteJid) {
+          const targetJid = message.key.remoteJid;
+          
+          if (!targetJid) {
             console.error(`   ❌ FAILED: No remoteJid available for response`);
-            return;
+            throw new Error('No remoteJid available');
           }
 
           if (!this.sock) {
             console.error(`   ❌ FAILED: Socket not available`);
-            return;
+            throw new Error('Socket not available');
           }
 
           if (!this.isRunning) {
             console.error(`   ❌ FAILED: Bot not running`);
-            return;
+            throw new Error('Bot not running');
+          }
+
+          // Verify socket is authenticated
+          const isAuthenticated = !!(this.sock.user?.id || this.sock.user?.lid);
+          if (!isAuthenticated) {
+            console.error(`   ❌ FAILED: Socket not authenticated`);
+            throw new Error('Socket not authenticated');
           }
 
           console.log(`   🚀 ATTEMPTING TO SEND MESSAGE...`);
+          console.log(`   📡 Socket authenticated: ${isAuthenticated}`);
+          console.log(`   📡 Bot user ID: ${this.sock.user?.id || this.sock.user?.lid}`);
           
           try {
-            const sendResult = await this.sock.sendMessage(message.key.remoteJid, { text });
-            console.log(`   ✅ SUCCESS: Response sent! Status:`, sendResult?.status || 'unknown');
-            console.log(`   📊 Send result:`, JSON.stringify(sendResult, null, 2));
-          } catch (sendError: any) {
-            console.error(`   ❌ SEND FAILED:`, {
-              error: sendError.message || sendError,
-              stack: sendError.stack,
-              code: sendError.code,
-              statusCode: sendError.statusCode,
-              name: sendError.name
+            // Send message with proper error handling
+            const sendResult = await this.sock.sendMessage(targetJid, { 
+              text 
             });
+            
+            console.log(`   ✅ SUCCESS: Response sent!`);
+            console.log(`   📊 Send result status:`, sendResult?.status || 'sent');
+            console.log(`   📊 Message ID:`, sendResult?.key?.id || 'unknown');
+            
+            return sendResult;
+          } catch (sendError: any) {
+            console.error(`   ❌ SEND FAILED - CRITICAL ERROR:`);
+            console.error(`   Error:`, sendError.message || sendError);
+            console.error(`   Stack:`, sendError.stack);
+            console.error(`   Code:`, sendError.code);
+            console.error(`   Status Code:`, sendError.statusCode);
+            
+            // Re-throw to ensure command handler knows it failed
             throw sendError;
           }
         };
