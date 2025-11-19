@@ -10,7 +10,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import CredentialUpdateModal from "./credential-update-modal";
 import ServerSelectionPanel from "./server-selection-panel";
 
 interface GuestBotRegistrationProps {
@@ -103,7 +102,6 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
   const [serverFullData, setServerFullData] = useState<any>(null);
   const [crossTenancyData, setCrossTenancyData] = useState<any>(null);
   const [showServerSelection, setShowServerSelection] = useState(false);
-  const [showCredentialUpdate, setShowCredentialUpdate] = useState(false);
   const [managingBot, setManagingBot] = useState<string | null>(null); // Track which action is in progress
 
   // Sequential registration state
@@ -1501,22 +1499,6 @@ export default function GuestBotRegistration({ open, onClose }: GuestBotRegistra
           </div>
         )}
       </DialogContent>
-
-      {/* Credential Update Modal */}
-      {existingBotData && (
-        <CredentialUpdateModal
-          open={showCredentialUpdate}
-          onClose={() => setShowCredentialUpdate(false)}
-          botId={existingBotData.id}
-          phoneNumber={existingBotData.phoneNumber}
-          crossTenancyMode={!!serverMismatch}
-          targetServer={serverMismatch?.details?.registeredTo}
-          onSuccess={() => {
-            // Could refresh bot status here if needed
-            refreshBotStatus();
-          }}
-        />
-      )}
     </Dialog>
   );
 }
