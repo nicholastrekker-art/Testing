@@ -463,6 +463,8 @@ export class WhatsAppBot {
     });
 
     this.sock.ev.on('messages.upsert', async (m: { messages: WAMessage[], type: string }) => {
+      console.log(`\n🚨🚨🚨 [${this.botInstance.name}] MESSAGES.UPSERT EVENT FIRED! isRunning: ${this.isRunning} 🚨🚨🚨`);
+      
       // Only process messages if the bot is actually running and connected
       if (!this.isRunning) {
         console.log(`⚠️ [${this.botInstance.name}] Skipping message processing - bot not running`);
