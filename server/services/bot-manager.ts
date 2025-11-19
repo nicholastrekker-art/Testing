@@ -165,24 +165,24 @@ class BotManager {
 
       console.log(`BotManager: Starting approved bot ${botId} (${botInstance.name}) on server ${botInstance.serverName}`);
 
-      // 3. Reload FRESH credentials from database (same as offer flow)
+      // 3. Reload bot instance from database to get latest settings
       const freshBotInstance = await storage.getBotInstance(botId);
       if (!freshBotInstance) {
         console.error(`BotManager: Bot ${botId} disappeared from database during start`);
         return;
       }
 
-      console.log(`BotManager: ✅ Loaded fresh credentials for bot ${botId} - credentials exist: ${!!freshBotInstance.credentials}`);
+      console.log(`BotManager: ✅ Using existing credentials for bot ${botId} - credentials exist: ${!!freshBotInstance.credentials}`);
 
-      // 4. ALWAYS clear old session files for fresh authentication (same as offer flow)
-      console.log(`BotManager: 🧹 Clearing old session files for bot ${botId} to start fresh`);
-      this.clearBotSessionFiles(botId, freshBotInstance.serverName);
+      // 4. PRESERVE existing session files - do NOT clear them
+      // This allows bots to resume using their existing authenticated session
+      console.log(`BotManager: 🔄 Preserving existing session files for bot ${botId} to maintain authentication`);
 
-      // 5. Create new WhatsAppBot instance (same as offer flow)
+      // 5. Create new WhatsAppBot instance (will use existing creds.json if available)
       const newBot = new WhatsAppBot(freshBotInstance);
       this.bots.set(botId, newBot);
 
-      // 6. Start the bot (connects to WhatsApp) - same as offer flow
+      // 6. Start the bot (connects to WhatsApp using existing session)
       await newBot.start();
 
       // Only log success if bot actually started (check status)

@@ -1504,10 +1504,10 @@ export async function registerRoutes(app: Express): Server {
         serverName: getServerName()
       });
 
-      // Automatically start the bot after approval (ALL approved bots will be automatically started and monitored)
+      // Automatically start the bot after approval using existing credentials
       try {
-        console.log(`🚀 AUTO-START POLICY: Starting newly approved bot ${bot.name} (${bot.id})...`);
-        console.log(`   📋 ALL approved bots will be automatically started and monitored`);
+        console.log(`🚀 AUTO-START POLICY: Starting newly approved bot ${bot.name} (${bot.id}) with existing credentials...`);
+        console.log(`   📋 Using preserved session - no credential refresh needed`);
         await botManager.startBot(id);
 
         // Wait a moment for the bot to initialize before sending notification
