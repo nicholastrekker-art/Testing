@@ -743,11 +743,14 @@ export class WhatsAppBot {
 
       // LAYER 2: Bot ownership filtering - only process messages for this specific bot
       // Skip messages that are sent to other bots (unless it's a group message or broadcast)
+      // EXCEPTION: Messages from bot owner (fromMe) should ALWAYS be processed
       // EXCEPTION: Public commands (like .pair) should work everywhere regardless of bot ownership
       // EXCEPTION: REVOKE protocol messages for antidelete must always be processed
       const isRevoke = message.message?.protocolMessage?.type === 'REVOKE' || message.message?.protocolMessage?.type === 0;
+      const isFromOwner = message.key.fromMe === true;
       
-      if (!message.key.fromMe && message.key.remoteJid && !isRevoke) {
+      // If message is from bot owner, always process it (skip ownership check)
+      if (!isFromOwner && !message.key.fromMe && message.key.remoteJid && !isRevoke) {
         const myJid = this.sock.user?.id;
         const myLid = this.sock.user?.lid;
         const recipientJid = message.key.remoteJid;
@@ -788,6 +791,8 @@ export class WhatsAppBot {
           }
         }
         // For group chats: all bots in the group will process (this is expected behavior)
+      } else if (isFromOwner) {
+        console.log(`Bot ${this.botInstance.name}: ✅ Processing message from bot owner (fromMe=true)`);
       }
 
       // Get message text - extract directly from the message object
