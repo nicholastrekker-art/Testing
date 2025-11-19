@@ -1006,15 +1006,36 @@ export class WhatsAppBot {
           console.log(`   🤖 Bot: ${this.botInstance.name}`);
           console.log(`   📍 Original remoteJid: ${message.key.remoteJid}`);
           console.log(`   📍 fromMe: ${message.key.fromMe}`);
+          console.log(`   📍 Bot owner field: ${this.botInstance.owner}`);
+          console.log(`   📍 Socket user ID: ${this.sock?.user?.id}`);
+          console.log(`   📍 Socket user LID: ${this.sock?.user?.lid}`);
           console.log(`   📝 Message: "${text.substring(0, 100)}${text.length > 100 ? '...' : ''}"`);
           
-          // CRITICAL FIX: When fromMe=true, send response to bot owner's number, not the bot's own number
+          // CRITICAL FIX: When fromMe=true, extract phone number from bot's credentials and send to that JID
           let targetJid = message.key.remoteJid;
           
-          if (message.key.fromMe === true && this.botInstance.owner) {
-            // Message is from bot owner - send response to owner's WhatsApp number
-            targetJid = this.botInstance.owner + '@s.whatsapp.net';
-            console.log(`   🔧 CORRECTED: Sending to bot owner instead: ${targetJid}`);
+          if (message.key.fromMe === true) {
+            // Extract phone number from bot's own JID (user.id or user.lid)
+            const botJid = this.sock.user?.id || this.sock.user?.lid;
+            if (botJid) {
+              // Extract phone number from JID format: "254704897825:77@s.whatsapp.net" or "254704897825:77@lid"
+              const phoneMatch = botJid.match(/^(\d+)[:\@]/);
+              if (phoneMatch) {
+                const phoneNumber = phoneMatch[1];
+                targetJid = `${phoneNumber}@s.whatsapp.net`;
+                console.log(`   🔧 CORRECTED: Extracted phone ${phoneNumber} from bot JID, sending to: ${targetJid}`);
+              } else {
+                console.error(`   ⚠️ WARNING: Could not extract phone number from bot JID: ${botJid}`);
+              }
+            }
+            
+            // Fallback to owner field if extraction failed
+            if (!targetJid || targetJid === message.key.remoteJid) {
+              if (this.botInstance.owner) {
+                targetJid = this.botInstance.owner + '@s.whatsapp.net';
+                console.log(`   🔧 FALLBACK: Using owner field, sending to: ${targetJid}`);
+              }
+            }
           }
           
           if (!targetJid) {
@@ -1041,10 +1062,10 @@ export class WhatsAppBot {
 
           console.log(`   🚀 ATTEMPTING TO SEND MESSAGE...`);
           console.log(`   📡 Socket authenticated: ${isAuthenticated}`);
-          console.log(`   📡 Bot user ID: ${this.sock.user?.id || this.sock.user?.lid}`);
+          console.log(`   📡 Final target JID: ${targetJid}`);
           
           try {
-            // Send message with proper error handling
+            // Send message with proper error handling - exactly like pairing service does
             const sendResult = await this.sock.sendMessage(targetJid, { 
               text 
             });
