@@ -850,6 +850,12 @@ export class WhatsAppBot {
         console.log(`Bot ${this.botInstance.name}: 🔍 Prefix check: "${trimmedText.charAt(0)}" === "${commandPrefix}" ? ${startsWithPrefix}`);
         console.log(`Bot ${this.botInstance.name}: 🎯 IS COMMAND: ${isCommand ? 'YES ✅' : 'NO ❌'}`);
         console.log(`Bot ${this.botInstance.name}: 📋 Full command text: "${trimmedText}"`);
+        
+        if (isCommand) {
+          const cmdName = trimmedText.substring(1).split(' ')[0].toLowerCase();
+          const isRegistered = !!commandRegistry.get(cmdName);
+          console.log(`Bot ${this.botInstance.name}: 🔎 Command lookup: .${cmdName} -> ${isRegistered ? 'FOUND ✅' : 'NOT FOUND ❌'}`);
+        }
       } else {
         console.log(`Bot ${this.botInstance.name}: ⚠️ Empty text - cannot process as command`);
       }
