@@ -227,7 +227,7 @@ app.use((req, res, next) => {
 })().catch(error => {
   console.error('❌ Failed to start server:', error);
   console.error('🔄 Attempting server restart in 5 seconds...');
-
+  
   // Attempt to restart the server instead of exiting
   setTimeout(() => {
     console.log('🔄 Restarting server...');

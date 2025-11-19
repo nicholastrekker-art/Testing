@@ -105,13 +105,12 @@ export async function generatePairingCode(phoneNumber: string): Promise<PairingR
         },
         printQRInTerminal: false,
         logger,
-        browser: Browsers.macOS('Desktop'),
+        browser: Browsers.macOS("Safari"),
         markOnlineOnConnect: false,
         generateHighQualityLinkPreview: true,
         syncFullHistory: false,
-        shouldSyncHistoryMessage: () => false,
         getMessage: async (key) => {
-          return undefined;
+          return { conversation: '' };
         }
       });
     } catch (initError: any) {
