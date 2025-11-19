@@ -166,19 +166,30 @@ class BotManager {
       // Always create fresh instance for ALL approved bots (including newly approved ones)
       console.log(`BotManager: Starting approved bot ${botId} (${botInstance.name}) on server ${botInstance.serverName}`);
 
+      // CRITICAL: Reload bot instance from database to get latest credentials
+      // This ensures we have the same credentials that were used during approval
+      const freshBotInstance = await storage.getBotInstance(botId);
+      if (!freshBotInstance) {
+        console.error(`BotManager: Bot ${botId} disappeared from database during start`);
+        return;
+      }
+
+      console.log(`BotManager: ✅ Loaded fresh credentials for bot ${botId} - credentials exist: ${!!freshBotInstance.credentials}`);
+
       // Only clear session files if explicitly requested or if bot has never started successfully
       // This preserves authenticated sessions across restarts
-      const shouldClearSession = botInstance.status === 'error' || 
-                                  (botInstance.invalidReason && botInstance.invalidReason.includes('401'));
+      const shouldClearSession = freshBotInstance.status === 'error' || 
+                                  (freshBotInstance.invalidReason && freshBotInstance.invalidReason.includes('401'));
       
       if (shouldClearSession) {
         console.log(`BotManager: Clearing session files for bot ${botId} due to error state`);
-        this.clearBotSessionFiles(botId, botInstance.serverName);
+        this.clearBotSessionFiles(botId, freshBotInstance.serverName);
       } else {
         console.log(`BotManager: Preserving existing session for bot ${botId}`);
       }
 
-      const newBot = new WhatsAppBot(botInstance);
+      // Use the freshly loaded instance with current credentials
+      const newBot = new WhatsAppBot(freshBotInstance);
       this.bots.set(botId, newBot);
 
       // Start bot and keep connection alive (errors handled internally)
