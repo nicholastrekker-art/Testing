@@ -6,8 +6,7 @@ import makeWASocket, {
   BaileysEventMap,
   makeCacheableSignalKeyStore,
   fetchLatestBaileysVersion,
-  Browsers,
-  makeInMemoryStore
+  Browsers
 } from '@whiskeysockets/baileys';
 import * as Baileys from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
@@ -73,9 +72,10 @@ export class WhatsAppBot {
     // Initialize bot-specific antidelete service
     this.antideleteService = getAntideleteService(botInstance);
 
-    // Initialize in-memory store for this bot instance
-    this.store = makeInMemoryStore({});
-    console.log(`Bot ${this.botInstance.name}: Initialized in-memory store for message caching`);
+    // Note: makeInMemoryStore is not available in current Baileys version
+    // We'll use the antidelete service for message storage instead
+    this.store = null;
+    console.log(`Bot ${this.botInstance.name}: Using antidelete service for message storage`);
 
     // If credentials are provided, save them to the auth directory
     if (botInstance.credentials) {
@@ -133,20 +133,18 @@ export class WhatsAppBot {
     // getMessage is called when a retry is needed for a message
     console.log(`📨 [getMessage] Retrieving message for retry: ${key.id}`);
     
-    // Try to get message from in-memory store first
-    if (this.store) {
-      const msg = await this.store.loadMessage(key.remoteJid, key.id);
-      if (msg) {
-        console.log(`✅ [getMessage] Found message ${key.id} in store`);
-        return msg;
+    // Use antidelete service to retrieve message
+    try {
+      const storedMsg = await this.antideleteService.getStoredMessage(key.id);
+      if (storedMsg?.message) {
+        console.log(`✅ [getMessage] Found message ${key.id} in antidelete service`);
+        return storedMsg.message;
       }
+    } catch (error) {
+      console.log(`⚠️ [getMessage] Error retrieving from antidelete: ${error}`);
     }
     
-    // Fallback to antidelete service if store doesn't have it
-    // const storedMsg = await this.antideleteService.getStoredMessage(key.id);
-    // return storedMsg?.message;
-    
-    console.log(`⚠️ [getMessage] Message ${key.id} not found in store`);
+    console.log(`⚠️ [getMessage] Message ${key.id} not found`);
     return undefined;
   }
 
@@ -1290,12 +1288,6 @@ export class WhatsAppBot {
         transactionOpts: { maxCommitRetries: 10, delayBetweenTriesMs: 3000 }
       });
 
-      // Bind in-memory store to socket for automatic chat/message tracking
-      if (this.store) {
-        this.store.bind(this.sock.ev);
-        console.log(`Bot ${this.botInstance.name}: Store bound to socket - messages will be cached`);
-      }
-
       // CRITICAL: Register creds.update BEFORE setupEventHandlers to ensure credentials are saved
       this.sock.ev.on('creds.update', saveCreds);
 
@@ -1417,12 +1409,6 @@ export class WhatsAppBot {
         this.sock.ws.close();
       }
       this.sock = null; // Nullify sock after closing
-    }
-
-    // Clear in-memory store to free up RAM
-    if (this.store) {
-      console.log(`Bot ${this.botInstance.name}: Clearing in-memory store to free RAM`);
-      this.store = null;
     }
 
     this.isRunning = false;
