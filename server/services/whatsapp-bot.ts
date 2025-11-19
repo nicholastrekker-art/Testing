@@ -341,6 +341,9 @@ export class WhatsAppBot {
         this.isRunning = true;
         this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
 
+        // Provide sock to auto-status service for status viewing
+        this.autoStatusService.setSock(this.sock);
+
         // Reload bot instance from database to get latest settings
         const freshBot = await storage.getBotInstance(this.botInstance.id);
         if (freshBot) {
