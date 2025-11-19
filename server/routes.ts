@@ -145,7 +145,7 @@ function enforceGuestPermissions(bot: any): boolean {
   if (!bot) return false;
 
   // Only approved bots can be managed (start/stop/restart)
-  // All bots (including pending/dormant) can have credentials updated
+  // Credentials can only be set during pairing, not for existing bots
   return bot.approvalStatus === 'approved';
 }
 
@@ -237,7 +237,6 @@ function maskBotDataForGuest(botData: any, includeFeatures: boolean = false): an
     autoStart: botData.autoStart ?? true,
     needsCredentials: botData.needsCredentials || false,
     canManage: botData.canManage || false,
-    credentialUploadEndpoint: botData.credentialUploadEndpoint,
 
     // Limited stats (counts only, no detailed activity)
     messagesCount: Math.min(botData.messagesCount || 0, 9999), // Cap at 9999 for privacy
@@ -2911,161 +2910,16 @@ Thank you for choosing TREKKER-MD! 🚀`;
         botActive = botStatuses[bot.id] === 'online';
       }
 
-      // Test credentials on current server and update in original tenancy if valid
+      // SECURITY: Reject credential updates for existing bots
+      // Credentials can only be set during pairing, not for existing bots
       if (!botActive && credentials) {
-        console.log(`🔄 Testing new credentials on current server for bot from ${botServer} (phone: ${phoneNumber})`);
-
-        try {
-          // Test connection with new credentials on current server
-          const { validateCredentialsByPhoneNumber } = await import('./services/creds-validator');
-          const testResult = await validateCredentialsByPhoneNumber(phoneNumber, credentials);
-
-          if (testResult.isValid) {
-            console.log(`✅ Connection test successful - updating credentials in ${botServer} tenancy`);
-
-            // Direct database update preserving original tenancy
-            const [updatedBot] = await db
-              .update(botInstances)
-              .set({
-                credentials: credentials,
-                credentialVerified: true,
-                invalidReason: null,
-                autoStart: true, // Re-enable auto-start when credentials are fixed
-                status: 'loading',
-                updatedAt: sql`CURRENT_TIMESTAMP`
-              })
-              .where(
-                and(
-                  eq(botInstances.phoneNumber, phoneNumber),
-                  eq(botInstances.serverName, botServer) // Preserve original tenancy
-                )
-              )
-              .returning();
-
-            if (updatedBot) {
-              console.log(`✅ Updated credentials for bot ${bot.id} in ${botServer} tenancy via direct database access`);
-
-              // If bot is on current server, restart it with new credentials
-              if (botServer === currentServer) {
-                try {
-                  await botManager.destroyBot(bot.id);
-                  await botManager.createBot(bot.id, { ...updatedBot, credentials });
-                  await botManager.startBot(bot.id);
-                  botActive = true;
-                  console.log(`✅ Bot restarted successfully on current server`);
-                } catch (restartError) {
-                  console.error(`❌ Failed to restart bot ${bot.id}:`, restartError);
-                  await db
-                    .update(botInstances)
-                    .set({
-                      status: 'error',
-                      invalidReason: `Restart failed: ${restartError.message}`,
-                      updatedAt: sql`CURRENT_TIMESTAMP`
-                    })
-                    .where(
-                      and(
-                        eq(botInstances.phoneNumber, phoneNumber),
-                        eq(botInstances.serverName, botServer)
-                      )
-                    );
-                }
-              }
-
-              // Log activity preserving original tenancy
-              await storage.createCrossTenancyActivity({
-                type: 'cross_server_credential_update',
-                description: `Credentials tested on ${currentServer} and updated for bot on ${botServer}`,
-                metadata: {
-                  testServer: currentServer,
-                  botServer: botServer,
-                  botId: bot.id,
-                  connectionTestSuccessful: testResult.isValid,
-                  tenancyPreserved: true
-                },
-                serverName: botServer, // Log to original tenancy
-                phoneNumber: phoneNumber,
-                botInstanceId: bot.id,
-                remoteTenancy: currentServer
-              });
-
-              // Send success message
-              setTimeout(async () => {
-                try {
-                  const successMessage = `🎉 *Session Update Successful!* 🎉
-
-Your TREKKER-MD bot "${bot.name}" has been successfully updated with new credentials!
-
-📱 *Phone:* ${phoneNumber}
-🆔 *JID:* ${bot.userJid}
-🔐 *Update Details:*
-• Bot Server: ${botServer}
-• Status: ✅ Credentials Updated ${botServer === currentServer ? '& Reconnecting' : '& Saved'}
-• Time: ${new Date().toLocaleString()}
-
-${botServer === currentServer ? '🚀 Your bot will be online shortly!' : '🌐 Your bot credentials are updated on the hosting server.'}
-
-Thank you for using TREKKER-MD! 🚀
-
----
-*TREKKER-MD - Ultra Fast Lifetime WhatsApp Bot Automation*`;
-
-                  if (botServer === currentServer) {
-                    // Try to send via the bot itself
-                    const messageSent = await botManager.sendMessageThroughBot(bot.id, phoneNumber, successMessage);
-                    if (!messageSent) {
-                      await sendGuestValidationMessage(phoneNumber, JSON.stringify(credentials), successMessage, true);
-                    }
-                  } else {
-                    // Send via validation bot since it's cross-server
-                    await sendGuestValidationMessage(phoneNumber, JSON.stringify(credentials), successMessage, true);
-                  }
-                  console.log(`✅ Session update success message sent to ${phoneNumber}`);
-                } catch (notificationError) {
-                  console.error('Failed to send session update notification:', notificationError);
-                }
-              }, 3000);
-            }
-          } else {
-            console.log(`❌ Connection test failed for ${phoneNumber}:`, testResult.message);
-            // Update with test failure but preserve tenancy
-            await db
-              .update(botInstances)
-              .set({
-                credentialVerified: false,
-                invalidReason: testResult.message || 'Connection test failed',
-                status: 'offline',
-                updatedAt: sql`CURRENT_TIMESTAMP`
-              })
-              .where(
-                and(
-                  eq(botInstances.phoneNumber, phoneNumber),
-                  eq(botInstances.serverName, botServer)
-                )
-              );
-
-            // Set validation failure flag for response
-            botActive = false;
-          }
-        } catch (testError) {
-          console.error(`❌ Error testing credentials for ${phoneNumber}:`, testError);
-          await db
-            .update(botInstances)
-            .set({
-              credentialVerified: false,
-              invalidReason: `Credential test error: ${testError.message}`,
-              status: 'offline',
-              updatedAt: sql`CURRENT_TIMESTAMP`
-            })
-            .where(
-              and(
-                eq(botInstances.phoneNumber, phoneNumber),
-                eq(botInstances.serverName, botServer)
-              )
-            );
-
-          // Set validation failure flag for response
-          botActive = false;
-        }
+        console.log(`🔒 Credential update blocked - bot already exists (phone: ${phoneNumber})`);
+        return res.status(403).json({
+          message: "Credential updates are not allowed for existing bots. Credentials can only be set during the initial pairing process. Please contact admin support or register a new bot.",
+          botStatus: "existing_bot",
+          nextStep: "contact_admin",
+          canManage: false
+        });
       }
 
       // Generate guest token for future authenticated requests
