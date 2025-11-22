@@ -19,24 +19,11 @@ import { commandRegistry, type CommandContext } from './command-registry.js';
 import { AutoStatusService } from './auto-status.js';
 import { getAntiViewOnceService } from './antiviewonce.js';
 import { getAntideleteService } from './antidelete.js';
+import { botIsolationService } from './bot-isolation.js';
 import './core-commands.js'; // Load core commands
 import './channel-commands.js'; // Load channel commands
 import './viewonce-commands.js'; // Load on-demand viewonce commands
 import { handleChannelMessage } from './channel-commands.js';
-
-// Global message deduplication to prevent multiple bots processing same message
-const processedMessages = new Map<string, number>();
-const MESSAGE_DEDUP_TTL = 5000; // 5 seconds
-
-// Cleanup old entries every minute
-setInterval(() => {
-  const now = Date.now();
-  for (const [messageId, timestamp] of processedMessages.entries()) {
-    if (now - timestamp > MESSAGE_DEDUP_TTL) {
-      processedMessages.delete(messageId);
-    }
-  }
-}, 60000);
 
 export class WhatsAppBot {
   private sock: any;
@@ -782,23 +769,16 @@ export class WhatsAppBot {
         await this.sendImmediatePresence(message.key.remoteJid);
       }
 
-      // LAYER 1: Message deduplication - prevent multiple bots from processing same message
-      // Use composite key: messageId:remoteJid (or messageId:remoteJid:participant for groups)
-      const dedupKey = message.key.participant
-        ? `${message.key.id}:${message.key.remoteJid}:${message.key.participant}`
-        : `${message.key.id}:${message.key.remoteJid}`;
-
-      const now = Date.now();
-      const lastProcessed = processedMessages.get(dedupKey);
-
-      if (lastProcessed && (now - lastProcessed < MESSAGE_DEDUP_TTL)) {
-        console.log(`Bot ${this.botInstance.name}: ⏭️ Skipping duplicate message ${message.key.id} (processed ${now - lastProcessed}ms ago)`);
+      // LAYER 1: Message deduplication using bot isolation service
+      // Each bot container has its own isolated message deduplication
+      if (botIsolationService.isMessageProcessed(this.botInstance.id, message.key.id!)) {
+        console.log(`Bot ${this.botInstance.name}: ⏭️ Skipping duplicate message ${message.key.id} (already processed in this container)`);
         return;
       }
 
-      // Mark message as processed
-      processedMessages.set(dedupKey, now);
-      console.log(`Bot ${this.botInstance.name}: ✅ Processing message ${message.key.id} (first time)`);
+      // Mark message as processed in this bot's isolated container
+      botIsolationService.markMessageAsProcessed(this.botInstance.id, message.key.id!);
+      console.log(`Bot ${this.botInstance.name}: ✅ Processing message ${message.key.id} (first time in container)`);
 
       // LAYER 2: Bot ownership filtering - only process messages for this specific bot
       // Skip messages that are sent to other bots (unless it's a group message or broadcast)
@@ -956,9 +936,25 @@ export class WhatsAppBot {
     console.log(`   📡 Socket available: ${!!this.sock}`);
     console.log(`   👤 Socket user: ${this.sock?.user?.id || 'NOT CONNECTED'}`);
 
-    // Check our command registry first
-    const registeredCommand = commandRegistry.get(commandName);
-    console.log(`Bot ${this.botInstance.name}: 🔍 Registry lookup for "${commandName}": ${registeredCommand ? 'FOUND ✅' : 'NOT FOUND ❌'}`);
+    // CONTAINER ISOLATION: Acquire command lock for this bot
+    // Prevents duplicate command execution within the same bot container
+    const commandLockAcquired = botIsolationService.acquireCommandLock(this.botInstance.id, commandName);
+    
+    if (!commandLockAcquired) {
+      console.log(`Bot ${this.botInstance.name}: 🔒 Command ${commandName} is already being executed in this bot's container - SKIPPING to prevent duplication`);
+      await storage.createActivity({
+        serverName: this.botInstance.serverName,
+        botInstanceId: this.botInstance.id,
+        type: 'warning',
+        description: `Command ${commandName} execution skipped - already executing in isolated container`
+      });
+      return;
+    }
+
+    try {
+      // Check our command registry first
+      const registeredCommand = commandRegistry.get(commandName);
+      console.log(`Bot ${this.botInstance.name}: 🔍 Registry lookup for "${commandName}": ${registeredCommand ? 'FOUND ✅' : 'NOT FOUND ❌'}`);
 
     if (registeredCommand) {
       // Check if command is owner-only and if the user is the owner
@@ -1205,6 +1201,15 @@ export class WhatsAppBot {
           console.error(`Bot ${this.botInstance.name}: ❌ Failed to send "command not found" message:`, sendError);
         }
       }
+    }
+    } finally {
+      // CONTAINER ISOLATION: Always release the command lock when execution completes
+      botIsolationService.releaseCommandLock(this.botInstance.id, commandName);
+      console.log(`Bot ${this.botInstance.name}: 🔓 Released command lock for ${commandName}`);
+      
+      // Log isolation stats
+      const stats = botIsolationService.getIsolationStats(this.botInstance.id);
+      console.log(`[Container Stats] Bot ${this.botInstance.name}: Messages cached=${stats.messagesCached}, Locks held=${stats.locksHeld}`);
     }
   }
 
