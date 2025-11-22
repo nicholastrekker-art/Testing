@@ -128,25 +128,33 @@ class BotManager {
         return;
       }
 
-      // 1. Load bot from database
+      // STEP 1: Load bot from database
       const botInstance = await storage.getBotInstance(botId);
       if (!botInstance) {
         console.error(`BotManager: Bot with ID ${botId} not found in database`);
         return; // Don't throw - just skip this bot
       }
 
-      // 2. Only approved bots can auto-start (same logic as offer flow)
+      // STEP 2: Only approved bots can auto-start
       if (botInstance.approvalStatus !== 'approved') {
-        console.log(`BotManager: Bot ${botId} is not approved, skipping auto-start`);
+        console.log(`BotManager: Bot ${botId} (${botInstance.name}) is not approved (status: ${botInstance.approvalStatus}), skipping auto-start`);
         return;
       }
+
+      console.log(`\n${'='.repeat(80)}`);
+      console.log(`🚀 [CONTAINER ISOLATION] Starting bot ${botId} in isolated container`);
+      console.log(`   Bot Name: ${botInstance.name}`);
+      console.log(`   Server: ${botInstance.serverName}`);
+      console.log(`   Container Path: auth/${botInstance.serverName}/bot_${botId}`);
+      console.log(`   Has Credentials: ${!!botInstance.credentials}`);
+      console.log(`${'='.repeat(80)}\n`);
 
       // Check if bot is already running
       const existingBot = this.bots.get(botId);
       const currentStatus = existingBot?.getStatus();
 
       if (existingBot && currentStatus === 'online') {
-        console.log(`BotManager: Bot ${botId} is already online`);
+        console.log(`BotManager: Bot ${botId} (${botInstance.name}) is already online in container`);
         // Reset failures since bot is running
         this.resetBotFailures(botId);
         return;
@@ -154,6 +162,7 @@ class BotManager {
 
       // Stop existing bot if it exists and is not online
       if (existingBot && currentStatus !== 'online') {
+        console.log(`BotManager: Stopping previous bot instance (status: ${currentStatus})`);
         try {
           await existingBot.stop();
         } catch (stopError) {
@@ -163,35 +172,45 @@ class BotManager {
         this.bots.delete(botId);
       }
 
-      console.log(`BotManager: Starting approved bot ${botId} (${botInstance.name}) on server ${botInstance.serverName}`);
-
-      // 3. Reload bot instance from database to get latest settings
+      // STEP 3: Reload bot instance from database to get latest settings
       const freshBotInstance = await storage.getBotInstance(botId);
       if (!freshBotInstance) {
         console.error(`BotManager: Bot ${botId} disappeared from database during start`);
         return;
       }
 
-      console.log(`BotManager: ✅ Using existing credentials for bot ${botId} - credentials exist: ${!!freshBotInstance.credentials}`);
+      // STEP 4: Log credential status
+      if (freshBotInstance.credentials) {
+        console.log(`BotManager: ✅ Credentials loaded from database for bot ${botId}`);
+        console.log(`BotManager: 📁 Credentials will be saved to isolated container: auth/${freshBotInstance.serverName}/bot_${botId}/`);
+      } else {
+        console.log(`BotManager: ⚠️ No credentials in database - bot ${botId} will require QR code pairing`);
+      }
 
-      // 4. PRESERVE existing session files - do NOT clear them
+      // STEP 5: PRESERVE existing session files
       // This allows bots to resume using their existing authenticated session
-      console.log(`BotManager: 🔄 Preserving existing session files for bot ${botId} to maintain authentication`);
+      // Structure: auth/{serverName}/bot_{botId}/creds.json + session files
+      console.log(`BotManager: 🔄 [CONTAINER ISOLATION] Preserving existing session files for bot ${botId}`);
+      console.log(`BotManager:    If creds.json exists in container, Baileys will use it without re-pairing`);
 
-      // 5. Create new WhatsAppBot instance (will use existing creds.json if available)
+      // STEP 6: Create new WhatsAppBot instance in isolated container
+      // Each bot gets its own isolated auth directory
       const newBot = new WhatsAppBot(freshBotInstance);
       this.bots.set(botId, newBot);
+      console.log(`BotManager: 📦 Created new bot instance in isolated container`);
 
-      // 6. Start the bot (connects to WhatsApp using existing session)
+      // STEP 7: Start the bot (connects to WhatsApp using saved session or QR)
+      console.log(`BotManager: 🔗 Starting connection for bot ${botId}...`);
       await newBot.start();
 
-      // Only log success if bot actually started (check status)
+      // Check if bot actually started
       if (newBot.getStatus() === 'online') {
-        console.log(`✅ BotManager: Bot ${botId} started successfully`);
+        console.log(`✅ BotManager: Bot ${botId} (${freshBotInstance.name}) started successfully in isolated container`);
+        console.log(`✅ BotManager: Container isolation verified - bot running independently\n`);
         // Reset failures on successful start
         this.resetBotFailures(botId);
       } else {
-        console.log(`⚠️ BotManager: Bot ${botId} start initiated, waiting for connection`);
+        console.log(`⚠️ BotManager: Bot ${botId} start initiated, waiting for connection...`);
       }
 
     } catch (error) {

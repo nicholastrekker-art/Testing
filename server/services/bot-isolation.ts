@@ -167,32 +167,44 @@ export class BotIsolationService {
     const now = Date.now();
     
     // Clean expired messages
-    for (const [botId, messages] of this.botProcessedMessages.entries()) {
-      for (const [messageId, timestamp] of messages.entries()) {
+    const botIdsToDelete: string[] = [];
+    this.botProcessedMessages.forEach((messages, botId) => {
+      const messageIdsToDelete: string[] = [];
+      messages.forEach((timestamp, messageId) => {
         if (now - timestamp > this.MESSAGE_DEDUP_TTL) {
-          messages.delete(messageId);
+          messageIdsToDelete.push(messageId);
         }
-      }
+      });
+      
+      messageIdsToDelete.forEach(messageId => messages.delete(messageId));
       
       // Remove empty bot containers
       if (messages.size === 0) {
-        this.botProcessedMessages.delete(botId);
+        botIdsToDelete.push(botId);
       }
-    }
+    });
+    
+    botIdsToDelete.forEach(botId => this.botProcessedMessages.delete(botId));
     
     // Clean expired command locks
-    for (const [botId, locks] of this.botCommandLocks.entries()) {
-      for (const [commandName, lock] of locks.entries()) {
+    const lockBotIdsToDelete: string[] = [];
+    this.botCommandLocks.forEach((locks, botId) => {
+      const commandNamesToDelete: string[] = [];
+      locks.forEach((lock, commandName) => {
         if (now - lock.timestamp > this.COMMAND_LOCK_TTL) {
-          locks.delete(commandName);
+          commandNamesToDelete.push(commandName);
         }
-      }
+      });
+      
+      commandNamesToDelete.forEach(commandName => locks.delete(commandName));
       
       // Remove empty bot containers
       if (locks.size === 0) {
-        this.botCommandLocks.delete(botId);
+        lockBotIdsToDelete.push(botId);
       }
-    }
+    });
+    
+    lockBotIdsToDelete.forEach(botId => this.botCommandLocks.delete(botId));
   }
 
   /**
@@ -209,12 +221,12 @@ export class BotIsolationService {
    */
   public getActiveBots(): string[] {
     const bots = new Set<string>();
-    for (const botId of this.botProcessedMessages.keys()) {
+    this.botProcessedMessages.forEach((_, botId) => {
       bots.add(botId);
-    }
-    for (const botId of this.botCommandLocks.keys()) {
+    });
+    this.botCommandLocks.forEach((_, botId) => {
       bots.add(botId);
-    }
+    });
     return Array.from(bots);
   }
 
