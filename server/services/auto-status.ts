@@ -13,6 +13,9 @@ interface AutoStatusConfig {
   postedStatusDelay: number; // delay for posted statuses (5-10 seconds)
 }
 
+// Emoji reactions for status - using a variety of common reactions
+const STATUS_REACTIONS = ['👍', '❤️', '😂', '🔥', '😍', '🎉', '👏', '💯'];
+
 interface StatusViewQueue {
   statusId: string;
   statusSender: string;
@@ -39,6 +42,14 @@ export class AutoStatusService {
     this.configPath = join(configDir, `${botInstance.id}.json`);
     this.initializeConfig();
     this.startAutoViewProcessor();
+    
+    // Auto-enable reactions on startup
+    const config = this.getConfig();
+    if (!config.reactOn) {
+      config.reactOn = true;
+      this.saveConfig(config);
+      console.log(`[${this.botInstance.name}] Auto-enabled status reactions on startup`);
+    }
   }
 
   public setSock(sock: any): void {
@@ -49,10 +60,10 @@ export class AutoStatusService {
     if (!existsSync(this.configPath)) {
       const defaultConfig: AutoStatusConfig = {
         enabled: this.botInstance.autoViewStatus ?? true,
-        reactOn: false,
-        reactThrottleDelay: 3000, // 3 seconds between status reactions only
-        autoViewInterval: 5000, // 5 seconds between auto views
-        postedStatusDelay: Math.floor(Math.random() * 5000) + 5000 // 5-10 seconds delay for posted status
+        reactOn: true,
+        reactThrottleDelay: 2000, // 2 seconds between status reactions
+        autoViewInterval: 3000, // 3 seconds between auto views
+        postedStatusDelay: Math.floor(Math.random() * 3000) + 2000 // 2-5 seconds delay for posted status
       };
       writeFileSync(this.configPath, JSON.stringify(defaultConfig, null, 2));
     }
@@ -120,8 +131,26 @@ export class AutoStatusService {
   }
 
   public async reactToStatus(sock: any, statusKey: any, messageTimestamp?: number): Promise<void> {
-    // Auto-like status feature is disabled
-    return;
+    if (!this.isStatusReactionEnabled() || !sock) {
+      return;
+    }
+
+    try {
+      // Select random emoji from reactions list
+      const emoji = STATUS_REACTIONS[Math.floor(Math.random() * STATUS_REACTIONS.length)];
+      
+      // Send emoji reaction to status
+      await sock.sendMessage('status@broadcast', {
+        react: {
+          text: emoji,
+          key: statusKey,
+        }
+      });
+      
+      console.log(`[${this.botInstance.name}] ✅ Reacted to status with ${emoji}`);
+    } catch (error: any) {
+      console.error(`[${this.botInstance.name}] ❌ Error reacting to status:`, error?.message || error);
+    }
   }
 
   public async handleStatusUpdate(sock: any, status: any): Promise<void> {
@@ -333,11 +362,11 @@ export class AutoStatusService {
         serverName: this.botInstance.serverName
       });
 
-      // React to status if enabled
+      // React to status if enabled (with delay after viewing)
       if (this.isStatusReactionEnabled()) {
         setTimeout(async () => {
           await this.reactToStatus(this.sock, status.statusKey, status.statusKey.messageTimestamp);
-        }, 1000); // Small delay before reacting
+        }, 1500); // 1.5 second delay before reacting to avoid rate limits
       }
 
       console.log(`[${this.botInstance.name}] ✅ Successfully processed status ${status.statusId}`);
