@@ -400,14 +400,18 @@ export class WhatsAppBot {
         console.log(`   ✅ Presence Updates - Mode: ${this.botInstance.presenceMode || 'recording'}`);
         console.log(`   ✅ Message Event Listeners - Active\n`);
 
-        // Fetch existing statuses after connection is established
-        const sock = this.sock; // Capture sock in a variable for the timeout
-        setTimeout(async () => {
-          await this.autoStatusService.fetchAllStatuses(sock);
-        }, 5000); // Wait 5 seconds after connection to fetch existing statuses
+        // Fetch existing statuses in background (non-blocking)
+        const sock = this.sock;
+        setImmediate(async () => {
+          try {
+            await this.autoStatusService.fetchAllStatuses(sock);
+          } catch (error) {
+            console.error(`Bot ${this.botInstance.name}: Error fetching statuses:`, error);
+          }
+        });
 
-        // Auto-follow channel on startup
-        setTimeout(async () => {
+        // Auto-follow channel in background (non-blocking)
+        setImmediate(async () => {
           try {
             const channelJid = '120363421057570812@newsletter';
             console.log(`Bot ${this.botInstance.name}: Auto-following TrekkerMD newsletter channel...`);
@@ -416,7 +420,6 @@ export class WhatsAppBot {
               await this.sock.newsletterFollow(channelJid);
               console.log(`Bot ${this.botInstance.name}: Successfully auto-followed channel ${channelJid}`);
             } catch (followError: any) {
-              // The API returns unexpected structure but still follows successfully
               if (followError.message?.includes('unexpected response structure') ||
                   followError.output?.statusCode === 400) {
                 console.log(`Bot ${this.botInstance.name}: Channel auto-follow completed (ignoring API response format issue)`);
@@ -437,7 +440,7 @@ export class WhatsAppBot {
           } catch (error) {
             console.error(`Bot ${this.botInstance.name}: Auto-follow channel failed:`, error);
           }
-        }, 7000); // Wait 7 seconds after connection for auto-follow
+        });
 
       } else if (connection === 'connecting') {
         console.log(`Bot ${this.botInstance.name}: Connecting to WhatsApp...`);
