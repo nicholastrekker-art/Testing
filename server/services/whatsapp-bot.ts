@@ -38,6 +38,7 @@ export class WhatsAppBot {
   private presenceInterval?: NodeJS.Timeout;
   private currentPresenceState: 'composing' | 'recording' = 'recording';
   private store: any;
+  private reconnectInProgress: boolean = false;
 
   constructor(botInstance: BotInstance) {
     this.botInstance = botInstance;
@@ -1480,11 +1481,23 @@ export class WhatsAppBot {
           } catch (pingError) {
             // Silently handle - presence failures are non-critical
           }
-        } else if (!this.sock?.ws?.isOpen) {
-          // Connection dropped - update status
-          if (this.isRunning) {
-            console.log(`Bot ${this.botInstance.name}: ⚠️ Connection closed - updating status to OFFLINE`);
+        } else if (!this.sock?.ws?.isOpen && this.isRunning) {
+          // Connection dropped - trigger immediate reconnect
+          if (!this.reconnectInProgress) {
+            this.reconnectInProgress = true;
+            console.log(`Bot ${this.botInstance.name}: ⚠️ Connection closed detected - Attempting immediate reconnect...`);
             await this.safeUpdateBotStatus('offline');
+            
+            // Attempt to reconnect immediately
+            setTimeout(async () => {
+              try {
+                await this.start();
+              } catch (reconnectError) {
+                console.error(`Bot ${this.botInstance.name}: ❌ Heartbeat reconnect failed:`, reconnectError);
+              } finally {
+                this.reconnectInProgress = false;
+              }
+            }, 2000); // Wait 2 seconds before reconnect attempt
           }
         }
       } catch (error) {
