@@ -1454,6 +1454,8 @@ export class WhatsAppBot {
     // Clear any existing heartbeat
     this.stopHeartbeat();
 
+    let heartbeatCount = 0;
+
     // Set up heartbeat to monitor bot health and keep connection alive using JID
     // This maintains the "open" connection state by sending presence updates
     this.heartbeatInterval = setInterval(async () => {
@@ -1469,12 +1471,19 @@ export class WhatsAppBot {
           // This tells WhatsApp servers that this connection is active and should stay OPEN
           try {
             await this.sock.sendPresenceUpdate('available');
+            
+            // Log heartbeat every 20 counts (every 10 seconds) to show connection is stable
+            heartbeatCount++;
+            if (heartbeatCount % 20 === 0) {
+              console.log(`Bot ${this.botInstance.name}: 💓 Connection alive - JID: ${userJID}, Status: OPEN`);
+            }
           } catch (pingError) {
             // Silently handle - presence failures are non-critical
           }
         } else if (!this.sock?.ws?.isOpen) {
           // Connection dropped - update status
           if (this.isRunning) {
+            console.log(`Bot ${this.botInstance.name}: ⚠️ Connection closed - updating status to OFFLINE`);
             await this.safeUpdateBotStatus('offline');
           }
         }
