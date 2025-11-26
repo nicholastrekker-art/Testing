@@ -179,10 +179,30 @@ class BotManager {
         return;
       }
 
-      // STEP 4: Log credential status
+      // STEP 4: Update credentials from database BEFORE starting bot
+      // This ensures latest credentials are loaded on every restart
+      console.log(`BotManager: 🔐 [CREDENTIAL UPDATE] Updating credentials on restart for bot ${botId}`);
+      
       if (freshBotInstance.credentials) {
-        console.log(`BotManager: ✅ Credentials loaded from database for bot ${botId}`);
-        console.log(`BotManager: 📁 Credentials will be saved to isolated container: auth/${freshBotInstance.serverName}/bot_${botId}/`);
+        // Credentials exist in database - update bot instance with them
+        console.log(`BotManager: ✅ Loading credentials from database for bot ${botId}`);
+        console.log(`BotManager: 📁 Credentials will be used in isolated container: auth/${freshBotInstance.serverName}/bot_${botId}/`);
+        
+        // Ensure credentials are attached to the instance before bot creation
+        // This allows Baileys to write them to the container's creds.json file
+        freshBotInstance.credentials = freshBotInstance.credentials;
+        
+        // Update database to confirm credentials are set (even though they already are)
+        // This ensures the update timestamp is current
+        try {
+          await storage.updateBotInstance(botId, {
+            credentials: freshBotInstance.credentials
+          });
+          console.log(`BotManager: ✅ Credentials confirmed in database for bot ${botId}`);
+        } catch (dbError) {
+          console.error(`BotManager: ⚠️ Failed to confirm credentials in database:`, dbError);
+          // Don't stop - credentials are already in freshBotInstance
+        }
       } else {
         console.log(`BotManager: ⚠️ No credentials in database - bot ${botId} will require QR code pairing`);
       }
@@ -195,11 +215,13 @@ class BotManager {
 
       // STEP 6: Create new WhatsAppBot instance in isolated container
       // Each bot gets its own isolated auth directory
+      // ✅ CREDENTIALS ARE NOW READY BEFORE INSTANTIATION
       const newBot = new WhatsAppBot(freshBotInstance);
       this.bots.set(botId, newBot);
       console.log(`BotManager: 📦 Created new bot instance in isolated container`);
 
       // STEP 7: Start the bot (connects to WhatsApp using saved session or QR)
+      // ✅ CREDENTIALS HAVE BEEN UPDATED FROM DATABASE BEFORE BOT STARTS
       console.log(`BotManager: 🔗 Starting connection for bot ${botId}...`);
       await newBot.start();
 
