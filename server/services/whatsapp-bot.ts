@@ -1474,25 +1474,21 @@ export class WhatsAppBot {
       try {
         const userIdentifier = this.sock?.user?.lid || this.sock?.user?.id;
         if (this.isRunning && userIdentifier) {
-          console.log(`Bot ${this.botInstance.name}: 💓 Heartbeat - connection alive, user: ${userIdentifier}`);
           await this.safeUpdateBotStatus('online', { lastActivity: new Date() });
 
           // Send keep-alive ping to WhatsApp - ALWAYS send 'available' to show as online to others
           try {
             // Always maintain 'available' (online) status to other users
             await this.sock.sendPresenceUpdate('available');
-            console.log(`Bot ${this.botInstance.name}: ✅ Keep-alive ONLINE status maintained`);
           } catch (pingError) {
             console.error(`Bot ${this.botInstance.name}: ❌ Keep-alive ping failed:`, pingError);
             // Don't immediately restart on ping failure - let connection handler deal with it
           }
-        } else {
-          console.warn(`Bot ${this.botInstance.name}: ⚠️ Heartbeat - bot not fully connected (running: ${this.isRunning}, user: ${!!(this.sock?.user?.lid || this.sock?.user?.id)})`);
         }
       } catch (error) {
         console.error(`Bot ${this.botInstance.name}: Heartbeat error:`, error);
       }
-    }, 45000); // Update every 45 seconds to reduce WhatsApp API load
+    }, 500); // Ultra-fast heartbeat every 500ms - no logging to keep logs clean
   }
 
   private stopHeartbeat() {
