@@ -394,7 +394,7 @@ export class WhatsAppBot {
         console.log(`\n🔧 Active Services for ${this.botInstance.name}:`);
         console.log(`   ✅ Command Processing - Ready to receive .commands`);
         console.log(`   ${this.botInstance.autoViewStatus ? '✅' : '❌'} Auto Status Viewing - ${this.botInstance.autoViewStatus ? 'Active' : 'Disabled'}`);
-        console.log(`   ${this.botInstance.autoLike ? '✅' : '❌'} Auto Status Reactions - ${this.botInstance.autoLike ? 'Active' : 'Disabled'}`);
+        console.log(`   ${this.autoStatusService.isStatusReactionEnabled() ? '✅' : '❌'} Auto Status Reactions - ${this.autoStatusService.isStatusReactionEnabled() ? 'Active' : 'Disabled'}`);
         console.log(`   ✅ Anti-Delete - Active (messages being stored)`);
         console.log(`   ✅ Channel Auto-React - Ready`);
         console.log(`   ✅ Presence Updates - Mode: ${this.botInstance.presenceMode || 'recording'}`);
