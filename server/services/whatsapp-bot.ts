@@ -181,10 +181,7 @@ export class WhatsAppBot {
     this.sock.ev.on('connection.update', async (update: Partial<ConnectionState>) => {
       const { connection, lastDisconnect, qr } = update;
 
-      console.log(`Bot ${this.botInstance.name}: Connection update -`, { connection, qr: !!qr });
-
       if (qr) {
-        console.log(`Bot ${this.botInstance.name}: QR Code generated`);
         await storage.updateBotInstance(this.botInstance.id, { status: 'qr_code' });
         await storage.createActivity({
           serverName: this.botInstance.serverName,
@@ -200,8 +197,6 @@ export class WhatsAppBot {
         const disconnectReason = (lastDisconnect?.error as Boom)?.output?.statusCode;
         const errorMessage = (lastDisconnect?.error as Error)?.message || 'Unknown error';
 
-        console.log(`Bot ${this.botInstance.name}: Connection closed due to`, lastDisconnect?.error, ', reconnecting:', shouldReconnect);
-
         this.isRunning = false;
         this.stopPresenceAutoSwitch();
 
@@ -209,7 +204,6 @@ export class WhatsAppBot {
         const isConflictError = disconnectReason === 440 || errorMessage.includes('conflict');
 
         if (isConflictError) {
-          console.log(`⚠️ Bot ${this.botInstance.name}: Conflict detected (440) - another instance is connected. Stopping reconnection.`);
           this.reconnectAttempts = 999; // Stop auto-reconnect
 
           await storage.updateBotInstance(this.botInstance.id, {
@@ -231,14 +225,10 @@ export class WhatsAppBot {
         const is428Error = disconnectReason === 428 || errorMessage.includes('Connection Closed');
 
         if (is428Error) {
-          console.log(`⚠️ Bot ${this.botInstance.name}: Connection Closed (428) - implementing backoff strategy`);
-
           // Implement longer backoff for 428 errors
           if (this.reconnectAttempts < 3) {
             const backoffDelay = 30000 * Math.pow(2, this.reconnectAttempts); // 30s, 60s, 120s
             this.reconnectAttempts++;
-
-            console.log(`🔄 Bot ${this.botInstance.name}: Will retry in ${backoffDelay/1000}s (attempt ${this.reconnectAttempts}/3)`);
 
             await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
 
@@ -252,7 +242,6 @@ export class WhatsAppBot {
             return;
           } else {
             // Max attempts reached for 428 errors
-            console.log(`🚫 Bot ${this.botInstance.name}: Max 428 error retries reached - stopping`);
             this.reconnectAttempts = 999;
 
             await storage.updateBotInstance(this.botInstance.id, {
@@ -275,7 +264,6 @@ export class WhatsAppBot {
         const is405Error = disconnectReason === 405 || errorMessage.includes('405') || errorMessage.includes('Connection Failure');
 
         if (is405Error) {
-          console.log(`🚫 Bot ${this.botInstance.name}: WhatsApp returned 405 Connection Failure - stopping reconnection attempts`);
           this.reconnectAttempts = 999; // Stop auto-reconnect
 
           await storage.updateBotInstance(this.botInstance.id, {
@@ -307,7 +295,6 @@ export class WhatsAppBot {
             type: 'error',
             description: `Bot credentials invalid: ${invalidReason}`
           });
-          console.log(`❌ Bot ${this.botInstance.name} marked as invalid due to logged out status`);
         } else {
           await storage.updateBotInstance(this.botInstance.id, { status: 'offline' });
           await storage.createActivity({
@@ -323,8 +310,6 @@ export class WhatsAppBot {
           const reconnectDelay = Math.min(10000 * Math.pow(2, this.reconnectAttempts || 0), 120000);
           this.reconnectAttempts = (this.reconnectAttempts || 0) + 1;
 
-          console.log(`🔄 Bot ${this.botInstance.name}: Will retry connection in ${reconnectDelay/1000}s (attempt ${this.reconnectAttempts}/5)`);
-
           setTimeout(async () => {
             try {
               await this.start();
@@ -338,7 +323,6 @@ export class WhatsAppBot {
             }
           }, reconnectDelay);
         } else if (this.reconnectAttempts >= 5) {
-          console.log(`⛔ Bot ${this.botInstance.name}: Max reconnection attempts reached, stopping bot`);
           await storage.updateBotInstance(this.botInstance.id, {
             status: 'offline',
             invalidReason: 'Max reconnection attempts reached. Please check credentials and restart manually.',
