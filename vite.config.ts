@@ -57,11 +57,7 @@ export default defineConfig(({ mode }) => {
       host: "0.0.0.0",
       port: 5000,
       allowedHosts: true,
-      hmr: isDevelopment ? {
-        protocol: 'wss',
-        host: 'localhost',
-        port: 5000,
-      } : undefined,
+      hmr: false,
       fs: {
         strict: false,
         allow: [".."],
