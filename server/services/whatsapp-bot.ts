@@ -495,6 +495,12 @@ export class WhatsAppBot {
           console.log(`   🔄 From Me: ${message.key.fromMe ? 'Yes' : 'No'}`);
           console.log(`   ⏰ Timestamp: ${message.messageTimestamp ? new Date(Number(message.messageTimestamp) * 1000).toLocaleString() : 'Unknown'}`);
           console.log(`   📋 Message Keys: ${message.message ? Object.keys(message.message).join(', ') : 'No message content'}`);
+          
+          // Extract and log the actual message text
+          const messageText = this.extractMessageText(message.message);
+          if (messageText && !message.key.fromMe) {
+            console.log(`   💬 MESSAGE TEXT: "${messageText}"`);
+          }
 
           // Skip processing if bot not running, but still log the message
           if (!this.isRunning) {
