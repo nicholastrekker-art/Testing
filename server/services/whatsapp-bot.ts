@@ -1405,7 +1405,27 @@ export class WhatsAppBot {
       });
 
       // CRITICAL: Register creds.update BEFORE setupEventHandlers to ensure credentials are saved
-      this.sock.ev.on('creds.update', saveCreds);
+      // This fires on EVERY credential update (every message), not just initial pairing
+      this.sock.ev.on('creds.update', async () => {
+        // Save to file immediately (Baileys requirement for session recovery)
+        await saveCreds();
+        
+        // Also save updated credentials to database immediately
+        // This ensures credentials persist across bot restarts/redeploys
+        try {
+          const updatedCreds = (this.sock?.auth as any)?.creds || (this.sock?.auth as any);
+          if (updatedCreds) {
+            console.log(`🔐 Bot ${this.botInstance.name}: Saving updated credentials to database (creds.update event)`);
+            await storage.updateBotInstance(this.botInstance.id, {
+              credentials: updatedCreds
+            });
+            console.log(`✅ Bot ${this.botInstance.name}: Credentials updated in database`);
+          }
+        } catch (dbError) {
+          console.error(`⚠️ Bot ${this.botInstance.name}: Failed to save credentials to database:`, dbError);
+          // Don't throw - file save already succeeded, this is just backup persistence
+        }
+      });
 
       // Setup all event handlers (connection.update, messages.upsert, etc.)
       await this.setupEventHandlers();
