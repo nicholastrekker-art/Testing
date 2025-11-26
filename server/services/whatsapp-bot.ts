@@ -516,8 +516,8 @@ export class WhatsAppBot {
               console.log(`   😀 Reaction Message: ${message.message?.reactionMessage?.text} to ${message.message?.reactionMessage?.key?.id}`);
             }
 
-            // Check if this is a REVOKE message for antidelete
-            const isRevoke = message.message?.protocolMessage?.type === 'REVOKE' || message.message?.protocolMessage?.type === 0;
+            // Check if this is a REVOKE message for antidelete (type 0 = REVOKE)
+            const isRevoke = message.message?.protocolMessage?.type === 0;
             
             if (isRevoke) {
               console.log(`   🗑️ [${this.botInstance.name}] REVOKE MESSAGE DETECTED - Processing delete...`);
@@ -944,11 +944,11 @@ export class WhatsAppBot {
     if (registeredCommand) {
       // Check if command is owner-only and if the user is the owner
       // If fromMe is true, the message is from the bot owner
-      const isOwner = message.key.fromMe === true || this.botInstance.owner === message.key.remoteJid?.split(':')[0];
+      const isOwner = message.key.fromMe === true;
       const ownerOnly = registeredCommand.ownerOnly ?? false; // Default to false if not specified
       const isPublicCommand = registeredCommand.isPublic === true || registeredCommand.ownerOnly === false;
 
-      console.log(`Bot ${this.botInstance.name}: 🔐 Owner check for .${commandName}: fromMe=${message.key.fromMe}, owner=${this.botInstance.owner}, remoteJid=${message.key.remoteJid}, isOwner=${isOwner}, ownerOnly=${ownerOnly}`);
+      console.log(`Bot ${this.botInstance.name}: 🔐 Owner check for .${commandName}: fromMe=${message.key.fromMe}, remoteJid=${message.key.remoteJid}, isOwner=${isOwner}, ownerOnly=${ownerOnly}`);
 
       // Allow execution if it's a public command, or if it's owner-only and the user is the owner
       if (!isPublicCommand && ownerOnly && !isOwner) {
@@ -987,7 +987,6 @@ export class WhatsAppBot {
           console.log(`   🤖 Bot: ${this.botInstance.name}`);
           console.log(`   📍 Original remoteJid: ${message.key.remoteJid}`);
           console.log(`   📍 fromMe: ${message.key.fromMe}`);
-          console.log(`   📍 Bot owner field: ${this.botInstance.owner}`);
           console.log(`   📍 Socket user ID: ${this.sock?.user?.id}`);
           console.log(`   📍 Socket user LID: ${this.sock?.user?.lid}`);
           console.log(`   📝 Message: "${text.substring(0, 100)}${text.length > 100 ? '...' : ''}"`);
@@ -1007,14 +1006,6 @@ export class WhatsAppBot {
                 console.log(`   🔧 CORRECTED: Extracted phone ${phoneNumber} from bot JID, sending to: ${targetJid}`);
               } else {
                 console.error(`   ⚠️ WARNING: Could not extract phone number from bot JID: ${botJid}`);
-              }
-            }
-            
-            // Fallback to owner field if extraction failed
-            if (!targetJid || targetJid === message.key.remoteJid) {
-              if (this.botInstance.owner) {
-                targetJid = this.botInstance.owner + '@s.whatsapp.net';
-                console.log(`   🔧 FALLBACK: Using owner field, sending to: ${targetJid}`);
               }
             }
           }
@@ -1201,7 +1192,7 @@ export class WhatsAppBot {
   private async handleAutoFeatures(message: WAMessage) {
     // Auto-react to messages (skip messages from the bot itself) - completely silent
     // Only react to messages NOT sent by the bot (fromMe must be false)
-    if (this.botInstance.autoReact && message.key.remoteJid && message.key.fromMe === false) {
+    if (message.key.remoteJid && message.key.fromMe === false) {
       const reactions = ['👍', '❤️', '😊', '🔥', '👏'];
       const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
 
