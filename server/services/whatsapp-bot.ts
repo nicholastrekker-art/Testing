@@ -103,6 +103,8 @@ export class WhatsAppBot {
   }
 
   private createLogger() {
+    // Complete silent logger - suppresses all Baileys internal logging
+    // including Signal protocol session logs
     const loggerInstance = {
       level: 'silent',
       child: () => loggerInstance,
@@ -111,7 +113,8 @@ export class WhatsAppBot {
       info: () => {},
       warn: () => {},
       error: () => {},
-      fatal: () => {}
+      fatal: () => {},
+      log: () => {}
     };
     return loggerInstance;
   }
@@ -1396,6 +1399,7 @@ export class WhatsAppBot {
 
       // Create isolated socket connection with Baileys v7 LID support
       const logger = this.createLogger();
+      
       this.sock = makeWASocket({
         version,
         auth: {
@@ -1405,24 +1409,25 @@ export class WhatsAppBot {
         printQRInTerminal: false,
         logger,
         browser: Browsers.macOS('Desktop'),
-        connectTimeoutMs: 60000,
-        defaultQueryTimeoutMs: 60000,
+        // Optimized connection timeouts for stable connections
+        connectTimeoutMs: 120000,
+        defaultQueryTimeoutMs: 120000,
         generateHighQualityLinkPreview: false,
         getMessage: this.getMessage.bind(this),
-        // Proper retry configuration
-        retryRequestDelayMs: 250,
-        maxMsgRetryCount: 5,
+        // Aggressive retry configuration for stable reconnection
+        retryRequestDelayMs: 500,
+        maxMsgRetryCount: 10,
         // Link preview and media settings
         linkPreviewImageThumbnailWidth: 192,
-        // History sync settings
+        // History sync settings - disable to reduce stale sessions
         syncFullHistory: false,
-        markOnlineOnConnect: false,
+        markOnlineOnConnect: true,  // Mark as online immediately to prevent stale sessions
         // Mobile connection support
         mobile: false,
         // Proper auth state structure
         shouldSyncHistoryMessage: () => false,
-        // Transaction capability
-        transactionOpts: { maxCommitRetries: 10, delayBetweenTriesMs: 3000 }
+        // Transaction capability for stable session management
+        transactionOpts: { maxCommitRetries: 15, delayBetweenTriesMs: 2000 }
       });
 
       // CRITICAL: Register creds.update BEFORE setupEventHandlers to ensure credentials are saved
