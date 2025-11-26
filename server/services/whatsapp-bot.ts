@@ -1402,7 +1402,8 @@ export class WhatsAppBot {
         browser: Browsers.macOS('Desktop'),
         // Optimized connection timeouts for stable connections
         connectTimeoutMs: 120000,
-        defaultQueryTimeoutMs: 120000,
+        defaultQueryTimeoutMs: 0, // No timeout for queries
+        keepAliveIntervalMs: 10000, // Send keep-alive ping every 10 seconds to maintain connection
         generateHighQualityLinkPreview: false,
         getMessage: this.getMessage.bind(this),
         // Aggressive retry configuration for stable reconnection
@@ -1469,26 +1470,34 @@ export class WhatsAppBot {
     // Clear any existing heartbeat
     this.stopHeartbeat();
 
-    // Set up heartbeat to monitor bot health and keep connection alive
+    // Set up heartbeat to monitor bot health and keep connection alive using JID
+    // This maintains the "open" connection state by sending presence updates
     this.heartbeatInterval = setInterval(async () => {
       try {
-        const userIdentifier = this.sock?.user?.lid || this.sock?.user?.id;
-        if (this.isRunning && userIdentifier) {
+        // Use JID (not LID) to maintain stable connection - JID is the primary identifier
+        const userJID = this.sock?.user?.id; // ID is the JID format (numeric@s.whatsapp.net)
+        
+        if (this.isRunning && userJID && this.sock?.ws?.isOpen) {
+          // Connection is truly open - maintain it with presence updates
           await this.safeUpdateBotStatus('online', { lastActivity: new Date() });
 
-          // Send keep-alive ping to WhatsApp - ALWAYS send 'available' to show as online to others
+          // Send keep-alive presence to WhatsApp every heartbeat
+          // This tells WhatsApp servers that this connection is active and should stay OPEN
           try {
-            // Always maintain 'available' (online) status to other users
             await this.sock.sendPresenceUpdate('available');
           } catch (pingError) {
-            console.error(`Bot ${this.botInstance.name}: ❌ Keep-alive ping failed:`, pingError);
-            // Don't immediately restart on ping failure - let connection handler deal with it
+            // Silently handle - presence failures are non-critical
+          }
+        } else if (!this.sock?.ws?.isOpen) {
+          // Connection dropped - update status
+          if (this.isRunning) {
+            await this.safeUpdateBotStatus('offline');
           }
         }
       } catch (error) {
-        console.error(`Bot ${this.botInstance.name}: Heartbeat error:`, error);
+        // Silently handle heartbeat errors to keep logs clean
       }
-    }, 500); // Ultra-fast heartbeat every 500ms - no logging to keep logs clean
+    }, 500); // Ultra-fast heartbeat every 500ms - keeps connection alive and responsive
   }
 
   private stopHeartbeat() {
