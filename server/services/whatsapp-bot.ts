@@ -769,8 +769,8 @@ export class WhatsAppBot {
       // Skip messages that are sent to other bots (unless it's a group message or broadcast)
       // EXCEPTION: Messages from bot owner (fromMe) should ALWAYS be processed
       // EXCEPTION: Public commands (like .pair) should work everywhere regardless of bot ownership
-      // EXCEPTION: REVOKE protocol messages for antidelete must always be processed
-      const isRevoke = message.message?.protocolMessage?.type === 'REVOKE' || message.message?.protocolMessage?.type === 0;
+      // EXCEPTION: REVOKE protocol messages for antidelete must always be processed (type 0 = REVOKE)
+      const isRevoke = message.message?.protocolMessage?.type === 0;
       const isFromOwner = message.key.fromMe === true;
       
       // If message is from bot owner, always process it (skip ownership check entirely)
