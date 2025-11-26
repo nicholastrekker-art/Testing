@@ -13,8 +13,8 @@ interface AutoStatusConfig {
   postedStatusDelay: number; // delay for posted statuses (5-10 seconds)
 }
 
-// Emoji reactions for status - using a variety of common reactions
-const STATUS_REACTIONS = ['👍', '❤️', '😂', '🔥', '😍', '🎉', '👏', '💯'];
+// Emoji reactions for status - using only green heart
+const STATUS_REACTIONS = ['💚'];
 
 interface StatusViewQueue {
   statusId: string;
