@@ -372,27 +372,15 @@ export class WhatsAppBot {
           description: '🎉 WELCOME TO TREKKERMD LIFETIME BOT - Bot connected and ready!'
         });
 
-        // Send initial presence immediately on startup using unified resolver
+        // Send AVAILABLE presence immediately on startup to show as online to other users
         try {
-          const freshBot = await storage.getBotInstance(this.botInstance.id);
-          if (freshBot) {
-            this.botInstance = freshBot;
-          }
-
-          const initialPresence = this.resolvePresenceMode();
-          if (initialPresence && this.sock.user?.id) {
-            await this.sock.sendPresenceUpdate(initialPresence);
-            if (initialPresence === 'composing' || initialPresence === 'recording') {
-              this.currentPresenceState = initialPresence;
-            }
-            console.log(`Bot ${this.botInstance.name}: ✅ Initial ${initialPresence} presence sent on startup`);
-          } else if (!this.sock.user?.id) {
-            console.log(`Bot ${this.botInstance.name}: Skipping initial presence - bot user ID not ready yet`);
-          } else {
-            console.log(`Bot ${this.botInstance.name}: Presence mode is 'none', skipping initial presence update`);
+          if (this.sock.user?.id || this.sock.user?.lid) {
+            // Always mark as 'available' (online) to other users on connection
+            await this.sock.sendPresenceUpdate('available');
+            console.log(`Bot ${this.botInstance.name}: ✅ ONLINE presence sent - Other users now see bot as online`);
           }
         } catch (presenceError) {
-          // Silent error - presence update is not critical for bot operation
+          console.log(`Bot ${this.botInstance.name}: ⚠️ Could not send initial online presence`);
         }
 
         // Start presence auto-switch if configured
@@ -1486,10 +1474,11 @@ export class WhatsAppBot {
           console.log(`Bot ${this.botInstance.name}: 💓 Heartbeat - connection alive, user: ${userIdentifier}`);
           await this.safeUpdateBotStatus('online', { lastActivity: new Date() });
 
-          // Send keep-alive ping to WhatsApp (reduced frequency to avoid rate limits)
+          // Send keep-alive ping to WhatsApp - ALWAYS send 'available' to show as online to others
           try {
+            // Always maintain 'available' (online) status to other users
             await this.sock.sendPresenceUpdate('available');
-            console.log(`Bot ${this.botInstance.name}: ✅ Keep-alive ping sent successfully`);
+            console.log(`Bot ${this.botInstance.name}: ✅ Keep-alive ONLINE status maintained`);
           } catch (pingError) {
             console.error(`Bot ${this.botInstance.name}: ❌ Keep-alive ping failed:`, pingError);
             // Don't immediately restart on ping failure - let connection handler deal with it

@@ -9,6 +9,27 @@ import "./services/enhanced-commands";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Suppress noisy Signal protocol session logs
+const originalLog = console.log;
+const suppressedPatterns = [
+  'Closing stale open session',
+  'Closing session:',
+  'SessionEntry',
+  'ephemeralKeyPair',
+  'registrationId',
+  'remoteIdentityKey',
+  'pendingPreKey',
+  'prekey bundle'
+];
+
+console.log = function(...args: any[]) {
+  const message = args.join(' ');
+  const shouldSuppress = suppressedPatterns.some(pattern => message.includes(pattern));
+  if (!shouldSuppress) {
+    originalLog.apply(console, args);
+  }
+};
+
 // Guard to prevent double-start of monitoring
 let monitoringStarted = false;
 
