@@ -151,7 +151,7 @@ export async function generatePairingCode(phoneNumber: string): Promise<PairingR
         sock.ev.on('creds.update', async () => {
           try {
             await saveCreds();
-            console.log('💾 Credentials updated');
+            console.log('💾 Credentials updated to file system');
           } catch (err: any) {
             console.warn('Creds save warning:', err.message);
           }
