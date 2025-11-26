@@ -49,7 +49,7 @@ export class AutoStatusService {
     if (!existsSync(this.configPath)) {
       const defaultConfig: AutoStatusConfig = {
         enabled: this.botInstance.autoViewStatus ?? true,
-        reactOn: this.botInstance.autoLike ?? false,
+        reactOn: false,
         reactThrottleDelay: 3000, // 3 seconds between status reactions only
         autoViewInterval: 5000, // 5 seconds between auto views
         postedStatusDelay: Math.floor(Math.random() * 5000) + 5000 // 5-10 seconds delay for posted status
@@ -408,12 +408,12 @@ export class AutoStatusService {
         }
         
         console.log(`[${this.botInstance.name}] Status fetching completed`);
-      } catch (queryError) {
-        console.log(`[${this.botInstance.name}] Direct status query failed (${queryError.message}), continuing with passive monitoring`);
+      } catch (queryError: any) {
+        console.log(`[${this.botInstance.name}] Direct status query failed (${queryError?.message || 'unknown error'}), continuing with passive monitoring`);
       }
       
-    } catch (error) {
-      console.log(`[${this.botInstance.name}] Status fetching encountered error (${error.message}), will rely on real-time status updates`);
+    } catch (error: any) {
+      console.log(`[${this.botInstance.name}] Status fetching encountered error (${error?.message || 'unknown error'}), will rely on real-time status updates`);
     }
   }
 
