@@ -57,7 +57,11 @@ export default defineConfig(({ mode }) => {
       host: "0.0.0.0",
       port: 5000,
       allowedHosts: true,
-      hmr: false,
+      hmr: {
+        protocol: 'wss',
+        host: process.env.REPL_DOMAIN || 'localhost',
+        port: 443,
+      },
       fs: {
         strict: false,
         allow: [".."],
